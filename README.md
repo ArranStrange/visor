@@ -1,12 +1,41 @@
-Here’s the complete content you can paste directly into your README.md file:
+Absolutely — here’s a rewritten version of your README.md that shifts the focus toward what VISOR does and the creative community it aims to foster, while still keeping practical setup details for developers.
 
-# VISOR – Lightroom Preset & Film Simulation Platform
+# VISOR – Curate, Share, and Discover Creative Looks
 
-VISOR is a full-stack web platform for exploring, uploading, and curating Lightroom presets and Fujifilm film simulations. Built for photographers, by photographers.
+VISOR is a web platform designed for photographers and visual creatives to **share Lightroom presets**, **explore film simulation recipes**, and **build a curated personal toolkit** of styles. Whether you're chasing the look of a vintage Fujifilm stock or refining your golden hour tones, VISOR helps you discover and manage the tools that shape your aesthetic.
 
 ---
 
-## 📁 Project Structure
+## ✨ What is VISOR?
+
+VISOR is more than just a preset manager. It's a place for photographers to:
+
+- 🎞 Browse and upload **Lightroom `.xmp` presets**
+- 🎨 Explore and share **Fujifilm film simulation recipes**
+- 🔍 Search and filter by mood, colour, camera, or use case
+- 💾 Save favourites into curated **personal or public lists**
+- 📷 View **before/after previews** and real-world image examples
+- 🧠 Read detailed **setting breakdowns**, creator notes, and camera compatibility
+- 💬 Comment, react, and connect with others in the community
+
+VISOR is built to be **clean, dark, and mobile-friendly**, with a strong visual focus and modern photographer-first design.
+
+---
+
+## 🧑‍🤝‍🧑 Why VISOR?
+
+Creative tools should be just that—**creative**. Existing platforms for presets and film sims are often either too commercial, too technical, or not designed for inspiration and sharing.
+
+VISOR aims to become a home for:
+
+- Curious newcomers exploring visual styles
+- Enthusiasts replicating film looks digitally
+- Professionals refining or sharing their signature tones
+- Communities building **open, expressive collections** of visual tools
+
+---
+
+## 🗂 Project Structure
 
 my-project/
 ├── frontend/ # React app (Vite + MUI + TypeScript)
@@ -17,14 +46,12 @@ my-project/
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### Requirements
 
-- Node.js (v18+ recommended)
+- Node.js (v18+)
 - npm or yarn
 - MongoDB (local or Atlas)
-- [optional] `.env` files for frontend and backend
-
----
+- Optional: `.env` configuration
 
 ### 1. Clone the repo
 
@@ -32,38 +59,19 @@ my-project/
 git clone https://github.com/yourusername/visor.git
 cd visor
 
-
-⸻
-
 2. Install dependencies
 
-Frontend
-
-cd frontend
-npm install
-# or
-yarn install
-
-Backend
-
-cd ../backend
-npm install
-# or
-yarn install
-
-
-⸻
+cd frontend && npm install
+cd ../backend && npm install
 
 3. Run the apps
 
-Start the backend
+Backend (GraphQL server)
 
 cd backend
 npm run dev
 
-Start the frontend
-
-In a new terminal tab/window:
+Frontend (Vite + React)
 
 cd frontend
 npm run dev
@@ -73,39 +81,39 @@ npm run dev
 
 ⸻
 
-🧠 Features (WIP)
-	•	User authentication (session-based)
-	•	Upload & browse Lightroom .xmp presets
-	•	Submit & explore Fujifilm film simulations
-	•	Before/after image previews
-	•	Tagging, commenting, and user profiles
-	•	Responsive design with dark mode by default
-
-⸻
-
-🛠 Tech Stack
+🧱 Tech Stack
 
 Frontend
 	•	React + TypeScript
 	•	Vite
 	•	Material UI
 	•	Redux Toolkit
-	•	React Router
 
 Backend
 	•	Node.js + Express
-	•	Apollo Server + GraphQL
+	•	Apollo Server (GraphQL)
 	•	MongoDB + Mongoose
-	•	Session-based Auth
+	•	Session-based Auth (cookie/session)
 
 ⸻
 
-📦 Future Improvements
-	•	Preset/Sim versioning
-	•	Notification system
-	•	Community forum
-	•	Customisable preset lists
-	•	PWA support
+📍 Roadmap Highlights
+	•	✅ Upload .xmp Lightroom presets
+	•	✅ Submit Fujifilm film sim recipes
+	•	🔜 User profiles with gear badges and galleries
+	•	🔜 Curated list sharing (like Pinterest boards)
+	•	🔜 Notifications & activity feed
+	•	🔜 Community forum
+	•	🔜 Mobile-first PWA version
+
+⸻
+
+🖤 Join the Vision
+
+VISOR is still in early development, but it’s growing into a creative space for image-makers who care deeply about mood, tone, and story. It’s open, community-driven, and designed to evolve with its users.
+
+Have ideas, feedback, or presets to share? Get involved.
+Let’s build a better way to create and share the tools that shape our visual voice.
 
 ⸻
 
@@ -113,5 +121,5 @@ Backend
 
 MIT © Arran Oxley Strange
 
-Let me know if you want to include links to live deployments, documentation, or `.env.example` files next.
+Let me know if you'd like a matching `CONTRIBUTING.md` or a public landing page intro copy for visitors.
 ```
