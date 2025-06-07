@@ -1,0 +1,1 @@
+// Vite config file with aliasing and asset handling

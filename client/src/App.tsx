@@ -1,0 +1,41 @@
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ThemeProvider, CssBaseline } from "@mui/material";
+
+import HomePage from "./pages/Home";
+import PresetDetailPage from "./pages/PresetDetail";
+import FilmSimPage from "./pages/FilmSimDetail";
+import ProfilePage from "./pages/Profile";
+import UploadPage from "./pages/Upload";
+import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import NotFound from "./pages/NotFound";
+import VisorNavBar from "./components/layout/Navbar";
+import NotificationsPanel from "./components/layout/NotificationPanel";
+import { visorTheme } from "./theme/visorTheme";
+import SearchView from "./pages/SearchView";
+
+function App() {
+  return (
+    <ThemeProvider theme={visorTheme}>
+      <CssBaseline />
+      <Router>
+        <VisorNavBar />
+        <NotificationsPanel />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/search" element={<SearchView />} />
+          <Route path="/preset/:slug" element={<PresetDetailPage />} />
+          <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+          <Route path="/profile/:username" element={<ProfilePage />} />
+          <Route path="/upload" element={<UploadPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  );
+}
+
+export default App;
