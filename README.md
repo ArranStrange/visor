@@ -1,5 +1,3 @@
-Absolutely — here’s a rewritten version of your README.md that shifts the focus toward what VISOR does and the creative community it aims to foster, while still keeping practical setup details for developers.
-
 # VISOR – Curate, Share, and Discover Creative Looks
 
 VISOR is a web platform designed for photographers and visual creatives to **share Lightroom presets**, **explore film simulation recipes**, and **build a curated personal toolkit** of styles. Whether you're chasing the look of a vintage Fujifilm stock or refining your golden hour tones, VISOR helps you discover and manage the tools that shape your aesthetic.
