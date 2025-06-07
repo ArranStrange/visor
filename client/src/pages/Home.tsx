@@ -172,47 +172,34 @@ export const filmSims = [
   },
 ];
 
+const cardGridStyles = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+  justifyContent: "space-between",
+  gap: 5,
+};
+
 const HomePage: React.FC = () => {
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 10 }}>
+    <Container maxWidth="lg" sx={{ mt: 2, mb: 20 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Featured Lightroom Presets
       </Typography>
-      <Grid container spacing={2}>
+      <Box sx={cardGridStyles}>
         {presets.map((preset) => (
-          <Grid
-            {...(undefined as any)}
-            item
-            xs={2}
-            sm={6}
-            md={4}
-            lg={4}
-            key={preset.id}
-          >
-            <PresetCard {...preset} />
-          </Grid>
+          <PresetCard key={preset.id} {...preset} />
         ))}
-      </Grid>
+      </Box>
 
       <Box mt={6}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Featured Fujifilm Film Simulations
         </Typography>
-        <Grid container spacing={3}>
+        <Box sx={cardGridStyles}>
           {filmSims.map((sim) => (
-            <Grid
-              {...(undefined as any)}
-              item
-              xs={12}
-              sm={6}
-              md={4}
-              lg={3}
-              key={sim.id}
-            >
-              <FilmSimCard {...sim} />
-            </Grid>
+            <FilmSimCard key={sim.id} {...sim} />
           ))}
-        </Grid>
+        </Box>
       </Box>
     </Container>
   );

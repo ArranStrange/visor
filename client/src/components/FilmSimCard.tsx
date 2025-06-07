@@ -42,6 +42,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       }}
       onClick={() => navigate(`/filmsim/${id}`)}
     >
+      <Box sx={{ position: "relative" }}></Box>
       <CardMedia
         component="img"
         image={thumbnail}
@@ -53,6 +54,24 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           objectFit: "cover",
         }}
       />
+      <Box
+        sx={{
+          position: "absolute",
+          top: 8,
+          right: 30,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          color: "#fff",
+          px: 1,
+          py: 0.5,
+          borderRadius: 1,
+          fontSize: "0.7rem",
+          fontWeight: "bold",
+          textTransform: "uppercase",
+        }}
+      >
+        Film Sim
+      </Box>
+
       <CardContent sx={{ p: 2 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
           {title}

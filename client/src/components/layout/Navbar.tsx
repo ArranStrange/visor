@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
+import NotificationPanel from "./NotificationPanel";
 import UploadIcon from "@mui/icons-material/CloudUpload";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import SeachModal from "../../components/SearchModal";
@@ -58,12 +59,7 @@ const NavBar: React.FC = () => {
           <IconButton onClick={() => setSearchOpen(true)} color="inherit">
             <SearchIcon />
           </IconButton>
-          <IconButton
-            onClick={() => navigate("/notifications")}
-            color="inherit"
-          >
-            <NotificationsIcon />
-          </IconButton>
+          <NotificationPanel />
           <IconButton onClick={() => navigate("/upload")} color="inherit">
             <UploadIcon />
           </IconButton>

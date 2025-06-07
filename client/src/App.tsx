@@ -10,8 +10,7 @@ import UploadPage from "./pages/Upload";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import VisorNavBar from "./components/layout/Navbar";
-import NotificationsPanel from "./components/layout/NotificationPanel";
+import NavBar from "./components/layout/Navbar";
 import { visorTheme } from "./theme/visorTheme";
 import SearchView from "./pages/SearchView";
 
@@ -20,8 +19,7 @@ function App() {
     <ThemeProvider theme={visorTheme}>
       <CssBaseline />
       <Router>
-        <VisorNavBar />
-        <NotificationsPanel />
+        <NavBar />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/search" element={<SearchView />} />
