@@ -2,11 +2,9 @@ import React from "react";
 import {
   AppBar,
   Toolbar,
-  Typography,
   Box,
   IconButton,
   Button,
-  Avatar,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -14,8 +12,6 @@ import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
 import NotificationPanel from "./NotificationPanel";
 import UploadIcon from "@mui/icons-material/CloudUpload";
-import NotificationsIcon from "@mui/icons-material/Notifications";
-import SeachModal from "../../components/SearchModal";
 
 import Logo from "../../assets/VISOR.png";
 
@@ -43,13 +39,6 @@ const NavBar: React.FC = () => {
           onClick={() => navigate("/")}
         >
           <img src={Logo} alt="VISOR logo" style={{ height: 28 }} />
-          {/* <Typography
-            variant="h6"
-            fontWeight="bold"
-            sx={{ color: "text.primary" }}
-          >
-            VISOR
-          </Typography> */}
         </Box>
 
         {/* Actions */}
@@ -63,8 +52,6 @@ const NavBar: React.FC = () => {
           <IconButton onClick={() => navigate("/upload")} color="inherit">
             <UploadIcon />
           </IconButton>
-
-          {/* Auth or Profile */}
           <Button
             variant="outlined"
             color="primary"
@@ -74,13 +61,6 @@ const NavBar: React.FC = () => {
           >
             Login
           </Button>
-
-          {/* Replace with user's avatar if logged in */}
-          {/* <Avatar
-            src="/avatars/arran.png"
-            sx={{ width: 32, height: 32, cursor: 'pointer' }}
-            onClick={() => navigate('/profile/arran')}
-          /> */}
         </Box>
       </Toolbar>
     </AppBar>
