@@ -184,7 +184,10 @@ const cardMasonryStyles = {
     xs: 2,
     md: 4,
   },
-  columnGap: 5,
+  columnGap: {
+    xs: 2,
+    md: 5,
+  },
 };
 
 const cardItemStyles = {

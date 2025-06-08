@@ -42,7 +42,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       }}
       onClick={() => navigate(`/filmsim/${id}`)}
     >
-      <Box sx={{ position: "relative" }}></Box>
       <CardMedia
         component="img"
         image={thumbnail}

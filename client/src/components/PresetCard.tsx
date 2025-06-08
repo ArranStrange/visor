@@ -45,19 +45,18 @@ const PresetCard: React.FC<PresetCardProps> = ({
       }}
       onClick={() => navigate(`/preset/${id}`)}
     >
-      <Box sx={{ position: "relative" }}></Box>
       <CardMedia
         component="img"
         image={thumbnail}
         alt={title}
+        height="180"
         sx={{
-          minWidth: "100%",
-          height: "fit-content",
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
           objectFit: "cover",
         }}
       />
+
       <Box
         sx={{
           position: "absolute",
