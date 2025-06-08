@@ -66,11 +66,7 @@ const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
   };
 
   return (
-    <Box mt={5}>
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
-        Tone Curve
-      </Typography>
-
+    <Box>
       <ToggleButtonGroup
         value={channel}
         exclusive
