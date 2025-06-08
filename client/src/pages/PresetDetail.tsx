@@ -9,11 +9,17 @@ import {
   Divider,
   Avatar,
   Paper,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DownloadIcon from "@mui/icons-material/Download";
 import ToneCurve from "../components/ToneCurve";
+import SettingSliderDisplay from "../components/SettingSliderDisplay";
+import BeforeAfterSlider from "../components/BeforeAfterSlider";
 
-// Mock preset data
 const preset = {
   id: "sunset-gold",
   title: "Sunset Gold",
@@ -38,7 +44,12 @@ const preset = {
     clarity: "+5",
     vibrance: "+15",
     saturation: "+5",
+    temp: "+2",
+    tint: "-3",
+    dehaze: "+4",
     grain: "30",
+    sharpening: "40",
+    noiseReduction: "20",
   },
   toneCurve: {
     rgb: [0, 64, 128, 192, 255],
@@ -51,6 +62,44 @@ const preset = {
 };
 
 const PresetDetails: React.FC = () => {
+  const renderAccordionSection = (
+    title: string,
+    keys: string[],
+    content?: React.ReactNode
+  ) => {
+    const hasValidSettings = keys.some(
+      (key) => preset.settings[key] !== undefined
+    );
+    if (!hasValidSettings && !content) return null;
+
+    return (
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            {title}
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {content ? (
+            content
+          ) : (
+            <Box>
+              {keys.map((key) =>
+                preset.settings[key] !== undefined ? (
+                  <SettingSliderDisplay
+                    key={key}
+                    label={key}
+                    value={preset.settings[key]}
+                  />
+                ) : null
+              )}
+            </Box>
+          )}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
+
   return (
     <Container maxWidth="md" sx={{ mt: 6, mb: 10 }}>
       {/* Title & Creator */}
@@ -72,9 +121,9 @@ const PresetDetails: React.FC = () => {
               target="_blank"
               size="small"
               variant="text"
-              sx={{ ml: 1 }}
+              sx={{ ml: 1, minWidth: 0, padding: 0.5 }}
             >
-              Instagram
+              <InstagramIcon fontSize="small" />
             </Button>
           )}
         </Stack>
@@ -91,68 +140,40 @@ const PresetDetails: React.FC = () => {
       </Box>
 
       {/* Before/After Images */}
-      <Paper
-        variant="outlined"
-        sx={{ overflow: "hidden", borderRadius: 3, mb: 4 }}
-      >
-        <Box display="flex" flexDirection={{ xs: "column", sm: "row" }}>
-          <Box flex={1}>
-            <img
-              src={preset.beforeImage}
-              alt="Before"
-              style={{ width: "100%", objectFit: "cover" }}
-            />
-            <Typography
-              variant="caption"
-              display="block"
-              textAlign="center"
-              mt={1}
-            >
-              Before
-            </Typography>
-          </Box>
-          <Box flex={1}>
-            <img
-              src={preset.afterImage}
-              alt="After"
-              style={{ width: "100%", objectFit: "cover" }}
-            />
-            <Typography
-              variant="caption"
-              display="block"
-              textAlign="center"
-              mt={1}
-            >
-              After
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-
-      {/* Settings Breakdown */}
-      <Typography variant="h6" fontWeight="bold" gutterBottom>
-        Settings Breakdown
-      </Typography>
-      <Box component="dl" sx={{ columnCount: 2, mb: 4 }}>
-        {Object.entries(preset.settings).map(([key, value]) => (
-          <Box key={key} component="div" mb={1}>
-            <Typography variant="body2" fontWeight="medium" component="dt">
-              {key}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              component="dd"
-              sx={{ ml: 1 }}
-            >
-              {value}
-            </Typography>
-          </Box>
-        ))}
+      <Box sx={{ mb: 4 }}>
+        <BeforeAfterSlider
+          beforeImage={preset.beforeImage}
+          afterImage={preset.afterImage}
+          height={400}
+        />
       </Box>
 
-      {/* Tone Curve Display */}
-      {preset.toneCurve && <ToneCurve curves={preset.toneCurve} />}
+      {/* Accordion Sections */}
+      {renderAccordionSection("Light", [
+        "exposure",
+        "contrast",
+        "highlights",
+        "shadows",
+        "whites",
+        "blacks",
+      ])}
+
+      {renderAccordionSection(
+        "Tone Curve",
+        [],
+        <ToneCurve curves={preset.toneCurve} />
+      )}
+
+      {renderAccordionSection("Color", [
+        "temp",
+        "tint",
+        "vibrance",
+        "saturation",
+      ])}
+
+      {renderAccordionSection("Effects", ["clarity", "dehaze", "grain"])}
+
+      {renderAccordionSection("Detail", ["sharpening", "noiseReduction"])}
 
       {/* Download + Notes */}
       <Stack direction="row" alignItems="center" spacing={2} my={4}>
