@@ -24,7 +24,7 @@ const ContentTypeToggle: React.FC = () => {
   ] as const;
 
   return (
-    <Box display="flex" justifyContent="center" mt={0} mb={0}>
+    <Box display="flex" justifyContent="center" mt={2} mb={2}>
       <ToggleButtonGroup
         value={contentType}
         exclusive

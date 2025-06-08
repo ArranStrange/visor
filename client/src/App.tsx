@@ -10,7 +10,7 @@ import UploadPage from "./pages/Upload";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import NavBarWithToggle from "./components/layout/NavWithToggle";
+import NavBar from "./components/layout/Navbar";
 import { visorTheme } from "./theme/visorTheme";
 import SearchView from "./pages/SearchView";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
@@ -21,7 +21,7 @@ function App() {
       <CssBaseline />
       <ContentTypeProvider>
         <Router>
-          <NavBarWithToggle />
+          <NavBar />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/search" element={<SearchView />} />

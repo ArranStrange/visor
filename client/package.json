@@ -15,9 +15,11 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
+    "framer-motion": "^12.16.0",
     "graphql": "^16.11.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^7.6.2"
   },
   "devDependencies": {

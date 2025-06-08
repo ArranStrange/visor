@@ -3,17 +3,20 @@ import { Box, Container } from "@mui/material";
 import PresetCard from "../components/PresetCard";
 import FilmSimCard from "../components/FilmSimCard";
 import { useContentType } from "../context/ContentTypeFilter";
+import ContentTypeToggle from "../components/ContentTypeToggle";
 
 import { filmSims } from "../data/filmsims";
 import { presets } from "../data/presets";
+import StaggeredGrid from "../components/StaggeredGrid";
 
 const cardMasonryStyles = {
   columnCount: {
     xs: 2,
+    s: 3,
     md: 4,
   },
   columnGap: {
-    xs: 2,
+    xs: 0,
     md: 5,
   },
 };
@@ -49,24 +52,19 @@ const HomePage: React.FC = () => {
   }, [contentType]);
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, mb: 50 }}>
-      <Box sx={cardMasonryStyles}>
+    <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
+      <ContentTypeToggle />
+      <StaggeredGrid>
         {combined.map((item, index) => (
-          <Box
-            key={`${item.type}-${item.data.id}-${index}`}
-            sx={{
-              ...cardItemStyles,
-              mt: [1, 3].includes(index % 4) ? 4 : 0, // stagger 2nd and 4th columns
-            }}
-          >
+          <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
             {item.type === "preset" ? (
               <PresetCard {...item.data} />
             ) : (
               <FilmSimCard {...item.data} />
             )}
-          </Box>
+          </React.Fragment>
         ))}
-      </Box>
+      </StaggeredGrid>
     </Container>
   );
 };
