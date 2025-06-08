@@ -50,8 +50,9 @@ const PresetCard: React.FC<PresetCardProps> = ({
         component="img"
         image={thumbnail}
         alt={title}
-        height="180"
         sx={{
+          minWidth: "100%",
+          height: "fit-content",
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
           objectFit: "cover",
@@ -64,7 +65,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
           right: 30,
           backgroundColor: "rgba(0,0,0,0.7)",
           color: "#fff",
-          px: 1,
+          px: 0.5,
           py: 0.5,
           borderRadius: 1,
           fontSize: "0.7rem",
@@ -98,7 +99,12 @@ const PresetCard: React.FC<PresetCardProps> = ({
           </Typography>
         </Box>
 
-        <Stack direction="row" spacing={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          spacing={{ sm: 1 }}
+          display={{ xs: "none", s: "none", md: "flex" }}
+          flexWrap="nowrap"
+        >
           {tags.slice(0, 3).map((tag) => (
             <Chip
               key={tag}

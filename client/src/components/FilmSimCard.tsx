@@ -83,7 +83,13 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           </Typography>
         )}
 
-        <Stack direction="row" spacing={1} mt={1} flexWrap="wrap">
+        <Stack
+          direction="row"
+          spacing={1}
+          mt={1}
+          flexWrap="wrap"
+          display={{ xs: "none", s: "none", md: "flex" }}
+        >
           {tags.slice(0, 3).map((tag) => (
             <Chip
               key={tag}

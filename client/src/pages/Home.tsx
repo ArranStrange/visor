@@ -5,6 +5,14 @@ import FilmSimCard from "../components/FilmSimCard";
 
 export const presets = [
   {
+    id: "shadow-hunter",
+    title: "Shadow Hunter",
+    thumbnail:
+      "https://images.squarespace-cdn.com/content/v1/554e1c83e4b08a0248ca70c4/728208ef-7f9e-4ad4-bf0e-668de566221d/twitter-12-5.jpg",
+    tags: ["shadow", "contrast", "street"],
+    creator: { username: "leah" },
+  },
+  {
     id: "golden-hour",
     title: "Golden Hour Glow",
     thumbnail:
@@ -78,14 +86,6 @@ export const presets = [
       "https://streetberlin.net/wp-content/uploads/2018/06/martin-waltz-street-photography-berlin2-2.jpg",
     tags: ["contrast", "sunlight", "travel"],
     creator: { username: "tom" },
-  },
-  {
-    id: "shadow-hunter",
-    title: "Shadow Hunter",
-    thumbnail:
-      "https://images.squarespace-cdn.com/content/v1/554e1c83e4b08a0248ca70c4/728208ef-7f9e-4ad4-bf0e-668de566221d/twitter-12-5.jpg",
-    tags: ["shadow", "contrast", "street"],
-    creator: { username: "leah" },
   },
 ];
 
@@ -179,25 +179,43 @@ const cardGridStyles = {
   gap: 5,
 };
 
+const cardMasonryStyles = {
+  columnCount: {
+    xs: 2,
+    md: 4,
+  },
+  columnGap: 5,
+};
+
+const cardItemStyles = {
+  breakInside: "avoid",
+  mb: 2,
+  width: "100%",
+};
+
 const HomePage: React.FC = () => {
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, mb: 20 }}>
+    <Container maxWidth="lg" sx={{ mt: 2, mb: 50 }}>
       <Typography variant="h4" fontWeight="bold" gutterBottom>
         Featured Lightroom Presets
       </Typography>
-      <Box sx={cardGridStyles}>
+      <Box sx={cardMasonryStyles}>
         {presets.map((preset) => (
-          <PresetCard key={preset.id} {...preset} />
+          <Box key={preset.id} sx={cardItemStyles}>
+            <PresetCard {...preset} />
+          </Box>
         ))}
       </Box>
-
       <Box mt={6}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Featured Fujifilm Film Simulations
         </Typography>
-        <Box sx={cardGridStyles}>
+
+        <Box sx={cardMasonryStyles}>
           {filmSims.map((sim) => (
-            <FilmSimCard key={sim.id} {...sim} />
+            <Box key={sim.id} sx={cardItemStyles}>
+              <FilmSimCard {...sim} />
+            </Box>
           ))}
         </Box>
       </Box>
