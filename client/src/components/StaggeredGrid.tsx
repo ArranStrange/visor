@@ -13,7 +13,7 @@ interface StaggeredGridProps {
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
   columns = { xs: 2, sm: 3, md: 4 },
-  gap = 4,
+  gap = { xs: 1, sm: 2, md: 4 },
   offset = 32,
 }) => {
   const theme = useTheme();
@@ -37,7 +37,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       <Box
         sx={{
           columnCount: columnCount,
-          columnGap: theme.spacing(gap),
+          columnGap: gap,
         }}
       >
         <AnimatePresence>

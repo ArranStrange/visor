@@ -1,0 +1,2 @@
+uploadImage(file: Upload!, input: ImageMetaInput!): Image
+deleteImage(id: ID!): Boolean

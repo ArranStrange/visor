@@ -1,57 +1,48 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const filmSimSchema = new mongoose.Schema(
+const filmSimSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    slug: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+    name: { type: String, required: true, trim: true },
+    slug: { type: String, required: true, unique: true },
+    description: String,
+
     type: {
       type: String,
-      enum: ["Fujifilm", "Custom"],
-      required: true,
+      enum: ["fujifilm-native", "custom-recipe"],
+      default: "custom-recipe",
     },
-    description: String,
-    toneProfile: String, // e.g. "warm", "neutral", "contrast-heavy"
-    colorProfile: String, // e.g. "vibrant", "muted", "classic chrome"
-    history: String, // historical or brand background
-    recommendedSettings: {
+
+    approximationSettings: {
       type: Map,
-      of: mongoose.Schema.Types.Mixed, // e.g. -0.3 exposure, +2 clarity
+      of: Schema.Types.Mixed, // e.g., Lightroom sliders approximating the sim
     },
-    lightroomApprox: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed, // Lightroom tweaks to match this sim
+
+    toneCurve: {
+      rgb: [Number],
+      red: [Number],
+      green: [Number],
+      blue: [Number],
     },
-    compatibleCameras: [String], // e.g. "X-T4", "X100V"
-    sampleImages: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Image",
-      },
-    ],
+
+    tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
+
+    sampleImages: [{ type: Schema.Types.ObjectId, ref: "Image" }],
+
     creator: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Optional for custom recipes
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
-    tags: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Tag",
-      },
-    ],
-    relatedPresets: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Preset",
-      },
-    ],
+
+    recommendedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
+
+    compatibleCameras: [String], // e.g., ["X100V", "X-T4"], could also ref Camera model later
+
+    notes: String,
+
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
+
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );

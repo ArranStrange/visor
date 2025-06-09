@@ -1,0 +1,16 @@
+fragment UserFields on User {
+  id
+  username
+  avatar
+  bio
+  instagram
+  cameras
+  favouriteLists {
+    id
+    name
+  }
+  customLists {
+    id
+    name
+  }
+}

@@ -1,0 +1,2 @@
+updateProfile(input: UpdateUserInput!): User
+uploadAvatar(file: Upload!): String

@@ -45,7 +45,7 @@ const NavBar: React.FC = () => {
         <Box
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
-          <IconButton onClick={() => setSearchOpen(true)} color="inherit">
+          <IconButton onClick={() => navigate("/search")} color="inherit">
             <SearchIcon />
           </IconButton>
           <NotificationPanel />

@@ -20,12 +20,12 @@ const startServer = async () => {
   // Middleware
   app.use(cors({ origin: true, credentials: true }));
   app.use(express.json());
-  app.use(authenticate); // Attach user to req.user
+  app.use(authenticate); // Add req.user if session/token is valid
 
-  // Static file serving
+  // Serve uploaded images (e.g. avatars, before/after images)
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-  // GraphQL setup
+  // Apollo Server setup
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -35,8 +35,7 @@ const startServer = async () => {
   await server.start();
   server.applyMiddleware({ app, path: "/graphql" });
 
-  // MongoDB connection
-  mongoose;
+  // Connect to MongoDB and start the server
   mongoose
     .connect(MONGO_URI, {
       useNewUrlParser: true,
