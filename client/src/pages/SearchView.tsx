@@ -14,7 +14,10 @@ import FilmSimCard from "../components/FilmSimCard";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 import StaggeredGrid from "../components/StaggeredGrid";
 import { useContentType } from "../context/ContentTypeFilter";
-import { GET_ALL_TAGS } from "../graphql/queries/getAllTags";
+import {
+  GET_ALL_TAGS,
+  GET_ALL_TAGS_OPTIONS,
+} from "../graphql/queries/getAllTags";
 
 // Apollo GraphQL queries
 const LIST_PRESETS = gql`
@@ -67,7 +70,7 @@ const SearchView: React.FC = () => {
     data: tagData,
     loading: tagsLoading,
     error: tagsError,
-  } = useQuery(GET_ALL_TAGS);
+  } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
   const { data: presetData, error: presetsError } = useQuery(LIST_PRESETS);
   const { data: filmSimData, error: filmSimsError } = useQuery(LIST_FILMSIMS);
 
@@ -78,7 +81,8 @@ const SearchView: React.FC = () => {
     if (filmSimsError) console.error("Film Sims Error:", filmSimsError);
   }, [tagsError, presetsError, filmSimsError]);
 
-  const allTags = tagData?.listTags || [];
+  const allTags =
+    tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
   const presets = presetData?.listPresets || [];
   const filmSims = filmSimData?.listFilmSims || [];
 
