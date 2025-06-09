@@ -136,6 +136,11 @@ const SearchView: React.FC = () => {
     return all;
   }, [activeTag, keyword, contentType, presets, filmSims]);
 
+  const handleClear = () => {
+    setKeyword("");
+    setActiveTag(null);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
       <InputBase
@@ -163,6 +168,21 @@ const SearchView: React.FC = () => {
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
+        <Typography
+          onClick={handleClear}
+          sx={{
+            cursor: "pointer",
+            opacity: keyword || activeTag ? 1 : 0.6,
+            transition: "opacity 0.2s",
+            whiteSpace: "nowrap",
+            "&:hover": {
+              textDecoration: "underline",
+              textUnderlineOffset: "4px",
+            },
+          }}
+        >
+          all
+        </Typography>
         {allTags.map((tag: any) => (
           <Typography
             key={tag.id}
