@@ -4,6 +4,11 @@ module.exports = gql`
   scalar Upload
   scalar JSON
 
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   type User {
     id: ID!
     username: String!
@@ -27,6 +32,7 @@ module.exports = gql`
     notes: String
     tags: [Tag]
     sampleImages: [Image]
+    thumbnail: String
     creator: User!
     filmSim: FilmSim
     likes: [User]
@@ -47,6 +53,7 @@ module.exports = gql`
     toneCurve: ToneCurve
     tags: [Tag]
     sampleImages: [Image]
+    thumbnail: String
     creator: User
     recommendedPresets: [Preset]
     compatibleCameras: [String]
@@ -202,6 +209,8 @@ module.exports = gql`
   }
 
   type Mutation {
+    login(email: String!, password: String!): AuthPayload!
+    register(username: String!, email: String!, password: String!): AuthPayload!
     updateProfile(input: JSON!): User
     uploadAvatar(file: Upload!): String
 

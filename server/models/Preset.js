@@ -38,6 +38,8 @@ const presetSchema = new Schema(
 
     sampleImages: [{ type: Schema.Types.ObjectId, ref: "Image" }],
 
+    thumbnail: String, // URL to the thumbnail image
+
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
