@@ -1,14 +1,13 @@
 const { GraphQLUpload } = require("graphql-upload-ts");
-
 const GraphQLJSON = require("graphql-type-json");
 
 const User = require("../models/User");
 const Preset = require("../models/Preset");
 const FilmSim = require("../models/FilmSim");
 const Comment = require("../models/comment");
-const Tag = require("../models/Tag");
 const Image = require("../models/Image");
 const UserList = require("../models/UserList");
+const Tag = require("../models/Tag");
 
 module.exports = {
   Upload: GraphQLUpload,
@@ -28,6 +27,11 @@ module.exports = {
     getFilmSim: async (_, { slug }) => await FilmSim.findOne({ slug }),
     listFilmSims: async (_, { filter }) =>
       await FilmSim.find(filter || {}).populate("creator tags"),
+
+    allTags: async () => {
+      const tags = await Tag.find({});
+      return tags.map((tag) => tag.displayName);
+    },
 
     getImage: async (_, { id }) => await Image.findById(id),
     listImagesByPreset: async (_, { presetId }) =>

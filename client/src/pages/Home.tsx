@@ -4,52 +4,96 @@ import PresetCard from "../components/PresetCard";
 import FilmSimCard from "../components/FilmSimCard";
 import { useContentType } from "../context/ContentTypeFilter";
 import ContentTypeToggle from "../components/ContentTypeToggle";
-
-import { filmSims } from "../data/filmsims";
-import { presets } from "../data/presets";
 import StaggeredGrid from "../components/StaggeredGrid";
 
-const cardMasonryStyles = {
-  columnCount: {
-    xs: 2,
-    s: 3,
-    md: 4,
-  },
-  columnGap: {
-    xs: 0,
-    md: 5,
-  },
-};
+import { useQuery, gql } from "@apollo/client";
 
-const cardItemStyles = {
-  breakInside: "avoid",
-  mb: 2,
-  width: "100%",
-  transition: "margin-top 0.3s ease",
-};
+// Apollo GraphQL queries
+const LIST_PRESETS = gql`
+  query ListPresets {
+    listPresets {
+      id
+      title
+      slug
+      tags {
+        displayName
+      }
+      creator {
+        username
+        avatar
+      }
+      thumbnail: sampleImages {
+        url
+      }
+    }
+  }
+`;
 
-// Shuffle helper
-function shuffle<T>(array: T[]): T[] {
-  return [...array].sort(() => Math.random() - 0.5);
-}
+const LIST_FILMSIMS = gql`
+  query ListFilmSims {
+    listFilmSims {
+      id
+      name
+      slug
+      tags {
+        displayName
+      }
+      creator {
+        username
+        avatar
+      }
+      thumbnail: sampleImages {
+        url
+      }
+    }
+  }
+`;
 
 const HomePage: React.FC = () => {
   const { contentType } = useContentType();
 
-  // Combine and shuffle cards
+  const { data: presetData, loading: loadingPresets } = useQuery(LIST_PRESETS);
+  const { data: filmSimData, loading: loadingFilmSims } =
+    useQuery(LIST_FILMSIMS);
+
   const combined = React.useMemo(() => {
-    const data: { type: "preset" | "film"; data: any }[] = [];
+    const result: { type: "preset" | "film"; data: any }[] = [];
 
-    if (contentType === "all" || contentType === "presets") {
-      data.push(...presets.map((p) => ({ type: "preset" as const, data: p })));
+    if (
+      (contentType === "all" || contentType === "presets") &&
+      presetData?.listPresets
+    ) {
+      result.push(
+        ...presetData.listPresets.map((p) => ({
+          type: "preset" as const,
+          data: {
+            ...p,
+            thumbnail: p.thumbnail?.[0]?.url ?? "",
+          },
+        }))
+      );
     }
 
-    if (contentType === "all" || contentType === "films") {
-      data.push(...filmSims.map((f) => ({ type: "film" as const, data: f })));
+    if (
+      (contentType === "all" || contentType === "films") &&
+      filmSimData?.listFilmSims
+    ) {
+      result.push(
+        ...filmSimData.listFilmSims.map((f) => ({
+          type: "film" as const,
+          data: {
+            ...f,
+            title: f.name,
+            thumbnail: f.thumbnail?.[0]?.url ?? "",
+          },
+        }))
+      );
     }
 
-    return shuffle(data);
-  }, [contentType]);
+    return result.sort(() => Math.random() - 0.5); // Shuffle
+  }, [contentType, presetData, filmSimData]);
+
+  if (loadingPresets || loadingFilmSims) return <p>Loading content...</p>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>

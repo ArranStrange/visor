@@ -17,15 +17,20 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/visor";
 const startServer = async () => {
   const app = express();
 
-  // Middleware
-  app.use(cors({ origin: true, credentials: true }));
-  app.use(express.json());
-  app.use(authenticate); // Add req.user if session/token is valid
+  // Use CORS with credentials and fixed origin
+  app.use(
+    cors({
+      origin: "http://localhost:5173", // Frontend origin
+      credentials: true, // Allow cookies and sessions
+    })
+  );
 
-  // Serve uploaded images (e.g. avatars, before/after images)
+  app.use(express.json());
+  app.use(authenticate); // Attach user to request if authenticated
+
+  // Serve uploaded images
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-  // Apollo Server setup
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -33,9 +38,12 @@ const startServer = async () => {
   });
 
   await server.start();
-  server.applyMiddleware({ app, path: "/graphql" });
+  server.applyMiddleware({
+    app,
+    path: "/graphql",
+    cors: false, // Disable Apollo's internal CORS handling
+  });
 
-  // Connect to MongoDB and start the server
   mongoose
     .connect(MONGO_URI, {
       useNewUrlParser: true,

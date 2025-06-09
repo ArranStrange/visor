@@ -14,7 +14,7 @@ interface FilmSimCardProps {
   id: string;
   title: string;
   thumbnail: string;
-  tags: string[];
+  tags: { displayName: string }[]; // <- GraphQL-compatible
   toneProfile?: string;
 }
 
@@ -89,10 +89,10 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           flexWrap="wrap"
           display={{ xs: "none", s: "none", md: "flex" }}
         >
-          {tags.slice(0, 3).map((tag) => (
+          {tags.slice(0, 3).map((tag, index) => (
             <Chip
-              key={tag}
-              label={tag}
+              key={index}
+              label={tag.displayName}
               size="small"
               variant="outlined"
               sx={{

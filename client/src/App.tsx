@@ -14,28 +14,32 @@ import NavBar from "./components/layout/Navbar";
 import { visorTheme } from "./theme/visorTheme";
 import SearchView from "./pages/SearchView";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
+import { ApolloProvider } from "@apollo/client";
+import { client } from "./graphql/apolloClient";
 
 function App() {
   return (
-    <ThemeProvider theme={visorTheme}>
-      <CssBaseline />
-      <ContentTypeProvider>
-        <Router>
-          <NavBar />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/search" element={<SearchView />} />
-            <Route path="/preset/:slug" element={<PresetDetailPage />} />
-            <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-            <Route path="/profile/:username" element={<ProfilePage />} />
-            <Route path="/upload" element={<UploadPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Router>
-      </ContentTypeProvider>
-    </ThemeProvider>
+    <ApolloProvider client={client}>
+      <ThemeProvider theme={visorTheme}>
+        <CssBaseline />
+        <ContentTypeProvider>
+          <Router>
+            <NavBar />
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/search" element={<SearchView />} />
+              <Route path="/preset/:slug" element={<PresetDetailPage />} />
+              <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+              <Route path="/profile/:username" element={<ProfilePage />} />
+              <Route path="/upload" element={<UploadPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+        </ContentTypeProvider>
+      </ThemeProvider>
+    </ApolloProvider>
   );
 }
 

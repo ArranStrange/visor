@@ -186,6 +186,8 @@ module.exports = gql`
     getFilmSim(slug: String!): FilmSim
     listFilmSims(filter: JSON): [FilmSim]
 
+    allTags: [String]
+
     getImage(id: ID!): Image
     listImagesByPreset(presetId: ID!): [Image]
 

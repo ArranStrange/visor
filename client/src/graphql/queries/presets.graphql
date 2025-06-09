@@ -1,2 +1,0 @@
-getPreset(slug: String!): Preset
-listPresets(filter: PresetFilterInput): [Preset]
