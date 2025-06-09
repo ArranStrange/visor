@@ -17,10 +17,12 @@ const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/visor";
 const startServer = async () => {
   const app = express();
 
-  // Use CORS with credentials and fixed origin
+  // Use CORS with credentials and allow all origins
   app.use(
     cors({
-      origin: "http://localhost:5173", // Frontend origin
+      origin: function (origin, callback) {
+        callback(null, true); // Allow all origins
+      },
       credentials: true, // Allow cookies and sessions
     })
   );
@@ -51,9 +53,9 @@ const startServer = async () => {
     })
     .then(() => {
       console.log("✅ MongoDB connected");
-      app.listen(PORT, () =>
+      app.listen(PORT, "0.0.0.0", () =>
         console.log(
-          `🚀 Server running at http://localhost:${PORT}${server.graphqlPath}`
+          `🚀 Server running at http://0.0.0.0:${PORT}${server.graphqlPath}`
         )
       );
     })
