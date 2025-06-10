@@ -43,13 +43,31 @@ module.exports = gql`
     updatedAt: String
   }
 
+  type FilmSimSettings {
+    dynamicRange: Int
+    highlight: Int
+    shadow: Int
+    colour: Int
+    sharpness: Int
+    noiseReduction: Int
+    grainEffect: Int
+    clarity: Int
+    whiteBalance: String
+    wbShift: WhiteBalanceShift
+  }
+
+  type WhiteBalanceShift {
+    r: Int
+    b: Int
+  }
+
   type FilmSim {
     id: ID!
     name: String!
     slug: String!
     description: String
     type: String
-    approximationSettings: JSON
+    settings: FilmSimSettings
     toneCurve: ToneCurve
     tags: [Tag]
     sampleImages: [Image]
@@ -130,6 +148,24 @@ module.exports = gql`
     blue: [Int]
   }
 
+  input FilmSimSettingsInput {
+    dynamicRange: Int
+    highlight: Int
+    shadow: Int
+    colour: Int
+    sharpness: Int
+    noiseReduction: Int
+    grainEffect: Int
+    clarity: Int
+    whiteBalance: String
+    wbShift: WhiteBalanceShiftInput
+  }
+
+  input WhiteBalanceShiftInput {
+    r: Int
+    b: Int
+  }
+
   input CreatePresetInput {
     title: String!
     slug: String!
@@ -159,7 +195,7 @@ module.exports = gql`
     slug: String!
     description: String
     type: String
-    approximationSettings: JSON
+    settings: FilmSimSettingsInput
     toneCurve: ToneCurveInput
     tagIds: [ID!]
     sampleImageIds: [ID!]

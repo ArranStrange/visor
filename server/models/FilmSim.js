@@ -13,9 +13,20 @@ const filmSimSchema = new Schema(
       default: "custom-recipe",
     },
 
-    approximationSettings: {
-      type: Map,
-      of: Schema.Types.Mixed, // e.g., Lightroom sliders approximating the sim
+    settings: {
+      dynamicRange: { type: Number, default: 100 },
+      highlight: { type: Number, default: 0 },
+      shadow: { type: Number, default: 0 },
+      colour: { type: Number, default: 0 },
+      sharpness: { type: Number, default: 0 },
+      noiseReduction: { type: Number, default: 0 },
+      grainEffect: { type: Number, default: 0 },
+      clarity: { type: Number, default: 0 },
+      whiteBalance: { type: String, default: "auto" },
+      wbShift: {
+        r: { type: Number, default: 0 },
+        b: { type: Number, default: 0 },
+      },
     },
 
     toneCurve: {
