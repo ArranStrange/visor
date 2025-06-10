@@ -17,19 +17,66 @@ const presetSchema = new Schema(
 
     xmpUrl: {
       type: String, // Path or URL to the uploaded .xmp file
-      required: true,
     },
 
     settings: {
-      type: Map,
-      of: Schema.Types.Mixed, // e.g. exposure, contrast, etc.
+      // Light settings
+      exposure: { type: Number, default: 0 },
+      contrast: { type: Number, default: 0 },
+      highlights: { type: Number, default: 0 },
+      shadows: { type: Number, default: 0 },
+      whites: { type: Number, default: 0 },
+      blacks: { type: Number, default: 0 },
+
+      // Color settings
+      temp: { type: Number, default: 0 },
+      tint: { type: Number, default: 0 },
+      vibrance: { type: Number, default: 0 },
+      saturation: { type: Number, default: 0 },
+
+      // Effects
+      clarity: { type: Number, default: 0 },
+      dehaze: { type: Number, default: 0 },
+      grain: {
+        amount: { type: Number, default: 0 },
+        size: { type: Number, default: 0 },
+        roughness: { type: Number, default: 0 },
+      },
+
+      // Detail
+      sharpening: { type: Number, default: 0 },
+      noiseReduction: {
+        luminance: { type: Number, default: 0 },
+        detail: { type: Number, default: 0 },
+        color: { type: Number, default: 0 },
+      },
     },
 
     toneCurve: {
-      rgb: [Number],
-      red: [Number],
-      green: [Number],
-      blue: [Number],
+      rgb: [
+        {
+          x: { type: Number, required: true },
+          y: { type: Number, required: true },
+        },
+      ],
+      red: [
+        {
+          x: { type: Number, required: true },
+          y: { type: Number, required: true },
+        },
+      ],
+      green: [
+        {
+          x: { type: Number, required: true },
+          y: { type: Number, required: true },
+        },
+      ],
+      blue: [
+        {
+          x: { type: Number, required: true },
+          y: { type: Number, required: true },
+        },
+      ],
     },
 
     notes: String, // Creator's notes

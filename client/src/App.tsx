@@ -14,6 +14,8 @@ import SearchView from "./pages/SearchView";
 import PresetDetailPage from "./pages/PresetDetail";
 import FilmSimPage from "./pages/FilmSimDetail";
 import UploadPage from "./pages/Upload";
+import UploadPreset from "./pages/UploadPreset";
+import UploadFilmSim from "./pages/UploadFilmSim";
 import NotFound from "./pages/NotFound";
 import { visorTheme } from "./theme/visorTheme";
 
@@ -32,6 +34,8 @@ function App() {
               <Route path="/filmsim/:slug" element={<FilmSimPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/upload" element={<UploadPage />} />
+              <Route path="/upload/preset" element={<UploadPreset />} />
+              <Route path="/upload/filmsim" element={<UploadFilmSim />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />

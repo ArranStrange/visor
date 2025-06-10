@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 interface PresetCardProps {
   id: string;
+  slug: string;
   title: string;
   thumbnail: string;
   tags: { displayName: string }[]; // <- GraphQL-compatible tag structure
@@ -23,6 +24,7 @@ interface PresetCardProps {
 
 const PresetCard: React.FC<PresetCardProps> = ({
   id,
+  slug,
   title,
   thumbnail,
   tags,
@@ -43,7 +45,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
           boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
         },
       }}
-      onClick={() => navigate(`/preset/${id}`)}
+      onClick={() => navigate(`/preset/${slug}`)}
     >
       <CardMedia
         component="img"

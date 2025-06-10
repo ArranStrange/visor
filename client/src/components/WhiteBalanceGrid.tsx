@@ -1,70 +1,52 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
+export type WhiteBalanceShift = {
+  r: number;
+  b: number;
+};
+
 interface WhiteBalanceGridProps {
-  value: [number, number]; // [R, B] from -2 to +2
-  onChange?: (value: [number, number]) => void;
+  value: WhiteBalanceShift;
+  onChange: (value: WhiteBalanceShift) => void;
 }
 
 const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
   value,
   onChange,
 }) => {
-  const gridSize = 5;
-  const cellSize = 40;
-  const grid = Array.from({ length: gridSize }, (_, i) => i - 2); // [-2, -1, 0, 1, 2]
-
-  const handleClick = (x: number, y: number) => {
-    if (onChange) onChange([x, y]);
+  const handleClick = (r: number, b: number) => {
+    onChange({ r, b });
   };
 
   return (
-    <Box sx={{ display: "inline-block" }}>
+    <Box>
+      <Typography variant="subtitle2" gutterBottom>
+        White Balance Shift
+      </Typography>
       <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${gridSize}, ${cellSize}px)`,
-          gridTemplateRows: `repeat(${gridSize}, ${cellSize}px)`,
-          border: "1px solid",
-          borderColor: "divider",
-        }}
+        sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1 }}
       >
-        {grid.map((y) =>
-          grid.map((x) => {
-            const isSelected = x === value[0] && y === value[1];
-            return (
-              <Box
-                key={`${x},${y}`}
-                onClick={() => handleClick(x, y)}
-                sx={{
-                  width: cellSize,
-                  height: cellSize,
-                  border: "1px solid",
-                  borderColor: "divider",
-                  backgroundColor: isSelected ? "primary.main" : "transparent",
-                  cursor: onChange ? "pointer" : "default",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: isSelected ? "primary.contrastText" : "text.secondary",
-                  fontSize: "0.8rem",
-                  userSelect: "none",
-                }}
-              >
-                {isSelected ? "●" : ""}
-              </Box>
-            );
-          })
+        {[-2, -1, 0, 1, 2].map((r) =>
+          [-2, -1, 0, 1, 2].map((b) => (
+            <Box
+              key={`${r}-${b}`}
+              onClick={() => handleClick(r, b)}
+              sx={{
+                width: "100%",
+                paddingTop: "100%",
+                position: "relative",
+                cursor: "pointer",
+                bgcolor:
+                  value.r === r && value.b === b ? "primary.main" : "grey.200",
+                "&:hover": {
+                  bgcolor: "primary.light",
+                },
+              }}
+            />
+          ))
         )}
       </Box>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        sx={{ mt: 1, textAlign: "center" }}
-      >
-        {value[0] >= 0 ? `+${value[0]}` : value[0]} R,&nbsp;
-        {value[1] >= 0 ? `+${value[1]}` : value[1]} B
-      </Typography>
     </Box>
   );
 };

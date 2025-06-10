@@ -8,6 +8,8 @@ const {
   UserInputError,
 } = require("../utils/errors");
 const bcrypt = require("bcryptjs");
+const path = require("path");
+const fs = require("fs");
 
 const User = require("../models/User");
 const Preset = require("../models/Preset");
@@ -16,6 +18,35 @@ const Comment = require("../models/comment");
 const Image = require("../models/Image");
 const UserList = require("../models/UserList");
 const Tag = require("../models/Tag");
+
+// Helper function to handle file uploads
+const handleFileUpload = async (file, directory) => {
+  const { createReadStream, filename, mimetype } = await file;
+
+  // Create directory if it doesn't exist
+  const uploadDir = path.join(__dirname, "..", "uploads", directory);
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  // Generate unique filename
+  const uniqueFilename = `${Date.now()}-${filename}`;
+  const filepath = path.join(uploadDir, uniqueFilename);
+
+  // Create write stream
+  const writeStream = fs.createWriteStream(filepath);
+
+  // Pipe the file to the write stream
+  await new Promise((resolve, reject) => {
+    createReadStream()
+      .pipe(writeStream)
+      .on("finish", resolve)
+      .on("error", reject);
+  });
+
+  // Return the relative path to the file
+  return `/${directory}/${uniqueFilename}`;
+};
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -78,10 +109,31 @@ module.exports = {
       await User.find({ username: new RegExp(query, "i") }),
 
     getPreset: async (_, { slug }) => await Preset.findOne({ slug }),
-    listPresets: async (_, { filter }) =>
-      await Preset.find(filter || {}).populate(
-        "creator tags filmSim sampleImages"
-      ),
+    listPresets: async (_, { filter }) => {
+      try {
+        const presets = await Preset.find(filter || {})
+          .populate({
+            path: "creator",
+            select: "id username avatar",
+          })
+          .populate({
+            path: "tags",
+            select: "id name displayName",
+          })
+          .populate({
+            path: "filmSim",
+            select: "id name slug",
+          })
+          .populate({
+            path: "sampleImages",
+            select: "id url caption",
+          });
+        return presets;
+      } catch (error) {
+        console.error("Error listing presets:", error);
+        throw new Error("Failed to list presets: " + error.message);
+      }
+    },
 
     getFilmSim: async (_, { slug }) => await FilmSim.findOne({ slug }),
     listFilmSims: async (_, { filter }) =>
@@ -194,8 +246,89 @@ module.exports = {
     },
 
     createPreset: async (_, { input }, { user }) => {
-      const preset = new Preset({ ...input, creator: user.id });
-      return await preset.save();
+      try {
+        if (!user) {
+          throw new Error("Authentication required");
+        }
+
+        // Validate required fields
+        if (!input.title) {
+          throw new Error("Title is required");
+        }
+        if (!input.slug) {
+          throw new Error("Slug is required");
+        }
+        if (!input.xmpUrl) {
+          throw new Error("XMP URL is required");
+        }
+
+        // Check if preset with same slug already exists
+        const existingPreset = await Preset.findOne({ slug: input.slug });
+        if (existingPreset) {
+          throw new Error("A preset with this slug already exists");
+        }
+
+        // Ensure settings object has the correct structure
+        const settings = input.settings || {};
+        const presetData = {
+          ...input,
+          creator: user.id,
+          settings: {
+            // Light settings
+            exposure: parseFloat(settings.exposure) || 0,
+            contrast: parseFloat(settings.contrast) || 0,
+            highlights: parseFloat(settings.highlights) || 0,
+            shadows: parseFloat(settings.shadows) || 0,
+            whites: parseFloat(settings.whites) || 0,
+            blacks: parseFloat(settings.blacks) || 0,
+
+            // Color settings
+            temp: parseFloat(settings.temp) || 0,
+            tint: parseFloat(settings.tint) || 0,
+            vibrance: parseFloat(settings.vibrance) || 0,
+            saturation: parseFloat(settings.saturation) || 0,
+
+            // Effects
+            clarity: parseFloat(settings.clarity) || 0,
+            dehaze: parseFloat(settings.dehaze) || 0,
+            grain: settings.grain
+              ? {
+                  amount: parseFloat(settings.grain.amount) || 0,
+                  size: parseFloat(settings.grain.size) || 0,
+                  roughness: parseFloat(settings.grain.roughness) || 0,
+                }
+              : { amount: 0, size: 0, roughness: 0 },
+
+            // Detail
+            sharpening: parseFloat(settings.sharpening) || 0,
+            noiseReduction: settings.noiseReduction
+              ? {
+                  luminance: parseFloat(settings.noiseReduction.luminance) || 0,
+                  detail: parseFloat(settings.noiseReduction.detail) || 0,
+                  color: parseFloat(settings.noiseReduction.color) || 0,
+                }
+              : { luminance: 0, detail: 0, color: 0 },
+          },
+          toneCurve: input.toneCurve
+            ? {
+                rgb: (input.toneCurve.rgb || []).map((v) => parseFloat(v) || 0),
+                red: (input.toneCurve.red || []).map((v) => parseFloat(v) || 0),
+                green: (input.toneCurve.green || []).map(
+                  (v) => parseFloat(v) || 0
+                ),
+                blue: (input.toneCurve.blue || []).map(
+                  (v) => parseFloat(v) || 0
+                ),
+              }
+            : undefined,
+        };
+
+        const preset = await Preset.create(presetData);
+        return preset;
+      } catch (error) {
+        console.error("Error creating preset:", error);
+        throw error;
+      }
     },
 
     updatePreset: async (_, { id, input }) =>
@@ -260,6 +393,214 @@ module.exports = {
         return true;
       }
       return false;
+    },
+
+    uploadPreset: async (
+      _,
+      { title, description, tags, settings, notes, beforeImage, afterImage },
+      { user }
+    ) => {
+      if (!user) {
+        throw new AuthenticationError(
+          "You must be logged in to upload a preset"
+        );
+      }
+
+      try {
+        // Create or find tags
+        const tagIds = await Promise.all(
+          tags.map(async (tagName) => {
+            const existingTag = await Tag.findOneAndUpdate(
+              { name: tagName.toLowerCase() },
+              {
+                name: tagName.toLowerCase(),
+                displayName: tagName,
+                category: "preset",
+              },
+              { new: true, upsert: true }
+            );
+            return existingTag._id;
+          })
+        );
+
+        // Generate slug from title
+        const slug = title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+
+        // Create sample images if provided
+        let sampleImageIds = [];
+        if (beforeImage || afterImage) {
+          const images = [];
+          if (beforeImage) {
+            const beforeImageUrl = await handleFileUpload(
+              beforeImage,
+              "images"
+            );
+            const beforeImageDoc = await Image.create({
+              url: beforeImageUrl,
+              uploader: user.id,
+              isBeforeImage: true,
+              isAfterImage: false,
+            });
+            images.push(beforeImageDoc);
+          }
+          if (afterImage) {
+            const afterImageUrl = await handleFileUpload(afterImage, "images");
+            const afterImageDoc = await Image.create({
+              url: afterImageUrl,
+              uploader: user.id,
+              isBeforeImage: false,
+              isAfterImage: true,
+            });
+            images.push(afterImageDoc);
+          }
+          sampleImageIds = images.map((img) => img._id);
+        }
+
+        // Parse settings object
+        const parsedSettings = {
+          // Light settings
+          exposure: parseFloat(settings.exposure) || 0,
+          contrast: parseFloat(settings.contrast) || 0,
+          highlights: parseFloat(settings.highlights) || 0,
+          shadows: parseFloat(settings.shadows) || 0,
+          whites: parseFloat(settings.whites) || 0,
+          blacks: parseFloat(settings.blacks) || 0,
+
+          // Color settings
+          temp: parseFloat(settings.temp) || 0,
+          tint: parseFloat(settings.tint) || 0,
+          vibrance: parseFloat(settings.vibrance) || 0,
+          saturation: parseFloat(settings.saturation) || 0,
+
+          // Effects
+          clarity: parseFloat(settings.clarity) || 0,
+          dehaze: parseFloat(settings.dehaze) || 0,
+          grain: settings.grain
+            ? {
+                amount: parseFloat(settings.grain.amount) || 0,
+                size: parseFloat(settings.grain.size) || 0,
+                roughness: parseFloat(settings.grain.roughness) || 0,
+              }
+            : { amount: 0, size: 0, roughness: 0 },
+
+          // Detail
+          sharpening: parseFloat(settings.sharpening) || 0,
+          noiseReduction: settings.noiseReduction
+            ? {
+                luminance: parseFloat(settings.noiseReduction.luminance) || 0,
+                detail: parseFloat(settings.noiseReduction.detail) || 0,
+                color: parseFloat(settings.noiseReduction.color) || 0,
+              }
+            : { luminance: 0, detail: 0, color: 0 },
+        };
+
+        // Create the preset with the parsed settings
+        const preset = await Preset.create({
+          title,
+          slug,
+          description,
+          settings: parsedSettings,
+          notes,
+          tags: tagIds,
+          sampleImages: sampleImageIds,
+          creator: user.id,
+          isPublished: true,
+        });
+
+        return preset;
+      } catch (error) {
+        console.error("Error uploading preset:", error);
+        throw new Error("Failed to upload preset: " + error.message);
+      }
+    },
+
+    uploadFilmSim: async (
+      _,
+      { name, description, tags, settings, notes, sampleImages },
+      { user }
+    ) => {
+      if (!user) {
+        throw new AuthenticationError(
+          "You must be logged in to upload a film simulation"
+        );
+      }
+
+      try {
+        console.log("Received settings:", JSON.stringify(settings, null, 2));
+
+        // Create or find tags
+        const tagIds = await Promise.all(
+          tags.map(async (tagName) => {
+            const existingTag = await Tag.findOneAndUpdate(
+              { name: tagName.toLowerCase() },
+              {
+                name: tagName.toLowerCase(),
+                displayName: tagName,
+                category: "filmsim",
+              },
+              { new: true, upsert: true }
+            );
+            return existingTag._id;
+          })
+        );
+
+        // Generate slug from name
+        const slug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+
+        // Convert dynamicRange number to string format if needed
+        let dynamicRange = settings.dynamicRange;
+        if (typeof dynamicRange === "number") {
+          dynamicRange = `DR${dynamicRange}`;
+        }
+
+        // Create the film simulation
+        const filmSimData = {
+          name,
+          slug,
+          description,
+          type: "custom-recipe",
+          settings: {
+            dynamicRange: parseInt(dynamicRange.replace("DR", "")) || 100,
+            highlight: parseInt(settings.highlight) || 0,
+            shadow: parseInt(settings.shadow) || 0,
+            colour: parseInt(settings.color) || 0,
+            sharpness: parseInt(settings.sharpness) || 0,
+            noiseReduction: parseInt(settings.noiseReduction) || 0,
+            grainEffect: parseInt(settings.grainEffect) || 0,
+            clarity: parseInt(settings.clarity) || 0,
+            whiteBalance: settings.whiteBalance || "auto",
+            wbShift: {
+              r: parseInt(settings.wbShift?.r) || 0,
+              b: parseInt(settings.wbShift?.b) || 0,
+            },
+          },
+          notes,
+          tags: tagIds,
+          creator: user.id,
+        };
+
+        console.log(
+          "Creating film sim with data:",
+          JSON.stringify(filmSimData, null, 2)
+        );
+
+        const filmSim = await FilmSim.create(filmSimData);
+        return filmSim;
+      } catch (error) {
+        console.error("Error uploading film simulation:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+        throw new Error("Failed to upload film simulation: " + error.message);
+      }
     },
   },
 

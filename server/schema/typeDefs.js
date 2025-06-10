@@ -21,13 +21,50 @@ module.exports = gql`
     customLists: [UserList]
   }
 
+  type PresetSettings {
+    # Light settings
+    exposure: Float
+    contrast: Float
+    highlights: Float
+    shadows: Float
+    whites: Float
+    blacks: Float
+
+    # Color settings
+    temp: Float
+    tint: Float
+    vibrance: Float
+    saturation: Float
+
+    # Effects
+    clarity: Float
+    dehaze: Float
+    grain: GrainSettings
+
+    # Detail
+    sharpening: Float
+    noiseReduction: NoiseReductionSettings
+  }
+
+  type GrainSettings {
+    amount: Float
+    size: Float
+    roughness: Float
+  }
+
+  type NoiseReductionSettings {
+    luminance: Float
+    detail: Float
+    color: Float
+  }
+
   type Preset {
     id: ID!
     title: String!
     slug: String!
     description: String
-    xmpUrl: String!
-    settings: JSON
+    xmpUrl: String
+    settings: PresetSettings
     toneCurve: ToneCurve
     notes: String
     tags: [Tag]
@@ -134,44 +171,92 @@ module.exports = gql`
     updatedAt: String
   }
 
+  type CurvePoint {
+    x: Float!
+    y: Float!
+  }
+
   type ToneCurve {
-    rgb: [Int]
-    red: [Int]
-    green: [Int]
-    blue: [Int]
+    rgb: [CurvePoint]
+    red: [CurvePoint]
+    green: [CurvePoint]
+    blue: [CurvePoint]
+  }
+
+  input CurvePointInput {
+    x: Float!
+    y: Float!
   }
 
   input ToneCurveInput {
-    rgb: [Int]
-    red: [Int]
-    green: [Int]
-    blue: [Int]
+    rgb: [CurvePointInput]
+    red: [CurvePointInput]
+    green: [CurvePointInput]
+    blue: [CurvePointInput]
+  }
+
+  input PresetSettingsInput {
+    # Light settings
+    exposure: Float
+    contrast: Float
+    highlights: Float
+    shadows: Float
+    whites: Float
+    blacks: Float
+
+    # Color settings
+    temp: Float
+    tint: Float
+    vibrance: Float
+    saturation: Float
+
+    # Effects
+    clarity: Float
+    dehaze: Float
+    grain: GrainSettingsInput
+
+    # Detail
+    sharpening: Float
+    noiseReduction: NoiseReductionSettingsInput
+  }
+
+  input GrainSettingsInput {
+    amount: Float
+    size: Float
+    roughness: Float
+  }
+
+  input NoiseReductionSettingsInput {
+    luminance: Float
+    detail: Float
+    color: Float
   }
 
   input FilmSimSettingsInput {
-    dynamicRange: Int
-    highlight: Int
-    shadow: Int
-    colour: Int
-    sharpness: Int
-    noiseReduction: Int
-    grainEffect: Int
-    clarity: Int
-    whiteBalance: String
-    wbShift: WhiteBalanceShiftInput
+    dynamicRange: String!
+    filmSimulation: String!
+    whiteBalance: String!
+    wbShift: WhiteBalanceShiftInput!
+    color: Int!
+    sharpness: Int!
+    highlight: Int!
+    shadow: Int!
+    noiseReduction: Int!
+    grainEffect: Int!
+    clarity: Int!
   }
 
   input WhiteBalanceShiftInput {
-    r: Int
-    b: Int
+    r: Int!
+    b: Int!
   }
 
   input CreatePresetInput {
     title: String!
     slug: String!
     description: String
-    xmpUrl: String!
-    settings: JSON
+    xmpUrl: String
+    settings: PresetSettingsInput
     toneCurve: ToneCurveInput
     notes: String
     tagIds: [ID!]
@@ -182,7 +267,7 @@ module.exports = gql`
   input UpdatePresetInput {
     title: String
     description: String
-    settings: JSON
+    settings: PresetSettingsInput
     toneCurve: ToneCurveInput
     notes: String
     tagIds: [ID!]
@@ -224,6 +309,7 @@ module.exports = gql`
     searchUsers(query: String!): [User]
 
     getPreset(slug: String!): Preset
+    getPresetById(id: ID!): Preset
     listPresets(filter: JSON): [Preset]
 
     getFilmSim(slug: String!): FilmSim
@@ -249,6 +335,25 @@ module.exports = gql`
     register(username: String!, email: String!, password: String!): AuthPayload!
     updateProfile(input: JSON!): User
     uploadAvatar(file: Upload!): String
+
+    uploadPreset(
+      title: String!
+      description: String
+      tags: [String!]!
+      settings: JSON!
+      notes: String
+      beforeImage: Upload
+      afterImage: Upload
+    ): Preset!
+
+    uploadFilmSim(
+      name: String!
+      description: String
+      settings: FilmSimSettingsInput!
+      notes: String
+      tags: [String!]!
+      sampleImages: [Upload!]
+    ): FilmSim!
 
     createPreset(input: CreatePresetInput!): Preset
     updatePreset(id: ID!, input: UpdatePresetInput!): Preset
