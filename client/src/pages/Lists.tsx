@@ -12,54 +12,37 @@ import {
   Alert,
   Stack,
   Chip,
-  Grid,
 } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { gql } from "@apollo/client";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ListIcon from "@mui/icons-material/List";
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "../context/AuthContext";
+import StaggeredGrid from "../components/StaggeredGrid";
 
 const GET_USER_LISTS = gql`
-  query GetUserLists($username: String!) {
-    getUser(username: $username) {
+  query GetUserLists($userId: ID!) {
+    getUserLists(userId: $userId) {
       id
-      username
-      favouriteLists {
+      name
+      description
+      isPublic
+      isFavouriteList
+      presets {
         id
-        name
-        description
-        isPublic
-        presets {
-          id
-          title
-          slug
-          thumbnailUrl
-        }
-        filmSims {
-          id
-          name
-          slug
-          thumbnailUrl
+        title
+        slug
+        sampleImages {
+          url
         }
       }
-      customLists {
+      filmSims {
         id
         name
-        description
-        isPublic
-        presets {
-          id
-          title
-          slug
-          thumbnailUrl
-        }
-        filmSims {
-          id
-          name
-          slug
-          thumbnailUrl
+        slug
+        sampleImages {
+          url
         }
       }
     }
@@ -68,11 +51,28 @@ const GET_USER_LISTS = gql`
 
 const Lists: React.FC = () => {
   const navigate = useNavigate();
-  const { username } = useParams<{ username: string }>();
   const { user: currentUser } = useAuth();
+
+  // Debug log to check user data
+  console.log("Current user:", currentUser);
+
   const { loading, error, data } = useQuery(GET_USER_LISTS, {
-    variables: { username },
+    variables: {
+      userId: currentUser?.id, // The server expects the ID field
+    },
+    skip: !currentUser?.id,
+    onError: (error) => {
+      console.error("GraphQL Error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        networkError: error.networkError,
+        graphQLErrors: error.graphQLErrors,
+      });
+    },
   });
+
+  // Debug log to check query variables
+  console.log("Query variables:", { userId: currentUser?.id });
 
   const handleListClick = (listId: string) => {
     navigate(`/list/${listId}`);
@@ -81,6 +81,14 @@ const Lists: React.FC = () => {
   const handleCreateList = () => {
     navigate(`/create-list`);
   };
+
+  if (!currentUser) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="info">Please log in to view your lists.</Alert>
+      </Container>
+    );
+  }
 
   if (loading) {
     return (
@@ -96,26 +104,23 @@ const Lists: React.FC = () => {
   }
 
   if (error) {
+    console.error("GraphQL Error:", error);
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">Error loading lists: {error.message}</Alert>
+        <Alert severity="error">
+          Error loading lists: {error.message}
+          <br />
+          <Typography variant="caption">User ID: {currentUser?.id}</Typography>
+        </Alert>
       </Container>
     );
   }
 
-  const user = data?.getUser;
-  const isOwnProfile = currentUser?.username === username;
-
-  const renderListCard = (list: any, type: "favourite" | "custom") => {
-    // Skip private lists if viewing someone else's profile
-    if (!isOwnProfile && !list.isPublic) {
-      return null;
-    }
-
+  const renderListCard = (list: any) => {
     // Get the first preset or film sim thumbnail for the card
     const thumbnailUrl =
-      list.presets?.[0]?.thumbnailUrl ||
-      list.filmSims?.[0]?.thumbnailUrl ||
+      list.presets?.[0]?.sampleImages?.[0]?.url ||
+      list.filmSims?.[0]?.sampleImages?.[0]?.url ||
       "/default-list-thumbnail.jpg";
 
     return (
@@ -125,9 +130,9 @@ const Lists: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           cursor: "pointer",
+          transition: "transform 0.2s ease-in-out",
           "&:hover": {
             transform: "translateY(-4px)",
-            transition: "transform 0.2s ease-in-out",
             boxShadow: 3,
           },
         }}
@@ -142,7 +147,7 @@ const Lists: React.FC = () => {
         />
         <CardContent sx={{ flexGrow: 1 }}>
           <Box display="flex" alignItems="center" gap={1} mb={1}>
-            {type === "favourite" ? (
+            {list.isFavouriteList ? (
               <FavoriteIcon color="primary" />
             ) : (
               <ListIcon color="primary" />
@@ -171,102 +176,30 @@ const Lists: React.FC = () => {
     );
   };
 
-  const renderListsSection = (
-    lists: any[],
-    type: "favourite" | "custom",
-    title: string
-  ) => {
-    const filteredLists = isOwnProfile
-      ? lists
-      : lists.filter((list) => list.isPublic);
-
-    if (filteredLists.length === 0) {
-      return (
-        <Grid item xs={12}>
-          <Card sx={{ p: 3, textAlign: "center" }}>
-            <Typography color="text.secondary">
-              {isOwnProfile
-                ? `No ${type} lists yet. Create one to get started!`
-                : `No public ${type} lists available.`}
-            </Typography>
-          </Card>
-        </Grid>
-      );
-    }
-
-    return filteredLists.map((list) => (
-      <Grid item xs={12} sm={6} md={4} key={list.id}>
-        {renderListCard(list, type)}
-      </Grid>
-    ));
-  };
+  const lists = data?.getUserLists || [];
+  const favoritesList = lists.find((list: any) => list.isFavouriteList);
+  const customLists = lists.filter((list: any) => !list.isFavouriteList);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Stack spacing={4}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {isOwnProfile ? "My Lists" : `${user?.username}'s Lists`}
-        </Typography>
-
-        {/* Favourite Lists Section */}
-        <Box>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4" component="h1">
+            My Lists
+          </Typography>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={handleCreateList}
           >
-            <Typography variant="h5" component="h2">
-              Favourite Lists
-            </Typography>
-            {isOwnProfile && (
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleCreateList}
-              >
-                Create Favourite List
-              </Button>
-            )}
-          </Box>
-          <Grid container spacing={3}>
-            {renderListsSection(
-              user?.favouriteLists || [],
-              "favourite",
-              "Favourite Lists"
-            )}
-          </Grid>
+            Create New List
+          </Button>
         </Box>
 
-        {/* Custom Lists Section */}
-        <Box>
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={2}
-          >
-            <Typography variant="h5" component="h2">
-              Custom Lists
-            </Typography>
-            {isOwnProfile && (
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                onClick={handleCreateList}
-              >
-                Create Custom List
-              </Button>
-            )}
-          </Box>
-          <Grid container spacing={3}>
-            {renderListsSection(
-              user?.customLists || [],
-              "custom",
-              "Custom Lists"
-            )}
-          </Grid>
-        </Box>
+        <StaggeredGrid>
+          {favoritesList && renderListCard(favoritesList)}
+          {customLists.map((list) => renderListCard(list))}
+        </StaggeredGrid>
       </Stack>
     </Container>
   );

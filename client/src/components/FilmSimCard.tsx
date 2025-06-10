@@ -17,7 +17,7 @@ interface FilmSimCardProps {
   description: string;
   thumbnail: string;
   tags: Array<{
-    id: string;
+    id?: string;
     displayName: string;
   }>;
   creator: {
@@ -101,9 +101,9 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         </Typography>
         <Box sx={{ mt: "auto" }}>
           <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
-            {tags.slice(0, 3).map((tag) => (
+            {tags.slice(0, 3).map((tag, index) => (
               <Chip
-                key={tag.id}
+                key={`${id}-tag-${index}-${tag.displayName}`}
                 label={tag.displayName}
                 size="small"
                 variant="outlined"

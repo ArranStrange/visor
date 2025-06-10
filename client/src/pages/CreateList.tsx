@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import {
   Container,
@@ -15,7 +15,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { gql } from "@apollo/client";
-import { ListType } from "../types/lists";
+import { useAuth } from "../context/AuthContext";
 
 const CREATE_LIST = gql`
   mutation CreateList($input: JSON!) {
@@ -24,25 +24,42 @@ const CREATE_LIST = gql`
       name
       description
       isPublic
+      isFavouriteList
+      presets {
+        id
+        title
+        slug
+        sampleImages {
+          url
+        }
+      }
+      filmSims {
+        id
+        name
+        slug
+        sampleImages {
+          url
+        }
+      }
     }
   }
 `;
 
 const CreateList: React.FC = () => {
-  const { type } = useParams<{ type: ListType }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     isPublic: false,
-    isFavouriteList: type === "favourite",
+    isFavouriteList: false,
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const [createList] = useMutation(CREATE_LIST, {
     onCompleted: (data) => {
-      navigate(`/lists/${type}/${data.createUserList.id}`);
+      navigate(`/list/${data.createUserList.id}`);
     },
     onError: (error) => {
       setError(error.message);
@@ -60,17 +77,33 @@ const CreateList: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser) {
+      setError("You must be logged in to create a list");
+      return;
+    }
+
     setLoading(true);
     try {
       await createList({
         variables: {
-          input: formData,
+          input: {
+            ...formData,
+            owner: currentUser.id,
+          },
         },
       });
     } catch (err) {
       console.error("Error creating list:", err);
     }
   };
+
+  if (!currentUser) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="info">Please log in to create a list.</Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
@@ -82,7 +115,7 @@ const CreateList: React.FC = () => {
 
       <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
         <Typography variant="h5" gutterBottom>
-          Create New {type === "favourite" ? "Favourite" : "Custom"} List
+          Create New List
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
@@ -94,6 +127,7 @@ const CreateList: React.FC = () => {
               onChange={handleInputChange}
               label="List Name"
               required
+              helperText="Give your list a descriptive name"
             />
 
             <TextField
@@ -105,6 +139,7 @@ const CreateList: React.FC = () => {
               onChange={handleInputChange}
               label="Description"
               placeholder="Describe your list..."
+              helperText="What's this list about? What kind of presets or film simulations will it contain?"
             />
 
             <FormControlLabel
@@ -121,7 +156,7 @@ const CreateList: React.FC = () => {
             <Box display="flex" gap={2} justifyContent="flex-end">
               <Button
                 variant="outlined"
-                onClick={() => navigate("/profile")}
+                onClick={() => navigate("/lists")}
                 disabled={loading}
               >
                 Cancel

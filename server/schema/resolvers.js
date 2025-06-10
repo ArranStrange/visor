@@ -152,8 +152,31 @@ module.exports = {
     listTags: async (_, { category }) =>
       await Tag.find(category ? { category } : {}),
 
-    getUserLists: async (_, { userId }) =>
-      await UserList.find({ owner: userId }),
+    getUserLists: async (_, { userId }) => {
+      try {
+        const lists = await UserList.find({ owner: userId })
+          .populate({
+            path: "presets",
+            select: "id title slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
+          })
+          .populate({
+            path: "filmSims",
+            select: "id name slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
+          });
+        return lists;
+      } catch (error) {
+        console.error("Error getting user lists:", error);
+        throw new Error("Failed to get user lists: " + error.message);
+      }
+    },
     getUserList: async (_, { id }) => await UserList.findById(id),
 
     getCommentsForPreset: async (_, { presetId }) =>
