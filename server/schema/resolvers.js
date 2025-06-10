@@ -397,7 +397,16 @@ module.exports = {
 
     uploadPreset: async (
       _,
-      { title, description, tags, settings, notes, beforeImage, afterImage },
+      {
+        title,
+        description,
+        tags,
+        settings,
+        toneCurve,
+        notes,
+        beforeImage,
+        afterImage,
+      },
       { user }
     ) => {
       if (!user) {
@@ -459,50 +468,16 @@ module.exports = {
           sampleImageIds = images.map((img) => img._id);
         }
 
-        // Parse settings object
-        const parsedSettings = {
-          // Light settings
-          exposure: parseFloat(settings.exposure) || 0,
-          contrast: parseFloat(settings.contrast) || 0,
-          highlights: parseFloat(settings.highlights) || 0,
-          shadows: parseFloat(settings.shadows) || 0,
-          whites: parseFloat(settings.whites) || 0,
-          blacks: parseFloat(settings.blacks) || 0,
+        // Parse settings object (accept all fields as sent)
+        const parsedSettings = settings;
 
-          // Color settings
-          temp: parseFloat(settings.temp) || 0,
-          tint: parseFloat(settings.tint) || 0,
-          vibrance: parseFloat(settings.vibrance) || 0,
-          saturation: parseFloat(settings.saturation) || 0,
-
-          // Effects
-          clarity: parseFloat(settings.clarity) || 0,
-          dehaze: parseFloat(settings.dehaze) || 0,
-          grain: settings.grain
-            ? {
-                amount: parseFloat(settings.grain.amount) || 0,
-                size: parseFloat(settings.grain.size) || 0,
-                roughness: parseFloat(settings.grain.roughness) || 0,
-              }
-            : { amount: 0, size: 0, roughness: 0 },
-
-          // Detail
-          sharpening: parseFloat(settings.sharpening) || 0,
-          noiseReduction: settings.noiseReduction
-            ? {
-                luminance: parseFloat(settings.noiseReduction.luminance) || 0,
-                detail: parseFloat(settings.noiseReduction.detail) || 0,
-                color: parseFloat(settings.noiseReduction.color) || 0,
-              }
-            : { luminance: 0, detail: 0, color: 0 },
-        };
-
-        // Create the preset with the parsed settings
+        // Create the preset with the parsed settings and toneCurve
         const preset = await Preset.create({
           title,
           slug,
           description,
           settings: parsedSettings,
+          toneCurve: toneCurve,
           notes,
           tags: tagIds,
           sampleImages: sampleImageIds,

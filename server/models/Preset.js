@@ -43,6 +43,43 @@ const presetSchema = new Schema(
         roughness: { type: Number, default: 0 },
       },
 
+      vignette: {
+        amount: { type: Number, default: 0 },
+      },
+
+      colorAdjustments: {
+        red: {
+          hue: { type: Number, default: 0 },
+          saturation: { type: Number, default: 0 },
+          luminance: { type: Number, default: 0 },
+        },
+        orange: {
+          saturation: { type: Number, default: 0 },
+          luminance: { type: Number, default: 0 },
+        },
+        yellow: {
+          hue: { type: Number, default: 0 },
+          saturation: { type: Number, default: 0 },
+          luminance: { type: Number, default: 0 },
+        },
+        green: {
+          hue: { type: Number, default: 0 },
+          saturation: { type: Number, default: 0 },
+        },
+        blue: {
+          hue: { type: Number, default: 0 },
+          saturation: { type: Number, default: 0 },
+        },
+      },
+
+      splitToning: {
+        shadowHue: { type: Number, default: 0 },
+        shadowSaturation: { type: Number, default: 0 },
+        highlightHue: { type: Number, default: 0 },
+        highlightSaturation: { type: Number, default: 0 },
+        balance: { type: Number, default: 0 },
+      },
+
       // Detail
       sharpening: { type: Number, default: 0 },
       noiseReduction: {

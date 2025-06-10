@@ -135,10 +135,10 @@ const UPLOAD_PRESET = gql`
   mutation UploadPreset(
     $title: String!
     $description: String
-    $settings: JSON!
+    $settings: PresetSettingsInput!
+    $toneCurve: ToneCurveInput
     $notes: String
     $tags: [String!]!
-    $toneCurve: JSON!
     $beforeImage: Upload
     $afterImage: Upload
   ) {
@@ -146,9 +146,9 @@ const UPLOAD_PRESET = gql`
       title: $title
       description: $description
       settings: $settings
+      toneCurve: $toneCurve
       notes: $notes
       tags: $tags
-      toneCurve: $toneCurve
       beforeImage: $beforeImage
       afterImage: $afterImage
     ) {
@@ -308,6 +308,50 @@ const UploadPreset: React.FC = () => {
     };
   };
 
+  // Helper to map parsedSettings to backend expected structure
+  const buildSettingsForBackend = (parsed: any) => ({
+    // Light settings
+    exposure: parsed.exposure ?? 0,
+    contrast: parsed.contrast ?? 0,
+    highlights: parsed.highlights ?? 0,
+    shadows: parsed.shadows ?? 0,
+    whites: parsed.whites ?? 0,
+    blacks: parsed.blacks ?? 0,
+    // Color settings
+    temp: parsed.temp ?? 0,
+    tint: parsed.tint ?? 0,
+    vibrance: parsed.vibrance ?? 0,
+    saturation: parsed.saturation ?? 0,
+    // Effects
+    clarity: parsed.clarity ?? 0,
+    dehaze: parsed.dehaze ?? 0,
+    grain: {
+      amount: parsed.grain?.amount ?? 0,
+      size: parsed.grain?.size ?? 0,
+      roughness: parsed.grain?.roughness ?? 0,
+    },
+    vignette: parsed.vignette
+      ? { amount: parsed.vignette.amount ?? 0 }
+      : { amount: 0 },
+    colorAdjustments: parsed.colorAdjustments ?? undefined,
+    splitToning: parsed.splitToning ?? undefined,
+    // Detail
+    sharpening: parsed.sharpening ?? 0,
+    noiseReduction: {
+      luminance: parsed.noiseReduction?.luminance ?? 0,
+      detail: parsed.noiseReduction?.detail ?? 0,
+      color: parsed.noiseReduction?.color ?? 0,
+    },
+  });
+
+  const buildToneCurveForBackend = (parsed: any) =>
+    parsed.toneCurve || {
+      rgb: [],
+      red: [],
+      green: [],
+      blue: [],
+    };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -334,19 +378,14 @@ const UploadPreset: React.FC = () => {
       const variables: any = {
         title,
         description,
-        settings: parsedSettings.settings,
+        settings: buildSettingsForBackend(parsedSettings),
+        toneCurve: buildToneCurveForBackend(parsedSettings),
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
-        toneCurve: formatToneCurveData(parsedSettings.toneCurve),
+        // No images for now
       };
 
-      // Only include files if they exist
-      if (beforeImage) {
-        variables.beforeImage = beforeImage;
-      }
-      if (afterImage) {
-        variables.afterImage = afterImage;
-      }
+      console.log("Uploading with variables:", variables);
 
       const result = await uploadPreset({
         variables,
@@ -354,8 +393,14 @@ const UploadPreset: React.FC = () => {
 
       console.log("Upload result:", result);
       navigate(`/preset/${result.data.uploadPreset.slug}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error uploading:", err);
+      if (err.graphQLErrors) {
+        console.error("GraphQL Errors:", err.graphQLErrors);
+      }
+      if (err.networkError) {
+        console.error("Network Error:", err.networkError);
+      }
       setError(err instanceof Error ? err.message : "Failed to upload");
     } finally {
       setIsUploading(false);

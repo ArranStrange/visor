@@ -40,6 +40,9 @@ module.exports = gql`
     clarity: Float
     dehaze: Float
     grain: GrainSettings
+    vignette: VignetteSettings
+    colorAdjustments: ColorAdjustments
+    splitToning: SplitToningSettings
 
     # Detail
     sharpening: Float
@@ -214,6 +217,9 @@ module.exports = gql`
     clarity: Float
     dehaze: Float
     grain: GrainSettingsInput
+    vignette: VignetteSettingsInput
+    colorAdjustments: ColorAdjustmentsInput
+    splitToning: SplitToningSettingsInput
 
     # Detail
     sharpening: Float
@@ -340,7 +346,8 @@ module.exports = gql`
       title: String!
       description: String
       tags: [String!]!
-      settings: JSON!
+      settings: PresetSettingsInput!
+      toneCurve: ToneCurveInput
       notes: String
       beforeImage: Upload
       afterImage: Upload
@@ -372,5 +379,91 @@ module.exports = gql`
     createComment(input: CreateCommentInput!): Comment
     reactToComment(commentId: ID!, reaction: String!): Comment
     deleteComment(id: ID!): Boolean
+  }
+
+  type VignetteSettings {
+    amount: Float
+  }
+  input VignetteSettingsInput {
+    amount: Float
+  }
+
+  type ColorAdjustments {
+    red: ColorChannel
+    orange: OrangeChannel
+    yellow: ColorChannel
+    green: GreenChannel
+    blue: BlueChannel
+  }
+  input ColorAdjustmentsInput {
+    red: ColorChannelInput
+    orange: OrangeChannelInput
+    yellow: ColorChannelInput
+    green: GreenChannelInput
+    blue: BlueChannelInput
+  }
+
+  type ColorChannel {
+    hue: Float
+    saturation: Float
+    luminance: Float
+  }
+  input ColorChannelInput {
+    hue: Float
+    saturation: Float
+    luminance: Float
+  }
+
+  type OrangeChannel {
+    saturation: Float
+    luminance: Float
+  }
+  input OrangeChannelInput {
+    saturation: Float
+    luminance: Float
+  }
+
+  type GreenChannel {
+    hue: Float
+    saturation: Float
+  }
+  input GreenChannelInput {
+    hue: Float
+    saturation: Float
+  }
+
+  type BlueChannel {
+    hue: Float
+    saturation: Float
+  }
+  input BlueChannelInput {
+    hue: Float
+    saturation: Float
+  }
+
+  type SplitToningSettings {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
+  }
+  input SplitToningSettingsInput {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
+  }
+
+  input UploadPresetInput {
+    title: String!
+    description: String
+    tags: [String!]!
+    settings: PresetSettingsInput!
+    toneCurve: ToneCurveInput
+    notes: String
+    beforeImage: Upload
+    afterImage: Upload
   }
 `;
