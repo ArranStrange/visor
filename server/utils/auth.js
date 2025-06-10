@@ -1,4 +1,4 @@
-const TOKEN_KEY = "visor_auth_token";
+const TOKEN_KEY = "visor_token";
 
 export const setAuthToken = (token) => {
   if (token) {

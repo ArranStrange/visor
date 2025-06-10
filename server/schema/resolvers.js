@@ -152,32 +152,275 @@ module.exports = {
     listTags: async (_, { category }) =>
       await Tag.find(category ? { category } : {}),
 
-    getUserLists: async (_, { userId }) => {
+    getUserLists: async (_, { userId }, context) => {
       try {
+        if (!userId) {
+          throw new Error("User ID is required");
+        }
+
+        console.log("Fetching lists for user:", userId);
+
         const lists = await UserList.find({ owner: userId })
           .populate({
-            path: "presets",
-            select: "id title slug sampleImages",
-            populate: {
-              path: "sampleImages",
-              select: "id url",
-            },
+            path: "owner",
+            select: "id username avatar",
           })
-          .populate({
-            path: "filmSims",
-            select: "id name slug sampleImages",
-            populate: {
-              path: "sampleImages",
-              select: "id url",
+          .populate("presets")
+          .populate("filmSims")
+          .populate("collaborators");
+
+        console.log("Found lists:", lists.length);
+
+        return lists.map((list) => {
+          const listObj = list.toObject();
+
+          // Ensure we have a valid ID
+          if (!listObj._id) {
+            console.error("List missing _id:", listObj);
+            throw new Error("List is missing required ID field");
+          }
+
+          // Ensure owner exists and has required fields
+          if (!listObj.owner || !listObj.owner._id) {
+            console.error("List missing owner:", listObj);
+            throw new Error("List is missing required owner field");
+          }
+
+          // Convert ObjectIds to strings with null checks
+          const formattedList = {
+            id: listObj._id.toString(), // This is required and non-nullable
+            name: listObj.name || "",
+            description: listObj.description || "",
+            isPublic: listObj.isPublic || false,
+            isFavouriteList: listObj.isFavouriteList || false,
+            owner: {
+              id: listObj.owner._id.toString(), // Required and non-nullable
+              username: listObj.owner.username || "",
+              avatar: listObj.owner.avatar || null,
             },
-          });
-        return lists;
+            presets: [],
+            filmSims: [],
+            collaborators: [],
+            createdAt: listObj.createdAt,
+            updatedAt: listObj.updatedAt,
+          };
+
+          // Handle presets
+          if (listObj.presets) {
+            formattedList.presets = listObj.presets
+              .map((preset) => {
+                if (!preset) return null;
+                return {
+                  id: preset._id?.toString() || "",
+                  title: preset.title || "",
+                  slug: preset.slug || "",
+                  sampleImages: Array.isArray(preset.sampleImages)
+                    ? preset.sampleImages
+                        .map((img) => {
+                          if (!img) return null;
+                          // If it's already an object with id/url, use it as is
+                          if (typeof img === "object" && img.id && img.url) {
+                            return {
+                              id: img.id,
+                              url: img.url,
+                            };
+                          }
+                          // If it's just an ID string, return it as is
+                          return img;
+                        })
+                        .filter(Boolean)
+                    : [],
+                };
+              })
+              .filter(Boolean);
+          }
+
+          // Handle film simulations
+          if (listObj.filmSims) {
+            formattedList.filmSims = listObj.filmSims
+              .map((filmSim) => {
+                if (!filmSim) return null;
+                return {
+                  id: filmSim._id?.toString() || "",
+                  name: filmSim.name || "",
+                  slug: filmSim.slug || "",
+                  sampleImages: Array.isArray(filmSim.sampleImages)
+                    ? filmSim.sampleImages
+                        .map((img) => {
+                          if (!img) return null;
+                          // If it's already an object with id/url, use it as is
+                          if (typeof img === "object" && img.id && img.url) {
+                            return {
+                              id: img.id,
+                              url: img.url,
+                            };
+                          }
+                          // If it's just an ID string, return it as is
+                          return img;
+                        })
+                        .filter(Boolean)
+                    : [],
+                };
+              })
+              .filter(Boolean);
+          }
+
+          // Handle collaborators
+          if (listObj.collaborators) {
+            formattedList.collaborators = listObj.collaborators
+              .map((c) => {
+                if (!c || !c._id) return null;
+                return {
+                  id: c._id.toString(),
+                  username: c.username || "",
+                  avatar: c.avatar || null,
+                };
+              })
+              .filter(Boolean);
+          }
+
+          return formattedList;
+        });
       } catch (error) {
-        console.error("Error getting user lists:", error);
-        throw new Error("Failed to get user lists: " + error.message);
+        console.error("Error in getUserLists:", {
+          message: error.message,
+          stack: error.stack,
+          userId,
+        });
+        throw error;
       }
     },
-    getUserList: async (_, { id }) => await UserList.findById(id),
+    getUserList: async (_, { id }) => {
+      try {
+        // First get the list without population
+        const list = await UserList.findById(id);
+
+        if (!list) {
+          throw new Error("List not found");
+        }
+
+        const listObj = list.toObject();
+
+        // Helper function to convert ID to string
+        const idToString = (id) => {
+          if (!id) return "";
+          if (typeof id === "string") return id;
+          if (id instanceof Buffer) return id.toString("hex");
+          if (typeof id === "object" && id.toString) return id.toString();
+          return "";
+        };
+
+        // Helper function to format tags
+        const formatTags = (tags) => {
+          if (!Array.isArray(tags)) return [];
+          return tags.map((tag) => {
+            if (typeof tag === "object" && tag !== null) {
+              return {
+                displayName: tag.displayName || "",
+              };
+            }
+            return { displayName: "" };
+          });
+        };
+
+        // Helper function to format creator
+        const formatCreator = (creator) => {
+          if (!creator) return null;
+          if (typeof creator === "object" && creator !== null) {
+            return {
+              id: idToString(creator._id || creator.id),
+              username: creator.username || "",
+              avatar: creator.avatar || null,
+            };
+          }
+          return null;
+        };
+
+        // Convert ObjectIds to strings and format nested objects
+        const formattedList = {
+          id: idToString(listObj._id),
+          name: listObj.name || "",
+          description: listObj.description || "",
+          isPublic: listObj.isPublic || false,
+          presets: [],
+          filmSims: [],
+        };
+
+        // Populate presets
+        if (listObj.presets?.length) {
+          const presets = await Preset.find({ _id: { $in: listObj.presets } })
+            .populate({
+              path: "tags",
+              select: "displayName",
+            })
+            .populate({
+              path: "creator",
+              select: "id username avatar",
+            });
+
+          formattedList.presets = presets.map((preset) => {
+            const presetObj = preset.toObject();
+            return {
+              id: idToString(presetObj._id),
+              title: presetObj.title || "",
+              slug: presetObj.slug || "",
+              thumbnail: presetObj.thumbnail || "",
+              tags: formatTags(presetObj.tags),
+              creator: formatCreator(presetObj.creator),
+            };
+          });
+        }
+
+        // Populate filmSims
+        if (listObj.filmSims?.length) {
+          const filmSims = await FilmSim.find({
+            _id: { $in: listObj.filmSims },
+          })
+            .populate({
+              path: "tags",
+              select: "displayName",
+            })
+            .populate({
+              path: "creator",
+              select: "id username avatar",
+            });
+
+          formattedList.filmSims = filmSims.map((filmSim) => {
+            const filmSimObj = filmSim.toObject();
+            return {
+              id: idToString(filmSimObj._id),
+              name: filmSimObj.name || "",
+              slug: filmSimObj.slug || "",
+              description: filmSimObj.description || "",
+              thumbnail: filmSimObj.thumbnail || "",
+              tags: formatTags(filmSimObj.tags),
+              creator: formatCreator(filmSimObj.creator),
+              settings: filmSimObj.settings || {
+                dynamicRange: 0,
+                highlight: 0,
+                shadow: 0,
+                colour: 0,
+                sharpness: 0,
+                noiseReduction: 0,
+                grainEffect: 0,
+                clarity: 0,
+                whiteBalance: "",
+                wbShift: { r: 0, b: 0 },
+              },
+            };
+          });
+        }
+
+        return formattedList;
+      } catch (error) {
+        console.error("Error in getUserList:", {
+          message: error.message,
+          stack: error.stack,
+          id,
+        });
+        throw error;
+      }
+    },
 
     getCommentsForPreset: async (_, { presetId }) =>
       await Comment.find({ preset: presetId, parent: null }),

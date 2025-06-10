@@ -19,6 +19,7 @@ import UploadPreset from "./pages/UploadPreset";
 import UploadFilmSim from "./pages/UploadFilmSim";
 import NotFound from "./pages/NotFound";
 import Lists from "./pages/Lists";
+import ListDetail from "./pages/ListDetail";
 import { visorTheme } from "./theme/visorTheme";
 import CreateList from "./pages/CreateList";
 
@@ -27,9 +28,9 @@ function App() {
     <ApolloProvider client={client}>
       <ThemeProvider theme={visorTheme}>
         <CssBaseline />
-        <AuthProvider>
-          <ContentTypeProvider>
-            <Router>
+        <Router>
+          <AuthProvider>
+            <ContentTypeProvider>
               <NavBar />
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -43,12 +44,13 @@ function App() {
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/lists" element={<Lists />} />
+                <Route path="/list/:id" element={<ListDetail />} />
                 <Route path="/create-list" element={<CreateList />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Router>
-          </ContentTypeProvider>
-        </AuthProvider>
+            </ContentTypeProvider>
+          </AuthProvider>
+        </Router>
       </ThemeProvider>
     </ApolloProvider>
   );

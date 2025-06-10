@@ -42,16 +42,44 @@ const GET_LIST = gql`
         title
         slug
         thumbnail
+        tags {
+          displayName
+        }
+        creator {
+          id
+          username
+          avatar
+        }
       }
       filmSims {
         id
         name
         slug
+        description
         thumbnail
-      }
-      collaborators {
-        id
-        username
+        tags {
+          displayName
+        }
+        creator {
+          id
+          username
+          avatar
+        }
+        settings {
+          dynamicRange
+          highlight
+          shadow
+          colour
+          sharpness
+          noiseReduction
+          grainEffect
+          clarity
+          whiteBalance
+          wbShift {
+            r
+            b
+          }
+        }
       }
     }
   }

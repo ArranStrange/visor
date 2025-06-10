@@ -12,30 +12,41 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../graphql/mutations/login";
+import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
 
   const [login, { loading }] = useMutation(LOGIN_USER, {
     onCompleted: (data) => {
-      console.log("Login response:", data); // Debug log
+      console.log("Login response:", data);
       if (data?.login?.token) {
         // Store the token in localStorage
-        localStorage.setItem("token", data.login.token);
-        // Store user data if needed
+        localStorage.setItem("visor_token", data.login.token);
+        // Store user data
         if (data.login.user) {
-          localStorage.setItem("user", JSON.stringify(data.login.user));
+          const userData = {
+            id: data.login.user.id,
+            username: data.login.user.username,
+            email: data.login.user.email,
+            avatar: data.login.user.avatar,
+          };
+          localStorage.setItem("user", JSON.stringify(userData));
+          setUser(userData);
+          // Navigate to home page
+          navigate("/");
+        } else {
+          setError("No user data received from server");
         }
-        // Navigate to home page
-        navigate("/");
       } else {
         setError("No token received from server");
       }
     },
     onError: (error) => {
-      console.error("Login error:", error); // Debug log
+      console.error("Login error:", error);
       setError(error.message || "Failed to login. Please try again.");
     },
   });
@@ -83,9 +94,9 @@ const Login: React.FC = () => {
           {error && <Alert severity="error">{error}</Alert>}
 
           <TextField
-            label="Email or Username"
+            label="Email"
             name="email"
-            type="text"
+            type="email"
             fullWidth
             value={form.email}
             onChange={handleChange}

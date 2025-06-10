@@ -29,11 +29,17 @@ const GET_USER_LISTS = gql`
       description
       isPublic
       isFavouriteList
+      owner {
+        id
+        username
+        avatar
+      }
       presets {
         id
         title
         slug
         sampleImages {
+          id
           url
         }
       }
@@ -42,9 +48,17 @@ const GET_USER_LISTS = gql`
         name
         slug
         sampleImages {
+          id
           url
         }
       }
+      collaborators {
+        id
+        username
+        avatar
+      }
+      createdAt
+      updatedAt
     }
   }
 `;
