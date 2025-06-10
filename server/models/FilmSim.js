@@ -5,7 +5,7 @@ const filmSimSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true },
-    description: String,
+    description: { type: String, required: true },
 
     type: {
       type: String,
@@ -30,13 +30,33 @@ const filmSimSchema = new Schema(
     },
 
     toneCurve: {
-      rgb: [Number],
-      red: [Number],
-      green: [Number],
-      blue: [Number],
+      rgb: [
+        {
+          x: Number,
+          y: Number,
+        },
+      ],
+      red: [
+        {
+          x: Number,
+          y: Number,
+        },
+      ],
+      green: [
+        {
+          x: Number,
+          y: Number,
+        },
+      ],
+      blue: [
+        {
+          x: Number,
+          y: Number,
+        },
+      ],
     },
 
-    tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
+    tags: [String],
 
     sampleImages: [{ type: Schema.Types.ObjectId, ref: "Image" }],
 
@@ -45,6 +65,7 @@ const filmSimSchema = new Schema(
     creator: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: true,
     },
 
     recommendedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
@@ -55,9 +76,88 @@ const filmSimSchema = new Schema(
 
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 
-    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    likes: {
+      type: Number,
+      default: 0,
+    },
+
+    downloads: {
+      type: Number,
+      default: 0,
+    },
+
+    isPublic: {
+      type: Boolean,
+      default: true,
+    },
+
+    // Basic Settings
+    version: String,
+    processVersion: String,
+    cameraProfile: String,
+    toneCurveName: String,
+
+    // Exposure and Tone
+    exposure: Number,
+    contrast: Number,
+    highlights: Number,
+    shadows: Number,
+    whites: Number,
+    blacks: Number,
+    texture: Number,
+    dehaze: Number,
+
+    // Grain Settings
+    grain: {
+      amount: Number,
+      size: Number,
+      frequency: Number,
+    },
+
+    // Vignette
+    vignette: {
+      amount: Number,
+    },
+
+    // Color Adjustments
+    colorAdjustments: {
+      red: {
+        hue: Number,
+        saturation: Number,
+        luminance: Number,
+      },
+      orange: {
+        saturation: Number,
+        luminance: Number,
+      },
+      yellow: {
+        hue: Number,
+        saturation: Number,
+        luminance: Number,
+      },
+      green: {
+        hue: Number,
+        saturation: Number,
+      },
+      blue: {
+        hue: Number,
+        saturation: Number,
+      },
+    },
+
+    // Split Toning
+    splitToning: {
+      shadowHue: Number,
+      shadowSaturation: Number,
+      highlightHue: Number,
+      highlightSaturation: Number,
+      balance: Number,
+    },
   },
   { timestamps: true }
 );
+
+// Add text index for search functionality
+filmSimSchema.index({ name: "text", description: "text", tags: "text" });
 
 module.exports = mongoose.model("FilmSim", filmSimSchema);

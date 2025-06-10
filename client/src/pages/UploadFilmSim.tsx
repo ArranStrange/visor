@@ -548,7 +548,14 @@ const UploadFilmSim: React.FC = () => {
                 <Box sx={{ mt: 2 }}>
                   <Grid container spacing={2}>
                     {sampleImages.map((file, index) => (
-                      <Grid item xs={12} sm={6} md={4} key={index}>
+                      <Grid
+                        {...(undefined as any)}
+                        item
+                        xs={12}
+                        sm={6}
+                        md={4}
+                        key={index}
+                      >
                         <Paper
                           sx={{
                             p: 1,

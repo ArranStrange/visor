@@ -37,6 +37,7 @@ import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 import ToneCurve from "../components/ToneCurve";
 import { useNavigate } from "react-router-dom";
+import type { GridProps } from "@mui/material";
 
 type UploadType = "preset" | "filmsim";
 
@@ -253,18 +254,50 @@ const UploadPreset: React.FC = () => {
   };
 
   const handleSettingsParsed = (settings: any) => {
+    if (!settings || typeof settings !== "object") {
+      setError("Invalid settings format received from XMP parser");
+      return;
+    }
     setParsedSettings(settings);
   };
 
   const formatToneCurveData = (data: any) => {
-    if (!data) return null;
+    if (!data)
+      return {
+        rgb: [0, 64, 128, 192, 255],
+        red: [0, 64, 128, 192, 255],
+        green: [0, 64, 128, 192, 255],
+        blue: [0, 64, 128, 192, 255],
+      };
 
-    const formatCurve = (curve: any) => {
-      if (!curve || !Array.isArray(curve)) return null;
-      return curve.map((point: any) => ({
-        x: Number(point.x),
-        y: Number(point.y),
-      }));
+    // Convert x,y coordinates to output values
+    const inputPoints = [0, 64, 128, 192, 255];
+    const formatCurve = (curve: Array<{ x: number; y: number }>) => {
+      if (!curve || !Array.isArray(curve)) return inputPoints;
+
+      return inputPoints.map((input) => {
+        // Find the two points that surround this input value
+        const lowerPoint = curve.reduce<{ x: number; y: number } | null>(
+          (prev, curr) => {
+            return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
+          },
+          null as { x: number; y: number } | null
+        );
+
+        const upperPoint = curve.reduce<{ x: number; y: number } | null>(
+          (prev, curr) => {
+            return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
+          },
+          null as { x: number; y: number } | null
+        );
+
+        if (!lowerPoint || !upperPoint) return input;
+        if (lowerPoint.x === upperPoint.x) return lowerPoint.y;
+
+        // Linear interpolation between points
+        const ratio = (input - lowerPoint.x) / (upperPoint.x - lowerPoint.x);
+        return Math.round(lowerPoint.y + ratio * (upperPoint.y - lowerPoint.y));
+      });
     };
 
     return {
@@ -371,37 +404,6 @@ const UploadPreset: React.FC = () => {
               </Typography>
               <XmpParser onSettingsParsed={handleSettingsParsed} />
             </Box>
-
-            {parsedSettings && (
-              <Paper sx={{ p: 3, mt: 2 }}>
-                <Typography variant="h6" gutterBottom>
-                  Parsed Settings Preview
-                </Typography>
-                <Grid container spacing={3}>
-                  {Object.entries(parsedSettings.settings).map(
-                    ([key, value]) => (
-                      <Grid item xs={12} sm={6} md={4} key={key}>
-                        <Typography variant="subtitle2" color="text.secondary">
-                          {key}
-                        </Typography>
-                        <Typography>{String(value)}</Typography>
-                      </Grid>
-                    )
-                  )}
-                </Grid>
-                {parsedSettings.toneCurve && (
-                  <Box sx={{ mt: 3 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Tone Curve Preview
-                    </Typography>
-                    <ToneCurve
-                      data={formatToneCurveData(parsedSettings.toneCurve)}
-                      readOnly
-                    />
-                  </Box>
-                )}
-              </Paper>
-            )}
 
             <Box>
               <Typography variant="subtitle1" gutterBottom>
