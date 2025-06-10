@@ -6,52 +6,66 @@ import {
   Chip,
   Stack,
   Divider,
-  Grid,
-  Avatar,
-  Paper,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-
-import sampleImages from "../mock/sampleImages"; // Optional mock for layout
+import { useQuery } from "@apollo/client";
+import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import PresetCard from "../components/PresetCard";
 
 const FilmSimDetails: React.FC = () => {
-  const { slug } = useParams(); // e.g. "classic-chrome"
+  const { slug } = useParams();
 
-  // TODO: Replace with real query
-  const filmSim = {
-    title: "Classic Chrome",
-    description:
-      "Muted contrast and colour. Designed for documentary and street photography with a nostalgic feel.",
-    thumbnail:
-      "https://fujilove.com/wp-content/uploads/2019/04/fujifilm-gfx-gf-110mm-xf-56mm-street-photography-opener.jpg",
-    tags: ["muted", "documentary", "fujifilm"],
-    toneProfile: "Muted contrast, cool shadows, soft skin tones",
-    lightroomApprox: {
-      highlights: -20,
-      shadows: +15,
-      vibrance: -10,
-      clarity: +10,
-      toneCurve: "S-curve",
-    },
-    recommendedPresets: [
-      {
-        id: "chrome-city",
-        title: "Chrome City Streets",
-        thumbnail:
-          "https://fujifilm-x.b-cdn.net/wp-content/uploads/sites/11/2023/06/EC-STREET-PHOTOGRAPHY-ULTIMATE-GUIDE-3.jpg?width&height",
-        tags: ["urban", "gritty"],
-        creator: { username: "arran", avatarUrl: "/avatars/arran.png" },
-      },
-    ],
-    cameras: ["X100V", "X-T5"],
+  const { loading, error, data } = useQuery(GET_FILMSIM_BY_SLUG, {
+    variables: { slug },
+  });
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="60vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error">
+          Error loading film simulation: {error.message}
+        </Alert>
+      </Container>
+    );
+  }
+
+  const filmSim = data?.getFilmSim;
+
+  if (!filmSim) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="info">Film simulation not found</Alert>
+      </Container>
+    );
+  }
+
+  // Helper function to format setting values
+  const formatSettingValue = (value: any) => {
+    if (value === undefined || value === null) return "N/A";
+    if (typeof value === "number") return value.toString();
+    return value;
   };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {/* Header */}
       <Typography variant="h4" fontWeight={700} gutterBottom>
-        {filmSim.title}
+        {filmSim.name}
       </Typography>
       <Typography variant="body1" color="text.secondary" mb={2}>
         {filmSim.description}
@@ -59,70 +73,126 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Tags and camera compatibility */}
       <Stack direction="row" spacing={1} mb={2} flexWrap="wrap">
-        {filmSim.tags.map((tag) => (
-          <Chip key={tag} label={tag} variant="outlined" />
+        {filmSim.tags?.map((tag) => (
+          <Chip key={tag.id} label={tag.displayName} variant="outlined" />
         ))}
-        {filmSim.cameras.map((camera) => (
+        {filmSim.compatibleCameras?.map((camera) => (
           <Chip key={camera} label={camera} color="secondary" />
         ))}
       </Stack>
 
       <Divider sx={{ my: 3 }} />
 
-      {/* Tone profile */}
-      <Typography variant="h6">Tone Profile</Typography>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {filmSim.toneProfile}
+      {/* Camera Settings */}
+      <Typography variant="h6" mt={4} mb={2}>
+        In-Camera Settings
       </Typography>
-
-      {/* Lightroom approximation settings */}
-      <Typography variant="h6" mt={3}>
-        Lightroom Approximation
-      </Typography>
-      <Paper sx={{ p: 2, backgroundColor: "background.default" }}>
-        <Stack spacing={1}>
-          {Object.entries(filmSim.lightroomApprox).map(([setting, value]) => (
-            <Typography key={setting} variant="body2">
-              <strong>{setting}</strong>: {value}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "repeat(3, 1fr)",
+          },
+          gap: 2,
+        }}
+      >
+        {[
+          { label: "Dynamic Range", value: filmSim.settings?.dynamicRange },
+          { label: "Highlight Tone", value: filmSim.settings?.highlight },
+          { label: "Shadow Tone", value: filmSim.settings?.shadow },
+          { label: "Colour", value: filmSim.settings?.colour },
+          { label: "Sharpness", value: filmSim.settings?.sharpness },
+          { label: "Noise Reduction", value: filmSim.settings?.noiseReduction },
+          { label: "Grain Effect", value: filmSim.settings?.grainEffect },
+          { label: "Clarity", value: filmSim.settings?.clarity },
+          { label: "White Balance", value: filmSim.settings?.whiteBalance },
+          {
+            label: "WB Shift",
+            value: filmSim.settings?.wbShift
+              ? `R${formatSettingValue(
+                  filmSim.settings.wbShift.r
+                )} / B${formatSettingValue(filmSim.settings.wbShift.b)}`
+              : "N/A",
+          },
+        ].map((setting) => (
+          <Box
+            key={setting.label}
+            sx={{
+              p: 2,
+              borderRadius: 2,
+              backgroundColor: "background.paper",
+              boxShadow: 1,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Typography variant="body2" color="text.secondary">
+              {setting.label}
             </Typography>
-          ))}
-        </Stack>
-      </Paper>
+            <Typography variant="body1" fontWeight={500}>
+              {formatSettingValue(setting.value)}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
 
       {/* Sample images */}
       <Typography variant="h6" mt={4} mb={1}>
         Sample Images
       </Typography>
-      <Grid container spacing={2}>
-        {sampleImages.map((src, index) => (
-          <Grid {...(undefined as any)} item xs={6} md={4} key={index}>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(3, 1fr)" },
+          gap: 2,
+        }}
+      >
+        {filmSim.sampleImages?.map((image) => (
+          <Box key={image.id}>
             <img
-              src={src}
-              alt={`sample-${index}`}
+              src={image.url}
+              alt={image.caption || `Sample image for ${filmSim.name}`}
               style={{ width: "100%", borderRadius: 12 }}
             />
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {/* Related presets */}
       <Typography variant="h6" mt={5} mb={2}>
         Recommended Presets
       </Typography>
-      <Grid container spacing={2}>
-        {filmSim.recommendedPresets.map((preset) => (
-          <Grid
-            {...(undefined as any)}
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            key={preset.id}
-          >
-            <PresetCard {...preset} />
-          </Grid>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "1fr 1fr",
+            md: "repeat(3, 1fr)",
+          },
+          gap: 2,
+        }}
+      >
+        {filmSim.recommendedPresets?.map((preset) => (
+          <Box key={preset.id}>
+            <PresetCard
+              id={preset.id}
+              title={preset.title}
+              thumbnail={preset.thumbnail}
+              tags={preset.tags}
+              creator={{
+                username: preset.creator.username,
+                avatarUrl: preset.creator.avatar,
+              }}
+            />
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Container>
   );
 };

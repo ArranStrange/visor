@@ -1,60 +1,34 @@
 import React from "react";
-import { Box, Container } from "@mui/material";
+import { Box, Container, Alert, CircularProgress } from "@mui/material";
 import PresetCard from "../components/PresetCard";
 import FilmSimCard from "../components/FilmSimCard";
 import { useContentType } from "../context/ContentTypeFilter";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 import StaggeredGrid from "../components/StaggeredGrid";
-
-import { useQuery, gql } from "@apollo/client";
-
-// Apollo GraphQL queries
-const LIST_PRESETS = gql`
-  query ListPresets {
-    listPresets {
-      id
-      title
-      slug
-      tags {
-        displayName
-      }
-      creator {
-        username
-        avatar
-      }
-      thumbnail: sampleImages {
-        url
-      }
-    }
-  }
-`;
-
-const LIST_FILMSIMS = gql`
-  query ListFilmSims {
-    listFilmSims {
-      id
-      name
-      slug
-      tags {
-        displayName
-      }
-      creator {
-        username
-        avatar
-      }
-      thumbnail: sampleImages {
-        url
-      }
-    }
-  }
-`;
+import { useQuery } from "@apollo/client";
+import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const HomePage: React.FC = () => {
   const { contentType } = useContentType();
 
-  const { data: presetData, loading: loadingPresets } = useQuery(LIST_PRESETS);
-  const { data: filmSimData, loading: loadingFilmSims } =
-    useQuery(LIST_FILMSIMS);
+  const {
+    data: presetData,
+    loading: loadingPresets,
+    error: presetError,
+  } = useQuery(GET_ALL_PRESETS, {
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
+  });
+
+  const {
+    data: filmSimData,
+    loading: loadingFilmSims,
+    error: filmSimError,
+  } = useQuery(GET_ALL_FILMSIMS, {
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
+  });
 
   const combined = React.useMemo(() => {
     const result: { type: "preset" | "film"; data: any }[] = [];
@@ -64,13 +38,16 @@ const HomePage: React.FC = () => {
       presetData?.listPresets
     ) {
       result.push(
-        ...presetData.listPresets.map((p) => ({
-          type: "preset" as const,
-          data: {
-            ...p,
-            thumbnail: p.thumbnail?.[0]?.url ?? "",
-          },
-        }))
+        ...presetData.listPresets
+          .filter((p) => p && p.creator) // Filter out presets without creators
+          .map((p) => ({
+            type: "preset" as const,
+            data: {
+              ...p,
+              thumbnail: p.sampleImages?.[0]?.url || "",
+              creator: p.creator || { username: "Unknown", avatar: "" },
+            },
+          }))
       );
     }
 
@@ -79,21 +56,57 @@ const HomePage: React.FC = () => {
       filmSimData?.listFilmSims
     ) {
       result.push(
-        ...filmSimData.listFilmSims.map((f) => ({
-          type: "film" as const,
-          data: {
-            ...f,
-            title: f.name,
-            thumbnail: f.thumbnail?.[0]?.url ?? "",
-          },
-        }))
+        ...filmSimData.listFilmSims
+          .filter((f) => f && f.creator) // Filter out film sims without creators
+          .map((f) => ({
+            type: "film" as const,
+            data: {
+              ...f,
+              title: f.name,
+              thumbnail: f.sampleImages?.[0]?.url || "",
+              creator: f.creator || { username: "Unknown", avatar: "" },
+            },
+          }))
       );
     }
 
-    return result.sort(() => Math.random() - 0.5); // Shuffle
+    return result.sort(() => Math.random() - 0.5);
   }, [contentType, presetData, filmSimData]);
 
-  if (loadingPresets || loadingFilmSims) return <p>Loading content...</p>;
+  if (loadingPresets || loadingFilmSims) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (presetError || filmSimError) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {presetError?.message ||
+            filmSimError?.message ||
+            "Error loading content"}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!combined.length) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          No content found. Try changing the content type filter.
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>

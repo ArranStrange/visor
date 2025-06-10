@@ -1,21 +1,21 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ThemeProvider, CssBaseline } from "@mui/material";
-
-import HomePage from "./pages/Home";
+import { ApolloProvider } from "@apollo/client";
+import client from "./graphql/apolloClient";
+import NavBar from "./components/layout/Navbar";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import ProfilePage from "./pages/Profile";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import { ContentTypeProvider } from "./context/ContentTypeFilter";
+import SearchView from "./pages/SearchView";
 import PresetDetailPage from "./pages/PresetDetail";
 import FilmSimPage from "./pages/FilmSimDetail";
-import ProfilePage from "./pages/Profile";
 import UploadPage from "./pages/Upload";
-import LoginPage from "./pages/Login";
-import RegisterPage from "./pages/Register";
 import NotFound from "./pages/NotFound";
-import NavBar from "./components/layout/Navbar";
 import { visorTheme } from "./theme/visorTheme";
-import SearchView from "./pages/SearchView";
-import { ContentTypeProvider } from "./context/ContentTypeFilter";
-import { ApolloProvider } from "@apollo/client";
-import { client } from "./graphql/apolloClient";
 
 function App() {
   return (
@@ -26,14 +26,14 @@ function App() {
           <Router>
             <NavBar />
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<Home />} />
               <Route path="/search" element={<SearchView />} />
               <Route path="/preset/:slug" element={<PresetDetailPage />} />
               <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-              <Route path="/profile/:username" element={<ProfilePage />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/upload" element={<UploadPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
