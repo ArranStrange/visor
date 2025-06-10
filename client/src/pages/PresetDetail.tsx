@@ -196,15 +196,13 @@ const PresetDetails: React.FC = () => {
       </Box>
 
       {/* Before/After Images */}
-      {beforeImage && afterImage && (
-        <Box sx={{ mb: 4 }}>
-          <BeforeAfterSlider
-            beforeImage={beforeImage}
-            afterImage={afterImage}
-            height={400}
-          />
-        </Box>
-      )}
+      <Box sx={{ mb: 4 }}>
+        <BeforeAfterSlider
+          beforeImage={preset.sampleImages?.[0]?.url}
+          afterImage={preset.sampleImages?.[1]?.url}
+          height={500}
+        />
+      </Box>
 
       {/* Accordion Sections */}
       {renderAccordionSection("Light", [

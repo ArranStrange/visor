@@ -38,6 +38,11 @@ import { gql } from "@apollo/client";
 import ToneCurve from "../components/ToneCurve";
 import { useNavigate } from "react-router-dom";
 import type { GridProps } from "@mui/material";
+import {
+  PresetSettings,
+  ToneCurve as ToneCurveType,
+  UploadPresetInput,
+} from "../types/graphql";
 
 type UploadType = "preset" | "filmsim";
 
@@ -202,7 +207,9 @@ const UploadPreset: React.FC = () => {
   const [beforeImage, setBeforeImage] = useState<File | null>(null);
   const [afterImage, setAfterImage] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
-  const [parsedSettings, setParsedSettings] = useState<any>(null);
+  const [parsedSettings, setParsedSettings] = useState<PresetSettings | null>(
+    null
+  );
   const [uploadPreset, { loading: uploadLoading }] = useMutation(UPLOAD_PRESET);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -309,48 +316,97 @@ const UploadPreset: React.FC = () => {
   };
 
   // Helper to map parsedSettings to backend expected structure
-  const buildSettingsForBackend = (parsed: any) => ({
+  const buildSettingsForBackend = (parsed: any): PresetSettings => ({
     // Light settings
-    exposure: parsed.exposure ?? 0,
-    contrast: parsed.contrast ?? 0,
-    highlights: parsed.highlights ?? 0,
-    shadows: parsed.shadows ?? 0,
-    whites: parsed.whites ?? 0,
-    blacks: parsed.blacks ?? 0,
+    exposure: Number(parsed.exposure) || 0,
+    contrast: Number(parsed.contrast) || 0,
+    highlights: Number(parsed.highlights) || 0,
+    shadows: Number(parsed.shadows) || 0,
+    whites: Number(parsed.whites) || 0,
+    blacks: Number(parsed.blacks) || 0,
     // Color settings
-    temp: parsed.temp ?? 0,
-    tint: parsed.tint ?? 0,
-    vibrance: parsed.vibrance ?? 0,
-    saturation: parsed.saturation ?? 0,
+    temp: Number(parsed.temp) || 0,
+    tint: Number(parsed.tint) || 0,
+    vibrance: Number(parsed.vibrance) || 0,
+    saturation: Number(parsed.saturation) || 0,
     // Effects
-    clarity: parsed.clarity ?? 0,
-    dehaze: parsed.dehaze ?? 0,
+    clarity: Number(parsed.clarity) || 0,
+    dehaze: Number(parsed.dehaze) || 0,
     grain: {
-      amount: parsed.grain?.amount ?? 0,
-      size: parsed.grain?.size ?? 0,
-      roughness: parsed.grain?.roughness ?? 0,
+      amount: Number(parsed.grain?.amount) || 0,
+      size: Number(parsed.grain?.size) || 0,
+      roughness: Number(parsed.grain?.roughness) || 0,
     },
-    vignette: parsed.vignette
-      ? { amount: parsed.vignette.amount ?? 0 }
-      : { amount: 0 },
-    colorAdjustments: parsed.colorAdjustments ?? undefined,
-    splitToning: parsed.splitToning ?? undefined,
+    vignette: {
+      amount: Number(parsed.vignette?.amount) || 0,
+    },
+    colorAdjustments: {
+      red: {
+        hue: Number(parsed.colorAdjustments?.red?.hue) || 0,
+        saturation: Number(parsed.colorAdjustments?.red?.saturation) || 0,
+        luminance: Number(parsed.colorAdjustments?.red?.luminance) || 0,
+      },
+      orange: {
+        saturation: Number(parsed.colorAdjustments?.orange?.saturation) || 0,
+        luminance: Number(parsed.colorAdjustments?.orange?.luminance) || 0,
+      },
+      yellow: {
+        hue: Number(parsed.colorAdjustments?.yellow?.hue) || 0,
+        saturation: Number(parsed.colorAdjustments?.yellow?.saturation) || 0,
+        luminance: Number(parsed.colorAdjustments?.yellow?.luminance) || 0,
+      },
+      green: {
+        hue: Number(parsed.colorAdjustments?.green?.hue) || 0,
+        saturation: Number(parsed.colorAdjustments?.green?.saturation) || 0,
+      },
+      blue: {
+        hue: Number(parsed.colorAdjustments?.blue?.hue) || 0,
+        saturation: Number(parsed.colorAdjustments?.blue?.saturation) || 0,
+      },
+    },
+    splitToning: {
+      shadowHue: Number(parsed.splitToning?.shadowHue) || 0,
+      shadowSaturation: Number(parsed.splitToning?.shadowSaturation) || 0,
+      highlightHue: Number(parsed.splitToning?.highlightHue) || 0,
+      highlightSaturation: Number(parsed.splitToning?.highlightSaturation) || 0,
+      balance: Number(parsed.splitToning?.balance) || 0,
+    },
     // Detail
-    sharpening: parsed.sharpening ?? 0,
+    sharpening: Number(parsed.sharpening) || 0,
     noiseReduction: {
-      luminance: parsed.noiseReduction?.luminance ?? 0,
-      detail: parsed.noiseReduction?.detail ?? 0,
-      color: parsed.noiseReduction?.color ?? 0,
+      luminance: Number(parsed.noiseReduction?.luminance) || 0,
+      detail: Number(parsed.noiseReduction?.detail) || 0,
+      color: Number(parsed.noiseReduction?.color) || 0,
     },
   });
 
-  const buildToneCurveForBackend = (parsed: any) =>
-    parsed.toneCurve || {
-      rgb: [],
-      red: [],
-      green: [],
-      blue: [],
+  const buildToneCurveForBackend = (parsed: any): ToneCurveType => {
+    if (!parsed.toneCurve) {
+      return {
+        rgb: [],
+        red: [],
+        green: [],
+        blue: [],
+      };
+    }
+
+    const ensureValidPoints = (points: any[] | undefined) => {
+      if (!points || !Array.isArray(points)) return [];
+      return points
+        .map((point) => ({
+          x: Number(point.x) || 0,
+          y: Number(point.y) || 0,
+        }))
+        .filter((point) => !isNaN(point.x) && !isNaN(point.y));
     };
+
+    return {
+      rgb: ensureValidPoints(parsed.toneCurve.rgb),
+      red: ensureValidPoints(parsed.toneCurve.red),
+      green: ensureValidPoints(parsed.toneCurve.green),
+      blue: ensureValidPoints(parsed.toneCurve.blue),
+    };
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -375,7 +431,7 @@ const UploadPreset: React.FC = () => {
       setIsUploading(true);
 
       // Prepare variables for the preset mutation
-      const variables: any = {
+      const variables: UploadPresetInput = {
         title,
         description,
         settings: buildSettingsForBackend(parsedSettings),

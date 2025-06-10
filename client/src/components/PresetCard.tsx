@@ -10,11 +10,15 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+// Placeholder image for presets without thumbnails
+const PLACEHOLDER_IMAGE =
+  "https://placehold.co/600x400/2a2a2a/ffffff?text=No+Image";
+
 interface PresetCardProps {
   id: string;
   slug: string;
   title: string;
-  thumbnail: string;
+  thumbnail?: string; // Make thumbnail optional
   tags: { displayName: string }[]; // <- GraphQL-compatible tag structure
   creator: {
     username: string;
@@ -49,7 +53,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
     >
       <CardMedia
         component="img"
-        image={thumbnail}
+        image={thumbnail || PLACEHOLDER_IMAGE}
         alt={title}
         height="180"
         sx={{
