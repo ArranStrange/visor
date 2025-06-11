@@ -43,6 +43,11 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
   // Distribute items into columns
   useEffect(() => {
+    if (!children.length) {
+      setColumns([[]]);
+      return;
+    }
+
     const newColumns: number[][] = Array.from(
       { length: columnCount },
       () => []
@@ -61,6 +66,10 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     setColumns(newColumns);
   }, [children, columnCount]);
 
+  if (!children.length) {
+    return null;
+  }
+
   return (
     <Box>
       <Box ref={triggerRef} sx={{ height: 1 }} />
@@ -70,6 +79,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           display: "grid",
           gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
           gap: `${gap}px`,
+          alignItems: "start", // Ensure columns start from the top
         }}
       >
         <AnimatePresence>
@@ -80,6 +90,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                 display: "flex",
                 flexDirection: "column",
                 gap: `${gap}px`,
+                alignItems: "stretch", // Ensure cards stretch to fill width
               }}
             >
               {column.map((itemIndex) => (
@@ -100,6 +111,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                       : {}
                   }
                   exit={{ opacity: 0 }}
+                  style={{ width: "100%" }} // Ensure motion.div takes full width
                 >
                   {children[itemIndex]}
                 </motion.div>

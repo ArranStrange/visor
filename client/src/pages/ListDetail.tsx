@@ -10,15 +10,10 @@ import {
   Button,
   Switch,
   FormControlLabel,
-  Grid,
   Card,
   CardContent,
   CardMedia,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   CircularProgress,
   Alert,
   Chip,
@@ -26,9 +21,11 @@ import {
 } from "@mui/material";
 import { gql } from "@apollo/client";
 import DeleteIcon from "@mui/icons-material/Delete";
-import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import { useAuth } from "../context/AuthContext";
+import { useContentType } from "../context/ContentTypeFilter";
+import StaggeredGrid from "../components/StaggeredGrid";
+import ContentTypeToggle from "../components/ContentTypeToggle";
 
 const GET_LIST = gql`
   query GetList($id: ID!) {
@@ -78,6 +75,7 @@ const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { contentType } = useContentType();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -190,6 +188,45 @@ const ListDetail: React.FC = () => {
 
   const list = data?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
+
+  const renderCard = (item: any, type: "preset" | "filmSim") => (
+    <Card
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        cursor: "pointer",
+        transition: "transform 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: 3,
+        },
+      }}
+      onClick={() =>
+        navigate(
+          type === "preset" ? `/preset/${item.slug}` : `/film-sim/${item.slug}`
+        )
+      }
+    >
+      <CardMedia
+        component="img"
+        height="200"
+        image={
+          item.thumbnail ||
+          (type === "preset"
+            ? "/default-preset-thumbnail.jpg"
+            : "/default-film-sim-thumbnail.jpg")
+        }
+        alt={type === "preset" ? item.title : item.name}
+        sx={{ objectFit: "cover" }}
+      />
+      <CardContent>
+        <Typography variant="h6" component="div">
+          {type === "preset" ? item.title : item.name}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -306,65 +343,20 @@ const ListDetail: React.FC = () => {
               </Stack>
             </Paper>
 
-            <Grid container spacing={3}>
-              {list?.presets?.map((preset) => (
-                <Grid item xs={12} sm={6} md={4} key={preset.id}>
-                  <Card
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => navigate(`/preset/${preset.slug}`)}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={
-                        preset.thumbnail || "/default-preset-thumbnail.jpg"
-                      }
-                      alt={preset.title}
-                      sx={{ objectFit: "cover" }}
-                    />
-                    <CardContent>
-                      <Typography variant="h6" component="div">
-                        {preset.title}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
+            <ContentTypeToggle />
 
-              {list?.filmSims?.map((filmSim) => (
-                <Grid item xs={12} sm={6} md={4} key={filmSim.id}>
-                  <Card
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      cursor: "pointer",
-                    }}
-                    onClick={() => navigate(`/film-sim/${filmSim.slug}`)}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="200"
-                      image={
-                        filmSim.thumbnail || "/default-film-sim-thumbnail.jpg"
-                      }
-                      alt={filmSim.name}
-                      sx={{ objectFit: "cover" }}
-                    />
-                    <CardContent>
-                      <Typography variant="h6" component="div">
-                        {filmSim.name}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+            <Box sx={{ width: "100%", minHeight: "200px" }}>
+              <StaggeredGrid>
+                {contentType === "all" || contentType === "presets"
+                  ? list?.presets?.map((preset) => renderCard(preset, "preset"))
+                  : null}
+                {contentType === "all" || contentType === "films"
+                  ? list?.filmSims?.map((filmSim) =>
+                      renderCard(filmSim, "filmSim")
+                    )
+                  : null}
+              </StaggeredGrid>
+            </Box>
           </>
         )}
       </Stack>
