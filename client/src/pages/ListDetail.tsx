@@ -28,19 +28,18 @@ import StaggeredGrid from "../components/StaggeredGrid";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 
 interface FilmSim {
-  _id: string;
+  id: string;
   name: string;
+  slug: string;
   thumbnail?: string;
-  filmType: string;
-  cameraModel: string;
+  type?: string;
 }
 
 interface Preset {
-  _id: string;
-  name: string;
+  id: string;
+  title: string;
+  slug: string;
   thumbnail?: string;
-  cameraModel: string;
-  lensModel: string;
 }
 
 interface CacheList {
@@ -71,6 +70,7 @@ const GET_LIST = gql`
         name
         slug
         thumbnail
+        type
       }
     }
   }
@@ -320,17 +320,14 @@ const ListDetail: React.FC = () => {
 
   const renderCard = (item: FilmSim | Preset) => {
     if (!item) return null;
-
-    const isFilmSim = "filmType" in item;
+    const isFilmSim = "type" in item;
     const thumbnail = item.thumbnail || "/placeholder-image.jpg";
-    const title = item.name || "Untitled";
-    const subtitle = isFilmSim
-      ? `${item.filmType} • ${item.cameraModel}`
-      : `${item.cameraModel} • ${item.lensModel}`;
+    const title = isFilmSim ? (item as FilmSim).name : (item as Preset).title;
+    const subtitle = isFilmSim ? (item as FilmSim).type ?? "" : "";
 
     return (
       <Card
-        key={item._id}
+        key={item.id}
         sx={{
           height: "100%",
           display: "flex",
@@ -346,7 +343,7 @@ const ListDetail: React.FC = () => {
         onClick={() => {
           if (!isEditing) {
             navigate(
-              isFilmSim ? `/film-sims/${item._id}` : `/presets/${item._id}`
+              isFilmSim ? `/filmsim/${item.slug}` : `/preset/${item.slug}`
             );
           }
         }}
@@ -374,7 +371,7 @@ const ListDetail: React.FC = () => {
             size="small"
             onClick={(e) => {
               e.stopPropagation();
-              handleRemoveItem(item._id, isFilmSim);
+              handleRemoveItem(item.id, isFilmSim);
             }}
             sx={{
               position: "absolute",
