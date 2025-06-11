@@ -71,6 +71,20 @@ const DELETE_LIST = gql`
   }
 `;
 
+const REMOVE_ITEM = gql`
+  mutation RemoveItemFromList($listId: ID!, $type: String!, $itemId: ID!) {
+    removeItemFromList(listId: $listId, type: $type, itemId: $itemId) {
+      id
+      presets {
+        id
+      }
+      filmSims {
+        id
+      }
+    }
+  }
+`;
+
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -85,17 +99,14 @@ const ListDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  console.log("ListDetail - List ID:", id);
-  console.log("ListDetail - Current User:", currentUser);
-
   const {
     loading,
     error: queryError,
     data,
+    refetch,
   } = useQuery(GET_LIST, {
     variables: { id },
     onCompleted: (data) => {
-      console.log("ListDetail - Query completed:", data);
       if (data?.getUserList) {
         setFormData({
           name: data.getUserList.name,
@@ -103,9 +114,6 @@ const ListDetail: React.FC = () => {
           isPublic: data.getUserList.isPublic,
         });
       }
-    },
-    onError: (error) => {
-      console.error("ListDetail - Query error:", error);
     },
   });
 
@@ -124,6 +132,18 @@ const ListDetail: React.FC = () => {
   const [deleteList] = useMutation(DELETE_LIST, {
     onCompleted: () => {
       navigate("/lists");
+    },
+    onError: (error) => {
+      setError(error.message);
+      setTimeout(() => setError(null), 3000);
+    },
+  });
+
+  const [removeItem] = useMutation(REMOVE_ITEM, {
+    onCompleted: () => {
+      refetch();
+      setSuccess("Item removed successfully!");
+      setTimeout(() => setSuccess(null), 3000);
     },
     onError: (error) => {
       setError(error.message);
@@ -165,6 +185,29 @@ const ListDetail: React.FC = () => {
     }
   };
 
+  const handleRemoveItem = async (
+    type: "preset" | "filmSim",
+    itemId: string
+  ) => {
+    if (
+      window.confirm(
+        `Are you sure you want to remove this ${type} from the list?`
+      )
+    ) {
+      try {
+        await removeItem({
+          variables: {
+            listId: id,
+            type: type === "preset" ? "Preset" : "FilmSim",
+            itemId,
+          },
+        });
+      } catch (err) {
+        console.error("Error removing item:", err);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <Box
@@ -197,17 +240,39 @@ const ListDetail: React.FC = () => {
         flexDirection: "column",
         cursor: "pointer",
         transition: "transform 0.2s ease-in-out",
+        position: "relative",
         "&:hover": {
           transform: "translateY(-4px)",
           boxShadow: 3,
         },
       }}
       onClick={() =>
+        !isEditing &&
         navigate(
           type === "preset" ? `/preset/${item.slug}` : `/film-sim/${item.slug}`
         )
       }
     >
+      {isEditing && (
+        <IconButton
+          sx={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.9)",
+            },
+            zIndex: 1,
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleRemoveItem(type, item.id);
+          }}
+        >
+          <DeleteIcon color="error" />
+        </IconButton>
+      )}
       <CardMedia
         component="img"
         height="200"
@@ -243,9 +308,25 @@ const ListDetail: React.FC = () => {
         )}
 
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h4" component="h1">
-            {isEditing ? "Edit List" : list?.name}
-          </Typography>
+          {isEditing ? (
+            <TextField
+              fullWidth
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              variant="standard"
+              sx={{
+                "& .MuiInputBase-root": {
+                  fontSize: "2rem",
+                  fontWeight: "bold",
+                },
+              }}
+            />
+          ) : (
+            <Typography variant="h4" component="h1">
+              {list?.name}
+            </Typography>
+          )}
           {isOwner && (
             <Box>
               {!isEditing ? (
@@ -264,31 +345,14 @@ const ListDetail: React.FC = () => {
                   Cancel
                 </Button>
               )}
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={handleDelete}
-              >
-                Delete List
-              </Button>
             </Box>
           )}
         </Box>
 
-        {isEditing ? (
-          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <TextField
-                  fullWidth
-                  name="name"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  label="List Name"
-                  required
-                />
-
+        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+          <Stack spacing={2}>
+            {isEditing ? (
+              <>
                 <TextField
                   fullWidth
                   multiline
@@ -299,7 +363,6 @@ const ListDetail: React.FC = () => {
                   label="Description"
                   placeholder="Describe your list..."
                 />
-
                 <FormControlLabel
                   control={
                     <Switch
@@ -310,23 +373,26 @@ const ListDetail: React.FC = () => {
                   }
                   label="Public List"
                 />
-
-                <Box display="flex" gap={2} justifyContent="flex-end">
+                <Box display="flex" gap={2} justifyContent="space-between">
                   <Button
-                    type="submit"
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={handleDelete}
+                  >
+                    Delete List
+                  </Button>
+                  <Button
                     variant="contained"
+                    onClick={handleSubmit}
                     disabled={!formData.name.trim()}
                   >
                     Save Changes
                   </Button>
                 </Box>
-              </Stack>
-            </Box>
-          </Paper>
-        ) : (
-          <>
-            <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-              <Stack spacing={2}>
+              </>
+            ) : (
+              <>
                 {list?.description && (
                   <Typography variant="body1">{list.description}</Typography>
                 )}
@@ -340,25 +406,23 @@ const ListDetail: React.FC = () => {
                     Created by {list?.owner?.username}
                   </Typography>
                 </Box>
-              </Stack>
-            </Paper>
+              </>
+            )}
+          </Stack>
+        </Paper>
 
-            <ContentTypeToggle />
+        <ContentTypeToggle />
 
-            <Box sx={{ width: "100%", minHeight: "200px" }}>
-              <StaggeredGrid>
-                {contentType === "all" || contentType === "presets"
-                  ? list?.presets?.map((preset) => renderCard(preset, "preset"))
-                  : null}
-                {contentType === "all" || contentType === "films"
-                  ? list?.filmSims?.map((filmSim) =>
-                      renderCard(filmSim, "filmSim")
-                    )
-                  : null}
-              </StaggeredGrid>
-            </Box>
-          </>
-        )}
+        <Box sx={{ width: "100%", minHeight: "200px" }}>
+          <StaggeredGrid>
+            {contentType === "all" || contentType === "presets"
+              ? list?.presets?.map((preset) => renderCard(preset, "preset"))
+              : null}
+            {contentType === "all" || contentType === "films"
+              ? list?.filmSims?.map((filmSim) => renderCard(filmSim, "filmSim"))
+              : null}
+          </StaggeredGrid>
+        </Box>
       </Stack>
     </Container>
   );
