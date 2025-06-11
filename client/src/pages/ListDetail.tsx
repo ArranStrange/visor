@@ -333,11 +333,33 @@ const ListDetail: React.FC = () => {
   const renderCard = (item: FilmSim | Preset) => {
     if (!item) return null;
     const isFilmSim = "type" in item;
-    // Use placeholder if thumbnail is missing or empty string
-    const thumbnail =
-      item.thumbnail && item.thumbnail.trim() !== ""
-        ? item.thumbnail
-        : PLACEHOLDER_IMAGE;
+    let thumbnail = PLACEHOLDER_IMAGE;
+    if (isFilmSim) {
+      // @ts-ignore: sampleImages may exist on FilmSim
+      if (
+        Array.isArray((item as any).sampleImages) &&
+        (item as any).sampleImages.length > 0
+      ) {
+        thumbnail = (item as any).sampleImages[0].url || PLACEHOLDER_IMAGE;
+      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
+        thumbnail = item.thumbnail;
+      }
+    } else {
+      // For Preset: use after image (second sample image) if available
+      if (
+        Array.isArray((item as any).sampleImages) &&
+        (item as any).sampleImages[1]?.url
+      ) {
+        thumbnail = (item as any).sampleImages[1].url;
+      } else if (
+        Array.isArray((item as any).sampleImages) &&
+        (item as any).sampleImages[0]?.url
+      ) {
+        thumbnail = (item as any).sampleImages[0].url;
+      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
+        thumbnail = item.thumbnail;
+      }
+    }
     const title = isFilmSim ? (item as FilmSim).name : (item as Preset).title;
     const subtitle = isFilmSim ? (item as FilmSim).type ?? "" : "";
 
@@ -345,7 +367,7 @@ const ListDetail: React.FC = () => {
       <Card
         key={item.id}
         sx={{
-          width: 250,
+          minWidth: 250,
           flex: "0 0 auto",
           height: "100%",
           display: "flex",
