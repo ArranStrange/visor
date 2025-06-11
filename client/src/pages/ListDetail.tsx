@@ -307,26 +307,41 @@ const ListDetail: React.FC = () => {
           </Alert>
         )}
 
+        <ContentTypeToggle />
+
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          {isEditing ? (
-            <TextField
-              fullWidth
-              name="name"
-              value={formData.name}
-              onChange={handleInputChange}
-              variant="standard"
-              sx={{
-                "& .MuiInputBase-root": {
-                  fontSize: "2rem",
-                  fontWeight: "bold",
-                },
-              }}
-            />
-          ) : (
-            <Typography variant="h4" component="h1">
-              {list?.name}
-            </Typography>
-          )}
+          <Box display="flex" alignItems="center" gap={2} flex={1}>
+            {isEditing ? (
+              <TextField
+                fullWidth
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
+                variant="standard"
+                sx={{
+                  "& .MuiInputBase-root": {
+                    fontSize: "2rem",
+                    fontWeight: "bold",
+                  },
+                }}
+              />
+            ) : (
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{ fontWeight: "bold" }}
+              >
+                {list?.name}
+              </Typography>
+            )}
+            {!isEditing && (
+              <Chip
+                label={list?.isPublic ? "Public" : "Private"}
+                color={list?.isPublic ? "primary" : "default"}
+                size="small"
+              />
+            )}
+          </Box>
           {isOwner && (
             <Box>
               {!isEditing ? (
@@ -349,69 +364,58 @@ const ListDetail: React.FC = () => {
           )}
         </Box>
 
-        <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+        {isEditing ? (
           <Stack spacing={2}>
-            {isEditing ? (
-              <>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  name="description"
-                  value={formData.description}
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              label="Description"
+              placeholder="Describe your list..."
+            />
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={formData.isPublic}
                   onChange={handleInputChange}
-                  label="Description"
-                  placeholder="Describe your list..."
+                  name="isPublic"
                 />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={formData.isPublic}
-                      onChange={handleInputChange}
-                      name="isPublic"
-                    />
-                  }
-                  label="Public List"
-                />
-                <Box display="flex" gap={2} justifyContent="space-between">
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    startIcon={<DeleteIcon />}
-                    onClick={handleDelete}
-                  >
-                    Delete List
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={handleSubmit}
-                    disabled={!formData.name.trim()}
-                  >
-                    Save Changes
-                  </Button>
-                </Box>
-              </>
-            ) : (
-              <>
-                {list?.description && (
-                  <Typography variant="body1">{list.description}</Typography>
-                )}
-                <Box display="flex" gap={1}>
-                  {list?.isPublic ? (
-                    <Chip label="Public" color="primary" />
-                  ) : (
-                    <Chip label="Private" color="default" />
-                  )}
-                  <Typography variant="body2" color="text.secondary">
-                    Created by {list?.owner?.username}
-                  </Typography>
-                </Box>
-              </>
-            )}
+              }
+              label="Public List"
+            />
+            <Box display="flex" gap={2} justifyContent="space-between">
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDelete}
+              >
+                Delete List
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={!formData.name.trim()}
+              >
+                Save Changes
+              </Button>
+            </Box>
           </Stack>
-        </Paper>
-
-        <ContentTypeToggle />
+        ) : (
+          <Stack spacing={1}>
+            {list?.description && (
+              <Typography variant="body1" color="text.secondary">
+                {list.description}
+              </Typography>
+            )}
+            <Typography variant="body2" color="text.secondary">
+              Created by {list?.owner?.username}
+            </Typography>
+          </Stack>
+        )}
 
         <Box sx={{ width: "100%", minHeight: "200px" }}>
           <StaggeredGrid>
