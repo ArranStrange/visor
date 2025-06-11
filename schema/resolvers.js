@@ -1,4 +1,4 @@
-const { GraphQLUpload } = require("graphql-upload-ts");
+const { GraphQLUpload } = require("graphql-upload");
 const GraphQLJSON = require("graphql-type-json");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/jwt");
