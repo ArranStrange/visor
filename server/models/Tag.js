@@ -1,33 +1,16 @@
+// models/Tag.js
+
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-const tagSchema = new mongoose.Schema(
+const tagSchema = new Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    displayName: {
-      type: String,
-      required: true,
-    },
-    description: String,
+    name: { type: String, required: true, unique: true }, // e.g. "vintage"
+    displayName: { type: String, required: true }, // e.g. "Vintage"
     category: {
-      type: String, // e.g., "mood", "style", "subject", "film", "camera"
+      type: String,
+      enum: ["preset", "film", "camera"],
       required: true,
-    },
-    relatedTags: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Tag",
-      },
-    ],
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
     },
   },
   { timestamps: true }

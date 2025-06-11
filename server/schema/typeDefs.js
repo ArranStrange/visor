@@ -4,6 +4,11 @@ module.exports = gql`
   scalar Upload
   scalar JSON
 
+  type AuthPayload {
+    token: String!
+    user: User!
+  }
+
   type User {
     id: ID!
     username: String!
@@ -16,17 +21,58 @@ module.exports = gql`
     customLists: [UserList]
   }
 
+  type PresetSettings {
+    # Light settings
+    exposure: Float
+    contrast: Float
+    highlights: Float
+    shadows: Float
+    whites: Float
+    blacks: Float
+
+    # Color settings
+    temp: Float
+    tint: Float
+    vibrance: Float
+    saturation: Float
+
+    # Effects
+    clarity: Float
+    dehaze: Float
+    grain: GrainSettings
+    vignette: VignetteSettings
+    colorAdjustments: ColorAdjustments
+    splitToning: SplitToningSettings
+
+    # Detail
+    sharpening: Float
+    noiseReduction: NoiseReductionSettings
+  }
+
+  type GrainSettings {
+    amount: Float
+    size: Float
+    roughness: Float
+  }
+
+  type NoiseReductionSettings {
+    luminance: Float
+    detail: Float
+    color: Float
+  }
+
   type Preset {
     id: ID!
     title: String!
     slug: String!
     description: String
-    xmpUrl: String!
-    settings: JSON
+    xmpUrl: String
+    settings: PresetSettings
     toneCurve: ToneCurve
     notes: String
     tags: [Tag]
     sampleImages: [Image]
+    thumbnail: String
     creator: User!
     filmSim: FilmSim
     likes: [User]
@@ -37,16 +83,35 @@ module.exports = gql`
     updatedAt: String
   }
 
+  type FilmSimSettings {
+    dynamicRange: Int
+    highlight: Int
+    shadow: Int
+    colour: Int
+    sharpness: Int
+    noiseReduction: Int
+    grainEffect: Int
+    clarity: Int
+    whiteBalance: String
+    wbShift: WhiteBalanceShift
+  }
+
+  type WhiteBalanceShift {
+    r: Int
+    b: Int
+  }
+
   type FilmSim {
     id: ID!
     name: String!
     slug: String!
     description: String
     type: String
-    approximationSettings: JSON
+    settings: FilmSimSettings
     toneCurve: ToneCurve
     tags: [Tag]
     sampleImages: [Image]
+    thumbnail: String
     creator: User
     recommendedPresets: [Preset]
     compatibleCameras: [String]
@@ -109,26 +174,95 @@ module.exports = gql`
     updatedAt: String
   }
 
+  type CurvePoint {
+    x: Float!
+    y: Float!
+  }
+
   type ToneCurve {
-    rgb: [Int]
-    red: [Int]
-    green: [Int]
-    blue: [Int]
+    rgb: [CurvePoint]
+    red: [CurvePoint]
+    green: [CurvePoint]
+    blue: [CurvePoint]
+  }
+
+  input CurvePointInput {
+    x: Float!
+    y: Float!
   }
 
   input ToneCurveInput {
-    rgb: [Int]
-    red: [Int]
-    green: [Int]
-    blue: [Int]
+    rgb: [CurvePointInput]
+    red: [CurvePointInput]
+    green: [CurvePointInput]
+    blue: [CurvePointInput]
+  }
+
+  input PresetSettingsInput {
+    # Light settings
+    exposure: Float
+    contrast: Float
+    highlights: Float
+    shadows: Float
+    whites: Float
+    blacks: Float
+
+    # Color settings
+    temp: Float
+    tint: Float
+    vibrance: Float
+    saturation: Float
+
+    # Effects
+    clarity: Float
+    dehaze: Float
+    grain: GrainSettingsInput
+    vignette: VignetteSettingsInput
+    colorAdjustments: ColorAdjustmentsInput
+    splitToning: SplitToningSettingsInput
+
+    # Detail
+    sharpening: Float
+    noiseReduction: NoiseReductionSettingsInput
+  }
+
+  input GrainSettingsInput {
+    amount: Float
+    size: Float
+    roughness: Float
+  }
+
+  input NoiseReductionSettingsInput {
+    luminance: Float
+    detail: Float
+    color: Float
+  }
+
+  input FilmSimSettingsInput {
+    dynamicRange: String!
+    filmSimulation: String!
+    whiteBalance: String!
+    wbShift: WhiteBalanceShiftInput!
+    color: Int!
+    sharpness: Int!
+    highlight: Int!
+    shadow: Int!
+    noiseReduction: Int!
+    grainEffect: Int!
+    clarity: Int!
+  }
+
+  input WhiteBalanceShiftInput {
+    r: Int!
+    b: Int!
   }
 
   input CreatePresetInput {
     title: String!
     slug: String!
     description: String
-    xmpUrl: String!
-    settings: JSON
+    xmpUrl: String
+    settings: PresetSettingsInput
     toneCurve: ToneCurveInput
     notes: String
     tagIds: [ID!]
@@ -139,7 +273,7 @@ module.exports = gql`
   input UpdatePresetInput {
     title: String
     description: String
-    settings: JSON
+    settings: PresetSettingsInput
     toneCurve: ToneCurveInput
     notes: String
     tagIds: [ID!]
@@ -152,7 +286,7 @@ module.exports = gql`
     slug: String!
     description: String
     type: String
-    approximationSettings: JSON
+    settings: FilmSimSettingsInput
     toneCurve: ToneCurveInput
     tagIds: [ID!]
     sampleImageIds: [ID!]
@@ -181,10 +315,13 @@ module.exports = gql`
     searchUsers(query: String!): [User]
 
     getPreset(slug: String!): Preset
+    getPresetById(id: ID!): Preset
     listPresets(filter: JSON): [Preset]
 
     getFilmSim(slug: String!): FilmSim
     listFilmSims(filter: JSON): [FilmSim]
+
+    allTags: [String]
 
     getImage(id: ID!): Image
     listImagesByPreset(presetId: ID!): [Image]
@@ -200,8 +337,30 @@ module.exports = gql`
   }
 
   type Mutation {
+    login(email: String!, password: String!): AuthPayload!
+    register(username: String!, email: String!, password: String!): AuthPayload!
     updateProfile(input: JSON!): User
     uploadAvatar(file: Upload!): String
+
+    uploadPreset(
+      title: String!
+      description: String
+      tags: [String!]!
+      settings: PresetSettingsInput!
+      toneCurve: ToneCurveInput
+      notes: String
+      beforeImage: Upload
+      afterImage: Upload
+    ): Preset!
+
+    uploadFilmSim(
+      name: String!
+      description: String
+      settings: FilmSimSettingsInput!
+      notes: String
+      tags: [String!]!
+      sampleImages: [Upload!]
+    ): FilmSim!
 
     createPreset(input: CreatePresetInput!): Preset
     updatePreset(id: ID!, input: UpdatePresetInput!): Preset
@@ -220,5 +379,109 @@ module.exports = gql`
     createComment(input: CreateCommentInput!): Comment
     reactToComment(commentId: ID!, reaction: String!): Comment
     deleteComment(id: ID!): Boolean
+
+    createUserList(input: CreateUserListInput!): UserList
+    updateUserList(id: ID!, input: UpdateUserListInput!): UserList!
+    deleteUserList(id: ID!): Boolean
+    addToUserList(listId: ID!, presetIds: [ID!], filmSimIds: [ID!]): UserList
+    removeFromUserList(listId: ID!, presetId: ID, filmSimId: ID): UserList
+  }
+
+  type VignetteSettings {
+    amount: Float
+  }
+  input VignetteSettingsInput {
+    amount: Float
+  }
+
+  type ColorAdjustments {
+    red: ColorChannel
+    orange: OrangeChannel
+    yellow: ColorChannel
+    green: GreenChannel
+    blue: BlueChannel
+  }
+  input ColorAdjustmentsInput {
+    red: ColorChannelInput
+    orange: OrangeChannelInput
+    yellow: ColorChannelInput
+    green: GreenChannelInput
+    blue: BlueChannelInput
+  }
+
+  type ColorChannel {
+    hue: Float
+    saturation: Float
+    luminance: Float
+  }
+  input ColorChannelInput {
+    hue: Float
+    saturation: Float
+    luminance: Float
+  }
+
+  type OrangeChannel {
+    saturation: Float
+    luminance: Float
+  }
+  input OrangeChannelInput {
+    saturation: Float
+    luminance: Float
+  }
+
+  type GreenChannel {
+    hue: Float
+    saturation: Float
+  }
+  input GreenChannelInput {
+    hue: Float
+    saturation: Float
+  }
+
+  type BlueChannel {
+    hue: Float
+    saturation: Float
+  }
+  input BlueChannelInput {
+    hue: Float
+    saturation: Float
+  }
+
+  type SplitToningSettings {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
+  }
+  input SplitToningSettingsInput {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
+  }
+
+  input UploadPresetInput {
+    title: String!
+    description: String
+    tags: [String!]!
+    settings: PresetSettingsInput!
+    toneCurve: ToneCurveInput
+    notes: String
+    beforeImage: Upload
+    afterImage: Upload
+  }
+
+  input CreateUserListInput {
+    name: String!
+    description: String
+    isPublic: Boolean
+  }
+
+  input UpdateUserListInput {
+    name: String
+    description: String
+    isPublic: Boolean
   }
 `;

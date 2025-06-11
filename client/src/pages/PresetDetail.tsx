@@ -12,6 +12,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -19,49 +21,95 @@ import DownloadIcon from "@mui/icons-material/Download";
 import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
-
-const preset = {
-  id: "sunset-gold",
-  title: "Sunset Gold",
-  tags: ["warm", "vintage", "portrait"],
-  creator: {
-    username: "arran",
-    avatarUrl: "/avatars/arran.png",
-    instagram: "https://instagram.com/arran",
-  },
-  beforeImage:
-    "https://images.squarespace-cdn.com/content/v1/6373cb8313c0a95dd854d566/1673042899199-T50CKOGUPEDQW3BLLN3F/TaraShupe_Photography_Humanitarian_Photographer_Female_Storyteller_NGO_WomenFilmmakers_before-after-lightroom-edits045.jpg?format=1500w",
-  afterImage:
-    "https://images.squarespace-cdn.com/content/v1/6373cb8313c0a95dd854d566/1673042903463-NF4IN3CC8AO7M94316L0/TaraShupe_Photography_Humanitarian_Photographer_Female_Storyteller_NGO_WomenFilmmakers_before-after-lightroom-edits046.jpg?format=1500w",
-  xmpFileUrl: "/downloads/sunset-gold.xmp",
-  settings: {
-    exposure: "+0.35",
-    contrast: "+10",
-    highlights: "-20",
-    shadows: "+30",
-    whites: "+10",
-    blacks: "-5",
-    clarity: "+5",
-    vibrance: "+15",
-    saturation: "+5",
-    temp: "+2",
-    tint: "-3",
-    dehaze: "+4",
-    grain: "30",
-    sharpening: "40",
-    noiseReduction: "20",
-  },
-  toneCurve: {
-    rgb: [0, 64, 128, 192, 255],
-    red: [0, 60, 130, 210, 255],
-    green: [0, 50, 125, 195, 255],
-    blue: [0, 40, 120, 190, 255],
-  },
-  notes:
-    "Inspired by Fujifilm Classic Chrome, this preset brings a warm cinematic glow to golden hour portraits.",
-};
+import AddToListButton from "../components/AddToListButton";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 
 const PresetDetails: React.FC = () => {
+  const { slug } = useParams();
+  const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
+    variables: { slug },
+  });
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="60vh"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error">Error loading preset: {error.message}</Alert>
+      </Container>
+    );
+  }
+
+  const preset = data?.getPreset;
+
+  if (!preset) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="info">Preset not found</Alert>
+      </Container>
+    );
+  }
+
+  const formatSettingValue = (value: any) => {
+    if (value === undefined || value === null) return "0";
+    // Convert to number and handle decimal places
+    const num = Number(value);
+    if (isNaN(num)) return "0";
+    // If it's a whole number, return as is
+    if (Number.isInteger(num)) return num.toString();
+    // For decimal numbers, format with 1 decimal place
+    return num.toFixed(1);
+  };
+
+  const parseSettingValue = (value: any) => {
+    if (value === undefined || value === null) return 0;
+    // Convert to number
+    const num = Number(value);
+    if (isNaN(num)) return 0;
+    // Convert to integer by multiplying by 100
+    return Math.round(num * 100);
+  };
+
+  const formatToneCurveData = (curveData: any) => {
+    if (!curveData) return [0, 64, 128, 192, 255];
+
+    // Convert x,y coordinates to output values
+    // The ToneCurve component expects an array of 5 values for input [0, 64, 128, 192, 255]
+    const inputPoints = [0, 64, 128, 192, 255];
+    const outputPoints = inputPoints.map((input) => {
+      // Find the two points that surround this input value
+      const lowerPoint = curveData.reduce((prev: any, curr: any) => {
+        return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
+      }, null);
+
+      const upperPoint = curveData.reduce((prev: any, curr: any) => {
+        return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
+      }, null);
+
+      if (!lowerPoint || !upperPoint) return input;
+      if (lowerPoint.x === upperPoint.x) return lowerPoint.y;
+
+      // Linear interpolation between points
+      const ratio = (input - lowerPoint.x) / (upperPoint.x - lowerPoint.x);
+      return Math.round(lowerPoint.y + ratio * (upperPoint.y - lowerPoint.y));
+    });
+
+    return outputPoints;
+  };
+
   const renderAccordionSection = (
     title: string,
     keys: string[],
@@ -89,7 +137,7 @@ const PresetDetails: React.FC = () => {
                   <SettingSliderDisplay
                     key={key}
                     label={key}
-                    value={preset.settings[key]}
+                    value={formatSettingValue(preset.settings[key] / 100)}
                   />
                 ) : null
               )}
@@ -100,18 +148,29 @@ const PresetDetails: React.FC = () => {
     );
   };
 
+  // Get before/after images from sample images
+  const beforeImage = preset.sampleImages?.[0]?.url;
+  const afterImage = preset.sampleImages?.[1]?.url;
+
+  // Format tone curve data
+  const toneCurveData = {
+    rgb: formatToneCurveData(preset.toneCurve?.rgb),
+    red: formatToneCurveData(preset.toneCurve?.red),
+    green: formatToneCurveData(preset.toneCurve?.green),
+    blue: formatToneCurveData(preset.toneCurve?.blue),
+  };
+
   return (
-    <Container maxWidth="md" sx={{ mt: 6, mb: 10 }}>
+    <Container maxWidth="md" sx={{ mt: 6, mb: 10, position: "relative" }}>
+      <AddToListButton presetId={preset.id} itemName={preset.title} />
+
       {/* Title & Creator */}
       <Box mb={3}>
         <Typography variant="h4" fontWeight="bold">
           {preset.title}
         </Typography>
         <Stack direction="row" alignItems="center" spacing={1} mt={1}>
-          <Avatar
-            src={preset.creator.avatarUrl}
-            alt={preset.creator.username}
-          />
+          <Avatar src={preset.creator.avatar} alt={preset.creator.username} />
           <Typography variant="subtitle2" color="text.secondary">
             {preset.creator.username}
           </Typography>
@@ -130,8 +189,8 @@ const PresetDetails: React.FC = () => {
         <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
           {preset.tags.map((tag) => (
             <Chip
-              key={tag}
-              label={tag}
+              key={tag.id}
+              label={tag.displayName}
               variant="outlined"
               sx={{ color: "text.secondary", borderColor: "divider" }}
             />
@@ -142,9 +201,9 @@ const PresetDetails: React.FC = () => {
       {/* Before/After Images */}
       <Box sx={{ mb: 4 }}>
         <BeforeAfterSlider
-          beforeImage={preset.beforeImage}
-          afterImage={preset.afterImage}
-          height={400}
+          beforeImage={preset.sampleImages?.[0]?.url}
+          afterImage={preset.sampleImages?.[1]?.url}
+          height={500}
         />
       </Box>
 
@@ -161,7 +220,7 @@ const PresetDetails: React.FC = () => {
       {renderAccordionSection(
         "Tone Curve",
         [],
-        <ToneCurve curves={preset.toneCurve} />
+        <ToneCurve curves={toneCurveData} />
       )}
 
       {renderAccordionSection("Color", [
@@ -171,14 +230,68 @@ const PresetDetails: React.FC = () => {
         "saturation",
       ])}
 
-      {renderAccordionSection("Effects", ["clarity", "dehaze", "grain"])}
+      {renderAccordionSection("Effects", ["clarity", "dehaze"])}
 
-      {renderAccordionSection("Detail", ["sharpening", "noiseReduction"])}
+      {renderAccordionSection(
+        "Grain",
+        [],
+        <Box>
+          {preset.settings.grain && (
+            <>
+              <SettingSliderDisplay
+                label="Amount"
+                value={formatSettingValue(preset.settings.grain.amount / 100)}
+              />
+              <SettingSliderDisplay
+                label="Size"
+                value={formatSettingValue(preset.settings.grain.size / 100)}
+              />
+              <SettingSliderDisplay
+                label="Roughness"
+                value={formatSettingValue(
+                  preset.settings.grain.roughness / 100
+                )}
+              />
+            </>
+          )}
+        </Box>
+      )}
+
+      {renderAccordionSection(
+        "Noise Reduction",
+        [],
+        <Box>
+          {preset.settings.noiseReduction && (
+            <>
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  preset.settings.noiseReduction.luminance / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Color"
+                value={formatSettingValue(
+                  preset.settings.noiseReduction.color / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Detail"
+                value={formatSettingValue(
+                  preset.settings.noiseReduction.detail / 100
+                )}
+              />
+            </>
+          )}
+        </Box>
+      )}
+
+      {renderAccordionSection("Detail", ["sharpening"])}
 
       {/* Download + Notes */}
       <Stack direction="row" alignItems="center" spacing={2} my={4}>
         <Button
-          href={preset.xmpFileUrl}
+          href={preset.xmpUrl}
           download
           variant="contained"
           startIcon={<DownloadIcon />}

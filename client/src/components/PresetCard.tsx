@@ -10,11 +10,16 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
+// Placeholder image for presets without thumbnails
+const PLACEHOLDER_IMAGE =
+  "https://placehold.co/600x400/2a2a2a/ffffff?text=No+Image";
+
 interface PresetCardProps {
   id: string;
+  slug: string;
   title: string;
-  thumbnail: string;
-  tags: string[];
+  thumbnail?: string; // Make thumbnail optional
+  tags: { displayName: string }[]; // <- GraphQL-compatible tag structure
   creator: {
     username: string;
     avatarUrl?: string;
@@ -23,6 +28,7 @@ interface PresetCardProps {
 
 const PresetCard: React.FC<PresetCardProps> = ({
   id,
+  slug,
   title,
   thumbnail,
   tags,
@@ -43,11 +49,11 @@ const PresetCard: React.FC<PresetCardProps> = ({
           boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
         },
       }}
-      onClick={() => navigate(`/preset/${id}`)}
+      onClick={() => navigate(`/preset/${slug}`)}
     >
       <CardMedia
         component="img"
-        image={thumbnail}
+        image={thumbnail || PLACEHOLDER_IMAGE}
         alt={title}
         height="180"
         sx={{
@@ -104,10 +110,10 @@ const PresetCard: React.FC<PresetCardProps> = ({
           display={{ xs: "none", s: "none", md: "flex" }}
           flexWrap="nowrap"
         >
-          {tags.slice(0, 3).map((tag) => (
+          {tags.slice(0, 3).map((tag, index) => (
             <Chip
-              key={tag}
-              label={tag}
+              key={index}
+              label={tag.displayName}
               size="small"
               variant="outlined"
               sx={{

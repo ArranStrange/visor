@@ -1,71 +1,75 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Box, Typography, useTheme } from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import { Box } from "@mui/material";
 
 interface BeforeAfterSliderProps {
-  beforeImage: string;
-  afterImage: string;
-  height?: number; // optional fixed height
+  beforeImage?: string;
+  afterImage?: string;
+  height?: number;
 }
+
+const PLACEHOLDER_BEFORE_IMAGE =
+  "https://images.squarespace-cdn.com/content/v1/6373cb8313c0a95dd854d566/1673048455010-8BUUZ6KQ57VONKNAI7TO/TaraShupe_Photography_Humanitarian_Photographer_Female_Storyteller_NGO_WomenFilmmakers_before-after-lightroom-edits052.jpg?format=1500w";
+
+const PLACEHOLDER_AFTER_IMAGE =
+  "https://images.squarespace-cdn.com/content/v1/6373cb8313c0a95dd854d566/1673048458349-QJWKE73PW72A8FRIZDG9/TaraShupe_Photography_Humanitarian_Photographer_Female_Storyteller_NGO_WomenFilmmakers_before-after-lightroom-edits053.jpg?format=1500w";
 
 const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   beforeImage,
   afterImage,
   height = 400,
 }) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [sliderPosition, setSliderPosition] = useState(50);
-  const [isDragging, setIsDragging] = useState(false);
-  const theme = useTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging = useRef(false);
 
-  const startDragging = () => setIsDragging(true);
-  const stopDragging = () => setIsDragging(false);
+  const handleMouseDown = () => {
+    isDragging.current = true;
+  };
 
-  const handleMove = (e: MouseEvent | TouchEvent) => {
-    if (!isDragging || !containerRef.current) return;
+  const handleMouseUp = () => {
+    isDragging.current = false;
+  };
 
-    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
-    const rect = containerRef.current.getBoundingClientRect();
-    const offsetX = clientX - rect.left;
-    const newPos = Math.max(0, Math.min((offsetX / rect.width) * 100, 100));
-    setSliderPosition(newPos);
+  const handleMouseMove = (e: MouseEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = (x / rect.width) * 100;
+
+    setSliderPosition(Math.min(Math.max(percentage, 0), 100));
   };
 
   useEffect(() => {
-    const moveHandler = (e: MouseEvent | TouchEvent) => handleMove(e);
-    const upHandler = () => stopDragging();
-
-    if (isDragging) {
-      window.addEventListener("mousemove", moveHandler);
-      window.addEventListener("touchmove", moveHandler);
-      window.addEventListener("mouseup", upHandler);
-      window.addEventListener("touchend", upHandler);
-    }
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
 
     return () => {
-      window.removeEventListener("mousemove", moveHandler);
-      window.removeEventListener("touchmove", moveHandler);
-      window.removeEventListener("mouseup", upHandler);
-      window.removeEventListener("touchend", upHandler);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [isDragging]);
+  }, []);
 
   return (
     <Box
       ref={containerRef}
       sx={{
         position: "relative",
-        height,
+        width: "100%",
+        height: height,
         overflow: "hidden",
-        borderRadius: 3,
-        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        cursor: "col-resize",
         userSelect: "none",
         touchAction: "none",
       }}
+      onMouseDown={handleMouseDown}
     >
-      {/* After Image (full width) */}
+      {/* After Image (full width, background) */}
       <Box
         component="img"
-        src={afterImage}
+        src={afterImage || PLACEHOLDER_AFTER_IMAGE}
         alt="After"
         sx={{
           position: "absolute",
@@ -77,10 +81,10 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         }}
       />
 
-      {/* Before Image (clipped) */}
+      {/* Before Image (clipped, on top) */}
       <Box
         component="img"
-        src={beforeImage}
+        src={beforeImage || PLACEHOLDER_BEFORE_IMAGE}
         alt="Before"
         sx={{
           position: "absolute",
@@ -90,75 +94,35 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           top: 0,
           left: 0,
           clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
+          transition: "clip-path 0.1s",
         }}
       />
 
-      {/* Slider handle */}
+      {/* Slider Line */}
       <Box
-        onMouseDown={startDragging}
-        onTouchStart={startDragging}
         sx={{
           position: "absolute",
           top: 0,
           left: `${sliderPosition}%`,
-          transform: "translateX(-50%)",
+          width: "2px",
           height: "100%",
-          width: 2,
-          backgroundColor: "#fff",
-          zIndex: 2,
-          cursor: "ew-resize",
+          backgroundColor: "white",
+          transform: "translateX(-50%)",
+          cursor: "col-resize",
+          "&::before": {
+            content: '""',
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: "40px",
+            height: "40px",
+            backgroundColor: "white",
+            borderRadius: "50%",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+          },
         }}
       />
-
-      {/* Handle indicator */}
-      <Box
-        onMouseDown={startDragging}
-        onTouchStart={startDragging}
-        sx={{
-          position: "absolute",
-          top: "50%",
-          left: `${sliderPosition}%`,
-          transform: "translate(-50%, -50%)",
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          backgroundColor: "#fff",
-          border: `2px solid ${theme.palette.text.secondary}`,
-          zIndex: 3,
-        }}
-      />
-
-      {/* Labels */}
-      <Typography
-        variant="caption"
-        sx={{
-          position: "absolute",
-          top: 8,
-          left: 12,
-          color: "#fff",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          px: 1,
-          borderRadius: 1,
-          zIndex: 4,
-        }}
-      >
-        Before
-      </Typography>
-      <Typography
-        variant="caption"
-        sx={{
-          position: "absolute",
-          top: 8,
-          right: 12,
-          color: "#fff",
-          backgroundColor: "rgba(0,0,0,0.5)",
-          px: 1,
-          borderRadius: 1,
-          zIndex: 4,
-        }}
-      >
-        After
-      </Typography>
     </Box>
   );
 };

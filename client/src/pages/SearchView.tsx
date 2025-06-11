@@ -7,37 +7,118 @@ import {
   Stack,
   Divider,
 } from "@mui/material";
-
-import { presets } from "../data/presets";
-import { filmSims } from "../data/filmsims";
-import { allTags } from "../data/tags";
+import { useQuery, gql } from "@apollo/client";
 
 import PresetCard from "../components/PresetCard";
 import FilmSimCard from "../components/FilmSimCard";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 import StaggeredGrid from "../components/StaggeredGrid";
 import { useContentType } from "../context/ContentTypeFilter";
+import {
+  GET_ALL_TAGS,
+  GET_ALL_TAGS_OPTIONS,
+} from "../graphql/queries/getAllTags";
+
+// Apollo GraphQL queries
+const LIST_PRESETS = gql`
+  query ListPresets {
+    listPresets {
+      id
+      title
+      slug
+      tags {
+        displayName
+      }
+      creator {
+        username
+        avatar
+      }
+      thumbnail: sampleImages {
+        url
+      }
+    }
+  }
+`;
+
+const LIST_FILMSIMS = gql`
+  query ListFilmSims {
+    listFilmSims(filter: {}) {
+      id
+      name
+      slug
+      tags {
+        displayName
+      }
+      creator {
+        username
+        avatar
+      }
+      thumbnail: sampleImages {
+        url
+      }
+    }
+  }
+`;
 
 const SearchView: React.FC = () => {
   const [keyword, setKeyword] = useState("");
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const { contentType } = useContentType();
 
+  // GraphQL queries
+  const {
+    data: tagData,
+    loading: tagsLoading,
+    error: tagsError,
+  } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
+  const { data: presetData, error: presetsError } = useQuery(LIST_PRESETS);
+  const { data: filmSimData, error: filmSimsError } = useQuery(LIST_FILMSIMS);
+
+  // Log any errors
+  React.useEffect(() => {
+    if (tagsError) console.error("Tags Error:", tagsError);
+    if (presetsError) console.error("Presets Error:", presetsError);
+    if (filmSimsError) console.error("Film Sims Error:", filmSimsError);
+  }, [tagsError, presetsError, filmSimsError]);
+
+  const allTags =
+    tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
+  const presets = presetData?.listPresets || [];
+  const filmSims = filmSimData?.listFilmSims || [];
+
   const combined = useMemo(() => {
     let all: { type: "preset" | "film"; data: any }[] = [];
 
     if (contentType === "all" || contentType === "presets") {
-      all.push(...presets.map((p) => ({ type: "preset" as const, data: p })));
+      all.push(
+        ...presets.map((p) => ({
+          type: "preset" as const,
+          data: {
+            ...p,
+            thumbnail: p.thumbnail?.[0]?.url ?? "",
+          },
+        }))
+      );
     }
 
     if (contentType === "all" || contentType === "films") {
-      all.push(...filmSims.map((f) => ({ type: "film" as const, data: f })));
+      all.push(
+        ...filmSims.map((f) => ({
+          type: "film" as const,
+          data: {
+            ...f,
+            title: f.name,
+            thumbnail: f.thumbnail?.[0]?.url ?? "",
+          },
+        }))
+      );
     }
 
     if (activeTag) {
       all = all.filter((item) =>
         item.data.tags?.some(
-          (tag) => tag.toLowerCase() === activeTag.toLowerCase()
+          (tag: any) =>
+            tag.displayName?.toLowerCase() === activeTag.toLowerCase()
         )
       );
     }
@@ -46,15 +127,23 @@ const SearchView: React.FC = () => {
       const lower = keyword.toLowerCase();
       all = all.filter(
         (item) =>
-          item.data.title.toLowerCase().includes(lower) ||
-          item.data.tags?.some((tag) => tag.toLowerCase().includes(lower)) ||
-          item.data.toneProfile?.toLowerCase().includes(lower) || // film sims
-          item.data.description?.toLowerCase().includes(lower) // presets (if added)
+          item.data.title?.toLowerCase().includes(lower) ||
+          item.data.name?.toLowerCase().includes(lower) ||
+          item.data.description?.toLowerCase().includes(lower) ||
+          item.data.tags?.some((tag: any) =>
+            tag.displayName?.toLowerCase().includes(lower)
+          ) ||
+          item.data.toneProfile?.toLowerCase().includes(lower)
       );
     }
 
     return all;
-  }, [activeTag, keyword, contentType]);
+  }, [activeTag, keyword, contentType, presets, filmSims]);
+
+  const handleClear = () => {
+    setKeyword("");
+    setActiveTag(null);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
@@ -79,25 +168,45 @@ const SearchView: React.FC = () => {
         sx={{
           overflowX: "auto",
           mb: 2,
-          scrollbarWidth: "none", // Firefox
-          "&::-webkit-scrollbar": { display: "none" }, // Chrome/Safari
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {allTags.map((tag) => (
+        <Typography
+          onClick={handleClear}
+          sx={{
+            cursor: "pointer",
+            opacity: keyword || activeTag ? 1 : 0.6,
+            transition: "opacity 0.2s",
+            whiteSpace: "nowrap",
+            "&:hover": {
+              textDecoration: "underline",
+              textUnderlineOffset: "4px",
+            },
+          }}
+        >
+          all
+        </Typography>
+        {allTags.map((tag: any) => (
           <Typography
-            key={tag}
-            onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+            key={tag.id}
+            onClick={() =>
+              setActiveTag((prev) =>
+                prev === tag.displayName ? null : tag.displayName
+              )
+            }
             sx={{
               cursor: "pointer",
-              fontWeight: activeTag === tag ? "bold" : "normal",
-              textDecoration: activeTag === tag ? "underline" : "none",
+              fontWeight: activeTag === tag.displayName ? "bold" : "normal",
+              textDecoration:
+                activeTag === tag.displayName ? "underline" : "none",
               textUnderlineOffset: "4px",
-              opacity: activeTag === tag ? 1 : 0.6,
+              opacity: activeTag === tag.displayName ? 1 : 0.6,
               transition: "opacity 0.2s",
               whiteSpace: "nowrap",
             }}
           >
-            {tag}
+            {tag.displayName}
           </Typography>
         ))}
       </Stack>

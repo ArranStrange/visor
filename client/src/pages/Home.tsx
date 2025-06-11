@@ -1,55 +1,112 @@
 import React from "react";
-import { Box, Container } from "@mui/material";
+import { Box, Container, Alert, CircularProgress } from "@mui/material";
 import PresetCard from "../components/PresetCard";
 import FilmSimCard from "../components/FilmSimCard";
 import { useContentType } from "../context/ContentTypeFilter";
 import ContentTypeToggle from "../components/ContentTypeToggle";
-
-import { filmSims } from "../data/filmsims";
-import { presets } from "../data/presets";
 import StaggeredGrid from "../components/StaggeredGrid";
-
-const cardMasonryStyles = {
-  columnCount: {
-    xs: 2,
-    s: 3,
-    md: 4,
-  },
-  columnGap: {
-    xs: 0,
-    md: 5,
-  },
-};
-
-const cardItemStyles = {
-  breakInside: "avoid",
-  mb: 2,
-  width: "100%",
-  transition: "margin-top 0.3s ease",
-};
-
-// Shuffle helper
-function shuffle<T>(array: T[]): T[] {
-  return [...array].sort(() => Math.random() - 0.5);
-}
+import { useQuery } from "@apollo/client";
+import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const HomePage: React.FC = () => {
   const { contentType } = useContentType();
 
-  // Combine and shuffle cards
+  const {
+    data: presetData,
+    loading: loadingPresets,
+    error: presetError,
+  } = useQuery(GET_ALL_PRESETS, {
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
+  });
+
+  const {
+    data: filmSimData,
+    loading: loadingFilmSims,
+    error: filmSimError,
+  } = useQuery(GET_ALL_FILMSIMS, {
+    errorPolicy: "all",
+    fetchPolicy: "cache-and-network",
+  });
+
   const combined = React.useMemo(() => {
-    const data: { type: "preset" | "film"; data: any }[] = [];
+    const result: { type: "preset" | "film"; data: any }[] = [];
 
-    if (contentType === "all" || contentType === "presets") {
-      data.push(...presets.map((p) => ({ type: "preset" as const, data: p })));
+    if (
+      (contentType === "all" || contentType === "presets") &&
+      presetData?.listPresets
+    ) {
+      result.push(
+        ...presetData.listPresets
+          .filter((p) => p && p.creator) // Filter out presets without creators
+          .map((p) => ({
+            type: "preset" as const,
+            data: {
+              ...p,
+              thumbnail: p.sampleImages?.[0]?.url || "",
+              creator: p.creator || { username: "Unknown", avatar: "" },
+            },
+          }))
+      );
     }
 
-    if (contentType === "all" || contentType === "films") {
-      data.push(...filmSims.map((f) => ({ type: "film" as const, data: f })));
+    if (
+      (contentType === "all" || contentType === "films") &&
+      filmSimData?.listFilmSims
+    ) {
+      result.push(
+        ...filmSimData.listFilmSims
+          .filter((f) => f && f.creator) // Filter out film sims without creators
+          .map((f) => ({
+            type: "film" as const,
+            data: {
+              ...f,
+              title: f.name,
+              thumbnail: f.sampleImages?.[0]?.url || "",
+              creator: f.creator || { username: "Unknown", avatar: "" },
+            },
+          }))
+      );
     }
 
-    return shuffle(data);
-  }, [contentType]);
+    return result.sort(() => Math.random() - 0.5);
+  }, [contentType, presetData, filmSimData]);
+
+  if (loadingPresets || loadingFilmSims) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="200px"
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (presetError || filmSimError) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {presetError?.message ||
+            filmSimError?.message ||
+            "Error loading content"}
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!combined.length) {
+    return (
+      <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
+        <Alert severity="info" sx={{ mb: 2 }}>
+          No content found. Try changing the content type filter.
+        </Alert>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 1, mb: 50 }}>
