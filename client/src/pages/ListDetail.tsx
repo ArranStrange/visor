@@ -116,6 +116,16 @@ const REMOVE_ITEM = gql`
   }
 `;
 
+// Utility to shuffle an array
+function shuffle<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -318,10 +328,16 @@ const ListDetail: React.FC = () => {
   const list = data?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
 
+  const PLACEHOLDER_IMAGE = "/placeholder-image.jpg";
+
   const renderCard = (item: FilmSim | Preset) => {
     if (!item) return null;
     const isFilmSim = "type" in item;
-    const thumbnail = item.thumbnail || "/placeholder-image.jpg";
+    // Use placeholder if thumbnail is missing or empty string
+    const thumbnail =
+      item.thumbnail && item.thumbnail.trim() !== ""
+        ? item.thumbnail
+        : PLACEHOLDER_IMAGE;
     const title = isFilmSim ? (item as FilmSim).name : (item as Preset).title;
     const subtitle = isFilmSim ? (item as FilmSim).type ?? "" : "";
 
@@ -329,6 +345,8 @@ const ListDetail: React.FC = () => {
       <Card
         key={item.id}
         sx={{
+          width: 250,
+          flex: "0 0 auto",
           height: "100%",
           display: "flex",
           flexDirection: "column",
@@ -389,6 +407,18 @@ const ListDetail: React.FC = () => {
       </Card>
     );
   };
+
+  // Combine and shuffle cards for display (like Home)
+  const combined = [
+    ...(contentType === "all" || contentType === "presets"
+      ? list?.presets?.map((preset) => ({ type: "preset", data: preset })) ?? []
+      : []),
+    ...(contentType === "all" || contentType === "films"
+      ? list?.filmSims?.map((filmSim) => ({ type: "film", data: filmSim })) ??
+        []
+      : []),
+  ];
+  const shuffledCombined = shuffle(combined);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -516,12 +546,11 @@ const ListDetail: React.FC = () => {
 
         <Box sx={{ width: "100%", minHeight: "200px" }}>
           <StaggeredGrid>
-            {contentType === "all" || contentType === "presets"
-              ? list?.presets?.map((preset) => renderCard(preset))
-              : null}
-            {contentType === "all" || contentType === "films"
-              ? list?.filmSims?.map((filmSim) => renderCard(filmSim))
-              : null}
+            {shuffledCombined.map((item, index) => (
+              <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
+                {renderCard(item.data)}
+              </React.Fragment>
+            ))}
           </StaggeredGrid>
         </Box>
       </Stack>
