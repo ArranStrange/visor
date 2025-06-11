@@ -367,7 +367,7 @@ const ListDetail: React.FC = () => {
       <Card
         key={item.id}
         sx={{
-          width: 250,
+          minWidth: 250,
           flex: "0 0 auto",
           height: "100%",
           display: "flex",
