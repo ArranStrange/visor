@@ -242,7 +242,56 @@ module.exports = {
         throw new Error("Failed to get user lists: " + error.message);
       }
     },
-    getUserList: async (_, { id }) => await UserList.findById(id),
+
+    getUserList: async (_, { id }) => {
+      try {
+        const list = await UserList.findById(id)
+          .populate({
+            path: "presets",
+            select: "id title slug thumbnail",
+            populate: {
+              path: "thumbnail",
+              select: "id url",
+            },
+          })
+          .populate({
+            path: "filmSims",
+            select: "id name slug thumbnail",
+            populate: {
+              path: "thumbnail",
+              select: "id url",
+            },
+          })
+          .populate("owner", "id username");
+
+        if (!list) {
+          throw new Error("List not found");
+        }
+
+        const listObj = list.toObject();
+        return {
+          ...listObj,
+          id: listObj._id.toString(),
+          owner: {
+            id: listObj.owner._id.toString(),
+            username: listObj.owner.username,
+          },
+          presets:
+            listObj.presets?.map((preset) => ({
+              ...preset,
+              id: preset._id.toString(),
+            })) || [],
+          filmSims:
+            listObj.filmSims?.map((filmSim) => ({
+              ...filmSim,
+              id: filmSim._id.toString(),
+            })) || [],
+        };
+      } catch (error) {
+        console.error("Error getting user list:", error);
+        throw new Error("Failed to get user list: " + error.message);
+      }
+    },
 
     getCommentsForPreset: async (_, { presetId }) =>
       await Comment.find({ preset: presetId, parent: null }),

@@ -74,6 +74,8 @@ const Lists: React.FC = () => {
   console.log("Query variables:", { userId: currentUser?.id });
 
   const handleListClick = (listId: string) => {
+    console.log("List clicked:", listId);
+    console.log("Navigating to:", `/list/${listId}`);
     navigate(`/list/${listId}`);
   };
 

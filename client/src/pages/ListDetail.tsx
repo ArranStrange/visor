@@ -27,8 +27,8 @@ import {
 import { gql } from "@apollo/client";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { ListType, UserList } from "../types/lists";
-import AddItemDialog from "../components/AddItemDialog";
+import EditIcon from "@mui/icons-material/Edit";
+import { useAuth } from "../context/AuthContext";
 
 const GET_LIST = gql`
   query GetList($id: ID!) {
@@ -37,6 +37,10 @@ const GET_LIST = gql`
       name
       description
       isPublic
+      owner {
+        id
+        username
+      }
       presets {
         id
         title
@@ -48,10 +52,6 @@ const GET_LIST = gql`
         name
         slug
         thumbnail
-      }
-      collaborators {
-        id
-        username
       }
     }
   }
@@ -74,37 +74,10 @@ const DELETE_LIST = gql`
   }
 `;
 
-const ADD_ITEM = gql`
-  mutation AddItemToList($listId: ID!, $type: String!, $itemId: ID!) {
-    addItemToList(listId: $listId, type: $type, itemId: $itemId) {
-      id
-      presets {
-        id
-      }
-      filmSims {
-        id
-      }
-    }
-  }
-`;
-
-const REMOVE_ITEM = gql`
-  mutation RemoveItemFromList($listId: ID!, $type: String!, $itemId: ID!) {
-    removeItemFromList(listId: $listId, type: $type, itemId: $itemId) {
-      id
-      presets {
-        id
-      }
-      filmSims {
-        id
-      }
-    }
-  }
-`;
-
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -113,10 +86,9 @@ const ListDetail: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [addItemDialogOpen, setAddItemDialogOpen] = useState(false);
-  const [selectedItemType, setSelectedItemType] = useState<
-    "preset" | "filmSim"
-  >("preset");
+
+  console.log("ListDetail - List ID:", id);
+  console.log("ListDetail - Current User:", currentUser);
 
   const {
     loading,
@@ -125,6 +97,7 @@ const ListDetail: React.FC = () => {
   } = useQuery(GET_LIST, {
     variables: { id },
     onCompleted: (data) => {
+      console.log("ListDetail - Query completed:", data);
       if (data?.getUserList) {
         setFormData({
           name: data.getUserList.name,
@@ -132,6 +105,9 @@ const ListDetail: React.FC = () => {
           isPublic: data.getUserList.isPublic,
         });
       }
+    },
+    onError: (error) => {
+      console.error("ListDetail - Query error:", error);
     },
   });
 
@@ -149,25 +125,8 @@ const ListDetail: React.FC = () => {
 
   const [deleteList] = useMutation(DELETE_LIST, {
     onCompleted: () => {
-      navigate("/profile");
+      navigate("/lists");
     },
-    onError: (error) => {
-      setError(error.message);
-      setTimeout(() => setError(null), 3000);
-    },
-  });
-
-  const [addItem] = useMutation(ADD_ITEM, {
-    onCompleted: () => {
-      setAddItemDialogOpen(false);
-    },
-    onError: (error) => {
-      setError(error.message);
-      setTimeout(() => setError(null), 3000);
-    },
-  });
-
-  const [removeItem] = useMutation(REMOVE_ITEM, {
     onError: (error) => {
       setError(error.message);
       setTimeout(() => setError(null), 3000);
@@ -208,37 +167,6 @@ const ListDetail: React.FC = () => {
     }
   };
 
-  const handleAddItem = async (itemId: string) => {
-    try {
-      await addItem({
-        variables: {
-          listId: id,
-          type: selectedItemType,
-          itemId,
-        },
-      });
-    } catch (err) {
-      console.error("Error adding item:", err);
-    }
-  };
-
-  const handleRemoveItem = async (
-    type: "preset" | "filmSim",
-    itemId: string
-  ) => {
-    try {
-      await removeItem({
-        variables: {
-          listId: id,
-          type,
-          itemId,
-        },
-      });
-    } catch (err) {
-      console.error("Error removing item:", err);
-    }
-  };
-
   if (loading) {
     return (
       <Box
@@ -261,28 +189,60 @@ const ListDetail: React.FC = () => {
   }
 
   const list = data?.getUserList;
+  const isOwner = currentUser?.id === list?.owner?.id;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
+      <Stack spacing={4}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {success}
+          </Alert>
+        )}
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={3}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography variant="h4" component="h1">
+            {isEditing ? "Edit List" : list?.name}
+          </Typography>
+          {isOwner && (
             <Box>
-              <Typography variant="h5" gutterBottom>
-                {isEditing ? "Edit List" : list?.name}
-              </Typography>
-              {isEditing ? (
+              {!isEditing ? (
+                <Button
+                  startIcon={<EditIcon />}
+                  onClick={() => setIsEditing(true)}
+                >
+                  Edit List
+                </Button>
+              ) : (
+                <Button
+                  variant="outlined"
+                  onClick={() => setIsEditing(false)}
+                  sx={{ mr: 2 }}
+                >
+                  Cancel
+                </Button>
+              )}
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteIcon />}
+                onClick={handleDelete}
+              >
+                Delete List
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {isEditing ? (
+          <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+            <Box component="form" onSubmit={handleSubmit}>
+              <Stack spacing={3}>
                 <TextField
                   fullWidth
                   name="name"
@@ -291,181 +251,123 @@ const ListDetail: React.FC = () => {
                   label="List Name"
                   required
                 />
-              ) : null}
-            </Box>
 
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                Description
-              </Typography>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                disabled={!isEditing}
-                placeholder="Describe your list..."
-              />
-            </Box>
-
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={formData.isPublic}
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  name="description"
+                  value={formData.description}
                   onChange={handleInputChange}
-                  name="isPublic"
-                  disabled={!isEditing}
+                  label="Description"
+                  placeholder="Describe your list..."
                 />
-              }
-              label="Public List"
-            />
 
-            <Box>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
-              >
-                <Typography variant="h6">Presets</Typography>
-                {isEditing && (
-                  <Button
-                    startIcon={<AddIcon />}
-                    onClick={() => {
-                      setSelectedItemType("preset");
-                      setAddItemDialogOpen(true);
-                    }}
-                  >
-                    Add Preset
-                  </Button>
-                )}
-              </Box>
-              <Grid container spacing={2}>
-                {list?.presets.map((preset) => (
-                  <Grid key={preset.id} xs={12} sm={6} md={4}>
-                    <Card>
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={preset.thumbnail || "/placeholder.jpg"}
-                        alt={preset.title}
-                      />
-                      <CardContent>
-                        <Typography variant="h6" noWrap>
-                          {preset.title}
-                        </Typography>
-                        {isEditing && (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleRemoveItem("preset", preset.id)
-                            }
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={formData.isPublic}
+                      onChange={handleInputChange}
+                      name="isPublic"
+                    />
+                  }
+                  label="Public List"
+                />
 
-            <Box>
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={2}
-              >
-                <Typography variant="h6">Film Simulations</Typography>
-                {isEditing && (
+                <Box display="flex" gap={2} justifyContent="flex-end">
                   <Button
-                    startIcon={<AddIcon />}
-                    onClick={() => {
-                      setSelectedItemType("filmSim");
-                      setAddItemDialogOpen(true);
-                    }}
+                    type="submit"
+                    variant="contained"
+                    disabled={!formData.name.trim()}
                   >
-                    Add Film Sim
-                  </Button>
-                )}
-              </Box>
-              <Grid container spacing={2}>
-                {list?.filmSims.map((filmSim) => (
-                  <Grid key={filmSim.id} xs={12} sm={6} md={4}>
-                    <Card>
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={filmSim.thumbnail || "/placeholder.jpg"}
-                        alt={filmSim.name}
-                      />
-                      <CardContent>
-                        <Typography variant="h6" noWrap>
-                          {filmSim.name}
-                        </Typography>
-                        {isEditing && (
-                          <IconButton
-                            size="small"
-                            onClick={() =>
-                              handleRemoveItem("filmSim", filmSim.id)
-                            }
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        )}
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-
-            <Box display="flex" gap={2} justifyContent="flex-end">
-              {isEditing ? (
-                <>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setIsEditing(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" variant="contained">
                     Save Changes
                   </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outlined"
-                    color="error"
-                    onClick={handleDelete}
-                  >
-                    Delete List
-                  </Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => setIsEditing(true)}
-                  >
-                    Edit List
-                  </Button>
-                </>
-              )}
+                </Box>
+              </Stack>
             </Box>
-          </Stack>
-        </Box>
-      </Paper>
+          </Paper>
+        ) : (
+          <>
+            <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+              <Stack spacing={2}>
+                {list?.description && (
+                  <Typography variant="body1">{list.description}</Typography>
+                )}
+                <Box display="flex" gap={1}>
+                  {list?.isPublic ? (
+                    <Chip label="Public" color="primary" />
+                  ) : (
+                    <Chip label="Private" color="default" />
+                  )}
+                  <Typography variant="body2" color="text.secondary">
+                    Created by {list?.owner?.username}
+                  </Typography>
+                </Box>
+              </Stack>
+            </Paper>
 
-      {/* Add Item Dialog */}
-      <AddItemDialog
-        open={addItemDialogOpen}
-        onClose={() => setAddItemDialogOpen(false)}
-        onAdd={handleAddItem}
-        type={selectedItemType}
-      />
+            <Grid container spacing={3}>
+              {list?.presets?.map((preset) => (
+                <Grid item xs={12} sm={6} md={4} key={preset.id}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate(`/preset/${preset.slug}`)}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={
+                        preset.thumbnail || "/default-preset-thumbnail.jpg"
+                      }
+                      alt={preset.title}
+                      sx={{ objectFit: "cover" }}
+                    />
+                    <CardContent>
+                      <Typography variant="h6" component="div">
+                        {preset.title}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+
+              {list?.filmSims?.map((filmSim) => (
+                <Grid item xs={12} sm={6} md={4} key={filmSim.id}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      cursor: "pointer",
+                    }}
+                    onClick={() => navigate(`/film-sim/${filmSim.slug}`)}
+                  >
+                    <CardMedia
+                      component="img"
+                      height="200"
+                      image={
+                        filmSim.thumbnail || "/default-film-sim-thumbnail.jpg"
+                      }
+                      alt={filmSim.name}
+                      sx={{ objectFit: "cover" }}
+                    />
+                    <CardContent>
+                      <Typography variant="h6" component="div">
+                        {filmSim.name}
+                      </Typography>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          </>
+        )}
+      </Stack>
     </Container>
   );
 };
