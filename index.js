@@ -14,16 +14,14 @@ const typeDefs = require("./schema/typeDefs");
 const resolvers = require("./schema/resolvers");
 
 const PORT = process.env.PORT || 4000;
-// Ensure MongoDB URI is properly formatted
-const MONGO_URI = process.env.MONGODB_URI
-  ? process.env.MONGODB_URI.startsWith("mongodb://") ||
-    process.env.MONGODB_URI.startsWith("mongodb+srv://")
-    ? process.env.MONGODB_URI
-    : `mongodb://${process.env.MONGODB_URI}`
-  : "mongodb://localhost:27017/visor";
-
+const MONGO_URI = process.env.MONGODB_URI;
 const NODE_ENV = process.env.NODE_ENV || "development";
 const RENDER_URL = process.env.RENDER_URL || "http://localhost:4000";
+
+if (!MONGO_URI) {
+  console.error("MONGODB_URI environment variable is not set");
+  process.exit(1);
+}
 
 const startServer = async () => {
   const app = express();
@@ -102,16 +100,10 @@ const startServer = async () => {
       cors: false,
     });
 
-    // Add MongoDB connection options
-    const mongooseOptions = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    };
-
     console.log("Attempting to connect to MongoDB...");
-    await mongoose.connect(MONGO_URI, mongooseOptions);
+    console.log("MongoDB URI:", MONGO_URI.replace(/:[^:@]*@/, ":****@")); // Hide password in logs
+
+    await mongoose.connect(MONGO_URI);
     console.log("✅ MongoDB connected");
 
     app.listen(PORT, "0.0.0.0", () => {
