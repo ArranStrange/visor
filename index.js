@@ -14,22 +14,40 @@ const typeDefs = require("./schema/typeDefs");
 const resolvers = require("./schema/resolvers");
 
 const PORT = process.env.PORT || 4000;
-const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/visor";
+// Ensure MongoDB URI is properly formatted
+const MONGO_URI = process.env.MONGODB_URI
+  ? process.env.MONGODB_URI.startsWith("mongodb://") ||
+    process.env.MONGODB_URI.startsWith("mongodb+srv://")
+    ? process.env.MONGODB_URI
+    : `mongodb://${process.env.MONGODB_URI}`
+  : "mongodb://localhost:27017/visor";
+
+const NODE_ENV = process.env.NODE_ENV || "development";
+const RENDER_URL = process.env.RENDER_URL || "http://localhost:4000";
 
 const startServer = async () => {
   const app = express();
 
-  // Use CORS with credentials and allow all origins
-  app.use(
-    cors({
-      origin: function (origin, callback) {
-        callback(null, true); // Allow all origins
-      },
-      credentials: true, // Enable credentials
-    })
-  );
+  // Configure CORS based on environment
+  const corsOptions = {
+    origin:
+      NODE_ENV === "production" ? [process.env.CLIENT_URL, RENDER_URL] : true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  };
+  app.use(cors(corsOptions));
 
   app.use(express.json());
+
+  // Health check endpoint for Render
+  app.get("/health", (req, res) => {
+    res.status(200).json({
+      status: "healthy",
+      environment: NODE_ENV,
+      timestamp: new Date().toISOString(),
+    });
+  });
 
   // Serve uploaded images
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
@@ -37,88 +55,80 @@ const startServer = async () => {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
+    persistedQueries: {
+      cache: "bounded",
+    },
     context: async ({ req }) => {
-      console.log("Apollo context - Headers:", req.headers);
-
       // Get the token from the Authorization header
       const authHeader = req.headers.authorization || "";
       const token = authHeader.split(" ")[1];
-      console.log("Apollo context - Token:", token);
 
       if (!token) {
-        console.log("Apollo context - No token provided");
         return { user: null };
       }
 
       try {
-        // Verify the token
-        console.log(
-          "Apollo context - Verifying token with secret:",
-          JWT_SECRET
-        );
         const decoded = jwt.verify(token, JWT_SECRET);
-        console.log("Apollo context - Decoded token:", decoded);
-
-        // Get the user ID from the token
         const userId = decoded.id;
+
         if (!userId) {
-          console.log("Apollo context - Token missing user ID");
           return { user: null };
         }
 
-        // Find the user
-        console.log("Apollo context - Looking for user with ID:", userId);
         const user = await User.findById(userId);
-        console.log("Apollo context - Found user:", user);
 
         if (!user) {
-          console.log("Apollo context - User not found");
           return { user: null };
         }
 
-        // Return the user in the context
-        const userContext = {
-          ...user.toObject(),
-          id: user._id,
+        return {
+          user: {
+            ...user.toObject(),
+            id: user._id,
+          },
         };
-        console.log("Apollo context - Returning user context:", userContext);
-        return { user: userContext };
       } catch (err) {
-        console.error("Apollo context - Error:", err);
-        if (err.name === "JsonWebTokenError") {
-          console.log("Apollo context - JWT verification failed");
-        }
-        if (err.name === "TokenExpiredError") {
-          console.log("Apollo context - Token expired");
-        }
+        console.error("Authentication error:", err.message);
         return { user: null };
       }
     },
   });
 
-  await server.start();
-  server.applyMiddleware({
-    app,
-    path: "/graphql",
-    cors: false, // Disable Apollo's internal CORS handling
-  });
+  try {
+    await server.start();
+    server.applyMiddleware({
+      app,
+      path: "/graphql",
+      cors: false,
+    });
 
-  mongoose
-    .connect(MONGO_URI, {
+    // Add MongoDB connection options
+    const mongooseOptions = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
-    })
-    .then(() => {
-      console.log("✅ MongoDB connected");
-      app.listen(PORT, "0.0.0.0", () =>
-        console.log(
-          `🚀 Server running at http://0.0.0.0:${PORT}${server.graphqlPath}`
-        )
-      );
-    })
-    .catch((err) => {
-      console.error("❌ MongoDB connection error:", err);
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    };
+
+    console.log("Attempting to connect to MongoDB...");
+    await mongoose.connect(MONGO_URI, mongooseOptions);
+    console.log("✅ MongoDB connected");
+
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`🚀 Server running in ${NODE_ENV} mode`);
+      console.log(`🚀 Server running at ${RENDER_URL}`);
+      console.log(`🚀 GraphQL endpoint: ${RENDER_URL}${server.graphqlPath}`);
     });
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
 };
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err) => {
+  console.error("Unhandled Promise Rejection:", err);
+  process.exit(1);
+});
 
 startServer();
