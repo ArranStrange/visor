@@ -1,0 +1,2 @@
+createTag(input: CreateTagInput!): Tag
+relateTags(tagId: ID!, relatedIds: [ID!]!): Tag
