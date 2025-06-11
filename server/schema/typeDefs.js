@@ -381,7 +381,7 @@ module.exports = gql`
     deleteComment(id: ID!): Boolean
 
     createUserList(input: CreateUserListInput!): UserList
-    updateUserList(id: ID!, input: UpdateUserListInput!): UserList
+    updateUserList(id: ID!, input: UpdateUserListInput!): UserList!
     deleteUserList(id: ID!): Boolean
     addToUserList(listId: ID!, presetIds: [ID!], filmSimIds: [ID!]): UserList
     removeFromUserList(listId: ID!, presetId: ID, filmSimId: ID): UserList

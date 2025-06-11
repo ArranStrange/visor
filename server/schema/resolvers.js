@@ -792,6 +792,60 @@ module.exports = {
         throw error;
       }
     },
+
+    updateUserList: async (_, { id, input }, { user }) => {
+      console.log("updateUserList called with:", {
+        id,
+        input,
+        userId: user?._id,
+      });
+
+      if (!user) {
+        throw new Error("You must be logged in to update a list");
+      }
+
+      // Find the list and check ownership
+      const list = await UserList.findById(id);
+      if (!list) {
+        throw new Error("List not found");
+      }
+
+      if (list.owner.toString() !== user._id.toString()) {
+        throw new Error("You can only update your own lists");
+      }
+
+      // Update the list with the new values
+      const updatedList = await UserList.findByIdAndUpdate(
+        id,
+        {
+          $set: {
+            name: input.name,
+            description: input.description,
+            isPublic: input.isPublic,
+          },
+        },
+        { new: true }
+      ).populate("owner", "_id username avatar");
+
+      if (!updatedList) {
+        throw new Error("Failed to update list");
+      }
+
+      console.log("List updated successfully:", updatedList);
+
+      // Format the response
+      return {
+        id: updatedList._id.toString(),
+        name: updatedList.name,
+        description: updatedList.description,
+        isPublic: updatedList.isPublic,
+        owner: {
+          id: updatedList.owner._id.toString(),
+          username: updatedList.owner.username,
+          avatar: updatedList.owner.avatar,
+        },
+      };
+    },
   },
 
   Preset: {

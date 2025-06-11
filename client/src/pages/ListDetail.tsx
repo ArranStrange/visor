@@ -77,7 +77,7 @@ const GET_LIST = gql`
 `;
 
 const UPDATE_LIST = gql`
-  mutation UpdateList($id: ID!, $input: JSON!) {
+  mutation UpdateList($id: ID!, $input: UpdateUserListInput!) {
     updateUserList(id: $id, input: $input) {
       id
       name
@@ -86,6 +86,7 @@ const UPDATE_LIST = gql`
       owner {
         id
         username
+        avatar
       }
     }
   }
@@ -149,13 +150,12 @@ const ListDetail: React.FC = () => {
 
   const [updateList] = useMutation(UPDATE_LIST, {
     onCompleted: () => {
-      setSuccess("List updated successfully!");
+      refetch();
+      setSuccess("List updated successfully");
       setIsEditing(false);
-      setTimeout(() => setSuccess(null), 3000);
     },
     onError: (error) => {
       setError(error.message);
-      setTimeout(() => setError(null), 3000);
     },
   });
 
@@ -181,25 +181,33 @@ const ListDetail: React.FC = () => {
     },
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, checked } = e.target;
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    const checked =
+      type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "isPublic" ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
       await updateList({
         variables: {
           id,
-          input: formData,
+          input: {
+            name: formData.name,
+            description: formData.description,
+            isPublic: formData.isPublic,
+          },
         },
       });
     } catch (err) {
-      console.error("Error updating list:", err);
+      setError(err instanceof Error ? err.message : "Failed to update list");
     }
   };
 
