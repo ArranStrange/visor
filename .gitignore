@@ -21,4 +21,12 @@ uploads/
 .vscode/
 *.swp
 *.swo
-.DS_Store 
+.DS_Store
+
+# Vite/React
+frontend/node_modules
+frontend/dist
+
+# Backend
+backend/node_modules
+backend/dist
