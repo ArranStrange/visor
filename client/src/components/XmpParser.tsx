@@ -15,6 +15,7 @@ import {
 import { CloudUpload } from "@mui/icons-material";
 import ToneCurve from "./ToneCurve";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SettingSliderDisplay from "./SettingSliderDisplay";
 
 interface ParsedSettings {
   version?: string;
@@ -219,30 +220,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
     return num.toFixed(1);
   };
 
-  // Helper to render a slider-like display
-  const SettingSliderDisplay = ({
-    label,
-    value,
-  }: {
-    label: string;
-    value: any;
-  }) => (
-    <Stack direction="row" alignItems="center" spacing={2} sx={{ my: 1 }}>
-      <Typography sx={{ minWidth: 120 }} color="text.secondary">
-        {label}
-      </Typography>
-      <Slider
-        value={Number(value)}
-        min={-100}
-        max={100}
-        step={1}
-        disabled
-        sx={{ width: 180 }}
-      />
-      <Typography sx={{ minWidth: 32 }}>{formatSettingValue(value)}</Typography>
-    </Stack>
-  );
-
   // Helper to render a section
   const renderAccordionSection = (
     title: string,
@@ -269,8 +246,8 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
                 settings[key] !== undefined ? (
                   <SettingSliderDisplay
                     key={key}
-                    label={key}
-                    value={settings[key]}
+                    label={key.charAt(0).toUpperCase() + key.slice(1)}
+                    value={formatSettingValue(settings[key])}
                   />
                 ) : null
               )}
@@ -394,15 +371,15 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
                 <Box>
                   <SettingSliderDisplay
                     label="Amount"
-                    value={parsedSettings.grain.amount}
+                    value={formatSettingValue(parsedSettings.grain.amount)}
                   />
                   <SettingSliderDisplay
                     label="Size"
-                    value={parsedSettings.grain.size}
+                    value={formatSettingValue(parsedSettings.grain.size)}
                   />
                   <SettingSliderDisplay
                     label="Frequency"
-                    value={parsedSettings.grain.frequency}
+                    value={formatSettingValue(parsedSettings.grain.frequency)}
                   />
                 </Box>
               )}
@@ -415,7 +392,7 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
                 parsedSettings,
                 <SettingSliderDisplay
                   label="Amount"
-                  value={parsedSettings.vignette.amount}
+                  value={formatSettingValue(parsedSettings.vignette.amount)}
                 />
               )}
 
@@ -450,23 +427,33 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
                 <Box>
                   <SettingSliderDisplay
                     label="Shadow Hue"
-                    value={parsedSettings.splitToning.shadowHue}
+                    value={formatSettingValue(
+                      parsedSettings.splitToning.shadowHue
+                    )}
                   />
                   <SettingSliderDisplay
                     label="Shadow Saturation"
-                    value={parsedSettings.splitToning.shadowSaturation}
+                    value={formatSettingValue(
+                      parsedSettings.splitToning.shadowSaturation
+                    )}
                   />
                   <SettingSliderDisplay
                     label="Highlight Hue"
-                    value={parsedSettings.splitToning.highlightHue}
+                    value={formatSettingValue(
+                      parsedSettings.splitToning.highlightHue
+                    )}
                   />
                   <SettingSliderDisplay
                     label="Highlight Saturation"
-                    value={parsedSettings.splitToning.highlightSaturation}
+                    value={formatSettingValue(
+                      parsedSettings.splitToning.highlightSaturation
+                    )}
                   />
                   <SettingSliderDisplay
                     label="Balance"
-                    value={parsedSettings.splitToning.balance}
+                    value={formatSettingValue(
+                      parsedSettings.splitToning.balance
+                    )}
                   />
                 </Box>
               )}

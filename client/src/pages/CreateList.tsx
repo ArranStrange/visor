@@ -18,7 +18,7 @@ import { gql } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 
 const CREATE_LIST = gql`
-  mutation CreateList($input: JSON!) {
+  mutation CreateList($input: CreateUserListInput!) {
     createUserList(input: $input) {
       id
       name

@@ -28,9 +28,9 @@ function App() {
     <ApolloProvider client={client}>
       <ThemeProvider theme={visorTheme}>
         <CssBaseline />
-        <AuthProvider>
-          <ContentTypeProvider>
-            <Router>
+        <Router>
+          <AuthProvider>
+            <ContentTypeProvider>
               <NavBar />
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -48,9 +48,9 @@ function App() {
                 <Route path="/create-list" element={<CreateList />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </Router>
-          </ContentTypeProvider>
-        </AuthProvider>
+            </ContentTypeProvider>
+          </AuthProvider>
+        </Router>
       </ThemeProvider>
     </ApolloProvider>
   );

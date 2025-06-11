@@ -43,6 +43,7 @@ import {
   ToneCurve as ToneCurveType,
   UploadPresetInput,
 } from "../types/graphql";
+import SettingSliderDisplay from "../components/SettingSliderDisplay";
 
 type UploadType = "preset" | "filmsim";
 
@@ -463,6 +464,51 @@ const UploadPreset: React.FC = () => {
     }
   };
 
+  const formatSettingValue = (value: number) => {
+    return value.toFixed(1);
+  };
+
+  const parseSettingValue = (value: string) => {
+    const num = parseFloat(value);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const renderAccordionSection = (
+    title: string,
+    settings: string[],
+    customContent?: React.ReactNode
+  ) => {
+    if (!parsedSettings) return null;
+
+    const hasSettings = settings.some(
+      (setting) => parsedSettings[setting] !== undefined
+    );
+    const hasCustomContent = !!customContent;
+
+    if (!hasSettings && !hasCustomContent) return null;
+
+    return (
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography>{title}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          {settings.map((setting) => {
+            if (parsedSettings[setting] === undefined) return null;
+            return (
+              <SettingSliderDisplay
+                key={setting}
+                label={setting.charAt(0).toUpperCase() + setting.slice(1)}
+                value={formatSettingValue(parsedSettings[setting])}
+              />
+            );
+          })}
+          {customContent}
+        </AccordionDetails>
+      </Accordion>
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Paper sx={{ p: 4 }}>
@@ -505,6 +551,88 @@ const UploadPreset: React.FC = () => {
               </Typography>
               <XmpParser onSettingsParsed={handleSettingsParsed} />
             </Box>
+
+            {parsedSettings && (
+              <>
+                {renderAccordionSection("Light", [
+                  "exposure",
+                  "contrast",
+                  "highlights",
+                  "shadows",
+                  "whites",
+                  "blacks",
+                ])}
+
+                {renderAccordionSection("Color", [
+                  "temp",
+                  "tint",
+                  "vibrance",
+                  "saturation",
+                ])}
+
+                {renderAccordionSection("Effects", ["clarity", "dehaze"])}
+
+                {renderAccordionSection(
+                  "Grain",
+                  [],
+                  <Box>
+                    {parsedSettings.grain && (
+                      <>
+                        <SettingSliderDisplay
+                          label="Amount"
+                          value={formatSettingValue(
+                            parsedSettings.grain.amount / 100
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Size"
+                          value={formatSettingValue(
+                            parsedSettings.grain.size / 100
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Roughness"
+                          value={formatSettingValue(
+                            parsedSettings.grain.roughness / 100
+                          )}
+                        />
+                      </>
+                    )}
+                  </Box>
+                )}
+
+                {renderAccordionSection(
+                  "Noise Reduction",
+                  [],
+                  <Box>
+                    {parsedSettings.noiseReduction && (
+                      <>
+                        <SettingSliderDisplay
+                          label="Luminance"
+                          value={formatSettingValue(
+                            parsedSettings.noiseReduction.luminance / 100
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Color"
+                          value={formatSettingValue(
+                            parsedSettings.noiseReduction.color / 100
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Detail"
+                          value={formatSettingValue(
+                            parsedSettings.noiseReduction.detail / 100
+                          )}
+                        />
+                      </>
+                    )}
+                  </Box>
+                )}
+
+                {renderAccordionSection("Detail", ["sharpening"])}
+              </>
+            )}
 
             <Box>
               <Typography variant="subtitle1" gutterBottom>

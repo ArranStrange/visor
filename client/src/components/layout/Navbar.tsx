@@ -22,17 +22,16 @@ import ListIcon from "@mui/icons-material/List";
 import ForumIcon from "@mui/icons-material/Forum";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
-
+import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
 
 const NavBar: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const token = localStorage.getItem("token");
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -43,10 +42,8 @@ const NavBar: React.FC = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    logout();
     handleMenuClose();
-    navigate("/login");
   };
 
   const menuItems = [
@@ -118,7 +115,7 @@ const NavBar: React.FC = () => {
             <UploadIcon />
           </IconButton>
 
-          {token ? (
+          {isAuthenticated && user ? (
             <>
               <IconButton
                 onClick={handleMenuOpen}

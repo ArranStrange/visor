@@ -103,7 +103,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
             {tags.slice(0, 3).map((tag, index) => (
               <Chip
-                key={`${id}-tag-${index}-${tag.displayName}`}
+                key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
                 label={tag.displayName}
                 size="small"
                 variant="outlined"
