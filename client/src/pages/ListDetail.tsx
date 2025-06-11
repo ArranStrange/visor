@@ -27,6 +27,28 @@ import { useContentType } from "../context/ContentTypeFilter";
 import StaggeredGrid from "../components/StaggeredGrid";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 
+interface FilmSim {
+  _id: string;
+  name: string;
+  thumbnail?: string;
+  filmType: string;
+  cameraModel: string;
+}
+
+interface Preset {
+  _id: string;
+  name: string;
+  thumbnail?: string;
+  cameraModel: string;
+  lensModel: string;
+}
+
+interface CacheList {
+  _id: string;
+  presets: Array<{ _id: string }>;
+  filmSims: Array<{ _id: string }>;
+}
+
 const GET_LIST = gql`
   query GetList($id: ID!) {
     getUserList(id: $id) {
@@ -61,6 +83,10 @@ const UPDATE_LIST = gql`
       name
       description
       isPublic
+      owner {
+        id
+        username
+      }
     }
   }
 `;
@@ -72,8 +98,12 @@ const DELETE_LIST = gql`
 `;
 
 const REMOVE_ITEM = gql`
-  mutation RemoveItemFromList($listId: ID!, $type: String!, $itemId: ID!) {
-    removeItemFromList(listId: $listId, type: $type, itemId: $itemId) {
+  mutation RemoveFromUserList($listId: ID!, $presetId: ID, $filmSimId: ID) {
+    removeFromUserList(
+      listId: $listId
+      presetId: $presetId
+      filmSimId: $filmSimId
+    ) {
       id
       presets {
         id
@@ -185,25 +215,73 @@ const ListDetail: React.FC = () => {
     }
   };
 
-  const handleRemoveItem = async (
-    type: "preset" | "filmSim",
-    itemId: string
-  ) => {
+  const handleRemoveItem = async (itemId: string, isFilmSim: boolean) => {
     if (
       window.confirm(
-        `Are you sure you want to remove this ${type} from the list?`
+        `Are you sure you want to remove this ${
+          isFilmSim ? "film sim" : "preset"
+        } from the list?`
       )
     ) {
       try {
         await removeItem({
           variables: {
             listId: id,
-            type: type === "preset" ? "Preset" : "FilmSim",
-            itemId,
+            ...(isFilmSim ? { filmSimId: itemId } : { presetId: itemId }),
+          },
+          update(cache) {
+            // Read the current list data from cache
+            const existingList = cache.readFragment<CacheList>({
+              id: `UserList:${id}`,
+              fragment: gql`
+                fragment ExistingList on UserList {
+                  _id
+                  presets {
+                    _id
+                  }
+                  filmSims {
+                    _id
+                  }
+                }
+              `,
+            });
+
+            if (existingList) {
+              // Create updated lists by filtering out the removed item
+              const updatedPresets = isFilmSim
+                ? existingList.presets.filter((p: any) => p._id !== itemId)
+                : existingList.presets;
+
+              const updatedFilmSims = isFilmSim
+                ? existingList.filmSims.filter((f: any) => f._id !== itemId)
+                : existingList.filmSims;
+
+              // Write the updated data back to cache
+              cache.writeFragment({
+                id: `UserList:${id}`,
+                fragment: gql`
+                  fragment UpdatedList on UserList {
+                    presets {
+                      _id
+                    }
+                    filmSims {
+                      _id
+                    }
+                  }
+                `,
+                data: {
+                  presets: updatedPresets,
+                  filmSims: updatedFilmSims,
+                },
+              });
+            }
           },
         });
-      } catch (err) {
-        console.error("Error removing item:", err);
+
+        setSuccess("Item removed from list successfully");
+      } catch (error) {
+        console.error("Error removing item:", error);
+        setError("Failed to remove item from list");
       }
     }
   };
@@ -232,66 +310,80 @@ const ListDetail: React.FC = () => {
   const list = data?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
 
-  const renderCard = (item: any, type: "preset" | "filmSim") => (
-    <Card
-      sx={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        cursor: "pointer",
-        transition: "transform 0.2s ease-in-out",
-        position: "relative",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: 3,
-        },
-      }}
-      onClick={() =>
-        !isEditing &&
-        navigate(
-          type === "preset" ? `/preset/${item.slug}` : `/film-sim/${item.slug}`
-        )
-      }
-    >
-      {isEditing && (
-        <IconButton
+  const renderCard = (item: FilmSim | Preset) => {
+    if (!item) return null;
+
+    const isFilmSim = "filmType" in item;
+    const thumbnail = item.thumbnail || "/placeholder-image.jpg";
+    const title = item.name || "Untitled";
+    const subtitle = isFilmSim
+      ? `${item.filmType} • ${item.cameraModel}`
+      : `${item.cameraModel} • ${item.lensModel}`;
+
+    return (
+      <Card
+        key={item._id}
+        sx={{
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
+          cursor: isEditing ? "default" : "pointer",
+          "&:hover": {
+            transform: isEditing ? "none" : "translateY(-4px)",
+            boxShadow: isEditing ? 1 : 3,
+          },
+          transition: "all 0.2s ease-in-out",
+        }}
+        onClick={() => {
+          if (!isEditing) {
+            navigate(
+              isFilmSim ? `/film-sims/${item._id}` : `/presets/${item._id}`
+            );
+          }
+        }}
+      >
+        <CardMedia
+          component="img"
+          height="200"
+          image={thumbnail}
+          alt={title}
           sx={{
-            position: "absolute",
-            top: 8,
-            right: 8,
-            backgroundColor: "rgba(255, 255, 255, 0.8)",
-            "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.9)",
-            },
-            zIndex: 1,
+            objectFit: "cover",
+            backgroundColor: "grey.100",
           }}
-          onClick={(e) => {
-            e.stopPropagation();
-            handleRemoveItem(type, item.id);
-          }}
-        >
-          <DeleteIcon color="error" />
-        </IconButton>
-      )}
-      <CardMedia
-        component="img"
-        height="200"
-        image={
-          item.thumbnail ||
-          (type === "preset"
-            ? "/default-preset-thumbnail.jpg"
-            : "/default-film-sim-thumbnail.jpg")
-        }
-        alt={type === "preset" ? item.title : item.name}
-        sx={{ objectFit: "cover" }}
-      />
-      <CardContent>
-        <Typography variant="h6" component="div">
-          {type === "preset" ? item.title : item.name}
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+        />
+        <CardContent sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" gutterBottom>
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {subtitle}
+          </Typography>
+        </CardContent>
+        {isEditing && (
+          <IconButton
+            size="small"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleRemoveItem(item._id, isFilmSim);
+            }}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              backgroundColor: "rgba(255, 255, 255, 0.8)",
+              "&:hover": {
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+              },
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        )}
+      </Card>
+    );
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -420,10 +512,10 @@ const ListDetail: React.FC = () => {
         <Box sx={{ width: "100%", minHeight: "200px" }}>
           <StaggeredGrid>
             {contentType === "all" || contentType === "presets"
-              ? list?.presets?.map((preset) => renderCard(preset, "preset"))
+              ? list?.presets?.map((preset) => renderCard(preset))
               : null}
             {contentType === "all" || contentType === "films"
-              ? list?.filmSims?.map((filmSim) => renderCard(filmSim, "filmSim"))
+              ? list?.filmSims?.map((filmSim) => renderCard(filmSim))
               : null}
           </StaggeredGrid>
         </Box>

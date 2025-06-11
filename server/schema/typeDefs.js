@@ -379,6 +379,12 @@ module.exports = gql`
     createComment(input: CreateCommentInput!): Comment
     reactToComment(commentId: ID!, reaction: String!): Comment
     deleteComment(id: ID!): Boolean
+
+    createUserList(input: CreateUserListInput!): UserList
+    updateUserList(id: ID!, input: UpdateUserListInput!): UserList
+    deleteUserList(id: ID!): Boolean
+    addToUserList(listId: ID!, presetIds: [ID!], filmSimIds: [ID!]): UserList
+    removeFromUserList(listId: ID!, presetId: ID, filmSimId: ID): UserList
   }
 
   type VignetteSettings {
@@ -465,5 +471,17 @@ module.exports = gql`
     notes: String
     beforeImage: Upload
     afterImage: Upload
+  }
+
+  input CreateUserListInput {
+    name: String!
+    description: String
+    isPublic: Boolean
+  }
+
+  input UpdateUserListInput {
+    name: String
+    description: String
+    isPublic: Boolean
   }
 `;

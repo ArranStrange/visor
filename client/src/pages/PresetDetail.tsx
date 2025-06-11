@@ -21,6 +21,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
+import AddToListButton from "../components/AddToListButton";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
@@ -160,7 +161,9 @@ const PresetDetails: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="md" sx={{ mt: 6, mb: 10 }}>
+    <Container maxWidth="md" sx={{ mt: 6, mb: 10, position: "relative" }}>
+      <AddToListButton presetId={preset.id} itemName={preset.title} />
+
       {/* Title & Creator */}
       <Box mb={3}>
         <Typography variant="h4" fontWeight="bold">

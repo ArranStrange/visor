@@ -714,6 +714,84 @@ module.exports = {
         throw new Error("Failed to upload film simulation: " + error.message);
       }
     },
+
+    removeFromUserList: async (
+      _,
+      { listId, presetId, filmSimId },
+      { user }
+    ) => {
+      if (!user) {
+        throw new AuthenticationError("You must be logged in to modify lists");
+      }
+
+      try {
+        const list = await UserList.findById(listId);
+        if (!list) {
+          throw new Error("List not found");
+        }
+
+        // Check if user is the owner
+        if (list.owner.toString() !== user._id.toString()) {
+          throw new AuthenticationError(
+            "You don't have permission to modify this list"
+          );
+        }
+
+        // Remove the item based on type
+        if (presetId) {
+          list.presets = list.presets.filter(
+            (id) => id.toString() !== presetId
+          );
+        }
+        if (filmSimId) {
+          list.filmSims = list.filmSims.filter(
+            (id) => id.toString() !== filmSimId
+          );
+        }
+
+        await list.save();
+        return list;
+      } catch (error) {
+        console.error("Error removing item from list:", error);
+        throw error;
+      }
+    },
+
+    addToUserList: async (_, { listId, presetIds, filmSimIds }, { user }) => {
+      if (!user) {
+        throw new AuthenticationError("You must be logged in to modify lists");
+      }
+
+      try {
+        const list = await UserList.findById(listId);
+        if (!list) {
+          throw new Error("List not found");
+        }
+
+        // Check if user is the owner
+        if (list.owner.toString() !== user._id.toString()) {
+          throw new AuthenticationError(
+            "You don't have permission to modify this list"
+          );
+        }
+
+        // Add presets if provided
+        if (presetIds && presetIds.length > 0) {
+          list.presets = [...new Set([...list.presets, ...presetIds])];
+        }
+
+        // Add film sims if provided
+        if (filmSimIds && filmSimIds.length > 0) {
+          list.filmSims = [...new Set([...list.filmSims, ...filmSimIds])];
+        }
+
+        await list.save();
+        return list;
+      } catch (error) {
+        console.error("Error adding to list:", error);
+        throw error;
+      }
+    },
   },
 
   Preset: {

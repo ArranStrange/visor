@@ -13,6 +13,7 @@ import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import PresetCard from "../components/PresetCard";
+import AddToListButton from "../components/AddToListButton";
 
 const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
@@ -62,7 +63,9 @@ const FilmSimDetails: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Container maxWidth="lg" sx={{ py: 4, position: "relative" }}>
+      <AddToListButton filmSimId={filmSim.id} itemName={filmSim.name} />
+
       {/* Header */}
       <Typography variant="h4" fontWeight={700} gutterBottom>
         {filmSim.name}
@@ -183,6 +186,7 @@ const FilmSimDetails: React.FC = () => {
             <PresetCard
               id={preset.id}
               title={preset.title}
+              slug={preset.slug}
               thumbnail={preset.thumbnail}
               tags={preset.tags}
               creator={{
