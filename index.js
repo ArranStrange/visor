@@ -18,8 +18,40 @@ const MONGO_URI = process.env.MONGODB_URI;
 const NODE_ENV = process.env.NODE_ENV || "development";
 const RENDER_URL = process.env.RENDER_URL || "http://localhost:4000";
 
+// Validate MongoDB URI
 if (!MONGO_URI) {
-  console.error("MONGODB_URI environment variable is not set");
+  console.error("❌ MONGODB_URI environment variable is not set");
+  process.exit(1);
+}
+
+if (!MONGO_URI.startsWith("mongodb+srv://")) {
+  console.error("❌ MONGODB_URI must start with 'mongodb+srv://'");
+  console.error("Current URI format:", MONGO_URI.split("@")[0] + "@****");
+  process.exit(1);
+}
+
+// Validate URI components
+try {
+  const uriParts = MONGO_URI.split("@");
+  if (uriParts.length !== 2) {
+    throw new Error("Invalid URI format");
+  }
+
+  const [protocol, rest] = uriParts;
+  if (!protocol.startsWith("mongodb+srv://")) {
+    throw new Error("Invalid protocol");
+  }
+
+  const [credentials, host] = rest.split("/");
+  if (!credentials || !host) {
+    throw new Error("Missing credentials or host");
+  }
+
+  console.log("✅ MongoDB URI format validation passed");
+  console.log("🔒 Protocol:", protocol);
+  console.log("🌐 Host:", host.split("?")[0]);
+} catch (error) {
+  console.error("❌ MongoDB URI validation failed:", error.message);
   process.exit(1);
 }
 
