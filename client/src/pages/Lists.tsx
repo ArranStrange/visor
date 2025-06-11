@@ -28,22 +28,21 @@ const GET_USER_LISTS = gql`
       name
       description
       isPublic
-      isFavouriteList
+      owner {
+        id
+        username
+      }
       presets {
         id
         title
         slug
-        sampleImages {
-          url
-        }
+        thumbnail
       }
       filmSims {
         id
         name
         slug
-        sampleImages {
-          url
-        }
+        thumbnail
       }
     }
   }
@@ -119,8 +118,8 @@ const Lists: React.FC = () => {
   const renderListCard = (list: any) => {
     // Get the first preset or film sim thumbnail for the card
     const thumbnailUrl =
-      list.presets?.[0]?.sampleImages?.[0]?.url ||
-      list.filmSims?.[0]?.sampleImages?.[0]?.url ||
+      list.presets?.[0]?.thumbnail ||
+      list.filmSims?.[0]?.thumbnail ||
       "/default-list-thumbnail.jpg";
 
     return (
@@ -147,11 +146,7 @@ const Lists: React.FC = () => {
         />
         <CardContent sx={{ flexGrow: 1 }}>
           <Box display="flex" alignItems="center" gap={1} mb={1}>
-            {list.isFavouriteList ? (
-              <FavoriteIcon color="primary" />
-            ) : (
-              <ListIcon color="primary" />
-            )}
+            <ListIcon color="primary" />
             <Typography variant="h6" component="div">
               {list.name}
             </Typography>
@@ -177,8 +172,6 @@ const Lists: React.FC = () => {
   };
 
   const lists = data?.getUserLists || [];
-  const favoritesList = lists.find((list: any) => list.isFavouriteList);
-  const customLists = lists.filter((list: any) => !list.isFavouriteList);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -197,8 +190,7 @@ const Lists: React.FC = () => {
         </Box>
 
         <StaggeredGrid>
-          {favoritesList && renderListCard(favoritesList)}
-          {customLists.map((list) => renderListCard(list))}
+          {lists.map((list) => renderListCard(list))}
         </StaggeredGrid>
       </Stack>
     </Container>

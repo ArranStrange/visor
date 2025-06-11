@@ -103,8 +103,51 @@ module.exports = {
 
   Query: {
     getUser: async (_, { id }) => await User.findById(id),
-    getCurrentUser: async (_, __, { user }) =>
-      user ? await User.findById(user._id) : null,
+    getCurrentUser: async (_, __, { user }) => {
+      if (!user) {
+        throw new Error("Not authenticated");
+      }
+
+      try {
+        const foundUser = await User.findById(user._id).populate({
+          path: "customLists",
+          populate: [
+            { path: "presets", select: "id title slug thumbnail" },
+            { path: "filmSims", select: "id name slug thumbnail" },
+          ],
+        });
+
+        if (!foundUser) {
+          throw new Error("User not found");
+        }
+
+        // Convert user to plain object and ensure all IDs are strings
+        const userObj = foundUser.toObject();
+
+        return {
+          ...userObj,
+          id: userObj._id.toString(),
+          customLists:
+            userObj.customLists?.map((list) => ({
+              ...list,
+              id: list._id.toString(),
+              presets:
+                list.presets?.map((preset) => ({
+                  ...preset,
+                  id: preset._id.toString(),
+                })) || [],
+              filmSims:
+                list.filmSims?.map((filmSim) => ({
+                  ...filmSim,
+                  id: filmSim._id.toString(),
+                })) || [],
+            })) || [],
+        };
+      } catch (error) {
+        console.error("Error in getCurrentUser:", error);
+        throw new Error("Error fetching user profile");
+      }
+    },
     searchUsers: async (_, { query }) =>
       await User.find({ username: new RegExp(query, "i") }),
 
@@ -157,21 +200,43 @@ module.exports = {
         const lists = await UserList.find({ owner: userId })
           .populate({
             path: "presets",
-            select: "id title slug sampleImages",
+            select: "id title slug thumbnail",
             populate: {
-              path: "sampleImages",
+              path: "thumbnail",
               select: "id url",
             },
           })
           .populate({
             path: "filmSims",
-            select: "id name slug sampleImages",
+            select: "id name slug thumbnail",
             populate: {
-              path: "sampleImages",
+              path: "thumbnail",
               select: "id url",
             },
           });
-        return lists;
+
+        // Convert all ObjectIds to strings
+        return lists.map((list) => {
+          const listObj = list.toObject();
+          return {
+            ...listObj,
+            id: listObj._id.toString(),
+            owner: {
+              id: listObj.owner.toString(),
+              username: listObj.owner.username || "",
+            },
+            presets:
+              listObj.presets?.map((preset) => ({
+                ...preset,
+                id: preset._id.toString(),
+              })) || [],
+            filmSims:
+              listObj.filmSims?.map((filmSim) => ({
+                ...filmSim,
+                id: filmSim._id.toString(),
+              })) || [],
+          };
+        });
       } catch (error) {
         console.error("Error getting user lists:", error);
         throw new Error("Failed to get user lists: " + error.message);

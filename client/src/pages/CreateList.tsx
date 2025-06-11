@@ -24,22 +24,19 @@ const CREATE_LIST = gql`
       name
       description
       isPublic
-      isFavouriteList
+      owner {
+        id
+        username
+      }
       presets {
         id
         title
         slug
-        sampleImages {
-          url
-        }
       }
       filmSims {
         id
         name
         slug
-        sampleImages {
-          url
-        }
       }
     }
   }
@@ -52,7 +49,6 @@ const CreateList: React.FC = () => {
     name: "",
     description: "",
     isPublic: false,
-    isFavouriteList: false,
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -94,6 +90,7 @@ const CreateList: React.FC = () => {
       });
     } catch (err) {
       console.error("Error creating list:", err);
+      setLoading(false);
     }
   };
 
