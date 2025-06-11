@@ -58,9 +58,29 @@ try {
 const startServer = async () => {
   const app = express();
 
-  // Configure CORS
+  // Configure CORS based on environment
+  const allowedOrigins =
+    NODE_ENV === "production"
+      ? ["https://visor-c51a1.web.app", "https://visor-c51a1.firebaseapp.com"]
+      : [
+          "http://localhost:5173",
+          "http://localhost:5174",
+          "http://localhost:3000",
+        ];
+
   const corsOptions = {
-    origin: "https://visor-c51a1.web.app",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        console.log("Blocked by CORS:", origin);
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
