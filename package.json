@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "seed": "node seed/seedData.js"
+    "seed": "node seed/seedData.js",
+    "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
     "apollo-server-express": "^3.12.1",

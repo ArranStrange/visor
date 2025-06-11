@@ -58,14 +58,19 @@ try {
 const startServer = async () => {
   const app = express();
 
-  // Configure CORS based on environment
+  // Configure CORS
   const corsOptions = {
-    origin:
-      NODE_ENV === "production" ? [process.env.CLIENT_URL, RENDER_URL] : true,
+    origin: "https://visor-c51a1.web.app",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   };
+
+  // Apply CORS middleware
   app.use(cors(corsOptions));
 
   app.use(express.json());
@@ -129,7 +134,8 @@ const startServer = async () => {
     server.applyMiddleware({
       app,
       path: "/graphql",
-      cors: false,
+      cors: corsOptions,
+      bodyParserConfig: true,
     });
 
     console.log("Attempting to connect to MongoDB...");
