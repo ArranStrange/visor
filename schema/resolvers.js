@@ -10,6 +10,7 @@ const {
 const bcrypt = require("bcryptjs");
 const path = require("path");
 const fs = require("fs");
+const cloudinary = require("cloudinary");
 
 const User = require("../models/User");
 const Preset = require("../models/Preset");
@@ -537,95 +538,127 @@ module.exports = {
       {
         title,
         description,
-        tags,
         settings,
         toneCurve,
         notes,
+        tags,
         beforeImage,
         afterImage,
+        sampleImages,
       },
       { user }
     ) => {
       if (!user) {
-        throw new AuthenticationError(
-          "You must be logged in to upload a preset"
-        );
+        throw new Error("You must be logged in to upload a preset");
       }
 
       try {
-        // Create or find tags
-        const tagIds = await Promise.all(
+        // Process tags - find or create Tag documents
+        const tagDocuments = await Promise.all(
           tags.map(async (tagName) => {
-            const existingTag = await Tag.findOneAndUpdate(
+            // Find existing tag or create new one
+            const tag = await Tag.findOneAndUpdate(
               { name: tagName.toLowerCase() },
-              {
-                name: tagName.toLowerCase(),
-                displayName: tagName,
-                category: "preset",
-              },
-              { new: true, upsert: true }
+              { name: tagName.toLowerCase() },
+              { upsert: true, new: true }
             );
-            return existingTag._id;
+            return tag._id;
           })
         );
 
-        // Generate slug from title
-        const slug = title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, "");
+        // Generate a unique slug
+        const baseSlug = title.toLowerCase().replace(/\s+/g, "-");
+        let slug = baseSlug;
+        let counter = 1;
 
-        // Create sample images if provided
-        let sampleImageIds = [];
-        if (beforeImage || afterImage) {
-          const images = [];
-          if (beforeImage) {
-            const beforeImageUrl = await handleFileUpload(
-              beforeImage,
-              "images"
-            );
-            const beforeImageDoc = await Image.create({
-              url: beforeImageUrl,
-              uploader: user.id,
-              isBeforeImage: true,
-              isAfterImage: false,
-            });
-            images.push(beforeImageDoc);
-          }
-          if (afterImage) {
-            const afterImageUrl = await handleFileUpload(afterImage, "images");
-            const afterImageDoc = await Image.create({
-              url: afterImageUrl,
-              uploader: user.id,
-              isBeforeImage: false,
-              isAfterImage: true,
-            });
-            images.push(afterImageDoc);
-          }
-          sampleImageIds = images.map((img) => img._id);
+        // Keep trying until we find a unique slug
+        while (await Preset.findOne({ slug })) {
+          slug = `${baseSlug}-${Date.now()}`;
         }
 
-        // Parse settings object (accept all fields as sent)
-        const parsedSettings = settings;
-
-        // Create the preset with the parsed settings and toneCurve
-        const preset = await Preset.create({
+        // Create the preset first
+        const preset = new Preset({
           title,
-          slug,
           description,
-          settings: parsedSettings,
-          toneCurve: toneCurve,
+          settings,
+          toneCurve,
           notes,
-          tags: tagIds,
-          sampleImages: sampleImageIds,
-          creator: user.id,
-          isPublished: true,
+          tags: tagDocuments,
+          creator: user._id,
+          slug,
         });
 
-        return preset;
+        // Save the preset to get its ID
+        await preset.save();
+
+        // Create and save before image if provided
+        if (beforeImage) {
+          const beforeImageDoc = new Image({
+            url: beforeImage.url,
+            publicId: beforeImage.publicId,
+            uploader: user._id,
+            isBeforeImage: true,
+            associatedWith: {
+              kind: "Preset",
+              item: preset._id,
+            },
+            submittedAt: new Date(),
+          });
+          await beforeImageDoc.save();
+          preset.beforeImage = beforeImageDoc._id;
+        }
+
+        // Create and save after image if provided
+        if (afterImage) {
+          const afterImageDoc = new Image({
+            url: afterImage.url,
+            publicId: afterImage.publicId,
+            uploader: user._id,
+            isAfterImage: true,
+            associatedWith: {
+              kind: "Preset",
+              item: preset._id,
+            },
+            submittedAt: new Date(),
+          });
+          await afterImageDoc.save();
+          preset.afterImage = afterImageDoc._id;
+        }
+
+        // Create and save sample images if provided
+        if (sampleImages && sampleImages.length > 0) {
+          const sampleImageDocs = await Promise.all(
+            sampleImages.map(async (image) => {
+              const imageDoc = new Image({
+                url: image.url,
+                publicId: image.publicId,
+                uploader: user._id,
+                associatedWith: {
+                  kind: "Preset",
+                  item: preset._id,
+                },
+                submittedAt: new Date(),
+              });
+              await imageDoc.save();
+              return imageDoc._id;
+            })
+          );
+          preset.sampleImages = sampleImageDocs;
+        }
+
+        // Save the preset with all image references
+        await preset.save();
+
+        // Return the populated preset
+        return await Preset.findById(preset._id)
+          .populate("creator")
+          .populate("tags")
+          .populate("beforeImage")
+          .populate("afterImage")
+          .populate("sampleImages");
       } catch (error) {
         console.error("Error uploading preset:", error);
-        throw new Error("Failed to upload preset: " + error.message);
+        throw new Error(`Failed to upload preset: ${error.message}`);
       }
     },
 

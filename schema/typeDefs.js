@@ -71,7 +71,6 @@ module.exports = gql`
     toneCurve: ToneCurve
     notes: String
     tags: [Tag]
-    sampleImages: [Image]
     thumbnail: String
     creator: User!
     filmSim: FilmSim
@@ -81,6 +80,9 @@ module.exports = gql`
     comments: [Comment]
     createdAt: String
     updatedAt: String
+    beforeImage: Image
+    afterImage: Image
+    sampleImages: [Image!]
   }
 
   type FilmSimSettings {
@@ -135,13 +137,21 @@ module.exports = gql`
   type Image {
     id: ID!
     url: String!
-    publicId: String
+    publicId: String!
     caption: String
+    associatedWith: AssociatedWith
     uploader: User
     preset: Preset
     filmSim: FilmSim
     tags: [Tag]
+    isBeforeImage: Boolean
+    isAfterImage: Boolean
     createdAt: String
+  }
+
+  type AssociatedWith {
+    kind: String!
+    item: ID!
   }
 
   type Comment {
@@ -315,6 +325,17 @@ module.exports = gql`
     publicId: String!
   }
 
+  input ImageInput {
+    url: String!
+    publicId: String!
+    associatedWith: AssociatedWithInput
+  }
+
+  input AssociatedWithInput {
+    kind: String!
+    item: ID!
+  }
+
   type Query {
     getUser(id: ID!): User
     getCurrentUser: User
@@ -351,12 +372,13 @@ module.exports = gql`
     uploadPreset(
       title: String!
       description: String
-      tags: [String!]!
       settings: PresetSettingsInput!
       toneCurve: ToneCurveInput
       notes: String
-      beforeImage: Upload
-      afterImage: Upload
+      tags: [String!]!
+      beforeImage: ImageInput
+      afterImage: ImageInput
+      sampleImages: [ImageInput!]
     ): Preset!
 
     uploadFilmSim(

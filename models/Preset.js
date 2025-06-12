@@ -19,6 +19,16 @@ const presetSchema = new Schema(
       type: String, // Path or URL to the uploaded .xmp file
     },
 
+    beforeImage: {
+      type: Schema.Types.ObjectId,
+      ref: "Image",
+    },
+
+    afterImage: {
+      type: Schema.Types.ObjectId,
+      ref: "Image",
+    },
+
     settings: {
       // Light settings
       exposure: { type: Number, default: 0 },

@@ -7,6 +7,7 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("./config/jwt");
 const User = require("./models/User");
+const { graphqlUploadExpress } = require("graphql-upload");
 
 dotenv.config();
 
@@ -94,6 +95,9 @@ const startServer = async () => {
   app.use(cors(corsOptions));
 
   app.use(express.json());
+
+  // Add file upload middleware
+  app.use(graphqlUploadExpress());
 
   // Health check endpoint for Render
   app.get("/health", (req, res) => {
