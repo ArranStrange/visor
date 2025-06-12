@@ -641,7 +641,11 @@ module.exports = {
       }
 
       try {
-        console.log("Received settings:", JSON.stringify(settings, null, 2));
+        console.log("Starting film simulation upload process...");
+        console.log(
+          "Received sample images:",
+          JSON.stringify(sampleImages, null, 2)
+        );
 
         // Create or find tags
         const tagIds = await Promise.all(
@@ -658,6 +662,7 @@ module.exports = {
             return existingTag._id;
           })
         );
+        console.log("Processed tags:", tagIds);
 
         // Generate slug from name
         const slug = name
@@ -671,7 +676,7 @@ module.exports = {
           dynamicRange = `DR${dynamicRange}`;
         }
 
-        // Create the film simulation
+        // Create the film simulation first
         const filmSimData = {
           name,
           slug,
@@ -687,10 +692,7 @@ module.exports = {
             grainEffect: parseInt(settings.grainEffect) || 0,
             clarity: parseInt(settings.clarity) || 0,
             whiteBalance: settings.whiteBalance || "auto",
-            wbShift: {
-              r: parseInt(settings.wbShift?.r) || 0,
-              b: parseInt(settings.wbShift?.b) || 0,
-            },
+            wbShift: settings.wbShift || { r: 0, b: 0 },
           },
           notes,
           tags: tagIds,
@@ -698,11 +700,40 @@ module.exports = {
         };
 
         console.log(
-          "Creating film sim with data:",
+          "Creating film simulation with data:",
           JSON.stringify(filmSimData, null, 2)
         );
-
         const filmSim = await FilmSim.create(filmSimData);
+        console.log("Successfully created film simulation:", filmSim._id);
+
+        // Create sample images if provided
+        let sampleImageIds = [];
+        if (sampleImages && sampleImages.length > 0) {
+          console.log("Processing sample images...");
+          const images = await Promise.all(
+            sampleImages.map(async (image) => {
+              console.log("Creating image document for:", image.url);
+              const imageDoc = await Image.create({
+                url: image.url,
+                publicId: image.publicId,
+                uploader: user.id,
+                associatedWith: {
+                  kind: "FilmSim",
+                  item: filmSim._id,
+                },
+              });
+              console.log("Created image document:", imageDoc._id);
+              return imageDoc._id;
+            })
+          );
+          sampleImageIds = images.map((img) => img._id);
+          console.log("Created sample image IDs:", sampleImageIds);
+
+          // Update the film simulation with the sample image IDs
+          filmSim.sampleImages = sampleImageIds;
+          await filmSim.save();
+        }
+
         return filmSim;
       } catch (error) {
         console.error("Error uploading film simulation:", error);

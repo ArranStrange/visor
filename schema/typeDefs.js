@@ -135,6 +135,7 @@ module.exports = gql`
   type Image {
     id: ID!
     url: String!
+    publicId: String
     caption: String
     uploader: User
     preset: Preset
@@ -309,6 +310,11 @@ module.exports = gql`
     tagIds: [ID!]
   }
 
+  input SampleImageInput {
+    url: String!
+    publicId: String!
+  }
+
   type Query {
     getUser(id: ID!): User
     getCurrentUser: User
@@ -359,7 +365,7 @@ module.exports = gql`
       settings: FilmSimSettingsInput!
       notes: String
       tags: [String!]!
-      sampleImages: [Upload!]
+      sampleImages: [SampleImageInput!]
     ): FilmSim!
 
     createPreset(input: CreatePresetInput!): Preset
