@@ -233,10 +233,17 @@ module.exports = {
             select: "id name slug",
           })
           .populate({
+            path: "afterImage",
+            select: "id url publicId",
+          })
+          .populate({
             path: "sampleImages",
             select: "id url caption",
           });
-        return presets;
+        // Filter out presets with missing afterImage or afterImage.url
+        return presets.filter(
+          (preset) => preset.afterImage && preset.afterImage.url
+        );
       } catch (error) {
         console.error("Error listing presets:", error);
         throw new Error("Failed to list presets: " + error.message);
