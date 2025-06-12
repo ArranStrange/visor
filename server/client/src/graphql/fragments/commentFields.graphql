@@ -1,0 +1,21 @@
+fragment CommentFields on Comment {
+  id
+  content
+  author {
+    id
+    username
+    avatar
+  }
+  createdAt
+  parent {
+    id
+  }
+  reactions {
+    thumbsUp {
+      id
+    }
+    heart {
+      id
+    }
+  }
+}

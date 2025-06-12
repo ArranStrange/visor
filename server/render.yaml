@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: visor-backend
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+        # Format: mongodb+srv://username:<password>@cluster.mongodb.net/?retryWrites=true&w=majority
+      - key: JWT_SECRET
+        sync: false
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        value: https://visor-app.onrender.com
+      - key: RENDER_URL
+        value: https://visor-backend.onrender.com

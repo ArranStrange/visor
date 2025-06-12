@@ -1,0 +1,41 @@
+fragment PresetFields on Preset {
+  id
+  title
+  slug
+  description
+  xmpUrl
+  settings
+  toneCurve {
+    rgb
+    red
+    green
+    blue
+  }
+  notes
+  creator {
+    id
+    username
+    avatar
+    instagram
+  }
+  tags {
+    id
+    name
+    displayName
+  }
+  sampleImages {
+    id
+    url
+    caption
+  }
+  filmSim {
+    id
+    name
+    slug
+  }
+  likes {
+    id
+  }
+  downloads
+  createdAt
+}
