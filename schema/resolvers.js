@@ -152,7 +152,71 @@ module.exports = {
     searchUsers: async (_, { query }) =>
       await User.find({ username: new RegExp(query, "i") }),
 
-    getPreset: async (_, { slug }) => await Preset.findOne({ slug }),
+    getPreset: async (_, { slug }) => {
+      try {
+        const preset = await Preset.findOne({ slug })
+          .populate({
+            path: "creator",
+            select: "id username avatar instagram",
+          })
+          .populate({
+            path: "tags",
+            select: "id name displayName",
+          })
+          .populate({
+            path: "beforeImage",
+            select: "id url publicId",
+          })
+          .populate({
+            path: "afterImage",
+            select: "id url publicId",
+          })
+          .populate({
+            path: "sampleImages",
+            select: "id url caption",
+          });
+
+        if (!preset) {
+          throw new Error("Preset not found");
+        }
+
+        // Convert MongoDB document to plain object
+        const presetObj = preset.toObject();
+
+        // Ensure all IDs are strings
+        return {
+          ...presetObj,
+          id: presetObj._id.toString(),
+          creator: {
+            ...presetObj.creator,
+            id: presetObj.creator._id.toString(),
+          },
+          tags: presetObj.tags.map((tag) => ({
+            ...tag,
+            id: tag._id.toString(),
+          })),
+          beforeImage: presetObj.beforeImage
+            ? {
+                ...presetObj.beforeImage,
+                id: presetObj.beforeImage._id.toString(),
+              }
+            : null,
+          afterImage: presetObj.afterImage
+            ? {
+                ...presetObj.afterImage,
+                id: presetObj.afterImage._id.toString(),
+              }
+            : null,
+          sampleImages: presetObj.sampleImages.map((image) => ({
+            ...image,
+            id: image._id.toString(),
+          })),
+        };
+      } catch (error) {
+        console.error("Error in getPreset:", error);
+        throw error;
+      }
+    },
     listPresets: async (_, { filter }) => {
       try {
         const presets = await Preset.find(filter || {})
