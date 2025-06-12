@@ -63,6 +63,16 @@ export const GET_PRESET_BY_SLUG = gql`
         name
         displayName
       }
+      beforeImage {
+        id
+        url
+        publicId
+      }
+      afterImage {
+        id
+        url
+        publicId
+      }
       sampleImages {
         id
         url

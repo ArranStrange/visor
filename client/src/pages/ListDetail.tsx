@@ -40,6 +40,7 @@ interface Preset {
   title: string;
   slug: string;
   thumbnail?: string;
+  afterImage?: { url: string };
 }
 
 interface CacheList {
@@ -63,7 +64,9 @@ const GET_LIST = gql`
         id
         title
         slug
-        thumbnail
+        afterImage {
+          url
+        }
       }
       filmSims {
         id

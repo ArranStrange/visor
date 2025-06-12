@@ -44,7 +44,7 @@ const HomePage: React.FC = () => {
             type: "preset" as const,
             data: {
               ...p,
-              thumbnail: p.sampleImages?.[0]?.url || "",
+              afterImage: p.afterImage || null,
               creator: p.creator || { username: "Unknown", avatar: "" },
             },
           }))

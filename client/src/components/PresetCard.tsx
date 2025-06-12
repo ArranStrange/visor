@@ -19,6 +19,7 @@ interface PresetCardProps {
   slug: string;
   title: string;
   thumbnail?: string; // Make thumbnail optional
+  afterImage?: string; // Make afterImage optional
   tags: { displayName: string }[]; // <- GraphQL-compatible tag structure
   creator: {
     username: string;
@@ -31,10 +32,13 @@ const PresetCard: React.FC<PresetCardProps> = ({
   slug,
   title,
   thumbnail,
+  afterImage,
   tags,
   creator,
 }) => {
   const navigate = useNavigate();
+
+  console.log("PresetCard afterImage:", afterImage);
 
   return (
     <Card

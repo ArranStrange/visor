@@ -36,7 +36,9 @@ const GET_USER_LISTS = gql`
         id
         title
         slug
-        thumbnail
+        afterImage {
+          url
+        }
       }
       filmSims {
         id
@@ -118,9 +120,9 @@ const Lists: React.FC = () => {
   }
 
   const renderListCard = (list: any) => {
-    // Get the first preset or film sim thumbnail for the card
+    // Get the first preset or film sim afterImage for the card
     const thumbnailUrl =
-      list.presets?.[0]?.thumbnail ||
+      list.presets?.[0]?.afterImage?.url ||
       list.filmSims?.[0]?.thumbnail ||
       "/default-list-thumbnail.jpg";
 

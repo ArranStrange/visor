@@ -148,9 +148,9 @@ const PresetDetails: React.FC = () => {
     );
   };
 
-  // Get before/after images from sample images
-  const beforeImage = preset.sampleImages?.[0]?.url;
-  const afterImage = preset.sampleImages?.[1]?.url;
+  // Get before/after images from beforeImage and afterImage fields
+  const beforeImage = preset.beforeImage?.url;
+  const afterImage = preset.afterImage?.url;
 
   // Format tone curve data
   const toneCurveData = {
@@ -201,8 +201,8 @@ const PresetDetails: React.FC = () => {
       {/* Before/After Images */}
       <Box sx={{ mb: 4 }}>
         <BeforeAfterSlider
-          beforeImage={preset.sampleImages?.[0]?.url}
-          afterImage={preset.sampleImages?.[1]?.url}
+          beforeImage={beforeImage}
+          afterImage={afterImage}
           height={500}
         />
       </Box>

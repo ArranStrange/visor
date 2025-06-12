@@ -15,7 +15,7 @@ export const GET_ALL_PRESETS = gql`
         username
         avatar
       }
-      sampleImages {
+      afterImage {
         url
       }
     }
