@@ -95,6 +95,7 @@ const startServer = async () => {
 
   // Apply CORS middleware
   app.use(cors(corsOptions));
+  app.options("*", cors(corsOptions));
 
   app.use(express.json());
 
@@ -160,7 +161,7 @@ const startServer = async () => {
     server.applyMiddleware({
       app,
       path: "/graphql",
-      cors: corsOptions,
+      cors: false,
       bodyParserConfig: true,
     });
 
