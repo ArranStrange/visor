@@ -59,43 +59,39 @@ try {
 const startServer = async () => {
   const app = express();
 
-  // Configure CORS based on environment
-  const allowedOrigins =
-    NODE_ENV === "production"
-      ? ["https://visor-c51a1.web.app", "https://visor-c51a1.firebaseapp.com"]
-      : [
-          "http://localhost:5173",
-          "http://localhost:5174",
-          "http://localhost:3000",
-          "https://visor-c51a1.web.app",
-          "https://visor-c51a1.firebaseapp.com",
-        ];
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    const allowedOrigins =
+      NODE_ENV === "production"
+        ? ["https://visor-c51a1.web.app", "https://visor-c51a1.firebaseapp.com"]
+        : [
+            "http://localhost:5173",
+            "http://localhost:5174",
+            "http://localhost:3000",
+            "https://visor-c51a1.web.app",
+            "https://visor-c51a1.firebaseapp.com",
+          ];
 
-  const corsOptions = {
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
+    }
 
-      if (allowedOrigins.indexOf(origin) === -1) {
-        console.log("Blocked by CORS:", origin);
-        const msg =
-          "The CORS policy for this site does not allow access from the specified Origin.";
-        return callback(new Error(msg), false);
-      }
-      return callback(null, true);
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-    maxAge: 86400,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  };
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, OPTIONS"
+    );
 
-  // Apply CORS middleware
-  app.use(cors(corsOptions));
-  app.options("*", cors(corsOptions));
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+
+    next();
+  });
 
   app.use(express.json());
 
