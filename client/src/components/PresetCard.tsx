@@ -18,9 +18,8 @@ interface PresetCardProps {
   id: string;
   slug: string;
   title: string;
-  thumbnail?: string; // Make thumbnail optional
-  afterImage?: string; // Make afterImage optional
-  tags: { displayName: string }[]; // <- GraphQL-compatible tag structure
+  afterImage?: any; // Accept object or string for flexibility
+  tags: { displayName: string }[];
   creator: {
     username: string;
     avatarUrl?: string;
@@ -31,14 +30,23 @@ const PresetCard: React.FC<PresetCardProps> = ({
   id,
   slug,
   title,
-  thumbnail,
   afterImage,
   tags,
   creator,
 }) => {
   const navigate = useNavigate();
 
-  console.log("PresetCard afterImage:", afterImage);
+  // Determine the correct image URL
+  let imageUrl = PLACEHOLDER_IMAGE;
+  if (afterImage) {
+    if (typeof afterImage === "string") {
+      imageUrl = afterImage;
+    } else if (typeof afterImage === "object" && afterImage.url) {
+      imageUrl = afterImage.url;
+    }
+  }
+
+  console.log("PresetCard afterImage:", afterImage, "imageUrl:", imageUrl);
 
   return (
     <Card
@@ -57,7 +65,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
     >
       <CardMedia
         component="img"
-        image={thumbnail || PLACEHOLDER_IMAGE}
+        image={imageUrl}
         alt={title}
         height="180"
         sx={{
