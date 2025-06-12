@@ -22,6 +22,7 @@ import ListIcon from "@mui/icons-material/List";
 import ForumIcon from "@mui/icons-material/Forum";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
 import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
 
@@ -180,18 +181,27 @@ const NavBar: React.FC = () => {
               </Menu>
             </>
           ) : (
-            <Button
-              variant="outlined"
-              color="primary"
-              size="small"
-              onClick={() => navigate("/login")}
-              sx={{
-                display: { xs: "none", sm: "inline-flex" },
-                borderRadius: 2,
-              }}
-            >
-              Login
-            </Button>
+            <>
+              <IconButton
+                onClick={() => navigate("/login")}
+                color="inherit"
+                sx={{ display: { xs: "flex", sm: "none" } }}
+              >
+                <LoginIcon />
+              </IconButton>
+              <Button
+                variant="outlined"
+                color="primary"
+                size="small"
+                onClick={() => navigate("/login")}
+                sx={{
+                  display: { xs: "none", sm: "inline-flex" },
+                  borderRadius: 2,
+                }}
+              >
+                Login
+              </Button>
+            </>
           )}
         </Box>
       </Toolbar>
