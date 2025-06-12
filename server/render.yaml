@@ -3,8 +3,8 @@ services:
     name: visor-backend
     env: node
     rootDir: server
-    buildCommand: cd server && npm install
-    startCommand: cd server && npm start
+    buildCommand: cd /opt/render/project/src/server && npm install
+    startCommand: cd /opt/render/project/src/server && npm start
     healthCheckPath: /health
     autoDeploy: true
     envVars:
