@@ -67,6 +67,8 @@ const startServer = async () => {
           "http://localhost:5173",
           "http://localhost:5174",
           "http://localhost:3000",
+          "https://visor-c51a1.web.app",
+          "https://visor-c51a1.firebaseapp.com",
         ];
 
   const corsOptions = {
