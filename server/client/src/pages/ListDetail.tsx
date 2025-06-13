@@ -63,7 +63,19 @@ const GET_LIST = gql`
         id
         title
         slug
-        thumbnail
+        afterImage {
+          url
+        }
+        creator {
+          id
+          username
+          avatar
+        }
+        tags {
+          id
+          name
+          displayName
+        }
       }
       filmSims {
         id
@@ -71,6 +83,19 @@ const GET_LIST = gql`
         slug
         thumbnail
         type
+        sampleImages {
+          url
+        }
+        creator {
+          id
+          username
+          avatar
+        }
+        tags {
+          id
+          name
+          displayName
+        }
       }
     }
   }

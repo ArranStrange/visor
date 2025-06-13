@@ -26,6 +26,8 @@ import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
 import StaggeredGrid from "../components/StaggeredGrid";
 import ContentTypeToggle from "../components/ContentTypeToggle";
+import PresetCard from "../components/PresetCard";
+import FilmSimCard from "../components/FilmSimCard";
 
 interface FilmSim {
   id: string;
@@ -331,116 +333,31 @@ const ListDetail: React.FC = () => {
   const list = data?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
 
-  const PLACEHOLDER_IMAGE = "/placeholder-image.jpg";
-
-  const renderCard = (item: FilmSim | Preset) => {
-    if (!item) return null;
-    const isFilmSim = "type" in item;
-    let thumbnail = PLACEHOLDER_IMAGE;
-    if (isFilmSim) {
-      // @ts-ignore: sampleImages may exist on FilmSim
-      if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages.length > 0
-      ) {
-        thumbnail = (item as any).sampleImages[0].url || PLACEHOLDER_IMAGE;
-      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
-        thumbnail = item.thumbnail;
-      }
-    } else {
-      // For Preset: use after image (second sample image) if available
-      if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages[1]?.url
-      ) {
-        thumbnail = (item as any).sampleImages[1].url;
-      } else if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages[0]?.url
-      ) {
-        thumbnail = (item as any).sampleImages[0].url;
-      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
-        thumbnail = item.thumbnail;
-      }
-    }
-    const title = isFilmSim ? (item as FilmSim).name : (item as Preset).title;
-    const subtitle = isFilmSim ? (item as FilmSim).type ?? "" : "";
-
-    return (
-      <Card
-        key={item.id}
-        sx={{
-          minWidth: 250,
-          flex: "0 0 auto",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          cursor: isEditing ? "default" : "pointer",
-          "&:hover": {
-            transform: isEditing ? "none" : "translateY(-4px)",
-            boxShadow: isEditing ? 1 : 3,
-          },
-          transition: "all 0.2s ease-in-out",
-        }}
-        onClick={() => {
-          if (!isEditing) {
-            navigate(
-              isFilmSim ? `/filmsim/${item.slug}` : `/preset/${item.slug}`
-            );
-          }
-        }}
-      >
-        <CardMedia
-          component="img"
-          height="200"
-          image={thumbnail}
-          alt={title}
-          sx={{
-            objectFit: "cover",
-            backgroundColor: "grey.100",
-          }}
-        />
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Typography variant="h6" component="div" gutterBottom>
-            {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {subtitle}
-          </Typography>
-        </CardContent>
-        {isEditing && (
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRemoveItem(item.id, isFilmSim);
-            }}
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-              },
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </Card>
-    );
-  };
-
   // Combine and shuffle cards for display (like Home)
   const combined = [
     ...(contentType === "all" || contentType === "presets"
-      ? list?.presets?.map((preset) => ({ type: "preset", data: preset })) ?? []
+      ? list?.presets?.map((preset) => ({
+          type: "preset",
+          data: {
+            ...preset,
+            creator: {
+              username: preset.creator?.username || "Unknown",
+              avatarUrl: preset.creator?.avatar || "",
+            },
+          },
+        })) ?? []
       : []),
     ...(contentType === "all" || contentType === "films"
-      ? list?.filmSims?.map((filmSim) => ({ type: "film", data: filmSim })) ??
-        []
+      ? list?.filmSims?.map((filmSim) => ({
+          type: "film",
+          data: {
+            ...filmSim,
+            creator: {
+              username: filmSim.creator?.username || "Unknown",
+              avatarUrl: filmSim.creator?.avatar || "",
+            },
+          },
+        })) ?? []
       : []),
   ];
   const shuffledCombined = shuffle(combined);
@@ -573,7 +490,11 @@ const ListDetail: React.FC = () => {
           <StaggeredGrid>
             {shuffledCombined.map((item, index) => (
               <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-                {renderCard(item.data)}
+                {item.type === "preset" ? (
+                  <PresetCard {...item.data} />
+                ) : (
+                  <FilmSimCard {...item.data} />
+                )}
               </React.Fragment>
             ))}
           </StaggeredGrid>

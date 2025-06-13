@@ -320,19 +320,31 @@ module.exports = {
         const list = await UserList.findById(id)
           .populate({
             path: "presets",
-            select: "id title slug thumbnail",
-            populate: {
-              path: "thumbnail",
-              select: "id url",
-            },
+            select: "id title slug afterImage creator",
+            populate: [
+              {
+                path: "afterImage",
+                select: "id url",
+              },
+              {
+                path: "creator",
+                select: "_id username avatar",
+              },
+            ],
           })
           .populate({
             path: "filmSims",
-            select: "id name slug thumbnail",
-            populate: {
-              path: "thumbnail",
-              select: "id url",
-            },
+            select: "id name slug thumbnail type sampleImages",
+            populate: [
+              {
+                path: "thumbnail",
+                select: "id url",
+              },
+              {
+                path: "sampleImages",
+                select: "id url",
+              },
+            ],
           })
           .populate("owner", "id username");
 
@@ -352,6 +364,13 @@ module.exports = {
             listObj.presets?.map((preset) => ({
               ...preset,
               id: preset._id.toString(),
+              creator: preset.creator
+                ? {
+                    id: preset.creator._id.toString(),
+                    username: preset.creator.username,
+                    avatar: preset.creator.avatar,
+                  }
+                : null,
             })) || [],
           filmSims:
             listObj.filmSims?.map((filmSim) => ({
@@ -980,6 +999,29 @@ module.exports = {
           avatar: updatedList.owner.avatar,
         },
       };
+    },
+
+    deleteUserList: async (_, { id }, { user }) => {
+      if (!user) {
+        throw new Error("You must be logged in to delete a list");
+      }
+
+      try {
+        const list = await UserList.findById(id);
+        if (!list) {
+          throw new Error("List not found");
+        }
+
+        if (list.owner.toString() !== user._id.toString()) {
+          throw new Error("You can only delete your own lists");
+        }
+
+        await UserList.findByIdAndDelete(id);
+        return true;
+      } catch (error) {
+        console.error("Error deleting list:", error);
+        throw error;
+      }
     },
   },
 
