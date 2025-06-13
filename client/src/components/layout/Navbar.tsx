@@ -111,10 +111,14 @@ const NavBar: React.FC = () => {
           <IconButton onClick={() => navigate("/search")} color="inherit">
             <SearchIcon />
           </IconButton>
-          <NotificationPanel />
-          <IconButton onClick={() => navigate("/upload")} color="inherit">
-            <UploadIcon />
-          </IconButton>
+          {isAuthenticated && (
+            <>
+              <NotificationPanel />
+              <IconButton onClick={() => navigate("/upload")} color="inherit">
+                <UploadIcon />
+              </IconButton>
+            </>
+          )}
 
           {isAuthenticated && user ? (
             <>
