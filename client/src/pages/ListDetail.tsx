@@ -5,49 +5,22 @@ import {
   Container,
   Box,
   Typography,
-  Paper,
   TextField,
   Button,
   Switch,
   FormControlLabel,
-  Card,
-  CardContent,
-  CardMedia,
-  IconButton,
   CircularProgress,
   Alert,
   Chip,
   Stack,
 } from "@mui/material";
 import { gql } from "@apollo/client";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import ContentTypeToggle from "../components/ContentTypeToggle";
+import ContentGridLoader from "../components/ContentGridLoader";
 import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
-import StaggeredGrid from "../components/StaggeredGrid";
-import ContentTypeToggle from "../components/ContentTypeToggle";
-
-interface FilmSim {
-  id: string;
-  name: string;
-  slug: string;
-  thumbnail?: string;
-  type?: string;
-}
-
-interface Preset {
-  id: string;
-  title: string;
-  slug: string;
-  thumbnail?: string;
-  afterImage?: { url: string };
-}
-
-interface CacheList {
-  _id: string;
-  presets: Array<{ _id: string }>;
-  filmSims: Array<{ _id: string }>;
-}
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 
 const GET_LIST = gql`
   query GetList($id: ID!) {
@@ -67,13 +40,35 @@ const GET_LIST = gql`
         afterImage {
           url
         }
+        sampleImages {
+          url
+        }
+        tags {
+          displayName
+        }
+        thumbnail
+        creator {
+          username
+          avatar
+        }
       }
       filmSims {
         id
         name
         slug
+        description
+        sampleImages {
+          url
+        }
+        tags {
+          displayName
+        }
         thumbnail
         type
+        creator {
+          username
+          avatar
+        }
       }
     }
   }
@@ -86,11 +81,6 @@ const UPDATE_LIST = gql`
       name
       description
       isPublic
-      owner {
-        id
-        username
-        avatar
-      }
     }
   }
 `;
@@ -100,34 +90,6 @@ const DELETE_LIST = gql`
     deleteUserList(id: $id)
   }
 `;
-
-const REMOVE_ITEM = gql`
-  mutation RemoveFromUserList($listId: ID!, $presetId: ID, $filmSimId: ID) {
-    removeFromUserList(
-      listId: $listId
-      presetId: $presetId
-      filmSimId: $filmSimId
-    ) {
-      id
-      presets {
-        id
-      }
-      filmSims {
-        id
-      }
-    }
-  }
-`;
-
-// Utility to shuffle an array
-function shuffle<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
 
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -151,11 +113,12 @@ const ListDetail: React.FC = () => {
   } = useQuery(GET_LIST, {
     variables: { id },
     onCompleted: (data) => {
-      if (data?.getUserList) {
+      const list = data?.getUserList;
+      if (list) {
         setFormData({
-          name: data.getUserList.name,
-          description: data.getUserList.description || "",
-          isPublic: data.getUserList.isPublic,
+          name: list.name,
+          description: list.description || "",
+          isPublic: list.isPublic,
         });
       }
     },
@@ -167,145 +130,13 @@ const ListDetail: React.FC = () => {
       setSuccess("List updated successfully");
       setIsEditing(false);
     },
-    onError: (error) => {
-      setError(error.message);
-    },
+    onError: (error) => setError(error.message),
   });
 
   const [deleteList] = useMutation(DELETE_LIST, {
-    onCompleted: () => {
-      navigate("/lists");
-    },
-    onError: (error) => {
-      setError(error.message);
-      setTimeout(() => setError(null), 3000);
-    },
+    onCompleted: () => navigate("/lists"),
+    onError: (error) => setError(error.message),
   });
-
-  const [removeItem] = useMutation(REMOVE_ITEM, {
-    onCompleted: () => {
-      refetch();
-      setSuccess("Item removed successfully!");
-      setTimeout(() => setSuccess(null), 3000);
-    },
-    onError: (error) => {
-      setError(error.message);
-      setTimeout(() => setError(null), 3000);
-    },
-  });
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value, type } = e.target;
-    const checked =
-      type === "checkbox" ? (e.target as HTMLInputElement).checked : undefined;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    try {
-      await updateList({
-        variables: {
-          id,
-          input: {
-            name: formData.name,
-            description: formData.description,
-            isPublic: formData.isPublic,
-          },
-        },
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update list");
-    }
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this list?")) {
-      try {
-        await deleteList({
-          variables: { id },
-        });
-      } catch (err) {
-        console.error("Error deleting list:", err);
-      }
-    }
-  };
-
-  const handleRemoveItem = async (itemId: string, isFilmSim: boolean) => {
-    if (
-      window.confirm(
-        `Are you sure you want to remove this ${
-          isFilmSim ? "film sim" : "preset"
-        } from the list?`
-      )
-    ) {
-      try {
-        await removeItem({
-          variables: {
-            listId: id,
-            ...(isFilmSim ? { filmSimId: itemId } : { presetId: itemId }),
-          },
-          update(cache) {
-            // Read the current list data from cache
-            const existingList = cache.readFragment<CacheList>({
-              id: `UserList:${id}`,
-              fragment: gql`
-                fragment ExistingList on UserList {
-                  _id
-                  presets {
-                    _id
-                  }
-                  filmSims {
-                    _id
-                  }
-                }
-              `,
-            });
-
-            if (existingList) {
-              // Create updated lists by filtering out the removed item
-              const updatedPresets = isFilmSim
-                ? existingList.presets.filter((p: any) => p._id !== itemId)
-                : existingList.presets;
-
-              const updatedFilmSims = isFilmSim
-                ? existingList.filmSims.filter((f: any) => f._id !== itemId)
-                : existingList.filmSims;
-
-              // Write the updated data back to cache
-              cache.writeFragment({
-                id: `UserList:${id}`,
-                fragment: gql`
-                  fragment UpdatedList on UserList {
-                    presets {
-                      _id
-                    }
-                    filmSims {
-                      _id
-                    }
-                  }
-                `,
-                data: {
-                  presets: updatedPresets,
-                  filmSims: updatedFilmSims,
-                },
-              });
-            }
-          },
-        });
-
-        setSuccess("Item removed from list successfully");
-      } catch (error) {
-        console.error("Error removing item:", error);
-        setError("Failed to remove item from list");
-      }
-    }
-  };
 
   if (loading) {
     return (
@@ -331,133 +162,66 @@ const ListDetail: React.FC = () => {
   const list = data?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
 
-  const PLACEHOLDER_IMAGE = "/placeholder-image.jpg";
+  const PLACEHOLDER_IMAGE =
+    "https://placehold.co/600x400/2a2a2a/ffffff?text=No+Image";
 
-  const renderCard = (item: FilmSim | Preset) => {
-    if (!item) return null;
-    const isFilmSim = "type" in item;
-    let thumbnail = PLACEHOLDER_IMAGE;
-    if (isFilmSim) {
-      // @ts-ignore: sampleImages may exist on FilmSim
-      if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages.length > 0
-      ) {
-        thumbnail = (item as any).sampleImages[0].url || PLACEHOLDER_IMAGE;
-      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
-        thumbnail = item.thumbnail;
-      }
-    } else {
-      // For Preset: use after image (second sample image) if available
-      if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages[1]?.url
-      ) {
-        thumbnail = (item as any).sampleImages[1].url;
-      } else if (
-        Array.isArray((item as any).sampleImages) &&
-        (item as any).sampleImages[0]?.url
-      ) {
-        thumbnail = (item as any).sampleImages[0].url;
-      } else if (item.thumbnail && item.thumbnail.trim() !== "") {
-        thumbnail = item.thumbnail;
-      }
-    }
-    const title = isFilmSim ? (item as FilmSim).name : (item as Preset).title;
-    const subtitle = isFilmSim ? (item as FilmSim).type ?? "" : "";
-
-    return (
-      <Card
-        key={item.id}
-        sx={{
-          minWidth: 250,
-          flex: "0 0 auto",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          position: "relative",
-          cursor: isEditing ? "default" : "pointer",
-          "&:hover": {
-            transform: isEditing ? "none" : "translateY(-4px)",
-            boxShadow: isEditing ? 1 : 3,
-          },
-          transition: "all 0.2s ease-in-out",
-        }}
-        onClick={() => {
-          if (!isEditing) {
-            navigate(
-              isFilmSim ? `/filmsim/${item.slug}` : `/preset/${item.slug}`
-            );
-          }
-        }}
-      >
-        <CardMedia
-          component="img"
-          height="200"
-          image={thumbnail}
-          alt={title}
-          sx={{
-            objectFit: "cover",
-            backgroundColor: "grey.100",
-          }}
-        />
-        <CardContent sx={{ flexGrow: 1 }}>
-          <Typography variant="h6" component="div" gutterBottom>
-            {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {subtitle}
-          </Typography>
-        </CardContent>
-        {isEditing && (
-          <IconButton
-            size="small"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleRemoveItem(item.id, isFilmSim);
-            }}
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              backgroundColor: "rgba(255, 255, 255, 0.8)",
-              "&:hover": {
-                backgroundColor: "rgba(255, 255, 255, 0.9)",
-              },
-            }}
-          >
-            <DeleteIcon />
-          </IconButton>
-        )}
-      </Card>
-    );
-  };
-
-  // Combine and shuffle cards for display (like Home)
+  console.log("presets:", JSON.stringify(list.presets, null, 2));
+  console.log("filmSims:", JSON.stringify(list.filmSims, null, 2));
   const combined = [
     ...(contentType === "all" || contentType === "presets"
-      ? list?.presets?.map((preset) => ({ type: "preset", data: preset })) ?? []
+      ? list.presets
+          .filter((p) => p && p.creator)
+          .map((p) => ({
+            type: "preset",
+            data: p,
+          }))
       : []),
+
     ...(contentType === "all" || contentType === "films"
-      ? list?.filmSims?.map((filmSim) => ({ type: "film", data: filmSim })) ??
-        []
+      ? list.filmSims
+          .filter((f) => f && f.creator)
+          .map((f) => ({
+            type: "film",
+            data: {
+              ...f,
+              title: f.name,
+              thumbnail:
+                f.sampleImages?.[0]?.url ?? f.thumbnail ?? PLACEHOLDER_IMAGE,
+            },
+          }))
       : []),
   ];
-  const shuffledCombined = shuffle(combined);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type, checked } = e.target as HTMLInputElement;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = () => {
+    updateList({
+      variables: {
+        id,
+        input: formData,
+      },
+    });
+  };
+
+  const handleDelete = () => {
+    if (window.confirm("Are you sure you want to delete this list?")) {
+      deleteList({ variables: { id } });
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Stack spacing={4}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {success}
-          </Alert>
-        )}
+        {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
 
         <ContentTypeToggle />
 
@@ -504,19 +268,39 @@ const ListDetail: React.FC = () => {
                   Edit List
                 </Button>
               ) : (
-                <Button
-                  variant="outlined"
-                  onClick={() => setIsEditing(false)}
-                  sx={{ mr: 2 }}
-                >
-                  Cancel
-                </Button>
+                <>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setIsEditing(false)}
+                    sx={{ mr: 2 }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={handleSubmit}
+                    disabled={!formData.name.trim()}
+                  >
+                    Save Changes
+                  </Button>
+                </>
               )}
             </Box>
           )}
         </Box>
 
-        {isEditing ? (
+        {!isEditing && (
+          <Stack spacing={1}>
+            {list?.description && (
+              <Typography color="text.secondary">{list.description}</Typography>
+            )}
+            <Typography variant="body2" color="text.secondary">
+              Created by {list?.owner?.username}
+            </Typography>
+          </Stack>
+        )}
+
+        {isEditing && (
           <Stack spacing={2}>
             <TextField
               fullWidth
@@ -538,46 +322,18 @@ const ListDetail: React.FC = () => {
               }
               label="Public List"
             />
-            <Box display="flex" gap={2} justifyContent="space-between">
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={handleDelete}
-              >
-                Delete List
-              </Button>
-              <Button
-                variant="contained"
-                onClick={handleSubmit}
-                disabled={!formData.name.trim()}
-              >
-                Save Changes
-              </Button>
-            </Box>
-          </Stack>
-        ) : (
-          <Stack spacing={1}>
-            {list?.description && (
-              <Typography variant="body1" color="text.secondary">
-                {list.description}
-              </Typography>
-            )}
-            <Typography variant="body2" color="text.secondary">
-              Created by {list?.owner?.username}
-            </Typography>
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={handleDelete}
+            >
+              Delete List
+            </Button>
           </Stack>
         )}
 
-        <Box sx={{ width: "100%", minHeight: "200px" }}>
-          <StaggeredGrid>
-            {shuffledCombined.map((item, index) => (
-              <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-                {renderCard(item.data)}
-              </React.Fragment>
-            ))}
-          </StaggeredGrid>
-        </Box>
+        <ContentGridLoader customData={combined} contentType={contentType} />
       </Stack>
     </Container>
   );

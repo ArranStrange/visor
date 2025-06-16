@@ -16,13 +16,13 @@ interface FilmSimCardProps {
   slug: string;
   description: string;
   thumbnail: string;
-  tags: Array<{
+  tags?: Array<{
     id?: string;
     displayName: string;
   }>;
-  creator: {
+  creator?: {
     username: string;
-    avatarUrl: string;
+    avatarUrl?: string;
   };
   settings?: {
     dynamicRange?: string;
@@ -47,8 +47,8 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   slug,
   description,
   thumbnail,
-  tags,
-  creator,
+  tags = [],
+  creator = { username: "Unknown" },
   settings,
 }) => {
   const navigate = useNavigate();
@@ -75,7 +75,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       <CardMedia
         component="img"
         height="200"
-        image={thumbnail}
+        image={thumbnail || "/placeholder-image.jpg"}
         alt={name}
         sx={{ objectFit: "cover" }}
       />
@@ -101,7 +101,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         </Typography>
         <Box sx={{ mt: "auto" }}>
           <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
-            {tags.slice(0, 3).map((tag, index) => (
+            {(tags ?? []).slice(0, 3).map((tag, index) => (
               <Chip
                 key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
                 label={tag.displayName}

@@ -99,10 +99,10 @@ const PresetCard: React.FC<PresetCardProps> = ({
         </Typography>
 
         <Box display="flex" alignItems="center" gap={1} mb={1}>
-          {creator.avatarUrl && (
+          {creator?.avatarUrl && (
             <img
               src={creator.avatarUrl}
-              alt={creator.username}
+              alt={creator.username ?? "Unknown"}
               style={{
                 width: 24,
                 height: 24,
@@ -112,7 +112,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
             />
           )}
           <Typography variant="caption" color="text.secondary">
-            {creator.username}
+            {creator?.username ?? "Unknown"}
           </Typography>
         </Box>
 

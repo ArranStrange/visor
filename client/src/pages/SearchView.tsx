@@ -7,143 +7,48 @@ import {
   Stack,
   Divider,
 } from "@mui/material";
-import { useQuery, gql } from "@apollo/client";
+import { useQuery } from "@apollo/client";
 
-import PresetCard from "../components/PresetCard";
-import FilmSimCard from "../components/FilmSimCard";
 import ContentTypeToggle from "../components/ContentTypeToggle";
-import StaggeredGrid from "../components/StaggeredGrid";
+import ContentGridLoader from "../components/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
 import {
   GET_ALL_TAGS,
   GET_ALL_TAGS_OPTIONS,
 } from "../graphql/queries/getAllTags";
 
-// Apollo GraphQL queries
-const LIST_PRESETS = gql`
-  query ListPresets {
-    listPresets {
-      id
-      title
-      slug
-      tags {
-        displayName
-      }
-      creator {
-        username
-        avatar
-      }
-      thumbnail: sampleImages {
-        url
-      }
-    }
-  }
-`;
-
-const LIST_FILMSIMS = gql`
-  query ListFilmSims {
-    listFilmSims(filter: {}) {
-      id
-      name
-      slug
-      tags {
-        displayName
-      }
-      creator {
-        username
-        avatar
-      }
-      thumbnail: sampleImages {
-        url
-      }
-    }
-  }
-`;
-
 const SearchView: React.FC = () => {
   const [keyword, setKeyword] = useState("");
-  const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
 
-  // GraphQL queries
   const {
     data: tagData,
     loading: tagsLoading,
     error: tagsError,
   } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
-  const { data: presetData, error: presetsError } = useQuery(LIST_PRESETS);
-  const { data: filmSimData, error: filmSimsError } = useQuery(LIST_FILMSIMS);
-
-  // Log any errors
-  React.useEffect(() => {
-    if (tagsError) console.error("Tags Error:", tagsError);
-    if (presetsError) console.error("Presets Error:", presetsError);
-    if (filmSimsError) console.error("Film Sims Error:", filmSimsError);
-  }, [tagsError, presetsError, filmSimsError]);
 
   const allTags =
     tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
-  const presets = presetData?.listPresets || [];
-  const filmSims = filmSimData?.listFilmSims || [];
 
-  const combined = useMemo(() => {
-    let all: { type: "preset" | "film"; data: any }[] = [];
-
-    if (contentType === "all" || contentType === "presets") {
-      all.push(
-        ...presets.map((p) => ({
-          type: "preset" as const,
-          data: {
-            ...p,
-            thumbnail: p.thumbnail?.[0]?.url ?? "",
-          },
-        }))
-      );
-    }
-
-    if (contentType === "all" || contentType === "films") {
-      all.push(
-        ...filmSims.map((f) => ({
-          type: "film" as const,
-          data: {
-            ...f,
-            title: f.name,
-            thumbnail: f.thumbnail?.[0]?.url ?? "",
-          },
-        }))
-      );
-    }
-
-    if (activeTag) {
-      all = all.filter((item) =>
-        item.data.tags?.some(
-          (tag: any) =>
-            tag.displayName?.toLowerCase() === activeTag.toLowerCase()
-        )
-      );
-    }
-
-    if (keyword) {
-      const lower = keyword.toLowerCase();
-      all = all.filter(
-        (item) =>
-          item.data.title?.toLowerCase().includes(lower) ||
-          item.data.name?.toLowerCase().includes(lower) ||
-          item.data.description?.toLowerCase().includes(lower) ||
-          item.data.tags?.some((tag: any) =>
-            tag.displayName?.toLowerCase().includes(lower)
-          ) ||
-          item.data.toneProfile?.toLowerCase().includes(lower)
-      );
-    }
-
-    return all;
-  }, [activeTag, keyword, contentType, presets, filmSims]);
+  const activeTagDisplayName = useMemo(() => {
+    return (
+      allTags.find((tag: any) => tag.id === activeTagId)?.displayName || null
+    );
+  }, [activeTagId, allTags]);
 
   const handleClear = () => {
     setKeyword("");
-    setActiveTag(null);
+    setActiveTagId(null);
   };
+
+  const filter = activeTagId
+    ? {
+        tags: {
+          $in: [activeTagId],
+        },
+      }
+    : undefined;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
@@ -176,7 +81,7 @@ const SearchView: React.FC = () => {
           onClick={handleClear}
           sx={{
             cursor: "pointer",
-            opacity: keyword || activeTag ? 1 : 0.6,
+            opacity: keyword || activeTagId ? 1 : 0.6,
             transition: "opacity 0.2s",
             whiteSpace: "nowrap",
             "&:hover": {
@@ -191,17 +96,14 @@ const SearchView: React.FC = () => {
           <Typography
             key={tag.id}
             onClick={() =>
-              setActiveTag((prev) =>
-                prev === tag.displayName ? null : tag.displayName
-              )
+              setActiveTagId((prev) => (prev === tag.id ? null : tag.id))
             }
             sx={{
               cursor: "pointer",
-              fontWeight: activeTag === tag.displayName ? "bold" : "normal",
-              textDecoration:
-                activeTag === tag.displayName ? "underline" : "none",
+              fontWeight: activeTagId === tag.id ? "bold" : "normal",
+              textDecoration: activeTagId === tag.id ? "underline" : "none",
               textUnderlineOffset: "4px",
-              opacity: activeTag === tag.displayName ? 1 : 0.6,
+              opacity: activeTagId === tag.id ? 1 : 0.6,
               transition: "opacity 0.2s",
               whiteSpace: "nowrap",
             }}
@@ -212,20 +114,13 @@ const SearchView: React.FC = () => {
       </Stack>
 
       <ContentTypeToggle />
-
       <Divider sx={{ my: 2 }} />
 
-      <StaggeredGrid>
-        {combined.map((item, index) => (
-          <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-            {item.type === "preset" ? (
-              <PresetCard {...item.data} />
-            ) : (
-              <FilmSimCard {...item.data} />
-            )}
-          </React.Fragment>
-        ))}
-      </StaggeredGrid>
+      <ContentGridLoader
+        contentType={contentType}
+        searchQuery={keyword}
+        filter={filter}
+      />
     </Container>
   );
 };
