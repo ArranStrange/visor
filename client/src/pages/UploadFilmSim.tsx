@@ -18,6 +18,7 @@ import {
   MenuItem,
   SelectChangeEvent,
   IconButton,
+  Grid as Grid2,
 } from "@mui/material";
 import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
@@ -25,6 +26,26 @@ import { useNavigate } from "react-router-dom";
 import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
 import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
 import DeleteIcon from "@mui/icons-material/Delete";
+import { v4 as uuidv4 } from "uuid";
+import slugify from "slugify";
+
+// Type declarations for environment variables
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_CLOUDINARY_CLOUD_NAME: string;
+      VITE_CLOUDINARY_API_KEY: string;
+      VITE_CLOUDINARY_API_SECRET: string;
+    };
+  }
+}
+
+// Cloudinary configuration
+const cloudinaryConfig = {
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
+  apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
+};
 
 interface FilmSimSettings {
   dynamicRange: string;
@@ -38,6 +59,11 @@ interface FilmSimSettings {
   noiseReduction: number;
   grainEffect: number;
   clarity: number;
+}
+
+interface SampleImageInput {
+  publicId: string;
+  url: string;
 }
 
 const DYNAMIC_RANGE_OPTIONS = [
@@ -118,7 +144,7 @@ const UPLOAD_FILM_SIM = gql`
     $settings: FilmSimSettingsInput!
     $notes: String
     $tags: [String!]!
-    $sampleImages: [Upload!]
+    $sampleImages: [SampleImageInput!]
   ) {
     uploadFilmSim(
       name: $name
@@ -178,6 +204,9 @@ const UploadFilmSim: React.FC = () => {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [sampleImages, setSampleImages] = useState<File[]>([]);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<
+    SampleImageInput[]
+  >([]);
   const [notes, setNotes] = useState("");
   const [filmSettings, setFilmSettings] = useState<FilmSimSettings>({
     dynamicRange: "AUTO",
@@ -233,7 +262,53 @@ const UploadFilmSim: React.FC = () => {
     return true;
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadToCloudinary = async (file: File): Promise<SampleImageInput> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "FilmSimSamples");
+    formData.append("folder", "filmsims");
+
+    try {
+      console.log("Uploading to Cloudinary...");
+
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Cloudinary upload error:", errorData);
+        throw new Error(
+          `Failed to upload image to Cloudinary: ${
+            errorData.error?.message || "Unknown error"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Cloudinary upload response:", data);
+
+      // Extract the public_id from the response
+      const publicId = data.public_id;
+      if (!publicId) {
+        throw new Error("No public_id received from Cloudinary");
+      }
+
+      return {
+        publicId,
+        url: data.secure_url,
+      };
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error);
+      throw error;
+    }
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
     const files = Array.from(e.target.files || []);
 
@@ -242,6 +317,26 @@ const UploadFilmSim: React.FC = () => {
 
     if (validFiles.length > 0) {
       setSampleImages((prev) => [...prev, ...validFiles]);
+
+      // Upload each file to Cloudinary
+      try {
+        setIsUploading(true);
+        const uploadPromises = validFiles.map(async (file) => {
+          console.log("Uploading file to Cloudinary:", file);
+          const result = await uploadToCloudinary(file);
+          console.log("Uploaded file result:", result);
+          return result;
+        });
+
+        const uploadedImages = await Promise.all(uploadPromises);
+        console.log("All images uploaded:", uploadedImages);
+        setUploadedImageUrls(uploadedImages);
+      } catch (error) {
+        setFileError("Failed to upload images to Cloudinary");
+        console.error("Error uploading images:", error);
+      } finally {
+        setIsUploading(false);
+      }
     }
 
     // Reset the input
@@ -250,6 +345,7 @@ const UploadFilmSim: React.FC = () => {
 
   const removeImage = (index: number) => {
     setSampleImages((prev) => prev.filter((_, i) => i !== index));
+    setUploadedImageUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -270,6 +366,9 @@ const UploadFilmSim: React.FC = () => {
 
       setIsUploading(true);
 
+      // Generate slug from title
+      const slug = slugify(title, { lower: true, strict: true });
+
       // Format settings to match FilmSimSettingsInput type
       const formattedSettings = {
         dynamicRange: filmSettings.dynamicRange,
@@ -288,6 +387,17 @@ const UploadFilmSim: React.FC = () => {
         clarity: Math.round(filmSettings.clarity) || 0,
       };
 
+      // Log the uploaded images to verify their structure
+      console.log("Uploaded images before submission:", uploadedImageUrls);
+
+      // Ensure each image has the required fields
+      const formattedSampleImages = uploadedImageUrls.map((img) => ({
+        publicId: img.publicId,
+        url: img.url,
+      }));
+
+      console.log("Formatted sample images:", formattedSampleImages);
+
       // Prepare variables for the film sim mutation
       const variables = {
         name: title,
@@ -295,7 +405,7 @@ const UploadFilmSim: React.FC = () => {
         settings: formattedSettings,
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
-        sampleImages: sampleImages,
+        sampleImages: formattedSampleImages,
       };
 
       console.log("Uploading with variables:", variables);
@@ -330,7 +440,7 @@ const UploadFilmSim: React.FC = () => {
     options: { value: string | number; label: string }[],
     settingKey: keyof FilmSimSettings
   ) => (
-    <Grid {...(undefined as any)} item xs={12} md={6}>
+    <Grid item xs={12} md={6}>
       <FormControl fullWidth>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography>{label}</Typography>
@@ -546,16 +656,9 @@ const UploadFilmSim: React.FC = () => {
               </Button>
               {sampleImages.length > 0 && (
                 <Box sx={{ mt: 2 }}>
-                  <Grid container spacing={2}>
+                  <Grid2 container spacing={2}>
                     {sampleImages.map((file, index) => (
-                      <Grid
-                        {...(undefined as any)}
-                        item
-                        xs={12}
-                        sm={6}
-                        md={4}
-                        key={index}
-                      >
+                      <Grid2 key={index} xs={12} sm={6} md={4}>
                         <Paper
                           sx={{
                             p: 1,
@@ -567,7 +670,10 @@ const UploadFilmSim: React.FC = () => {
                         >
                           <Box
                             component="img"
-                            src={URL.createObjectURL(file)}
+                            src={
+                              uploadedImageUrls[index]?.url ||
+                              URL.createObjectURL(file)
+                            }
                             alt={`Sample ${index + 1}`}
                             sx={{
                               width: "100%",
@@ -596,9 +702,9 @@ const UploadFilmSim: React.FC = () => {
                             <DeleteIcon />
                           </IconButton>
                         </Paper>
-                      </Grid>
+                      </Grid2>
                     ))}
-                  </Grid>
+                  </Grid2>
                 </Box>
               )}
             </Box>
