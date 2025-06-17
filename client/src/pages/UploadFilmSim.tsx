@@ -440,7 +440,7 @@ const UploadFilmSim: React.FC = () => {
     options: { value: string | number; label: string }[],
     settingKey: keyof FilmSimSettings
   ) => (
-    <Grid item xs={12} md={6}>
+    <Grid {...(undefined as any)} item xs={12} md={6}>
       <FormControl fullWidth>
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography>{label}</Typography>
@@ -499,6 +499,15 @@ const UploadFilmSim: React.FC = () => {
           "whiteBalance"
         )}
 
+        {filmSettings.whiteBalance !== "AUTO" && (
+          <Box sx={{ mt: 2, mb: 3 }}>
+            <WhiteBalanceGrid
+              value={filmSettings.wbShift}
+              onChange={(value) => handleFilmSettingChange("wbShift", value)}
+            />
+          </Box>
+        )}
+
         {renderSettingWithTooltip(
           "Color",
           "Adjusts saturation of color simulations",
@@ -553,22 +562,6 @@ const UploadFilmSim: React.FC = () => {
           filmSettings.clarity,
           CLARITY_OPTIONS,
           "clarity"
-        )}
-
-        {filmSettings.whiteBalance === "CUSTOM" && (
-          <Box sx={{ mt: 2, mb: 3 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              White Balance Shift
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Click on the grid to set the white balance shift. The center
-              represents neutral (0,0).
-            </Typography>
-            <WhiteBalanceGrid
-              value={filmSettings.wbShift}
-              onChange={(value) => handleFilmSettingChange("wbShift", value)}
-            />
-          </Box>
         )}
       </Stack>
     </Paper>
@@ -658,7 +651,13 @@ const UploadFilmSim: React.FC = () => {
                 <Box sx={{ mt: 2 }}>
                   <Grid2 container spacing={2}>
                     {sampleImages.map((file, index) => (
-                      <Grid2 key={index} xs={12} sm={6} md={4}>
+                      <Grid2
+                        {...(undefined as any)}
+                        key={index}
+                        xs={12}
+                        sm={6}
+                        md={4}
+                      >
                         <Paper
                           sx={{
                             p: 1,
