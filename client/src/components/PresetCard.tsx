@@ -18,12 +18,9 @@ interface PresetCardProps {
   id: string;
   slug: string;
   title: string;
-  afterImage?: any; // Accept object or string for flexibility
+  afterImage?: any;
+  description?: string;
   tags: { displayName: string }[];
-  creator: {
-    username: string;
-    avatarUrl?: string;
-  };
 }
 
 const PresetCard: React.FC<PresetCardProps> = ({
@@ -31,8 +28,8 @@ const PresetCard: React.FC<PresetCardProps> = ({
   slug,
   title,
   afterImage,
+  description,
   tags,
-  creator,
 }) => {
   const navigate = useNavigate();
 
@@ -45,8 +42,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
       imageUrl = afterImage.url;
     }
   }
-
-  console.log("PresetCard afterImage:", afterImage, "imageUrl:", imageUrl);
 
   return (
     <Card
@@ -98,29 +93,28 @@ const PresetCard: React.FC<PresetCardProps> = ({
           {title}
         </Typography>
 
-        <Box display="flex" alignItems="center" gap={1} mb={1}>
-          {creator.avatarUrl && (
-            <img
-              src={creator.avatarUrl}
-              alt={creator.username}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
-          )}
-          <Typography variant="caption" color="text.secondary">
-            {creator.username}
-          </Typography>
-        </Box>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            mb: 2,
+          }}
+        >
+          {description}
+        </Typography>
 
         <Stack
           direction="row"
-          spacing={{ sm: 1 }}
-          display={{ xs: "none", s: "none", md: "flex" }}
-          flexWrap="nowrap"
+          gap={1}
+          m={0.5}
+          flexWrap="wrap"
+          justifyContent="start"
+          sx={{ minWidth: "100%" }}
         >
           {tags.slice(0, 3).map((tag, index) => (
             <Chip
@@ -128,10 +122,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
               label={tag.displayName}
               size="small"
               variant="outlined"
-              sx={{
-                color: "text.secondary",
-                borderColor: "divider",
-              }}
             />
           ))}
         </Stack>

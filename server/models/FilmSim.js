@@ -68,7 +68,9 @@ const filmSimSchema = new Schema(
       required: true,
     },
 
-    recommendedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
+    recommendedPresets: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Preset" },
+    ],
 
     compatibleCameras: [String], // e.g., ["X100V", "X-T4"], could also ref Camera model later
 

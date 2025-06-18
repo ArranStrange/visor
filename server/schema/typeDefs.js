@@ -72,7 +72,7 @@ module.exports = gql`
     notes: String
     tags: [Tag]
     thumbnail: String
-    creator: User!
+    creator: User
     filmSim: FilmSim
     likes: [User]
     downloads: Int
