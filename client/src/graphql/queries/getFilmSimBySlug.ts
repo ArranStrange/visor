@@ -9,6 +9,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
       description
       type
       compatibleCameras
+      notes
       settings {
         dynamicRange
         highlight
@@ -43,7 +44,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
           name
           displayName
         }
-
+        notes
         description
         creator {
           id
