@@ -21,6 +21,10 @@ const filmSimResolvers = {
           .populate({
             path: "comments.user",
             select: "id username avatar",
+          })
+          .populate({
+            path: "recommendedPresets",
+            select: "id title slug tags afterImage",
           });
 
         if (!filmSim) {
@@ -66,6 +70,13 @@ const filmSimResolvers = {
                     : null,
               }))
             : [],
+          recommendedPresets: Array.isArray(filmSimObj.recommendedPresets)
+            ? filmSimObj.recommendedPresets.map((preset) =>
+                preset && preset._id
+                  ? { ...preset, id: preset._id.toString() }
+                  : preset
+              )
+            : [],
         };
       } catch (error) {
         console.error("Error in getFilmSim:", error);
@@ -91,6 +102,10 @@ const filmSimResolvers = {
           .populate({
             path: "comments.user",
             select: "id username avatar",
+          })
+          .populate({
+            path: "recommendedPresets",
+            select: "id title slug tags",
           });
 
         // Convert MongoDB documents to plain objects and ensure all IDs are strings
@@ -130,6 +145,13 @@ const filmSimResolvers = {
                       ? { ...comment.user, id: comment.user._id.toString() }
                       : null,
                 }))
+              : [],
+            recommendedPresets: Array.isArray(filmSimObj.recommendedPresets)
+              ? filmSimObj.recommendedPresets.map((preset) =>
+                  preset && preset._id
+                    ? { ...preset, id: preset._id.toString() }
+                    : preset
+                )
               : [],
           };
         });

@@ -10,6 +10,9 @@ import {
   Alert,
   Dialog,
   IconButton,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
@@ -19,6 +22,7 @@ import AddToListButton from "../components/AddToListButton";
 import CommentSection from "../components/CommentSection";
 import { useAuth } from "../context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 
 const CREATE_COMMENT = gql`
   mutation CreateComment($filmSimId: ID!, $content: String!) {
@@ -280,71 +284,104 @@ const FilmSimDetails: React.FC = () => {
         )}
       </Dialog>
 
-      {/* Related presets */}
-      <Typography variant="h6" mt={5} mb={2}>
-        Recommended Presets
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "repeat(3, 1fr)",
-          },
-          gap: 2,
-        }}
-      >
-        {filmSim.recommendedPresets?.map((preset) => (
-          <Box key={preset.id}>
-            <PresetCard
-              id={preset.id}
-              title={preset.title}
-              slug={preset.slug}
-              tags={preset.tags}
-              creator={{
-                username: preset.creator.username,
-                avatarUrl: preset.creator.avatar,
+      {/* Creator's Notes and Recommended Presets */}
+      <Box sx={{ mt: 4 }}>
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{ backgroundColor: "none" }}
+          >
+            <Typography variant="h6">Creator's Notes</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                gap: 2,
               }}
-            />
-          </Box>
-        ))}
-      </Box>
+            >
+              <Typography variant="body1" color="text.secondary">
+                {filmSim.notes || "No notes provided."}
+              </Typography>
+              {filmSim.creator && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <img
+                    src={filmSim.creator.avatar}
+                    alt={filmSim.creator.username}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid #eee",
+                    }}
+                  />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {filmSim.creator.username}
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
 
-      {/* Creator's Notes and Info */}
-      <Divider sx={{ my: 4 }} />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 2,
-        }}
-      >
-        <Typography variant="h6" mb={1}>
-          Creator's Notes
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-          {filmSim.notes || "No notes provided."}
-        </Typography>
-        {filmSim.creator && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
-            <img
-              src={filmSim.creator.avatar}
-              alt={filmSim.creator.username}
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "2px solid #eee",
+        <Accordion>
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            sx={{ backgroundColor: "none" }}
+          >
+            <Typography variant="h6">Recommended Presets</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  sm: "1fr 1fr",
+                  md: "repeat(3, 1fr)",
+                },
+                gap: 2,
               }}
-            />
-            <Typography variant="subtitle1" fontWeight={600}>
-              {filmSim.creator.username}
-            </Typography>
-          </Box>
-        )}
+            >
+              {filmSim.recommendedPresets?.map((preset) => (
+                <Box
+                  key={preset.id}
+                  sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    bgcolor: "background.default",
+                    boxShadow: 1,
+                    cursor: "pointer",
+                    "&:hover": {
+                      boxShadow: 2,
+                      bgcolor: "action.hover",
+                    },
+                  }}
+                  onClick={() =>
+                    (window.location.href = `/preset/${preset.slug}`)
+                  }
+                >
+                  <Typography variant="h6" gutterBottom>
+                    {preset.title}
+                  </Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                    {preset.tags?.map((tag) => (
+                      <Chip
+                        key={tag.id}
+                        label={tag.displayName}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Stack>
+                </Box>
+              ))}
+            </Box>
+          </AccordionDetails>
+        </Accordion>
       </Box>
 
       {/* Comments Section */}

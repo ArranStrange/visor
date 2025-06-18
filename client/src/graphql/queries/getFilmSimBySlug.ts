@@ -38,13 +38,13 @@ export const GET_FILMSIM_BY_SLUG = gql`
         id
         title
         slug
-        description
-        thumbnail
         tags {
           id
           name
           displayName
         }
+
+        description
         creator {
           id
           username

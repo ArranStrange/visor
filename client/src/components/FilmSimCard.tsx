@@ -100,7 +100,14 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           {description}
         </Typography>
         <Box sx={{ mt: "auto" }}>
-          <Stack direction="row" spacing={1} mb={1} flexWrap="wrap">
+          <Stack
+            direction="row"
+            gap={1}
+            m={1}
+            flexWrap="wrap"
+            justifyContent="start"
+            sx={{ minWidth: "100%" }}
+          >
             {(tags ?? []).slice(0, 3).map((tag, index) => (
               <Chip
                 key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
@@ -110,9 +117,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
               />
             ))}
           </Stack>
-          <Typography variant="caption" color="text.secondary">
-            By {creator.username}
-          </Typography>
         </Box>
       </CardContent>
     </Card>

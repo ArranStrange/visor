@@ -207,6 +207,10 @@ const PresetDetails: React.FC = () => {
         />
       </Box>
 
+      <Typography variant="body1" color="text.secondary" mb={2}>
+        {preset.description}
+      </Typography>
+
       {/* Accordion Sections */}
       {renderAccordionSection("Light", [
         "exposure",
