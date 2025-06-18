@@ -96,14 +96,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   const { randomizeOrder } = useContentType();
 
-  if (isLoading) {
-    return (
-      <Box display="flex" justifyContent="center" mt={4}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   if (isError) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
@@ -114,7 +106,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
-  if (!combined.length) {
+  if (!combined.length && !isLoading) {
     return (
       <Alert severity="info" sx={{ my: 2 }}>
         No content found. Try adjusting filters or search terms.
@@ -136,7 +128,9 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   return (
     <Box>
-      <StaggeredGrid randomizeOrder={randomizeOrder}>{children}</StaggeredGrid>
+      <StaggeredGrid randomizeOrder={randomizeOrder} loading={isLoading}>
+        {children}
+      </StaggeredGrid>
     </Box>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Box } from "@mui/material";
+import { Box, Skeleton } from "@mui/material";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,13 +8,85 @@ interface StaggeredGridProps {
   minWidth?: number; // min width of card in px (e.g., 250)
   gap?: number; // gap between cards in px (e.g., 16)
   randomizeOrder?: boolean; // whether to randomize the order of items
+  loading?: boolean; // whether to show loading skeletons
 }
+
+// Skeleton Card Component
+const SkeletonCard: React.FC = () => (
+  <Box
+    sx={{
+      backgroundColor: "background.paper",
+      borderRadius: 3,
+      overflow: "hidden",
+      boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
+      animation: "pulse 2s ease-in-out infinite",
+      "@keyframes pulse": {
+        "0%": {
+          opacity: 0.7,
+        },
+        "50%": {
+          opacity: 1,
+        },
+        "100%": {
+          opacity: 0.7,
+        },
+      },
+    }}
+  >
+    <Skeleton
+      variant="rectangular"
+      height={180}
+      sx={{ backgroundColor: "rgba(255,255,255,0.1)" }}
+    />
+    <Box sx={{ p: 2 }}>
+      <Skeleton
+        variant="text"
+        width="80%"
+        height={24}
+        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 1 }}
+      />
+      <Skeleton
+        variant="text"
+        width="100%"
+        height={16}
+        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 1 }}
+      />
+      <Skeleton
+        variant="text"
+        width="60%"
+        height={16}
+        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 2 }}
+      />
+      <Box sx={{ display: "flex", gap: 1 }}>
+        <Skeleton
+          variant="rectangular"
+          width={60}
+          height={24}
+          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
+        />
+        <Skeleton
+          variant="rectangular"
+          width={50}
+          height={24}
+          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
+        />
+        <Skeleton
+          variant="rectangular"
+          width={70}
+          height={24}
+          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
+        />
+      </Box>
+    </Box>
+  </Box>
+);
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
   minWidth = 250,
   gap = 16,
   randomizeOrder = true,
+  loading = false,
 }) => {
   const { ref: triggerRef, inView } = useInView({
     triggerOnce: true,
@@ -24,6 +96,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState<number[][]>([[]]);
   const [columnCount, setColumnCount] = useState(3);
+  const [loadedItems, setLoadedItems] = useState<Set<number>>(new Set());
 
   // Calculate number of columns based on container width
   useEffect(() => {
@@ -80,9 +153,38 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     setColumns(newColumns);
   }, [children, columnCount, randomizeOrder]);
 
-  if (!children.length) {
+  // Progressive loading effect
+  useEffect(() => {
+    if (loading || !inView) return;
+
+    const totalItems = children.length;
+    const loadInterval = setInterval(() => {
+      setLoadedItems((prev) => {
+        const newLoaded = new Set(prev);
+        if (newLoaded.size < totalItems) {
+          newLoaded.add(newLoaded.size);
+          return newLoaded;
+        }
+        clearInterval(loadInterval);
+        return prev;
+      });
+    }, 100); // Load one item every 100ms
+
+    return () => clearInterval(loadInterval);
+  }, [children.length, loading, inView]);
+
+  // Reset loaded items when children change
+  useEffect(() => {
+    setLoadedItems(new Set());
+  }, [children]);
+
+  if (!children.length && !loading) {
     return null;
   }
+
+  // Generate skeleton items for loading state
+  const skeletonItems = loading ? Array.from({ length: 12 }, (_, i) => i) : [];
+  const displayItems = loading ? skeletonItems : children;
 
   return (
     <Box>
@@ -107,29 +209,37 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                 alignItems: "stretch", // Ensure cards stretch to fill width
               }}
             >
-              {column.map((itemIndex) => (
-                <motion.div
-                  key={itemIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={
-                    inView
-                      ? {
-                          opacity: 1,
-                          y: 0,
-                          transition: {
-                            delay: 0.03 * itemIndex,
-                            duration: 0.4,
-                            ease: "easeOut",
-                          },
-                        }
-                      : {}
-                  }
-                  exit={{ opacity: 0 }}
-                  style={{ width: "100%" }} // Ensure motion.div takes full width
-                >
-                  {children[itemIndex]}
-                </motion.div>
-              ))}
+              {column.map((itemIndex) => {
+                const isLoaded = loading || loadedItems.has(itemIndex);
+                const shouldShow = loading || isLoaded;
+
+                return (
+                  <motion.div
+                    key={itemIndex}
+                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                    animate={
+                      shouldShow && inView
+                        ? {
+                            opacity: 1,
+                            y: 0,
+                            scale: 1,
+                            transition: {
+                              delay: loading
+                                ? 0.05 * itemIndex
+                                : 0.02 * itemIndex,
+                              duration: 0.6,
+                              ease: [0.25, 0.46, 0.45, 0.94], // Custom easing
+                            },
+                          }
+                        : {}
+                    }
+                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                    style={{ width: "100%" }} // Ensure motion.div takes full width
+                  >
+                    {loading ? <SkeletonCard /> : children[itemIndex]}
+                  </motion.div>
+                );
+              })}
             </Box>
           ))}
         </AnimatePresence>
