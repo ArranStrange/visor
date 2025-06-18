@@ -91,13 +91,19 @@ export interface PresetSettings {
   noiseReduction: NoiseReductionSettings;
 }
 
+export interface ImageInput {
+  url: string;
+  publicId: string;
+}
+
 export interface UploadPresetInput {
   title: string;
   description?: string;
-  tags: string[];
   settings: PresetSettings;
   toneCurve?: ToneCurve;
   notes?: string;
-  beforeImage?: File;
-  afterImage?: File;
+  tags: string[];
+  beforeImage?: ImageInput;
+  afterImage?: ImageInput;
+  sampleImages?: ImageInput[];
 }

@@ -44,6 +44,8 @@ import {
   UploadPresetInput,
 } from "../types/graphql";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
+import { v4 as uuidv4 } from "uuid";
+import slugify from "slugify";
 
 type UploadType = "preset" | "filmsim";
 
@@ -145,8 +147,9 @@ const UPLOAD_PRESET = gql`
     $toneCurve: ToneCurveInput
     $notes: String
     $tags: [String!]!
-    $beforeImage: Upload
-    $afterImage: Upload
+    $beforeImage: ImageInput
+    $afterImage: ImageInput
+    $sampleImages: [ImageInput!]
   ) {
     uploadPreset(
       title: $title
@@ -157,10 +160,119 @@ const UPLOAD_PRESET = gql`
       tags: $tags
       beforeImage: $beforeImage
       afterImage: $afterImage
+      sampleImages: $sampleImages
     ) {
       id
       title
       slug
+      description
+      settings {
+        exposure
+        contrast
+        highlights
+        shadows
+        whites
+        blacks
+        temp
+        tint
+        vibrance
+        saturation
+        clarity
+        dehaze
+        grain {
+          amount
+          size
+          roughness
+        }
+        vignette {
+          amount
+        }
+        colorAdjustments {
+          red {
+            hue
+            saturation
+            luminance
+          }
+          orange {
+            saturation
+            luminance
+          }
+          yellow {
+            hue
+            saturation
+            luminance
+          }
+          green {
+            hue
+            saturation
+          }
+          blue {
+            hue
+            saturation
+          }
+        }
+        splitToning {
+          shadowHue
+          shadowSaturation
+          highlightHue
+          highlightSaturation
+          balance
+        }
+        sharpening
+        noiseReduction {
+          luminance
+          detail
+          color
+        }
+      }
+      toneCurve {
+        rgb {
+          x
+          y
+        }
+        red {
+          x
+          y
+        }
+        green {
+          x
+          y
+        }
+        blue {
+          x
+          y
+        }
+      }
+      notes
+      tags {
+        id
+        name
+        displayName
+      }
+      beforeImage {
+        id
+        url
+        publicId
+      }
+      afterImage {
+        id
+        url
+        publicId
+      }
+      sampleImages {
+        id
+        url
+        publicId
+        caption
+      }
+      creator {
+        id
+        username
+        avatar
+        instagram
+      }
+      createdAt
+      updatedAt
     }
   }
 `;
@@ -199,6 +311,29 @@ const UPLOAD_FILMSIM = gql`
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+// Type declarations for environment variables
+declare global {
+  interface ImportMeta {
+    env: {
+      VITE_CLOUDINARY_CLOUD_NAME: string;
+      VITE_CLOUDINARY_API_KEY: string;
+      VITE_CLOUDINARY_API_SECRET: string;
+    };
+  }
+}
+
+// Cloudinary configuration
+const cloudinaryConfig = {
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
+  apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
+};
+
+interface ImageInput {
+  publicId: string;
+  url: string;
+}
+
 const UploadPreset: React.FC = () => {
   const [uploadType, setUploadType] = useState<UploadType>("preset");
   const [title, setTitle] = useState("");
@@ -216,6 +351,10 @@ const UploadPreset: React.FC = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [uploadedBeforeImage, setUploadedBeforeImage] =
+    useState<ImageInput | null>(null);
+  const [uploadedAfterImage, setUploadedAfterImage] =
+    useState<ImageInput | null>(null);
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -241,21 +380,86 @@ const UploadPreset: React.FC = () => {
     return true;
   };
 
-  const handleBeforeImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const uploadToCloudinary = async (file: File): Promise<ImageInput> => {
+    console.log("Uploading to Cloudinary...");
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "PresetBeforeAndAfter");
+    formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${
+          import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+        }/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Cloudinary upload error:", errorData);
+        throw new Error(
+          `Failed to upload image to Cloudinary: ${
+            errorData.error?.message || "Unknown error"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      console.log("Cloudinary upload response:", data);
+
+      return {
+        publicId: data.public_id,
+        url: data.secure_url,
+      };
+    } catch (error: any) {
+      console.error("Error uploading to Cloudinary:", error);
+      throw new Error(`Failed to upload image to Cloudinary: ${error.message}`);
+    }
+  };
+
+  const handleBeforeImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setFileError(null);
     const file = e.target.files?.[0];
     if (file && validateFile(file)) {
       setBeforeImage(file);
+      try {
+        setIsUploading(true);
+        const result = await uploadToCloudinary(file);
+        setUploadedBeforeImage(result);
+      } catch (error) {
+        setFileError("Failed to upload before image to Cloudinary");
+        console.error("Error uploading before image:", error);
+      } finally {
+        setIsUploading(false);
+      }
     } else {
       e.target.value = ""; // Reset the input
     }
   };
 
-  const handleAfterImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAfterImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     setFileError(null);
     const file = e.target.files?.[0];
     if (file && validateFile(file)) {
       setAfterImage(file);
+      try {
+        setIsUploading(true);
+        const result = await uploadToCloudinary(file);
+        setUploadedAfterImage(result);
+      } catch (error) {
+        setFileError("Failed to upload after image to Cloudinary");
+        console.error("Error uploading after image:", error);
+      } finally {
+        setIsUploading(false);
+      }
     } else {
       e.target.value = ""; // Reset the input
     }
@@ -411,54 +615,105 @@ const UploadPreset: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!parsedSettings) {
+      setError("Please upload an XMP file first");
+      return;
+    }
+
+    if (!title.trim()) {
+      setError("Title is required");
+      return;
+    }
+
+    if (tags.length === 0) {
+      setError("At least one tag is required");
+      return;
+    }
+
+    if (!uploadedBeforeImage || !uploadedAfterImage) {
+      setError("Both before and after images are required");
+      return;
+    }
+
+    setIsUploading(true);
     setError(null);
-    setFileError(null);
 
     try {
-      // Validate required fields
-      if (!title.trim()) {
-        setError("Title is required");
-        return;
-      }
-      if (!tags.length) {
-        setError("Please add at least one tag");
-        return;
-      }
-      if (!parsedSettings) {
-        setError("Please upload and parse an XMP file");
-        return;
-      }
+      const settings = buildSettingsForBackend(parsedSettings);
+      const toneCurve = buildToneCurveForBackend(parsedSettings);
 
-      setIsUploading(true);
-
-      // Prepare variables for the preset mutation
-      const variables: UploadPresetInput = {
-        title,
-        description,
-        settings: buildSettingsForBackend(parsedSettings),
-        toneCurve: buildToneCurveForBackend(parsedSettings),
-        notes,
-        tags: tags.map((tag) => tag.toLowerCase()),
-        // No images for now
+      // Ensure tone curve arrays have at least one point
+      const defaultToneCurve = {
+        rgb: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        red: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        green: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        blue: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
       };
 
-      console.log("Uploading with variables:", variables);
+      const finalToneCurve = {
+        rgb: toneCurve.rgb.length > 0 ? toneCurve.rgb : defaultToneCurve.rgb,
+        red: toneCurve.red.length > 0 ? toneCurve.red : defaultToneCurve.red,
+        green:
+          toneCurve.green.length > 0 ? toneCurve.green : defaultToneCurve.green,
+        blue:
+          toneCurve.blue.length > 0 ? toneCurve.blue : defaultToneCurve.blue,
+      };
+
+      console.log("Settings being sent:", JSON.stringify(settings, null, 2));
+      console.log(
+        "Tone curve being sent:",
+        JSON.stringify(finalToneCurve, null, 2)
+      );
+
+      const variables = {
+        title,
+        description,
+        settings,
+        toneCurve: finalToneCurve,
+        notes,
+        tags: tags.map((tag) => tag.toLowerCase()),
+        beforeImage: uploadedBeforeImage,
+        afterImage: uploadedAfterImage,
+        sampleImages: [],
+      };
+
+      console.log(
+        "Uploading with variables:",
+        JSON.stringify(variables, null, 2)
+      );
 
       const result = await uploadPreset({
         variables,
       });
 
       console.log("Upload result:", result);
+
+      if (result.errors) {
+        console.error("GraphQL Errors:", result.errors);
+        throw new Error(result.errors[0].message);
+      }
+
+      if (!result.data?.uploadPreset) {
+        console.error("No data returned from server");
+        throw new Error("Failed to upload preset: No data returned");
+      }
+
       navigate(`/preset/${result.data.uploadPreset.slug}`);
-    } catch (err: any) {
-      console.error("Error uploading:", err);
-      if (err.graphQLErrors) {
-        console.error("GraphQL Errors:", err.graphQLErrors);
-      }
-      if (err.networkError) {
-        console.error("Network Error:", err.networkError);
-      }
-      setError(err instanceof Error ? err.message : "Failed to upload");
+    } catch (error: any) {
+      console.error("Error uploading:", error);
+      setError(error.message || "Failed to upload preset");
     } finally {
       setIsUploading(false);
     }

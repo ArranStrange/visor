@@ -151,122 +151,19 @@ module.exports = {
     },
     searchUsers: async (_, { query }) =>
       await User.find({ username: new RegExp(query, "i") }),
-
-    getPreset: async (_, { slug }) => {
-      try {
-        const preset = await Preset.findOne({ slug })
-          .populate({
-            path: "creator",
-            select: "id username avatar instagram",
-          })
-          .populate({
-            path: "tags",
-            select: "id name displayName",
-          })
-          .populate({
-            path: "beforeImage",
-            select: "id url publicId",
-          })
-          .populate({
-            path: "afterImage",
-            select: "id url publicId",
-          })
-          .populate({
-            path: "sampleImages",
-            select: "id url caption",
-          });
-
-        if (!preset) {
-          throw new Error("Preset not found");
-        }
-
-        // Convert MongoDB document to plain object
-        const presetObj = preset.toObject();
-
-        // Ensure all IDs are strings
-        return {
-          ...presetObj,
-          id: presetObj._id.toString(),
-          creator: {
-            ...presetObj.creator,
-            id: presetObj.creator._id.toString(),
-          },
-          tags: presetObj.tags.map((tag) => ({
-            ...tag,
-            id: tag._id.toString(),
-          })),
-          beforeImage: presetObj.beforeImage
-            ? {
-                ...presetObj.beforeImage,
-                id: presetObj.beforeImage._id.toString(),
-              }
-            : null,
-          afterImage: presetObj.afterImage
-            ? {
-                ...presetObj.afterImage,
-                id: presetObj.afterImage._id.toString(),
-              }
-            : null,
-          sampleImages: presetObj.sampleImages.map((image) => ({
-            ...image,
-            id: image._id.toString(),
-          })),
-        };
-      } catch (error) {
-        console.error("Error in getPreset:", error);
-        throw error;
-      }
-    },
-    listPresets: async (_, { filter }) => {
-      try {
-        const presets = await Preset.find(filter || {})
-          .populate({
-            path: "creator",
-            select: "id username avatar",
-          })
-          .populate({
-            path: "tags",
-            select: "id name displayName",
-          })
-          .populate({
-            path: "filmSim",
-            select: "id name slug",
-          })
-          .populate({
-            path: "afterImage",
-            select: "id url publicId",
-          })
-          .populate({
-            path: "sampleImages",
-            select: "id url caption",
-          });
-        // Filter out presets with missing afterImage or afterImage.url
-        return presets.filter(
-          (preset) => preset.afterImage && preset.afterImage.url
-        );
-      } catch (error) {
-        console.error("Error listing presets:", error);
-        throw new Error("Failed to list presets: " + error.message);
-      }
-    },
-
     getFilmSim: async (_, { slug }) => await FilmSim.findOne({ slug }),
     listFilmSims: async (_, { filter }) =>
       await FilmSim.find(filter || {}).populate("creator tags"),
-
     allTags: async () => {
       const tags = await Tag.find({});
       return tags.map((tag) => tag.displayName);
     },
-
     getImage: async (_, { id }) => await Image.findById(id),
     listImagesByPreset: async (_, { presetId }) =>
       await Image.find({ preset: presetId }),
-
     getTag: async (_, { name }) => await Tag.findOne({ name }),
     listTags: async (_, { category }) =>
       await Tag.find(category ? { category } : {}),
-
     getUserLists: async (_, { userId }) => {
       try {
         const lists = await UserList.find({ owner: userId })
@@ -314,7 +211,6 @@ module.exports = {
         throw new Error("Failed to get user lists: " + error.message);
       }
     },
-
     getUserList: async (_, { id }) => {
       try {
         const list = await UserList.findById(id)
@@ -364,10 +260,8 @@ module.exports = {
         throw new Error("Failed to get user list: " + error.message);
       }
     },
-
     getCommentsForPreset: async (_, { presetId }) =>
       await Comment.find({ preset: presetId, parent: null }),
-
     getCommentsForFilmSim: async (_, { filmSimId }) =>
       await Comment.find({ filmSim: filmSimId, parent: null }),
   },
@@ -454,113 +348,6 @@ module.exports = {
       }
     },
 
-    createPreset: async (_, { input }, { user }) => {
-      try {
-        if (!user) {
-          throw new Error("Authentication required");
-        }
-
-        // Validate required fields
-        if (!input.title) {
-          throw new Error("Title is required");
-        }
-        if (!input.slug) {
-          throw new Error("Slug is required");
-        }
-        if (!input.xmpUrl) {
-          throw new Error("XMP URL is required");
-        }
-
-        // Check if preset with same slug already exists
-        const existingPreset = await Preset.findOne({ slug: input.slug });
-        if (existingPreset) {
-          throw new Error("A preset with this slug already exists");
-        }
-
-        // Ensure settings object has the correct structure
-        const settings = input.settings || {};
-        const presetData = {
-          ...input,
-          creator: user.id,
-          settings: {
-            // Light settings
-            exposure: parseFloat(settings.exposure) || 0,
-            contrast: parseFloat(settings.contrast) || 0,
-            highlights: parseFloat(settings.highlights) || 0,
-            shadows: parseFloat(settings.shadows) || 0,
-            whites: parseFloat(settings.whites) || 0,
-            blacks: parseFloat(settings.blacks) || 0,
-
-            // Color settings
-            temp: parseFloat(settings.temp) || 0,
-            tint: parseFloat(settings.tint) || 0,
-            vibrance: parseFloat(settings.vibrance) || 0,
-            saturation: parseFloat(settings.saturation) || 0,
-
-            // Effects
-            clarity: parseFloat(settings.clarity) || 0,
-            dehaze: parseFloat(settings.dehaze) || 0,
-            grain: settings.grain
-              ? {
-                  amount: parseFloat(settings.grain.amount) || 0,
-                  size: parseFloat(settings.grain.size) || 0,
-                  roughness: parseFloat(settings.grain.roughness) || 0,
-                }
-              : { amount: 0, size: 0, roughness: 0 },
-
-            // Detail
-            sharpening: parseFloat(settings.sharpening) || 0,
-            noiseReduction: settings.noiseReduction
-              ? {
-                  luminance: parseFloat(settings.noiseReduction.luminance) || 0,
-                  detail: parseFloat(settings.noiseReduction.detail) || 0,
-                  color: parseFloat(settings.noiseReduction.color) || 0,
-                }
-              : { luminance: 0, detail: 0, color: 0 },
-          },
-          toneCurve: input.toneCurve
-            ? {
-                rgb: (input.toneCurve.rgb || []).map((v) => parseFloat(v) || 0),
-                red: (input.toneCurve.red || []).map((v) => parseFloat(v) || 0),
-                green: (input.toneCurve.green || []).map(
-                  (v) => parseFloat(v) || 0
-                ),
-                blue: (input.toneCurve.blue || []).map(
-                  (v) => parseFloat(v) || 0
-                ),
-              }
-            : undefined,
-        };
-
-        const preset = await Preset.create(presetData);
-        return preset;
-      } catch (error) {
-        console.error("Error creating preset:", error);
-        throw error;
-      }
-    },
-
-    updatePreset: async (_, { id, input }) =>
-      await Preset.findByIdAndUpdate(id, input, { new: true }),
-
-    deletePreset: async (_, { id }) => !!(await Preset.findByIdAndDelete(id)),
-
-    likePreset: async (_, { presetId }, { user }) => {
-      const preset = await Preset.findById(presetId);
-      if (!preset.likes.includes(user.id)) {
-        preset.likes.push(user.id);
-        await preset.save();
-      }
-      return true;
-    },
-
-    downloadPreset: async (_, { presetId }) => {
-      const preset = await Preset.findById(presetId);
-      preset.downloads += 1;
-      await preset.save();
-      return true;
-    },
-
     createFilmSim: async (_, { input }, { user }) => {
       const filmSim = new FilmSim({ ...input, creator: user.id });
       return await filmSim.save();
@@ -602,135 +389,6 @@ module.exports = {
         return true;
       }
       return false;
-    },
-
-    uploadPreset: async (
-      _,
-      {
-        title,
-        description,
-        settings,
-        toneCurve,
-        notes,
-        tags,
-        beforeImage,
-        afterImage,
-        sampleImages,
-      },
-      { user }
-    ) => {
-      if (!user) {
-        throw new Error("You must be logged in to upload a preset");
-      }
-
-      try {
-        // Process tags - find or create Tag documents
-        const tagDocuments = await Promise.all(
-          tags.map(async (tagName) => {
-            // Find existing tag or create new one
-            const tag = await Tag.findOneAndUpdate(
-              { name: tagName.toLowerCase() },
-              { name: tagName.toLowerCase() },
-              { upsert: true, new: true }
-            );
-            return tag._id;
-          })
-        );
-
-        // Generate a unique slug
-        const baseSlug = title.toLowerCase().replace(/\s+/g, "-");
-        let slug = baseSlug;
-        let counter = 1;
-
-        // Keep trying until we find a unique slug
-        while (await Preset.findOne({ slug })) {
-          slug = `${baseSlug}-${Date.now()}`;
-        }
-
-        // Create the preset first
-        const preset = new Preset({
-          title,
-          description,
-          settings,
-          toneCurve,
-          notes,
-          tags: tagDocuments,
-          creator: user._id,
-          slug,
-        });
-
-        // Save the preset to get its ID
-        await preset.save();
-
-        // Create and save before image if provided
-        if (beforeImage) {
-          const beforeImageDoc = new Image({
-            url: beforeImage.url,
-            publicId: beforeImage.publicId,
-            uploader: user._id,
-            isBeforeImage: true,
-            associatedWith: {
-              kind: "Preset",
-              item: preset._id,
-            },
-            submittedAt: new Date(),
-          });
-          await beforeImageDoc.save();
-          preset.beforeImage = beforeImageDoc._id;
-        }
-
-        // Create and save after image if provided
-        if (afterImage) {
-          const afterImageDoc = new Image({
-            url: afterImage.url,
-            publicId: afterImage.publicId,
-            uploader: user._id,
-            isAfterImage: true,
-            associatedWith: {
-              kind: "Preset",
-              item: preset._id,
-            },
-            submittedAt: new Date(),
-          });
-          await afterImageDoc.save();
-          preset.afterImage = afterImageDoc._id;
-        }
-
-        // Create and save sample images if provided
-        if (sampleImages && sampleImages.length > 0) {
-          const sampleImageDocs = await Promise.all(
-            sampleImages.map(async (image) => {
-              const imageDoc = new Image({
-                url: image.url,
-                publicId: image.publicId,
-                uploader: user._id,
-                associatedWith: {
-                  kind: "Preset",
-                  item: preset._id,
-                },
-                submittedAt: new Date(),
-              });
-              await imageDoc.save();
-              return imageDoc._id;
-            })
-          );
-          preset.sampleImages = sampleImageDocs;
-        }
-
-        // Save the preset with all image references
-        await preset.save();
-
-        // Return the populated preset
-        return await Preset.findById(preset._id)
-          .populate("creator")
-          .populate("tags")
-          .populate("beforeImage")
-          .populate("afterImage")
-          .populate("sampleImages");
-      } catch (error) {
-        console.error("Error uploading preset:", error);
-        throw new Error(`Failed to upload preset: ${error.message}`);
-      }
     },
 
     uploadFilmSim: async (
@@ -981,14 +639,6 @@ module.exports = {
         },
       };
     },
-  },
-
-  Preset: {
-    creator: async (preset) => await User.findById(preset.creator),
-    tags: async (preset) => await Tag.find({ _id: { $in: preset.tags } }),
-    filmSim: async (preset) => await FilmSim.findById(preset.filmSim),
-    sampleImages: async (preset) =>
-      await Image.find({ _id: { $in: preset.sampleImages } }),
   },
 
   FilmSim: {
