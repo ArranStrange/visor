@@ -1,6 +1,7 @@
 import React, { useMemo } from "react";
 import { useQuery } from "@apollo/client";
 import { CircularProgress, Alert, Box } from "@mui/material";
+import { useContentType } from "../context/ContentTypeFilter";
 
 import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
 import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
@@ -93,6 +94,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       : results;
   }, [customData, contentType, presetData, filmSimData, searchQuery]);
 
+  const { randomizeOrder } = useContentType();
+
   if (isLoading) {
     return (
       <Box display="flex" justifyContent="center" mt={4}>
@@ -131,7 +134,11 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     )
   );
 
-  return <StaggeredGrid>{children}</StaggeredGrid>;
+  return (
+    <Box>
+      <StaggeredGrid randomizeOrder={randomizeOrder}>{children}</StaggeredGrid>
+    </Box>
+  );
 };
 
 export default ContentGridLoader;

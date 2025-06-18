@@ -7,14 +7,14 @@ interface StaggeredGridProps {
   children: React.ReactNode[];
   minWidth?: number; // min width of card in px (e.g., 250)
   gap?: number; // gap between cards in px (e.g., 16)
-  randomize?: boolean; // whether to randomize item distribution
+  randomizeOrder?: boolean; // whether to randomize the order of items
 }
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
   minWidth = 250,
   gap = 16,
-  randomize = true,
+  randomizeOrder = true,
 }) => {
   const { ref: triggerRef, inView } = useInView({
     triggerOnce: true,
@@ -50,32 +50,35 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       return;
     }
 
+    // Create array of indices
+    let itemIndices = Array.from({ length: children.length }, (_, i) => i);
+
+    // Shuffle the indices if randomizeOrder is true
+    if (randomizeOrder) {
+      for (let i = itemIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [itemIndices[i], itemIndices[j]] = [itemIndices[j], itemIndices[i]];
+      }
+    }
+
     const newColumns: number[][] = Array.from(
       { length: columnCount },
       () => []
     );
 
-    if (randomize) {
-      // Random distribution
-      children.forEach((_, index) => {
-        const randomColumn = Math.floor(Math.random() * columnCount);
-        newColumns[randomColumn].push(index);
-      });
-    } else {
-      // Shortest column distribution (original behavior)
-      children.forEach((_, index) => {
-        // Find the shortest column
-        const shortestColumn = newColumns.reduce(
-          (shortest, current, i) =>
-            current.length < newColumns[shortest].length ? i : shortest,
-          0
-        );
-        newColumns[shortestColumn].push(index);
-      });
-    }
+    // Distribute items to shortest column
+    itemIndices.forEach((itemIndex) => {
+      // Find the shortest column
+      const shortestColumn = newColumns.reduce(
+        (shortest, current, i) =>
+          current.length < newColumns[shortest].length ? i : shortest,
+        0
+      );
+      newColumns[shortestColumn].push(itemIndex);
+    });
 
     setColumns(newColumns);
-  }, [children, columnCount, randomize]);
+  }, [children, columnCount, randomizeOrder]);
 
   if (!children.length) {
     return null;

@@ -346,39 +346,51 @@ const FilmSimDetails: React.FC = () => {
                 gap: 2,
               }}
             >
-              {filmSim.recommendedPresets?.map((preset) => (
-                <Box
-                  key={preset.id}
-                  sx={{
-                    p: 2,
-                    borderRadius: 2,
-                    bgcolor: "background.default",
-                    boxShadow: 1,
-                    cursor: "pointer",
-                    "&:hover": {
-                      boxShadow: 2,
-                      bgcolor: "action.hover",
-                    },
-                  }}
-                  onClick={() =>
-                    (window.location.href = `/preset/${preset.slug}`)
-                  }
-                >
-                  <Typography variant="h6" gutterBottom>
-                    {preset.title}
-                  </Typography>
-                  <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                    {preset.tags?.map((tag) => (
-                      <Chip
-                        key={tag.id}
-                        label={tag.displayName}
-                        size="small"
-                        variant="outlined"
-                      />
-                    ))}
-                  </Stack>
-                </Box>
-              ))}
+              {filmSim.recommendedPresets &&
+              filmSim.recommendedPresets.length > 0 ? (
+                filmSim.recommendedPresets.map((preset) => (
+                  <Box
+                    key={preset.id}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      bgcolor: "background.default",
+                      boxShadow: 1,
+                      cursor: "pointer",
+                      "&:hover": {
+                        boxShadow: 2,
+                        bgcolor: "action.hover",
+                      },
+                    }}
+                    onClick={() =>
+                      (window.location.href = `/preset/${preset.slug}`)
+                    }
+                  >
+                    <Typography variant="h6" gutterBottom>
+                      {preset.title}
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      {preset.tags?.map((tag) => (
+                        <Chip
+                          key={tag.id}
+                          label={tag.displayName}
+                          size="small"
+                          variant="outlined"
+                        />
+                      ))}
+                    </Stack>
+                  </Box>
+                ))
+              ) : (
+                <Typography variant="body2" color="text.secondary">
+                  No recommended presets available.
+                </Typography>
+              )}
             </Box>
           </AccordionDetails>
         </Accordion>

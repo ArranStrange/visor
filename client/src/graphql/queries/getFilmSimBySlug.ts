@@ -35,23 +35,6 @@ export const GET_FILMSIM_BY_SLUG = gql`
         url
         caption
       }
-      recommendedPresets {
-        id
-        title
-        slug
-        tags {
-          id
-          name
-          displayName
-        }
-        notes
-        description
-        creator {
-          id
-          username
-          avatar
-        }
-      }
     }
   }
 `;

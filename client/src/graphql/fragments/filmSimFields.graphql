@@ -18,11 +18,6 @@ fragment FilmSimFields on FilmSim {
     username
     avatar
   }
-  recommendedPresets {
-    id
-    title
-    slug
-  }
   tags {
     id
     displayName

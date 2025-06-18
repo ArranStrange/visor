@@ -1,14 +1,22 @@
-import React from "react";
-import { ToggleButton, ToggleButtonGroup, Box, Tooltip } from "@mui/material";
+import React, { useState } from "react";
+import {
+  ToggleButton,
+  ToggleButtonGroup,
+  Box,
+  Tooltip,
+  IconButton,
+} from "@mui/material";
 import { useContentType } from "../context/ContentTypeFilter";
 
 // Icons
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import TuneIcon from "@mui/icons-material/Tune";
 import CameraRollIcon from "@mui/icons-material/CameraRoll";
+import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 const ContentTypeToggle: React.FC = () => {
-  const { contentType, setContentType } = useContentType();
+  const { contentType, setContentType, randomizeOrder, setRandomizeOrder } =
+    useContentType();
 
   const handleChange = (
     _: React.MouseEvent<HTMLElement>,
@@ -24,7 +32,14 @@ const ContentTypeToggle: React.FC = () => {
   ] as const;
 
   return (
-    <Box display="flex" justifyContent="center" mt={2} mb={2}>
+    <Box
+      position="relative"
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      mt={2}
+      mb={2}
+    >
       <ToggleButtonGroup
         value={contentType}
         exclusive
@@ -70,6 +85,27 @@ const ContentTypeToggle: React.FC = () => {
           </Tooltip>
         ))}
       </ToggleButtonGroup>
+
+      <Tooltip
+        title={randomizeOrder ? "Disable Random Order" : "Enable Random Order"}
+      >
+        <IconButton
+          onClick={() => setRandomizeOrder(!randomizeOrder)}
+          sx={{
+            position: "absolute",
+            right: 0,
+            backgroundColor: "transparent",
+            color: randomizeOrder ? "#ff9800" : "grey.600",
+            opacity: 0.7,
+            "&:hover": {
+              opacity: 1,
+            },
+          }}
+          size="small"
+        >
+          <ShuffleIcon fontSize="small" />
+        </IconButton>
+      </Tooltip>
     </Box>
   );
 };
