@@ -25,7 +25,7 @@ const typeDefs = gql`
   type GrainSettings {
     amount: Float
     size: Float
-    roughness: Float
+    frequency: Float
   }
 
   type NoiseReductionSettings {
@@ -56,6 +56,18 @@ const typeDefs = gql`
     beforeImage: Image
     afterImage: Image
     sampleImages: [Image!]
+  }
+
+  input CurvePointInput {
+    x: Float!
+    y: Float!
+  }
+
+  input ToneCurveInput {
+    rgb: [CurvePointInput!]
+    red: [CurvePointInput!]
+    green: [CurvePointInput!]
+    blue: [CurvePointInput!]
   }
 
   input PresetSettingsInput {

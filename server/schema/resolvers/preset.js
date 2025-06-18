@@ -9,6 +9,103 @@ const {
   UserInputError,
 } = require("../../utils/errors");
 
+const formatToneCurvePoints = (arr) =>
+  (arr || []).map(({ x, y }) => ({
+    x: parseFloat(x) || 0,
+    y: parseFloat(y) || 0,
+  }));
+
+const cleanSettings = (settings) => {
+  if (!settings) return {};
+  console.log("uploadPreset called");
+  return {
+    ...settings,
+    grain: settings.grain
+      ? {
+          amount: Number(settings.grain.amount) || 0,
+          size: Number(settings.grain.size) || 0,
+          frequency: Number(settings.grain.frequency) || 0,
+        }
+      : undefined,
+    vignette: settings.vignette
+      ? {
+          amount: Number(settings.vignette.amount) || 0,
+        }
+      : undefined,
+    colorAdjustments: settings.colorAdjustments
+      ? {
+          ...settings.colorAdjustments,
+          red: settings.colorAdjustments.red
+            ? {
+                hue: Number(settings.colorAdjustments.red.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.red.saturation) || 0,
+                luminance: Number(settings.colorAdjustments.red.luminance) || 0,
+              }
+            : undefined,
+          orange: settings.colorAdjustments.orange
+            ? {
+                saturation:
+                  Number(settings.colorAdjustments.orange.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.orange.luminance) || 0,
+              }
+            : undefined,
+          yellow: settings.colorAdjustments.yellow
+            ? {
+                hue: Number(settings.colorAdjustments.yellow.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.yellow.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.yellow.luminance) || 0,
+              }
+            : undefined,
+          green: settings.colorAdjustments.green
+            ? {
+                hue: Number(settings.colorAdjustments.green.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.green.saturation) || 0,
+              }
+            : undefined,
+          blue: settings.colorAdjustments.blue
+            ? {
+                hue: Number(settings.colorAdjustments.blue.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.blue.saturation) || 0,
+              }
+            : undefined,
+        }
+      : undefined,
+    splitToning: settings.splitToning
+      ? {
+          shadowHue: Number(settings.splitToning.shadowHue) || 0,
+          shadowSaturation: Number(settings.splitToning.shadowSaturation) || 0,
+          highlightHue: Number(settings.splitToning.highlightHue) || 0,
+          highlightSaturation:
+            Number(settings.splitToning.highlightSaturation) || 0,
+          balance: Number(settings.splitToning.balance) || 0,
+        }
+      : undefined,
+  };
+};
+
+const cleanToneCurve = (toneCurve) => {
+  if (!toneCurve) return undefined;
+  const cleanPoints = (arr) =>
+    Array.isArray(arr)
+      ? arr.map(({ x, y }) => ({
+          x: Number(x) || 0,
+          y: Number(y) || 0,
+        }))
+      : [];
+  return {
+    rgb: cleanPoints(toneCurve.rgb),
+    red: cleanPoints(toneCurve.red),
+    green: cleanPoints(toneCurve.green),
+    blue: cleanPoints(toneCurve.blue),
+  };
+};
+
 const presetResolvers = {
   Query: {
     getPreset: async (_, { slug }) => {
@@ -115,21 +212,21 @@ const presetResolvers = {
                 }
               : { luminance: 0, detail: 0, color: 0 },
           },
+
           toneCurve: input.toneCurve
             ? {
-                rgb: (input.toneCurve.rgb || []).map((v) => parseFloat(v) || 0),
-                red: (input.toneCurve.red || []).map((v) => parseFloat(v) || 0),
-                green: (input.toneCurve.green || []).map(
-                  (v) => parseFloat(v) || 0
-                ),
-                blue: (input.toneCurve.blue || []).map(
-                  (v) => parseFloat(v) || 0
-                ),
+                rgb: formatToneCurvePoints(input.toneCurve.rgb),
+                red: formatToneCurvePoints(input.toneCurve.red),
+                green: formatToneCurvePoints(input.toneCurve.green),
+                blue: formatToneCurvePoints(input.toneCurve.blue),
               }
             : undefined,
         };
+        console.log("Received toneCurve input:", input.toneCurve);
+        console.log("Processed toneCurve:", toneCurve);
         const preset = await Preset.create(presetData);
         return preset;
+        // Note: uploadPreset is the preferred mutation for file uploads and full preset creation from the frontend.
       } catch (error) {
         console.error("Error creating preset:", error);
         throw error;
@@ -181,7 +278,10 @@ const presetResolvers = {
             try {
               const tag = await Tag.findOneAndUpdate(
                 { name: tagName.toLowerCase() },
-                { name: tagName.toLowerCase() },
+                {
+                  name: tagName.toLowerCase(),
+                  displayName: tagName,
+                },
                 { upsert: true, new: true }
               );
               return tag._id;
@@ -207,8 +307,8 @@ const presetResolvers = {
         const preset = new Preset({
           title,
           description,
-          settings,
-          toneCurve,
+          settings: cleanSettings(settings),
+          toneCurve: cleanToneCurve(toneCurve),
           notes,
           tags: tagDocuments,
           creator: user._id,
@@ -289,6 +389,9 @@ const presetResolvers = {
         console.log("Preset saved with image references");
 
         console.log("Fetching final preset with populated fields...");
+
+        console.log("Preset ID:", preset._id);
+
         const finalPreset = await Preset.findById(preset._id)
           .populate("creator")
           .populate("tags")
@@ -296,9 +399,9 @@ const presetResolvers = {
           .populate("afterImage")
           .populate("sampleImages");
 
+        console.log("Final preset:", finalPreset);
         if (!finalPreset) {
-          console.error("Failed to find preset after creation");
-          throw new Error("Failed to create preset");
+          throw new Error("Preset not found after save");
         }
 
         console.log("Preset upload completed successfully");

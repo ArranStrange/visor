@@ -11,8 +11,14 @@ const { graphqlUploadExpress } = require("graphql-upload");
 
 dotenv.config();
 
-const typeDefs = require("./schema/typeDefs");
-const resolvers = require("./schema/resolvers");
+const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
+const mainTypeDefs = require("./schema/typeDefs");
+const presetTypeDefs = require("./schema/typeDefs/preset");
+const mainResolvers = require("./schema/resolvers");
+const presetResolvers = require("./schema/resolvers/preset");
+
+const typeDefs = mergeTypeDefs([mainTypeDefs, presetTypeDefs]);
+const resolvers = mergeResolvers([mainResolvers, presetResolvers]);
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGODB_URI;

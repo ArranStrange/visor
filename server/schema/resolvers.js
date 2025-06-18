@@ -13,7 +13,6 @@ const fs = require("fs");
 const cloudinary = require("cloudinary");
 
 const User = require("../models/User");
-const Preset = require("../models/Preset");
 const FilmSim = require("../models/FilmSim");
 const Comment = require("../models/comment");
 const Image = require("../models/Image");

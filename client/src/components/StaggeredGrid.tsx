@@ -7,12 +7,14 @@ interface StaggeredGridProps {
   children: React.ReactNode[];
   minWidth?: number; // min width of card in px (e.g., 250)
   gap?: number; // gap between cards in px (e.g., 16)
+  randomize?: boolean; // whether to randomize item distribution
 }
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
   minWidth = 250,
   gap = 16,
+  randomize = true,
 }) => {
   const { ref: triggerRef, inView } = useInView({
     triggerOnce: true,
@@ -53,18 +55,27 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       () => []
     );
 
-    children.forEach((_, index) => {
-      // Find the shortest column
-      const shortestColumn = newColumns.reduce(
-        (shortest, current, i) =>
-          current.length < newColumns[shortest].length ? i : shortest,
-        0
-      );
-      newColumns[shortestColumn].push(index);
-    });
+    if (randomize) {
+      // Random distribution
+      children.forEach((_, index) => {
+        const randomColumn = Math.floor(Math.random() * columnCount);
+        newColumns[randomColumn].push(index);
+      });
+    } else {
+      // Shortest column distribution (original behavior)
+      children.forEach((_, index) => {
+        // Find the shortest column
+        const shortestColumn = newColumns.reduce(
+          (shortest, current, i) =>
+            current.length < newColumns[shortest].length ? i : shortest,
+          0
+        );
+        newColumns[shortestColumn].push(index);
+      });
+    }
 
     setColumns(newColumns);
-  }, [children, columnCount]);
+  }, [children, columnCount, randomize]);
 
   if (!children.length) {
     return null;

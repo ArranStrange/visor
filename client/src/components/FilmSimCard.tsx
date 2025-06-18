@@ -79,6 +79,25 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         alt={name}
         sx={{ objectFit: "cover" }}
       />
+
+      <Box
+        sx={{
+          position: "absolute",
+          top: 8,
+          right: 30,
+          backgroundColor: "rgba(0,0,0,0.7)",
+          color: "#fff",
+          px: 0.5,
+          py: 0.5,
+          borderRadius: 1,
+          fontSize: "0.7rem",
+          fontWeight: "bold",
+          textTransform: "uppercase",
+        }}
+      >
+        Fujifilm Preset
+      </Box>
+
       <CardContent
         sx={{ flexGrow: 1, display: "flex", flexDirection: "column" }}
       >

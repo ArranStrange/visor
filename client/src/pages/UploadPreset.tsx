@@ -334,6 +334,78 @@ interface ImageInput {
   url: string;
 }
 
+// Interface matching the XMP parser output format
+interface XmpParsedSettings {
+  version?: string;
+  processVersion?: string;
+  whiteBalance?: string;
+  cameraProfile?: string;
+  toneCurveName?: string;
+  exposure?: number;
+  contrast?: number;
+  highlights?: number;
+  shadows?: number;
+  whites?: number;
+  blacks?: number;
+  temp?: number;
+  tint?: number;
+  vibrance?: number;
+  saturation?: number;
+  texture?: number;
+  clarity?: number;
+  dehaze?: number;
+  grain?: {
+    amount: number;
+    size: number;
+    frequency: number;
+  };
+  vignette?: {
+    amount: number;
+  };
+  colorAdjustments?: {
+    red?: {
+      hue: number;
+      saturation: number;
+      luminance: number;
+    };
+    orange?: {
+      saturation: number;
+      luminance: number;
+    };
+    yellow?: {
+      hue: number;
+      saturation: number;
+      luminance: number;
+    };
+    green?: {
+      hue: number;
+      saturation: number;
+    };
+    blue?: {
+      hue: number;
+      saturation: number;
+    };
+  };
+  splitToning?: {
+    shadowHue: number;
+    shadowSaturation: number;
+    highlightHue: number;
+    highlightSaturation: number;
+    balance: number;
+  };
+  noiseReduction?: {
+    luminance: number;
+    detail: number;
+    color: number;
+  };
+  toneCurve?: {
+    rgb: Array<{ x: number; y: number }>;
+    red: Array<{ x: number; y: number }>;
+    green: Array<{ x: number; y: number }>;
+    blue: Array<{ x: number; y: number }>;
+  };
+}
+
 const UploadPreset: React.FC = () => {
   const [uploadType, setUploadType] = useState<UploadType>("preset");
   const [title, setTitle] = useState("");
@@ -343,9 +415,8 @@ const UploadPreset: React.FC = () => {
   const [beforeImage, setBeforeImage] = useState<File | null>(null);
   const [afterImage, setAfterImage] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
-  const [parsedSettings, setParsedSettings] = useState<PresetSettings | null>(
-    null
-  );
+  const [parsedSettings, setParsedSettings] =
+    useState<XmpParsedSettings | null>(null);
   const [uploadPreset, { loading: uploadLoading }] = useMutation(UPLOAD_PRESET);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -465,7 +536,7 @@ const UploadPreset: React.FC = () => {
     }
   };
 
-  const handleSettingsParsed = (settings: any) => {
+  const handleSettingsParsed = (settings: XmpParsedSettings) => {
     if (!settings || typeof settings !== "object") {
       setError("Invalid settings format received from XMP parser");
       return;
@@ -521,7 +592,9 @@ const UploadPreset: React.FC = () => {
   };
 
   // Helper to map parsedSettings to backend expected structure
-  const buildSettingsForBackend = (parsed: any): PresetSettings => ({
+  const buildSettingsForBackend = (
+    parsed: XmpParsedSettings
+  ): PresetSettings => ({
     // Light settings
     exposure: Number(parsed.exposure) || 0,
     contrast: Number(parsed.contrast) || 0,
@@ -540,7 +613,7 @@ const UploadPreset: React.FC = () => {
     grain: {
       amount: Number(parsed.grain?.amount) || 0,
       size: Number(parsed.grain?.size) || 0,
-      roughness: Number(parsed.grain?.roughness) || 0,
+      roughness: Number(parsed.grain?.frequency) || 0, // Map frequency to roughness
     },
     vignette: {
       amount: Number(parsed.vignette?.amount) || 0,
@@ -576,8 +649,8 @@ const UploadPreset: React.FC = () => {
       highlightSaturation: Number(parsed.splitToning?.highlightSaturation) || 0,
       balance: Number(parsed.splitToning?.balance) || 0,
     },
-    // Detail
-    sharpening: Number(parsed.sharpening) || 0,
+    // Detail - map texture to sharpening
+    sharpening: Number(parsed.texture) || 0,
     noiseReduction: {
       luminance: Number(parsed.noiseReduction?.luminance) || 0,
       detail: Number(parsed.noiseReduction?.detail) || 0,
@@ -585,13 +658,27 @@ const UploadPreset: React.FC = () => {
     },
   });
 
-  const buildToneCurveForBackend = (parsed: any): ToneCurveType => {
+  const buildToneCurveForBackend = (
+    parsed: XmpParsedSettings
+  ): ToneCurveType => {
     if (!parsed.toneCurve) {
       return {
-        rgb: [],
-        red: [],
-        green: [],
-        blue: [],
+        rgb: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        red: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        green: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
+        blue: [
+          { x: 0, y: 0 },
+          { x: 255, y: 255 },
+        ],
       };
     }
 
@@ -642,46 +729,14 @@ const UploadPreset: React.FC = () => {
       const settings = buildSettingsForBackend(parsedSettings);
       const toneCurve = buildToneCurveForBackend(parsedSettings);
 
-      // Ensure tone curve arrays have at least one point
-      const defaultToneCurve = {
-        rgb: [
-          { x: 0, y: 0 },
-          { x: 255, y: 255 },
-        ],
-        red: [
-          { x: 0, y: 0 },
-          { x: 255, y: 255 },
-        ],
-        green: [
-          { x: 0, y: 0 },
-          { x: 255, y: 255 },
-        ],
-        blue: [
-          { x: 0, y: 0 },
-          { x: 255, y: 255 },
-        ],
-      };
-
-      const finalToneCurve = {
-        rgb: toneCurve.rgb.length > 0 ? toneCurve.rgb : defaultToneCurve.rgb,
-        red: toneCurve.red.length > 0 ? toneCurve.red : defaultToneCurve.red,
-        green:
-          toneCurve.green.length > 0 ? toneCurve.green : defaultToneCurve.green,
-        blue:
-          toneCurve.blue.length > 0 ? toneCurve.blue : defaultToneCurve.blue,
-      };
-
       console.log("Settings being sent:", JSON.stringify(settings, null, 2));
-      console.log(
-        "Tone curve being sent:",
-        JSON.stringify(finalToneCurve, null, 2)
-      );
+      console.log("Tone curve being sent:", JSON.stringify(toneCurve, null, 2));
 
       const variables = {
         title,
         description,
         settings,
-        toneCurve: finalToneCurve,
+        toneCurve,
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
         beforeImage: uploadedBeforeImage,
@@ -836,19 +891,17 @@ const UploadPreset: React.FC = () => {
                         <SettingSliderDisplay
                           label="Amount"
                           value={formatSettingValue(
-                            parsedSettings.grain.amount / 100
+                            parsedSettings.grain.amount
                           )}
                         />
                         <SettingSliderDisplay
                           label="Size"
-                          value={formatSettingValue(
-                            parsedSettings.grain.size / 100
-                          )}
+                          value={formatSettingValue(parsedSettings.grain.size)}
                         />
                         <SettingSliderDisplay
-                          label="Roughness"
+                          label="Frequency"
                           value={formatSettingValue(
-                            parsedSettings.grain.roughness / 100
+                            parsedSettings.grain.frequency
                           )}
                         />
                       </>
@@ -857,27 +910,174 @@ const UploadPreset: React.FC = () => {
                 )}
 
                 {renderAccordionSection(
-                  "Noise Reduction",
+                  "Color Adjustments",
                   [],
                   <Box>
-                    {parsedSettings.noiseReduction && (
+                    {parsedSettings.colorAdjustments && (
+                      <>
+                        {parsedSettings.colorAdjustments.red && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Red
+                            </Typography>
+                            <SettingSliderDisplay
+                              label="Hue"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.red.hue
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Saturation"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.red.saturation
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Luminance"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.red.luminance
+                              )}
+                            />
+                          </Box>
+                        )}
+                        {parsedSettings.colorAdjustments.orange && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Orange
+                            </Typography>
+                            <SettingSliderDisplay
+                              label="Saturation"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.orange
+                                  .saturation
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Luminance"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.orange.luminance
+                              )}
+                            />
+                          </Box>
+                        )}
+                        {parsedSettings.colorAdjustments.yellow && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Yellow
+                            </Typography>
+                            <SettingSliderDisplay
+                              label="Hue"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.yellow.hue
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Saturation"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.yellow
+                                  .saturation
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Luminance"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.yellow.luminance
+                              )}
+                            />
+                          </Box>
+                        )}
+                        {parsedSettings.colorAdjustments.green && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Green
+                            </Typography>
+                            <SettingSliderDisplay
+                              label="Hue"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.green.hue
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Saturation"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.green.saturation
+                              )}
+                            />
+                          </Box>
+                        )}
+                        {parsedSettings.colorAdjustments.blue && (
+                          <Box sx={{ mb: 2 }}>
+                            <Typography
+                              variant="subtitle2"
+                              color="text.secondary"
+                            >
+                              Blue
+                            </Typography>
+                            <SettingSliderDisplay
+                              label="Hue"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.blue.hue
+                              )}
+                            />
+                            <SettingSliderDisplay
+                              label="Saturation"
+                              value={formatSettingValue(
+                                parsedSettings.colorAdjustments.blue.saturation
+                              )}
+                            />
+                          </Box>
+                        )}
+                      </>
+                    )}
+                  </Box>
+                )}
+
+                {renderAccordionSection(
+                  "Split Toning",
+                  [],
+                  <Box>
+                    {parsedSettings.splitToning && (
                       <>
                         <SettingSliderDisplay
-                          label="Luminance"
+                          label="Shadow Hue"
                           value={formatSettingValue(
-                            parsedSettings.noiseReduction.luminance / 100
+                            parsedSettings.splitToning.shadowHue
                           )}
                         />
                         <SettingSliderDisplay
-                          label="Color"
+                          label="Shadow Saturation"
                           value={formatSettingValue(
-                            parsedSettings.noiseReduction.color / 100
+                            parsedSettings.splitToning.shadowSaturation
                           )}
                         />
                         <SettingSliderDisplay
-                          label="Detail"
+                          label="Highlight Hue"
                           value={formatSettingValue(
-                            parsedSettings.noiseReduction.detail / 100
+                            parsedSettings.splitToning.highlightHue
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Highlight Saturation"
+                          value={formatSettingValue(
+                            parsedSettings.splitToning.highlightSaturation
+                          )}
+                        />
+                        <SettingSliderDisplay
+                          label="Balance"
+                          value={formatSettingValue(
+                            parsedSettings.splitToning.balance
                           )}
                         />
                       </>
@@ -885,7 +1085,22 @@ const UploadPreset: React.FC = () => {
                   </Box>
                 )}
 
-                {renderAccordionSection("Detail", ["sharpening"])}
+                {renderAccordionSection(
+                  "Vignette",
+                  [],
+                  <Box>
+                    {parsedSettings.vignette && (
+                      <SettingSliderDisplay
+                        label="Amount"
+                        value={formatSettingValue(
+                          parsedSettings.vignette.amount
+                        )}
+                      />
+                    )}
+                  </Box>
+                )}
+
+                {renderAccordionSection("Detail", ["texture"])}
               </>
             )}
 
