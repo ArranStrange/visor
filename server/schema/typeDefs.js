@@ -17,8 +17,6 @@ module.exports = gql`
     email: String!
     instagram: String
     cameras: [String]
-    favouriteLists: [UserList]
-    customLists: [UserList]
   }
 
   type PresetSettings {
@@ -169,20 +167,6 @@ module.exports = gql`
   type CommentReactions {
     thumbsUp: [User]
     heart: [User]
-  }
-
-  type UserList {
-    id: ID!
-    name: String!
-    description: String
-    owner: User!
-    presets: [Preset]
-    filmSims: [FilmSim]
-    isFavouriteList: Boolean
-    isPublic: Boolean
-    collaborators: [User]
-    createdAt: String
-    updatedAt: String
   }
 
   type CurvePoint {
@@ -356,9 +340,6 @@ module.exports = gql`
     getTag(name: String!): Tag
     listTags(category: String): [Tag]
 
-    getUserLists(userId: ID!): [UserList]
-    getUserList(id: ID!): UserList
-
     getCommentsForPreset(presetId: ID!): [Comment]
     getCommentsForFilmSim(filmSimId: ID!): [Comment]
   }
@@ -407,12 +388,6 @@ module.exports = gql`
     createComment(input: CreateCommentInput!): Comment
     reactToComment(commentId: ID!, reaction: String!): Comment
     deleteComment(id: ID!): Boolean
-
-    createUserList(input: CreateUserListInput!): UserList
-    updateUserList(id: ID!, input: UpdateUserListInput!): UserList!
-    deleteUserList(id: ID!): Boolean
-    addToUserList(listId: ID!, presetIds: [ID!], filmSimIds: [ID!]): UserList
-    removeFromUserList(listId: ID!, presetId: ID, filmSimId: ID): UserList
   }
 
   type VignetteSettings {
@@ -499,17 +474,5 @@ module.exports = gql`
     notes: String
     beforeImage: Upload
     afterImage: Upload
-  }
-
-  input CreateUserListInput {
-    name: String!
-    description: String
-    isPublic: Boolean
-  }
-
-  input UpdateUserListInput {
-    name: String
-    description: String
-    isPublic: Boolean
   }
 `;

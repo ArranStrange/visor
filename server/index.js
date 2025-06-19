@@ -14,11 +14,17 @@ dotenv.config();
 const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
 const mainTypeDefs = require("./schema/typeDefs");
 const presetTypeDefs = require("./schema/typeDefs/preset");
+const listTypeDefs = require("./schema/typeDefs/list");
 const mainResolvers = require("./schema/resolvers");
 const presetResolvers = require("./schema/resolvers/preset");
+const listResolvers = require("./schema/resolvers/list");
 
-const typeDefs = mergeTypeDefs([mainTypeDefs, presetTypeDefs]);
-const resolvers = mergeResolvers([mainResolvers, presetResolvers]);
+const typeDefs = mergeTypeDefs([mainTypeDefs, presetTypeDefs, listTypeDefs]);
+const resolvers = mergeResolvers([
+  mainResolvers,
+  presetResolvers,
+  listResolvers,
+]);
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI = process.env.MONGODB_URI;
