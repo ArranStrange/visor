@@ -20,6 +20,7 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { gql } from "@apollo/client";
+import { useAuth } from "../context/AuthContext";
 
 // GraphQL query to get user profile
 const GET_USER_PROFILE = gql`
@@ -51,6 +52,68 @@ const UPDATE_USER_PROFILE = gql`
   }
 `;
 
+// GraphQL mutation to upload avatar
+const UPLOAD_AVATAR = gql`
+  mutation UploadAvatar($file: Upload!) {
+    uploadAvatar(file: $file)
+  }
+`;
+
+// Cloudinary upload function for profile pictures
+const uploadToCloudinary = async (file: File): Promise<string> => {
+  console.log("Uploading profile picture to Cloudinary...");
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "ProfilePhotos");
+  formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+
+  try {
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${
+        import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+      }/image/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Cloudinary upload error:", errorData);
+      throw new Error(
+        `Failed to upload image to Cloudinary: ${
+          errorData.error?.message || "Unknown error"
+        }`
+      );
+    }
+
+    const data = await response.json();
+    console.log("Cloudinary upload response:", data);
+
+    return data.secure_url;
+  } catch (error: any) {
+    console.error("Error uploading to Cloudinary:", error);
+    throw new Error(`Failed to upload image to Cloudinary: ${error.message}`);
+  }
+};
+
+// File validation
+const validateProfileImage = (file: File): boolean => {
+  const maxSize = 5 * 1024 * 1024; // 5MB
+  const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+
+  if (!allowedTypes.includes(file.type)) {
+    return false;
+  }
+
+  if (file.size > maxSize) {
+    return false;
+  }
+
+  return true;
+};
+
 const Profile: React.FC = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
@@ -62,37 +125,43 @@ const Profile: React.FC = () => {
   const [newCamera, setNewCamera] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const { updateAuth } = useAuth();
 
   const {
     loading,
     error: queryError,
     data,
+    refetch,
   } = useQuery(GET_USER_PROFILE, {
     onCompleted: (data) => {
+      console.log("Profile data received:", data);
       if (data?.getCurrentUser) {
+        const user = data.getCurrentUser;
+        console.log("User data:", user);
         setFormData({
-          bio: data.getCurrentUser.bio || "",
-          instagram: data.getCurrentUser.instagram || "",
-          cameras: data.getCurrentUser.cameras || [],
+          bio: user.bio || "",
+          instagram: user.instagram || "",
+          cameras: Array.isArray(user.cameras) ? user.cameras : [],
         });
       }
     },
   });
 
-  const [updateProfile, { loading: updating }] = useMutation(
-    UPDATE_USER_PROFILE,
-    {
-      onCompleted: () => {
-        setSuccess("Profile updated successfully!");
-        setIsEditing(false);
-        setTimeout(() => setSuccess(null), 3000);
-      },
-      onError: (error) => {
-        setError(error.message);
-        setTimeout(() => setError(null), 3000);
-      },
-    }
-  );
+  const [updateProfile] = useMutation(UPDATE_USER_PROFILE, {
+    onCompleted: (data) => {
+      console.log("Profile update completed:", data);
+      setSuccess("Profile updated successfully!");
+      refetch();
+      setTimeout(() => setSuccess(null), 3000);
+    },
+    onError: (error) => {
+      console.error("Profile update error:", error);
+      setError(error.message);
+      setTimeout(() => setError(null), 3000);
+    },
+  });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -119,17 +188,61 @@ const Profile: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const inputData = {
+        bio: formData.bio,
+        instagram: formData.instagram,
+        cameras: formData.cameras,
+      };
+      console.log("Sending profile update data:", inputData);
+
       await updateProfile({
         variables: {
-          input: {
-            bio: formData.bio,
-            instagram: formData.instagram,
-            cameras: formData.cameras,
-          },
+          input: JSON.stringify(inputData),
         },
       });
     } catch (err) {
       console.error("Error updating profile:", err);
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setAvatarError(null);
+
+    if (!validateProfileImage(file)) {
+      setAvatarError(
+        "Please select a valid image file (JPEG, PNG, WebP) under 5MB"
+      );
+      e.target.value = "";
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+
+      // Upload to Cloudinary first
+      const cloudinaryUrl = await uploadToCloudinary(file);
+      console.log("Uploaded to Cloudinary:", cloudinaryUrl);
+
+      // Then update the user's avatar in the database
+      await updateProfile({
+        variables: {
+          input: JSON.stringify({
+            avatar: cloudinaryUrl,
+          }),
+        },
+      });
+
+      // Update the AuthContext with the new avatar URL
+      updateAuth({ avatar: cloudinaryUrl });
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      setAvatarError("Failed to upload profile picture");
+    } finally {
+      setIsUploadingAvatar(false);
+      e.target.value = ""; // Reset the input
     }
   };
 
@@ -181,19 +294,53 @@ const Profile: React.FC = () => {
               alignItems="center"
               gap={2}
             >
-              <Avatar
-                src={user?.avatar}
-                alt={user?.username}
-                sx={{ width: 150, height: 150 }}
-              />
+              <Box position="relative">
+                <Avatar
+                  src={user?.avatar}
+                  alt={user?.username}
+                  sx={{ width: 150, height: 150 }}
+                />
+                {isUploadingAvatar && (
+                  <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    right={0}
+                    bottom={0}
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    bgcolor="rgba(0,0,0,0.5)"
+                    borderRadius="50%"
+                  >
+                    <CircularProgress size={40} />
+                  </Box>
+                )}
+              </Box>
+
               <IconButton
                 color="primary"
                 component="label"
-                disabled={!isEditing}
+                disabled={isUploadingAvatar}
               >
-                <input hidden accept="image/*" type="file" />
+                <input
+                  hidden
+                  accept="image/*"
+                  type="file"
+                  onChange={handleAvatarUpload}
+                />
                 <PhotoCameraIcon />
               </IconButton>
+
+              {avatarError && (
+                <Alert
+                  severity="error"
+                  sx={{ width: "100%", fontSize: "0.75rem" }}
+                >
+                  {avatarError}
+                </Alert>
+              )}
+
               <Typography variant="h5" fontWeight="bold">
                 {user?.username}
               </Typography>
@@ -304,20 +451,11 @@ const Profile: React.FC = () => {
                       <Button
                         variant="outlined"
                         onClick={() => setIsEditing(false)}
-                        disabled={updating}
                       >
                         Cancel
                       </Button>
-                      <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={updating}
-                      >
-                        {updating ? (
-                          <CircularProgress size={24} />
-                        ) : (
-                          "Save Changes"
-                        )}
+                      <Button type="submit" variant="contained">
+                        Save Changes
                       </Button>
                     </>
                   ) : (

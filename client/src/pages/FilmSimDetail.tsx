@@ -13,6 +13,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Avatar,
+  Button,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
@@ -23,6 +25,7 @@ import CommentSection from "../components/CommentSection";
 import { useAuth } from "../context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import InstagramIcon from "@mui/icons-material/Instagram";
 
 const CREATE_COMMENT = gql`
   mutation CreateComment($filmSimId: ID!, $content: String!) {
@@ -132,6 +135,31 @@ const FilmSimDetails: React.FC = () => {
       <Typography variant="h4" fontWeight={700} gutterBottom>
         {filmSim.name}
       </Typography>
+      {/* Uploaded by section */}
+      {filmSim.creator && (
+        <Box mb={3}>
+          <Stack direction="row" alignItems="center" spacing={1} mt={1}>
+            <Avatar
+              src={filmSim.creator.avatar}
+              alt={filmSim.creator.username}
+            />
+            <Typography variant="subtitle2" color="text.secondary">
+              {filmSim.creator.username}
+            </Typography>
+            {filmSim.creator.instagram && (
+              <Button
+                href={filmSim.creator.instagram}
+                target="_blank"
+                size="small"
+                variant="text"
+                sx={{ ml: 1, minWidth: 0, padding: 0.5 }}
+              >
+                <InstagramIcon fontSize="small" />
+              </Button>
+            )}
+          </Stack>
+        </Box>
+      )}
       <Typography variant="body1" color="text.secondary" mb={2}>
         {filmSim.description}
       </Typography>

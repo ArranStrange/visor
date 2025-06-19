@@ -130,7 +130,21 @@ const NavBar: React.FC = () => {
                 <Avatar
                   src={user.avatar}
                   alt={user.username}
-                  sx={{ width: 32, height: 32 }}
+                  sx={{
+                    width: 32,
+                    height: 32,
+                    bgcolor: user.avatar ? "transparent" : "primary.main",
+                  }}
+                  onError={(e) => {
+                    console.log("Avatar image failed to load:", user.avatar);
+                    // Don't hide the avatar, just log the error
+                  }}
+                  onLoad={() => {
+                    console.log(
+                      "Avatar image loaded successfully:",
+                      user.avatar
+                    );
+                  }}
                 >
                   {user.username?.[0]?.toUpperCase()}
                 </Avatar>

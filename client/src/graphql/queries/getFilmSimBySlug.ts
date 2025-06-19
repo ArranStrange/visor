@@ -10,6 +10,12 @@ export const GET_FILMSIM_BY_SLUG = gql`
       type
       compatibleCameras
       notes
+      creator {
+        id
+        username
+        avatar
+        instagram
+      }
       settings {
         dynamicRange
         highlight
@@ -34,6 +40,16 @@ export const GET_FILMSIM_BY_SLUG = gql`
         id
         url
         caption
+      }
+      comments {
+        id
+        content
+        createdAt
+        author {
+          id
+          username
+          avatar
+        }
       }
     }
   }

@@ -1,5 +1,7 @@
 const { AuthenticationError } = require("../../utils/errors");
 const FilmSim = require("../../models/FilmSim");
+const Tag = require("../../models/Tag");
+const Image = require("../../models/Image");
 
 const filmSimResolvers = {
   Query: {
@@ -163,6 +165,123 @@ const filmSimResolvers = {
   },
 
   Mutation: {
+    uploadFilmSim: async (
+      _,
+      { name, description, tags, settings, notes, sampleImages },
+      { user }
+    ) => {
+      if (!user) {
+        throw new AuthenticationError(
+          "You must be logged in to upload a film simulation"
+        );
+      }
+
+      try {
+        console.log("Starting film simulation upload process...");
+        console.log(
+          "Received sample images:",
+          JSON.stringify(sampleImages, null, 2)
+        );
+
+        // Create or find tags
+        const tagIds = await Promise.all(
+          tags.map(async (tagName) => {
+            const existingTag = await Tag.findOneAndUpdate(
+              { name: tagName.toLowerCase() },
+              {
+                name: tagName.toLowerCase(),
+                displayName: tagName,
+                category: "filmsim",
+              },
+              { new: true, upsert: true }
+            );
+            return existingTag._id;
+          })
+        );
+        console.log("Processed tags:", tagIds);
+
+        // Generate slug from name
+        const slug = name
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, "");
+
+        // Convert dynamicRange number to string format if needed
+        let dynamicRange = settings.dynamicRange;
+        if (typeof dynamicRange === "number") {
+          dynamicRange = `DR${dynamicRange}`;
+        }
+
+        // Create the film simulation first
+        const filmSimData = {
+          name,
+          slug,
+          description,
+          type: "custom-recipe",
+          settings: {
+            dynamicRange: parseInt(dynamicRange.replace("DR", "")) || 100,
+            highlight: parseInt(settings.highlight) || 0,
+            shadow: parseInt(settings.shadow) || 0,
+            colour: parseInt(settings.color) || 0,
+            sharpness: parseInt(settings.sharpness) || 0,
+            noiseReduction: parseInt(settings.noiseReduction) || 0,
+            grainEffect: parseInt(settings.grainEffect) || 0,
+            clarity: parseInt(settings.clarity) || 0,
+            whiteBalance: settings.whiteBalance || "auto",
+            wbShift: settings.wbShift || { r: 0, b: 0 },
+          },
+          notes,
+          tags: tagIds,
+          creator: user._id,
+        };
+
+        console.log(
+          "Creating film simulation with data:",
+          JSON.stringify(filmSimData, null, 2)
+        );
+        const filmSim = await FilmSim.create(filmSimData);
+        console.log("Successfully created film simulation:", filmSim._id);
+
+        // Create sample images if provided
+        let sampleImageIds = [];
+        if (sampleImages && sampleImages.length > 0) {
+          console.log("Processing sample images...");
+          const images = await Promise.all(
+            sampleImages.map(async (image) => {
+              console.log("Creating image document for:", image.url);
+              const imageDoc = await Image.create({
+                url: image.url,
+                publicId: image.publicId,
+                uploader: user._id,
+                associatedWith: {
+                  kind: "FilmSim",
+                  item: filmSim._id,
+                },
+              });
+              console.log("Created image document:", imageDoc._id);
+              return imageDoc._id;
+            })
+          );
+          sampleImageIds = images.map((img) => img._id);
+          console.log("Created sample image IDs:", sampleImageIds);
+
+          // Update the film simulation with the sample image IDs
+          filmSim.sampleImages = sampleImageIds;
+          await filmSim.save();
+        }
+
+        return filmSim;
+      } catch (error) {
+        console.error("Error uploading film simulation:", error);
+        console.error("Error details:", {
+          message: error.message,
+          stack: error.stack,
+          name: error.name,
+        });
+        throw new Error("Failed to upload film simulation: " + error.message);
+      }
+    },
+
     createFilmSim: async (_, { input }, { user }) => {
       if (!user) {
         throw new AuthenticationError("Not authenticated");

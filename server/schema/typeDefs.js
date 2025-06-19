@@ -4,21 +4,6 @@ module.exports = gql`
   scalar Upload
   scalar JSON
 
-  type AuthPayload {
-    token: String!
-    user: User!
-  }
-
-  type User {
-    id: ID!
-    username: String!
-    avatar: String
-    bio: String
-    email: String!
-    instagram: String
-    cameras: [String]
-  }
-
   type PresetSettings {
     # Light settings
     exposure: Float
@@ -121,7 +106,6 @@ module.exports = gql`
     createdAt: String
     updatedAt: String
   }
-
 
   type Image {
     id: ID!
@@ -312,10 +296,6 @@ module.exports = gql`
   }
 
   type Query {
-    getUser(id: ID!): User
-    getCurrentUser: User
-    searchUsers(query: String!): [User]
-
     getPreset(slug: String!): Preset
     getPresetById(id: ID!): Preset
     listPresets(filter: JSON): [Preset]
@@ -331,11 +311,6 @@ module.exports = gql`
   }
 
   type Mutation {
-    login(email: String!, password: String!): AuthPayload!
-    register(username: String!, email: String!, password: String!): AuthPayload!
-    updateProfile(input: JSON!): User
-    uploadAvatar(file: Upload!): String
-
     uploadPreset(
       title: String!
       description: String

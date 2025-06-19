@@ -17,11 +17,13 @@ const presetTypeDefs = require("./schema/typeDefs/preset");
 const filmSimTypeDefs = require("./schema/typeDefs/filmSim");
 const listTypeDefs = require("./schema/typeDefs/list");
 const tagTypeDefs = require("./schema/typeDefs/tag");
+const userTypeDefs = require("./schema/typeDefs/user");
 const mainResolvers = require("./schema/resolvers");
 const presetResolvers = require("./schema/resolvers/preset");
 const filmSimResolvers = require("./schema/resolvers/filmSim");
 const listResolvers = require("./schema/resolvers/list");
 const tagResolvers = require("./schema/resolvers/tag");
+const userResolvers = require("./schema/resolvers/user");
 
 const typeDefs = mergeTypeDefs([
   mainTypeDefs,
@@ -29,6 +31,7 @@ const typeDefs = mergeTypeDefs([
   filmSimTypeDefs,
   listTypeDefs,
   tagTypeDefs,
+  userTypeDefs,
 ]);
 const resolvers = mergeResolvers([
   mainResolvers,
@@ -36,6 +39,7 @@ const resolvers = mergeResolvers([
   filmSimResolvers,
   listResolvers,
   tagResolvers,
+  userResolvers,
 ]);
 
 const PORT = process.env.PORT || 4000;

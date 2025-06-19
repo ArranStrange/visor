@@ -28,6 +28,7 @@ import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { v4 as uuidv4 } from "uuid";
 import slugify from "slugify";
+import { useAuth } from "../context/AuthContext";
 
 // Type declarations for environment variables
 declare global {
@@ -227,6 +228,7 @@ const UploadFilmSim: React.FC = () => {
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const handleTagKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && tagInput.trim()) {
@@ -352,6 +354,12 @@ const UploadFilmSim: React.FC = () => {
     e.preventDefault();
     setError(null);
     setFileError(null);
+
+    // Check if user is authenticated
+    if (!user) {
+      setError("You must be logged in to upload a film simulation");
+      return;
+    }
 
     try {
       // Validate required fields
@@ -574,6 +582,13 @@ const UploadFilmSim: React.FC = () => {
           Upload Film Simulation
         </Typography>
 
+        {!user && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            You must be logged in to upload a film simulation. Please log in to
+            continue.
+          </Alert>
+        )}
+
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -593,6 +608,7 @@ const UploadFilmSim: React.FC = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
+              disabled={!user}
             />
 
             <TextField
@@ -601,9 +617,10 @@ const UploadFilmSim: React.FC = () => {
               minRows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              disabled={!user}
             />
 
-            {renderFilmSettings()}
+            {user && renderFilmSettings()}
 
             <Box>
               <Typography variant="subtitle1" gutterBottom>
@@ -615,6 +632,7 @@ const UploadFilmSim: React.FC = () => {
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={handleTagKeyDown}
                   placeholder="Add tags (press Enter)"
+                  disabled={!user}
                   endAdornment={
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {tags.map((tag) => (
@@ -637,7 +655,12 @@ const UploadFilmSim: React.FC = () => {
               <Typography variant="subtitle1" gutterBottom>
                 Sample Images
               </Typography>
-              <Button component="label" variant="outlined" sx={{ mt: 1 }}>
+              <Button
+                component="label"
+                variant="outlined"
+                sx={{ mt: 1 }}
+                disabled={!user}
+              >
                 Add Images
                 <input
                   type="file"
@@ -714,6 +737,7 @@ const UploadFilmSim: React.FC = () => {
               minRows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
+              disabled={!user}
             />
 
             <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
@@ -721,7 +745,7 @@ const UploadFilmSim: React.FC = () => {
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isUploading}
+                disabled={isUploading || !user}
                 startIcon={isUploading ? <CircularProgress size={20} /> : null}
               >
                 {isUploading ? "Uploading..." : "Upload"}

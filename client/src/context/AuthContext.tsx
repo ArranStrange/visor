@@ -11,6 +11,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   setUser: (user: User | null) => void;
+  updateAuth: (updates: Partial<User>) => void;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -30,7 +31,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     if (storedUser && token) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
       } catch (error) {
         console.error("Error parsing stored user:", error);
         localStorage.removeItem("user");
@@ -52,10 +54,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     navigate("/login");
   };
 
+  const updateAuth = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   const isAuthenticated = !!user && !!localStorage.getItem("visor_token");
 
   return (
-    <AuthContext.Provider value={{ user, setUser, logout, isAuthenticated }}>
+    <AuthContext.Provider
+      value={{ user, setUser, updateAuth, logout, isAuthenticated }}
+    >
       {children}
     </AuthContext.Provider>
   );
