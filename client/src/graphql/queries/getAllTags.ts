@@ -7,7 +7,6 @@ export const GET_ALL_TAGS = gql`
       id
       name
       displayName
-      category
     }
   }
 `;

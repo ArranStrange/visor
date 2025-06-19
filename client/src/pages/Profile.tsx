@@ -32,14 +32,6 @@ const GET_USER_PROFILE = gql`
       bio
       instagram
       cameras
-      favouriteLists {
-        id
-        name
-      }
-      customLists {
-        id
-        name
-      }
     }
   }
 `;

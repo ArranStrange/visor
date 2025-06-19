@@ -14,14 +14,21 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       );
 
-      // Handle authentication errors
+      // Handle authentication errors including JWT expiration
       if (
         message.includes("Authentication") ||
-        message.includes("Not authorized")
+        message.includes("Not authorized") ||
+        message.includes("jwt expired") ||
+        message.includes("JWT expired")
       ) {
+        // Clear local storage
         localStorage.removeItem("visor_token");
         localStorage.removeItem("user");
-        window.location.href = "/login";
+
+        // Redirect to login page
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
     });
   }

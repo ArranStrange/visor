@@ -5,12 +5,4 @@ fragment UserFields on User {
   bio
   instagram
   cameras
-  favouriteLists {
-    id
-    name
-  }
-  customLists {
-    id
-    name
-  }
 }
