@@ -52,6 +52,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   settings,
 }) => {
   const navigate = useNavigate();
+  const [loaded, setLoaded] = React.useState(false);
 
   const handleClick = () => {
     navigate(`/filmsim/${slug}`);
@@ -77,7 +78,12 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         height="200"
         image={thumbnail || "/placeholder-image.jpg"}
         alt={name}
-        sx={{ objectFit: "cover" }}
+        onLoad={() => setLoaded(true)}
+        sx={{
+          objectFit: "cover",
+          filter: loaded ? "none" : "blur(16px)",
+          transition: "filter 0.4s cubic-bezier(.4,0,.2,1)",
+        }}
       />
 
       <Box

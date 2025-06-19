@@ -32,6 +32,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
   tags,
 }) => {
   const navigate = useNavigate();
+  const [loaded, setLoaded] = React.useState(false);
 
   // Determine the correct image URL
   let imageUrl = PLACEHOLDER_IMAGE;
@@ -63,10 +64,13 @@ const PresetCard: React.FC<PresetCardProps> = ({
         image={imageUrl}
         alt={title}
         height="180"
+        onLoad={() => setLoaded(true)}
         sx={{
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
           objectFit: "cover",
+          filter: loaded ? "none" : "blur(16px)",
+          transition: "filter 0.4s cubic-bezier(.4,0,.2,1)",
         }}
       />
 

@@ -96,7 +96,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [columns, setColumns] = useState<number[][]>([[]]);
   const [columnCount, setColumnCount] = useState(3);
-  const [loadedItems, setLoadedItems] = useState<Set<number>>(new Set());
 
   // Calculate number of columns based on container width
   useEffect(() => {
@@ -153,38 +152,12 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     setColumns(newColumns);
   }, [children, columnCount, randomizeOrder]);
 
-  // Progressive loading effect
-  useEffect(() => {
-    if (loading || !inView) return;
-
-    const totalItems = children.length;
-    const loadInterval = setInterval(() => {
-      setLoadedItems((prev) => {
-        const newLoaded = new Set(prev);
-        if (newLoaded.size < totalItems) {
-          newLoaded.add(newLoaded.size);
-          return newLoaded;
-        }
-        clearInterval(loadInterval);
-        return prev;
-      });
-    }, 100); // Load one item every 100ms
-
-    return () => clearInterval(loadInterval);
-  }, [children.length, loading, inView]);
-
-  // Reset loaded items when children change
-  useEffect(() => {
-    setLoadedItems(new Set());
-  }, [children]);
-
   if (!children.length && !loading) {
     return null;
   }
 
-  // Generate skeleton items for loading state
-  const skeletonItems = loading ? Array.from({ length: 12 }, (_, i) => i) : [];
-  const displayItems = loading ? skeletonItems : children;
+  // When loading, render nothing (no skeletons)
+  const displayItems = loading ? [] : children;
 
   return (
     <Box>
@@ -209,37 +182,32 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                 alignItems: "stretch", // Ensure cards stretch to fill width
               }}
             >
-              {column.map((itemIndex) => {
-                const isLoaded = loading || loadedItems.has(itemIndex);
-                const shouldShow = loading || isLoaded;
-
-                return (
-                  <motion.div
-                    key={itemIndex}
-                    initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                    animate={
-                      shouldShow && inView
-                        ? {
-                            opacity: 1,
-                            y: 0,
-                            scale: 1,
-                            transition: {
-                              delay: loading
-                                ? 0.05 * itemIndex
-                                : 0.02 * itemIndex,
-                              duration: 0.6,
-                              ease: [0.25, 0.46, 0.45, 0.94], // Custom easing
-                            },
-                          }
-                        : {}
-                    }
-                    exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                    style={{ width: "100%" }} // Ensure motion.div takes full width
-                  >
-                    {loading ? <SkeletonCard /> : children[itemIndex]}
-                  </motion.div>
-                );
-              })}
+              {column.map((itemIndex) => (
+                <motion.div
+                  key={itemIndex}
+                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  animate={
+                    inView
+                      ? {
+                          opacity: 1,
+                          y: 0,
+                          scale: 1,
+                          transition: {
+                            delay: loading
+                              ? 0.05 * itemIndex
+                              : 0.02 * itemIndex,
+                            duration: 0.6,
+                            ease: [0.25, 0.46, 0.45, 0.94], // Custom easing
+                          },
+                        }
+                      : {}
+                  }
+                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  style={{ width: "100%" }} // Ensure motion.div takes full width
+                >
+                  {displayItems[itemIndex]}
+                </motion.div>
+              ))}
             </Box>
           ))}
         </AnimatePresence>
