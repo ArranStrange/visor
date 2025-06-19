@@ -28,16 +28,6 @@ const CREATE_LIST = gql`
         id
         username
       }
-      presets {
-        id
-        title
-        slug
-      }
-      filmSims {
-        id
-        name
-        slug
-      }
     }
   }
 `;
@@ -84,7 +74,6 @@ const CreateList: React.FC = () => {
         variables: {
           input: {
             ...formData,
-            owner: currentUser.id,
           },
         },
       });

@@ -26,6 +26,9 @@ const GET_USER_LISTS = gql`
       name
       description
       isPublic
+      owner {
+        id
+      }
       presets {
         id
         title
@@ -157,6 +160,10 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
   };
 
   const lists = data?.getUserLists || [];
+  const userLists = lists.filter((list) => list.owner?.id === currentUser?.id);
+  const uniqueLists = userLists.filter(
+    (list, index, self) => index === self.findIndex((l) => l.id === list.id)
+  );
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -191,7 +198,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
           </Box>
         ) : (
           <List>
-            {lists.map((list: any) => (
+            {uniqueLists.map((list: any) => (
               <ListItem key={list.id} disablePadding>
                 <ListItemButton onClick={() => handleAddToList(list.id)}>
                   <ListItemText

@@ -128,7 +128,19 @@ module.exports = {
           filmSims: [],
         });
 
-        return list;
+        // Format the response to match the expected structure
+        const listObj = list.toObject();
+        return {
+          ...listObj,
+          id: listObj._id.toString(),
+          owner: {
+            id: user._id.toString(),
+            username: user.username,
+            avatar: user.avatar,
+          },
+          presets: [],
+          filmSims: [],
+        };
       } catch (error) {
         console.error("Error creating user list:", error);
         throw new Error("Failed to create user list: " + error.message);
@@ -196,7 +208,56 @@ module.exports = {
         }
 
         await list.save();
-        return list;
+
+        // Fetch the updated list with populated data
+        const updatedList = await UserList.findById(listId)
+          .populate({
+            path: "presets",
+            select: "id title slug afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url",
+            },
+          })
+          .populate({
+            path: "filmSims",
+            select: "id name slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
+          })
+          .populate("owner", "id username");
+
+        if (!updatedList) {
+          throw new Error("Failed to fetch updated list");
+        }
+
+        // Format the response
+        const listObj = updatedList.toObject();
+        return {
+          ...listObj,
+          id: listObj._id.toString(),
+          owner: {
+            id: listObj.owner._id.toString(),
+            username: listObj.owner.username,
+          },
+          presets:
+            listObj.presets?.map((preset) => ({
+              ...preset,
+              id: preset._id.toString(),
+              afterImage:
+                preset.afterImage && preset.afterImage._id
+                  ? preset.afterImage
+                  : null,
+            })) || [],
+          filmSims:
+            listObj.filmSims?.map((filmSim) => ({
+              ...filmSim,
+              id: filmSim._id.toString(),
+              sampleImages: filmSim.sampleImages || [],
+            })) || [],
+        };
       } catch (error) {
         console.error("Error removing item from list:", error);
         throw error;
@@ -232,7 +293,56 @@ module.exports = {
         }
 
         await list.save();
-        return list;
+
+        // Fetch the updated list with populated data
+        const updatedList = await UserList.findById(listId)
+          .populate({
+            path: "presets",
+            select: "id title slug afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url",
+            },
+          })
+          .populate({
+            path: "filmSims",
+            select: "id name slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
+          })
+          .populate("owner", "id username");
+
+        if (!updatedList) {
+          throw new Error("Failed to fetch updated list");
+        }
+
+        // Format the response
+        const listObj = updatedList.toObject();
+        return {
+          ...listObj,
+          id: listObj._id.toString(),
+          owner: {
+            id: listObj.owner._id.toString(),
+            username: listObj.owner.username,
+          },
+          presets:
+            listObj.presets?.map((preset) => ({
+              ...preset,
+              id: preset._id.toString(),
+              afterImage:
+                preset.afterImage && preset.afterImage._id
+                  ? preset.afterImage
+                  : null,
+            })) || [],
+          filmSims:
+            listObj.filmSims?.map((filmSim) => ({
+              ...filmSim,
+              id: filmSim._id.toString(),
+              sampleImages: filmSim.sampleImages || [],
+            })) || [],
+        };
       } catch (error) {
         console.error("Error adding to list:", error);
         throw error;
