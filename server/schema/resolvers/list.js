@@ -9,10 +9,18 @@ module.exports = {
           .populate({
             path: "presets",
             select: "id title slug afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url",
+            },
           })
           .populate({
             path: "filmSims",
             select: "id name slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
           });
 
         // Convert all ObjectIds to strings
@@ -29,11 +37,16 @@ module.exports = {
               listObj.presets?.map((preset) => ({
                 ...preset,
                 id: preset._id.toString(),
+                afterImage:
+                  preset.afterImage && preset.afterImage._id
+                    ? preset.afterImage
+                    : null,
               })) || [],
             filmSims:
               listObj.filmSims?.map((filmSim) => ({
                 ...filmSim,
                 id: filmSim._id.toString(),
+                sampleImages: filmSim.sampleImages || [],
               })) || [],
           };
         });
@@ -49,10 +62,18 @@ module.exports = {
           .populate({
             path: "presets",
             select: "id title slug afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url",
+            },
           })
           .populate({
             path: "filmSims",
             select: "id name slug sampleImages",
+            populate: {
+              path: "sampleImages",
+              select: "id url",
+            },
           })
           .populate("owner", "id username");
 
@@ -72,11 +93,16 @@ module.exports = {
             listObj.presets?.map((preset) => ({
               ...preset,
               id: preset._id.toString(),
+              afterImage:
+                preset.afterImage && preset.afterImage._id
+                  ? preset.afterImage
+                  : null,
             })) || [],
           filmSims:
             listObj.filmSims?.map((filmSim) => ({
               ...filmSim,
               id: filmSim._id.toString(),
+              sampleImages: filmSim.sampleImages || [],
             })) || [],
         };
       } catch (error) {

@@ -229,16 +229,6 @@ const Lists: React.FC = () => {
                             {list.presets?.length || 0} presets •{" "}
                             {list.filmSims?.length || 0} film sims
                           </Typography>
-                          {list.createdAt && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              display="block"
-                            >
-                              Created:{" "}
-                              {new Date(list.createdAt).toLocaleDateString()}
-                            </Typography>
-                          )}
                         </Box>
                       }
                     />

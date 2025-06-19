@@ -21,6 +21,8 @@ import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
+import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const GET_LIST = gql`
   query GetList($id: ID!) {
@@ -37,17 +39,11 @@ const GET_LIST = gql`
         id
         title
         slug
-        afterImage {
-          url
-        }
       }
       filmSims {
         id
         name
         slug
-        sampleImages {
-          url
-        }
       }
       createdAt
       updatedAt
@@ -105,6 +101,23 @@ const ListDetail: React.FC = () => {
     },
   });
 
+  // Fetch all presets and film sims to get complete data
+  const {
+    data: presetsData,
+    loading: presetsLoading,
+    error: presetsError,
+  } = useQuery(GET_ALL_PRESETS, {
+    skip: !listData?.getUserList,
+  });
+
+  const {
+    data: filmSimsData,
+    loading: filmSimsLoading,
+    error: filmSimsError,
+  } = useQuery(GET_ALL_FILMSIMS, {
+    skip: !listData?.getUserList,
+  });
+
   const [updateList] = useMutation(UPDATE_LIST, {
     onCompleted: () => {
       refetch();
@@ -119,7 +132,7 @@ const ListDetail: React.FC = () => {
     onError: (error) => setError(error.message),
   });
 
-  if (listLoading) {
+  if (listLoading || presetsLoading || filmSimsLoading) {
     return (
       <Box
         display="flex"
@@ -132,10 +145,15 @@ const ListDetail: React.FC = () => {
     );
   }
 
-  if (queryError) {
+  if (queryError || presetsError || filmSimsError) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">Error loading list: {queryError.message}</Alert>
+        <Alert severity="error">
+          Error loading list:{" "}
+          {queryError?.message ||
+            presetsError?.message ||
+            filmSimsError?.message}
+        </Alert>
       </Container>
     );
   }
@@ -144,37 +162,62 @@ const ListDetail: React.FC = () => {
   const isOwner = currentUser?.id === list?.owner?.id;
 
   console.log("List data:", list);
+  console.log("All presets:", presetsData?.listPresets);
+  console.log("All film sims:", filmSimsData?.listFilmSims);
 
-  // Prepare data for ContentGridLoader in the same format as home/search
-  const combined = [
+  // Create maps for quick lookup of full data
+  const presetsMap = new Map(
+    presetsData?.listPresets?.map((preset: any) => [preset.id, preset]) || []
+  );
+  const filmSimsMap = new Map(
+    filmSimsData?.listFilmSims?.map((filmSim: any) => [filmSim.id, filmSim]) ||
+      []
+  );
+
+  // Prepare data for ContentGridLoader using full data from the maps
+  const combinedData = [
     ...(contentType === "all" || contentType === "presets"
-      ? list?.presets?.map((preset: any) => ({
-          type: "preset" as const,
-          data: {
-            ...preset,
-            // Ensure we have the fields that PresetCard expects
-            afterImage: preset.afterImage || {
-              url: "https://placehold.co/400x200/2a2a2a/ffffff?text=No+Image",
+      ? list?.presets?.map((preset: any) => {
+          const fullPreset = presetsMap.get(preset.id);
+          console.log("Processing preset:", preset.id, fullPreset);
+          return {
+            type: "preset" as const,
+            data: fullPreset || {
+              ...preset,
+              afterImage: {
+                url: "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...",
+              },
+              tags: [],
+              creator: { username: "Unknown" },
             },
-            tags: [],
-            creator: { username: "Unknown" },
-          },
-        })) || []
+          };
+        }) || []
       : []),
 
     ...(contentType === "all" || contentType === "films"
-      ? list?.filmSims?.map((filmSim: any) => ({
-          type: "film" as const,
-          data: {
-            ...filmSim,
-            title: filmSim.name, // Map name to title for consistency
-            thumbnail:
-              filmSim.sampleImages?.[0]?.url ||
-              "https://placehold.co/400x200/2a2a2a/ffffff?text=No+Image",
-            tags: [],
-            creator: { username: "Unknown" },
-          },
-        })) || []
+      ? list?.filmSims?.map((filmSim: any) => {
+          const fullFilmSim = filmSimsMap.get(filmSim.id) as any;
+          console.log("Processing film sim:", filmSim.id, fullFilmSim);
+          return {
+            type: "film" as const,
+            data: fullFilmSim
+              ? {
+                  ...fullFilmSim,
+                  title: fullFilmSim.name,
+                  thumbnail: fullFilmSim.sampleImages?.[0]?.url,
+                  tags: fullFilmSim.tags || [],
+                  creator: fullFilmSim.creator || { username: "Unknown" },
+                }
+              : {
+                  ...filmSim,
+                  title: filmSim.name,
+                  thumbnail:
+                    "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...",
+                  tags: [],
+                  creator: { username: "Unknown" },
+                },
+          };
+        }) || []
       : []),
   ];
 
@@ -283,11 +326,7 @@ const ListDetail: React.FC = () => {
             <Typography variant="body2" color="text.secondary">
               Created by {list?.owner?.username}
             </Typography>
-            {list?.createdAt && (
-              <Typography variant="body2" color="text.secondary">
-                Created: {new Date(list.createdAt).toLocaleDateString()}
-              </Typography>
-            )}
+
             <Typography variant="body2" color="text.secondary">
               {list?.presets?.length || 0} presets •{" "}
               {list?.filmSims?.length || 0} film sims
@@ -328,8 +367,10 @@ const ListDetail: React.FC = () => {
           </Stack>
         )}
 
-        {/* Use ContentGridLoader for consistent card display */}
-        <ContentGridLoader customData={combined} contentType={contentType} />
+        <ContentGridLoader
+          customData={combinedData}
+          contentType={contentType}
+        />
       </Stack>
     </Container>
   );

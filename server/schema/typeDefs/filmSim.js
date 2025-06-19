@@ -34,7 +34,7 @@ const typeDefs = gql`
     recommendedPresets: [Preset]
     compatibleCameras: [String]
     notes: String
-    comments: [EmbeddedComment]
+    comments: [Comment]
     likes: [User]
     createdAt: String
     updatedAt: String
@@ -93,12 +93,8 @@ const typeDefs = gql`
     deleteFilmSim(id: ID!): Boolean
     likeFilmSim(filmSimId: ID!): Boolean
 
-    addComment(filmSimId: ID!, text: String!): EmbeddedComment!
-    updateComment(
-      filmSimId: ID!
-      commentId: ID!
-      text: String!
-    ): EmbeddedComment!
+    addComment(filmSimId: ID!, text: String!): Comment!
+    updateComment(filmSimId: ID!, commentId: ID!, text: String!): Comment!
     deleteComment(filmSimId: ID!, commentId: ID!): Boolean!
   }
 `;

@@ -14,15 +14,23 @@ dotenv.config();
 const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
 const mainTypeDefs = require("./schema/typeDefs");
 const presetTypeDefs = require("./schema/typeDefs/preset");
+const filmSimTypeDefs = require("./schema/typeDefs/filmSim");
 const listTypeDefs = require("./schema/typeDefs/list");
 const mainResolvers = require("./schema/resolvers");
 const presetResolvers = require("./schema/resolvers/preset");
+const filmSimResolvers = require("./schema/resolvers/filmSim");
 const listResolvers = require("./schema/resolvers/list");
 
-const typeDefs = mergeTypeDefs([mainTypeDefs, presetTypeDefs, listTypeDefs]);
+const typeDefs = mergeTypeDefs([
+  mainTypeDefs,
+  presetTypeDefs,
+  filmSimTypeDefs,
+  listTypeDefs,
+]);
 const resolvers = mergeResolvers([
   mainResolvers,
   presetResolvers,
+  filmSimResolvers,
   listResolvers,
 ]);
 

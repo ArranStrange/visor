@@ -27,6 +27,17 @@ const GET_USER_LISTS = gql`
       id
       name
       description
+      isPublic
+      presets {
+        id
+        title
+        slug
+      }
+      filmSims {
+        id
+        name
+        slug
+      }
     }
   }
 `;
@@ -40,6 +51,8 @@ const ADD_TO_LIST = gql`
     ) {
       id
       name
+      description
+      isPublic
     }
   }
 `;
@@ -61,22 +74,30 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { loading, data } = useQuery(GET_USER_LISTS, {
+  const { loading, data, refetch } = useQuery(GET_USER_LISTS, {
     variables: {
       userId: currentUser?.id,
     },
     skip: !currentUser?.id,
+    onError: (error) => {
+      console.error("Error fetching user lists:", error);
+      setError("Failed to load your lists");
+    },
   });
 
   const [addToList] = useMutation(ADD_TO_LIST, {
-    onCompleted: () => {
+    onCompleted: (data) => {
+      console.log("Successfully added to list:", data);
       setSuccess("Added to list successfully!");
+      // Refetch the lists to get updated data
+      refetch();
       setTimeout(() => {
         setOpen(false);
         setSuccess(null);
       }, 1500);
     },
     onError: (error) => {
+      console.error("Error adding to list:", error);
       setError(error.message);
       setTimeout(() => setError(null), 3000);
     },
@@ -92,6 +113,17 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
 
   const handleAddToList = async (listId: string) => {
     try {
+      console.log("Adding to list:", {
+        listId,
+        presetId: presetId || null,
+        filmSimId: filmSimId || null,
+      });
+
+      // Validate that we have at least one item to add
+      if (!presetId && !filmSimId) {
+        throw new Error("No item selected to add to list");
+      }
+
       await addToList({
         variables: {
           listId,
@@ -101,6 +133,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
       });
     } catch (err) {
       console.error("Error adding to list:", err);
+      setError(err instanceof Error ? err.message : "Failed to add to list");
     }
   };
 
@@ -108,6 +141,8 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     setOpen(false);
     navigate("/create-list");
   };
+
+  const lists = data?.getUserLists || [];
 
   return (
     <>
@@ -148,14 +183,40 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
             <Box display="flex" justifyContent="center" p={3}>
               <CircularProgress />
             </Box>
+          ) : lists.length === 0 ? (
+            <Box textAlign="center" py={3}>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                You don't have any lists yet.
+              </Typography>
+              <Button
+                variant="contained"
+                onClick={handleCreateList}
+                sx={{ mt: 1 }}
+              >
+                Create Your First List
+              </Button>
+            </Box>
           ) : (
             <List>
-              {data?.getUserLists?.map((list: any) => (
+              {lists.map((list: any) => (
                 <ListItem key={list.id} disablePadding>
                   <ListItemButton onClick={() => handleAddToList(list.id)}>
                     <ListItemText
                       primary={list.name}
-                      secondary={list.description}
+                      secondary={
+                        <Box>
+                          {list.description && (
+                            <Typography variant="body2" color="text.secondary">
+                              {list.description}
+                            </Typography>
+                          )}
+                          <Typography variant="caption" color="text.secondary">
+                            {list.presets?.length || 0} presets •{" "}
+                            {list.filmSims?.length || 0} film sims
+                            {list.isPublic && " • Public"}
+                          </Typography>
+                        </Box>
+                      }
                     />
                   </ListItemButton>
                 </ListItem>
