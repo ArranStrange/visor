@@ -152,7 +152,7 @@ module.exports = {
       await User.find({ username: new RegExp(query, "i") }),
     getFilmSim: async (_, { slug }) => await FilmSim.findOne({ slug }),
     listFilmSims: async (_, { filter }) =>
-      await FilmSim.find(filter || {}).populate("creator tags"),
+      await FilmSim.find(filter || {}).populate("creator"),
     allTags: async () => {
       const tags = await Tag.find({});
       return tags.map((tag) => tag.displayName);

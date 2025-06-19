@@ -82,6 +82,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
               ...f,
               title: f.name,
               thumbnail: f.sampleImages?.[0]?.url || "",
+              tags: f.tags || [],
             },
           }))
       );

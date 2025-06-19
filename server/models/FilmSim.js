@@ -56,7 +56,7 @@ const filmSimSchema = new Schema(
       ],
     },
 
-    tags: [String],
+    tags: [{ type: Schema.Types.ObjectId, ref: "Tag" }],
 
     sampleImages: [{ type: Schema.Types.ObjectId, ref: "Image" }],
 
