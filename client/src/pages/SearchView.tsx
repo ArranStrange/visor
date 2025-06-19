@@ -16,6 +16,8 @@ import {
   GET_ALL_TAGS,
   GET_ALL_TAGS_OPTIONS,
 } from "../graphql/queries/getAllTags";
+import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const SearchView: React.FC = () => {
   const [keyword, setKeyword] = useState("");
@@ -27,6 +29,18 @@ const SearchView: React.FC = () => {
     loading: tagsLoading,
     error: tagsError,
   } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
+
+  const {
+    data: presetData,
+    loading: loadingPresets,
+    error: presetError,
+  } = useQuery(GET_ALL_PRESETS);
+
+  const {
+    data: filmSimData,
+    loading: loadingFilmSims,
+    error: filmSimError,
+  } = useQuery(GET_ALL_FILMSIMS);
 
   const allTags =
     tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
@@ -42,13 +56,95 @@ const SearchView: React.FC = () => {
     setActiveTagId(null);
   };
 
-  const filter = activeTagId
-    ? {
-        tags: {
-          $in: [activeTagId],
-        },
-      }
-    : undefined;
+  // Filter data locally based on active tag
+  const filteredData = useMemo(() => {
+    const results: { type: "preset" | "film"; data: any }[] = [];
+
+    // Filter presets
+    if (
+      (contentType === "all" || contentType === "presets") &&
+      presetData?.listPresets
+    ) {
+      const filteredPresets = presetData.listPresets
+        .filter((p: any) => p && p.creator)
+        .filter((p: any) => {
+          // Apply keyword filter - search across all fields
+          if (keyword) {
+            const searchTerm = keyword.toLowerCase();
+            const searchableText = [
+              p.title,
+              p.description,
+              p.notes,
+              p.creator?.username,
+              ...(p.tags?.map((tag: any) => tag.displayName) || []),
+            ]
+              .join(" ")
+              .toLowerCase();
+
+            if (!searchableText.includes(searchTerm)) {
+              return false;
+            }
+          }
+          // Apply tag filter
+          if (activeTagId) {
+            return p.tags?.some((tag: any) => tag.id === activeTagId);
+          }
+          return true;
+        })
+        .map((p: any) => ({
+          type: "preset" as const,
+          data: p,
+        }));
+      results.push(...filteredPresets);
+    }
+
+    // Filter film sims
+    if (
+      (contentType === "all" || contentType === "films") &&
+      filmSimData?.listFilmSims
+    ) {
+      const filteredFilmSims = filmSimData.listFilmSims
+        .filter((f: any) => f && f.creator)
+        .filter((f: any) => {
+          // Apply keyword filter - search across all fields
+          if (keyword) {
+            const searchTerm = keyword.toLowerCase();
+            const searchableText = [
+              f.name,
+              f.description,
+              f.notes,
+              f.creator?.username,
+              ...(f.tags?.map((tag: any) => tag.displayName) || []),
+            ]
+              .join(" ")
+              .toLowerCase();
+
+            if (!searchableText.includes(searchTerm)) {
+              return false;
+            }
+          }
+          // Apply tag filter
+          if (activeTagId) {
+            return f.tags?.some((tag: any) => tag.id === activeTagId);
+          }
+          return true;
+        })
+        .map((f: any) => ({
+          type: "film" as const,
+          data: {
+            ...f,
+            title: f.name,
+            thumbnail: f.sampleImages?.[0]?.url || "",
+            tags: f.tags || [],
+          },
+        }));
+      results.push(...filteredFilmSims);
+    }
+
+    return results;
+  }, [contentType, presetData, filmSimData, keyword, activeTagId]);
+
+  const isLoading = loadingPresets || loadingFilmSims || tagsLoading;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
@@ -67,14 +163,12 @@ const SearchView: React.FC = () => {
         }}
       />
 
-      <Stack
-        direction="row"
-        spacing={2}
+      <Box
         sx={{
-          overflowX: "auto",
+          display: "flex",
+          alignItems: "center",
           mb: 2,
-          scrollbarWidth: "none",
-          "&::-webkit-scrollbar": { display: "none" },
+          gap: 2,
         }}
       >
         <Typography
@@ -84,6 +178,7 @@ const SearchView: React.FC = () => {
             opacity: keyword || activeTagId ? 1 : 0.6,
             transition: "opacity 0.2s",
             whiteSpace: "nowrap",
+            flexShrink: 0,
             "&:hover": {
               textDecoration: "underline",
               textUnderlineOffset: "4px",
@@ -92,35 +187,48 @@ const SearchView: React.FC = () => {
         >
           all
         </Typography>
-        {allTags.map((tag: any) => (
-          <Typography
-            key={tag.id}
-            onClick={() =>
-              setActiveTagId((prev) => (prev === tag.id ? null : tag.id))
-            }
-            sx={{
-              cursor: "pointer",
-              fontWeight: activeTagId === tag.id ? "bold" : "normal",
-              textDecoration: activeTagId === tag.id ? "underline" : "none",
-              textUnderlineOffset: "4px",
-              opacity: activeTagId === tag.id ? 1 : 0.6,
-              transition: "opacity 0.2s",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {tag.displayName}
-          </Typography>
-        ))}
-      </Stack>
+
+        <Stack
+          direction="row"
+          spacing={2}
+          sx={{
+            overflowX: "auto",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+            flex: 1,
+            scrollSnapType: "x mandatory",
+            "& > *": {
+              scrollSnapAlign: "start",
+            },
+          }}
+        >
+          {allTags.map((tag: any) => (
+            <Typography
+              key={tag.id}
+              onClick={() =>
+                setActiveTagId((prev) => (prev === tag.id ? null : tag.id))
+              }
+              sx={{
+                cursor: "pointer",
+                fontWeight: activeTagId === tag.id ? "bold" : "normal",
+                textDecoration: activeTagId === tag.id ? "underline" : "none",
+                textUnderlineOffset: "4px",
+                opacity: activeTagId === tag.id ? 1 : 0.6,
+                transition: "opacity 0.2s",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              {tag.displayName.toLowerCase()}
+            </Typography>
+          ))}
+        </Stack>
+      </Box>
 
       <ContentTypeToggle />
       <Divider sx={{ my: 2 }} />
 
-      <ContentGridLoader
-        contentType={contentType}
-        searchQuery={keyword}
-        filter={filter}
-      />
+      <ContentGridLoader contentType={contentType} customData={filteredData} />
     </Container>
   );
 };

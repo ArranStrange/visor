@@ -8,6 +8,7 @@ export const GET_ALL_FILMSIMS = gql`
       slug
       description
       tags {
+        id
         displayName
       }
       creator {

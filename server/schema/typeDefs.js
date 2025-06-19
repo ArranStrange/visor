@@ -122,15 +122,6 @@ module.exports = gql`
     updatedAt: String
   }
 
-  type Tag {
-    id: ID!
-    name: String!
-    displayName: String!
-    description: String
-    category: String!
-    relatedTags: [Tag]
-    createdBy: User
-  }
 
   type Image {
     id: ID!
@@ -332,13 +323,8 @@ module.exports = gql`
     getFilmSim(slug: String!): FilmSim
     listFilmSims(filter: JSON): [FilmSim]
 
-    allTags: [String]
-
     getImage(id: ID!): Image
     listImagesByPreset(presetId: ID!): [Image]
-
-    getTag(name: String!): Tag
-    listTags(category: String): [Tag]
 
     getCommentsForPreset(presetId: ID!): [Comment]
     getCommentsForFilmSim(filmSimId: ID!): [Comment]

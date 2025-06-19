@@ -1,10 +1,10 @@
 const { gql } = require("apollo-server-express");
 
-const typeDefs = gql`
+module.exports = gql`
   type Tag {
     id: ID!
     name: String!
-    displayName: String
+    displayName: String!
     description: String
     category: String!
     relatedTags: [Tag]
@@ -12,8 +12,8 @@ const typeDefs = gql`
   }
 
   extend type Query {
-    getTags: [Tag!]!
-    getTag(id: ID!): Tag
+    allTags: [String]
+    getTag(name: String!): Tag
     listTags(category: String): [Tag]
   }
 
@@ -38,5 +38,3 @@ const typeDefs = gql`
     relatedTagIds: [ID!]
   }
 `;
-
-module.exports = typeDefs;
