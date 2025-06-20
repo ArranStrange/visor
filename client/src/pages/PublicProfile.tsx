@@ -9,12 +9,17 @@ import {
   Chip,
   Stack,
   CircularProgress,
-  Alert,
+  Alert as MuiAlert,
   List,
   ListItem,
   ListItemText,
   ListItemButton,
   Divider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  IconButton,
+  Snackbar,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
@@ -24,6 +29,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ListIcon from "@mui/icons-material/List";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ShareIcon from "@mui/icons-material/Share";
 import ContentTypeToggle from "../components/ContentTypeToggle";
 import ContentGridLoader from "../components/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
@@ -63,6 +70,9 @@ const PublicProfile: React.FC = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { contentType } = useContentType();
+  const [isBioExpanded, setIsBioExpanded] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const {
     loading: userLoading,
@@ -102,7 +112,9 @@ const PublicProfile: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">Error loading profile: {error.message}</Alert>
+        <MuiAlert severity="error">
+          Error loading profile: {error.message}
+        </MuiAlert>
       </Container>
     );
   }
@@ -111,7 +123,7 @@ const PublicProfile: React.FC = () => {
   if (!user) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">User not found</Alert>
+        <MuiAlert severity="error">User not found</MuiAlert>
       </Container>
     );
   }
@@ -140,140 +152,233 @@ const PublicProfile: React.FC = () => {
     })),
   ];
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${user.username}'s Profile on VISOR`,
+      text: `Check out ${user.username}'s presets and film sims on VISOR!`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("Error sharing profile:", err);
+        }
+      }
+    } else {
+      // Fallback for desktop or unsupported browsers
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        setSnackbarMessage("Profile URL copied to clipboard!");
+        setSnackbarOpen(true);
+      } catch (err) {
+        setSnackbarMessage("Failed to copy URL.");
+        setSnackbarOpen(true);
+      }
+    }
+  };
+
+  const handleSnackbarClose = (
+    event?: React.SyntheticEvent | Event,
+    reason?: string
+  ) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+    <Container maxWidth="lg" sx={{ mt: 1, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
-        {/* Profile Header */}
+        {/* New Instagram-style Header */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" },
-            gap: 4,
+            gridTemplateColumns: { xs: "1fr", md: "auto 1fr" },
+            gap: { xs: 2, md: 5 },
             mb: 4,
+            alignItems: "center",
           }}
         >
+          {/* Left Column: Avatar */}
           <Box
             display="flex"
-            flexDirection="column"
-            alignItems="center"
-            gap={2}
+            justifyContent="center"
+            alignItems="flex-start"
+            sx={{
+              width: { xs: 120, md: 150 },
+              height: { xs: 120, md: 150 },
+              mx: "auto",
+            }}
           >
             <Avatar
               src={user.avatar}
               alt={user.username}
-              sx={{ width: 150, height: 150 }}
+              sx={{ width: "100%", height: "100%" }}
             />
-            <Typography variant="h4" fontWeight="bold">
-              {user.username}
-            </Typography>
-            {user.bio && (
-              <Typography
-                variant="body1"
-                color="text.secondary"
-                textAlign="center"
-                sx={{ maxWidth: 300 }}
-              >
-                {user.bio}
-              </Typography>
-            )}
-            {isOwnProfile && (
-              <Button
-                variant="outlined"
-                startIcon={<EditIcon />}
-                onClick={() => navigate("/profile")}
-              >
-                Edit Profile
-              </Button>
-            )}
           </Box>
 
-          <Stack spacing={3}>
-            {/* Social Links */}
-            {user.instagram && (
-              <Box display="flex" alignItems="center" gap={1}>
-                <InstagramIcon color="action" />
-                <Typography variant="body1">
-                  <a
-                    href={`https://instagram.com/${user.instagram.replace(
-                      "@",
-                      ""
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ textDecoration: "none", color: "inherit" }}
-                  >
-                    {user.instagram}
-                  </a>
-                </Typography>
-              </Box>
-            )}
-
-            {/* Cameras */}
-            {user.cameras && user.cameras.length > 0 && (
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Cameras
-                </Typography>
-                <Box display="flex" flexWrap="wrap" gap={1}>
-                  {user.cameras.map((camera: string) => (
-                    <Chip
-                      key={camera}
-                      label={camera}
-                      icon={<CameraAltIcon />}
-                      variant="outlined"
-                    />
-                  ))}
-                </Box>
-              </Box>
-            )}
-
-            {/* Stats */}
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Stats
-              </Typography>
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: 2,
-                }}
+          {/* Right Column: User Info, Stats, Bio */}
+          <Stack spacing={2}>
+            {/* Row 1: Username & Buttons */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: "center",
+                gap: { xs: 1, sm: 2 },
+              }}
+            >
+              <Typography
+                variant="h4"
+                component="h1"
+                sx={{ textAlign: { xs: "center", sm: "left" } }}
               >
-                <Box textAlign="center">
-                  <Typography variant="h4" color="primary">
-                    {presets.length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Presets
-                  </Typography>
-                </Box>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="primary">
-                    {filmSims.length}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Film Sims
-                  </Typography>
-                </Box>
-                <Box textAlign="center">
-                  <Typography variant="h4" color="primary">
-                    {presets.reduce(
-                      (total: number, preset: any) =>
-                        total + (preset.likes?.length || 0),
-                      0
-                    ) +
-                      filmSims.reduce(
-                        (total: number, filmSim: any) =>
-                          total + (filmSim.likes?.length || 0),
-                        0
-                      )}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Total Likes
-                  </Typography>
-                </Box>
-              </Box>
+                {user.username &&
+                  user.username.charAt(0).toUpperCase() +
+                    user.username.slice(1)}
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                {isOwnProfile && (
+                  <IconButton
+                    size="small"
+                    onClick={() => navigate("/profile")}
+                    aria-label="edit profile"
+                  >
+                    <EditIcon />
+                  </IconButton>
+                )}
+                <IconButton onClick={handleShare} aria-label="share profile">
+                  <ShareIcon />
+                </IconButton>
+              </Stack>
             </Box>
+
+            {/* Row 2: Stats */}
+            <Stack
+              direction="row"
+              spacing={{ xs: 2, md: 4 }}
+              sx={{ justifyContent: { xs: "center", sm: "flex-start" } }}
+            >
+              <Box textAlign="center">
+                <Typography variant="h6" fontWeight="bold">
+                  {presets.length}
+                </Typography>
+                <Typography color="text.secondary">Presets</Typography>
+              </Box>
+              <Box textAlign="center">
+                <Typography variant="h6" fontWeight="bold">
+                  {filmSims.length}
+                </Typography>
+                <Typography color="text.secondary">Film Sims</Typography>
+              </Box>
+              <Box textAlign="center">
+                <Typography variant="h6" fontWeight="bold">
+                  {presets.reduce(
+                    (total: number, preset: any) =>
+                      total + (preset.likes?.length || 0),
+                    0
+                  ) +
+                    filmSims.reduce(
+                      (total: number, filmSim: any) =>
+                        total + (filmSim.likes?.length || 0),
+                      0
+                    )}
+                </Typography>
+                <Typography color="text.secondary">Likes</Typography>
+              </Box>
+            </Stack>
+
+            {/* Row 3: Bio, Social, Cameras */}
+            <Stack spacing={2} sx={{ pt: 1 }}>
+              {user.bio && (
+                <Box sx={{ textAlign: { xs: "center", sm: "left" } }}>
+                  <Typography
+                    variant="body1"
+                    sx={(theme) => ({
+                      fontStyle: "italic",
+                      textAlign: { xs: "center", sm: "left" },
+                      // Apply truncation only on mobile and when not expanded
+                      ...(!isBioExpanded && {
+                        [theme.breakpoints.down("sm")]: {
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        },
+                      }),
+                    })}
+                  >
+                    {user.bio}
+                  </Typography>
+                  <Button
+                    size="small"
+                    onClick={() => setIsBioExpanded(!isBioExpanded)}
+                    sx={{
+                      display: { xs: "inline-block", sm: "none" },
+                      p: 0,
+                      mt: 0.5,
+                      textTransform: "none",
+                      color: "text.secondary",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {isBioExpanded ? "Show less" : "more"}
+                  </Button>
+                </Box>
+              )}
+              {user.instagram && (
+                <Box display="flex" alignItems="center" gap={1}>
+                  <InstagramIcon color="action" />
+                  <Typography variant="body1">
+                    <a
+                      href={`https://instagram.com/${user.instagram.replace(
+                        "@",
+                        ""
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      {user.instagram}
+                    </a>
+                  </Typography>
+                </Box>
+              )}
+              {user.cameras && user.cameras.length > 0 && (
+                <Box>
+                  <Typography variant="h6" gutterBottom>
+                    Cameras
+                  </Typography>
+                  <Box
+                    display="flex"
+                    flexWrap="wrap"
+                    gap={1}
+                    sx={{ justifyContent: { xs: "center", sm: "flex-start" } }}
+                  >
+                    {user.cameras.map((camera: string) => (
+                      <Chip
+                        key={camera}
+                        label={camera}
+                        icon={<CameraAltIcon />}
+                        variant="outlined"
+                        sx={{
+                          borderColor: "orange.main",
+                          color: "orange.main",
+                          "& .MuiChip-icon": {
+                            color: "orange.main",
+                          },
+                        }}
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+            </Stack>
           </Stack>
         </Box>
 
@@ -283,53 +388,69 @@ const PublicProfile: React.FC = () => {
             <Typography variant="h5" gutterBottom>
               Lists
             </Typography>
-            <List
-              sx={{
-                bgcolor: "background.paper",
-                borderRadius: 2,
-                boxShadow: 1,
-              }}
-            >
-              {publicLists.map((list: any, index: number) => (
-                <React.Fragment key={list.id}>
-                  <ListItem disablePadding>
-                    <ListItemButton
-                      onClick={() => navigate(`/list/${list.id}`)}
-                    >
-                      <ListItemText
-                        primary={
-                          <Box display="flex" alignItems="center" gap={1}>
-                            <ListIcon color="primary" />
-                            <Typography variant="h6" component="span">
-                              {list.name}
-                            </Typography>
-                            <Chip size="small" label="Public" color="primary" />
-                          </Box>
-                        }
-                        secondary={
-                          <Box>
-                            {list.description && (
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                mb={1}
-                              >
-                                {list.description}
-                              </Typography>
-                            )}
-                            <Typography variant="body2" color="text.secondary">
-                              {list.presets?.length || 0} presets •{" "}
-                              {list.filmSims?.length || 0} film sims
-                            </Typography>
-                          </Box>
-                        }
-                      />
-                    </ListItemButton>
-                  </ListItem>
-                  {index < publicLists.length - 1 && <Divider />}
-                </React.Fragment>
-              ))}
-            </List>
+            <Accordion>
+              <AccordionSummary
+                expandIcon={<ExpandMoreIcon />}
+                aria-controls="lists-content"
+                id="lists-header"
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <ListIcon color="primary" />
+                  <Typography variant="h6">
+                    Public Lists ({publicLists.length})
+                  </Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <List sx={{ p: 0 }}>
+                  {publicLists.map((list: any, index: number) => (
+                    <React.Fragment key={list.id}>
+                      <ListItem disablePadding>
+                        <ListItemButton
+                          onClick={() => navigate(`/list/${list.id}`)}
+                        >
+                          <ListItemText
+                            primary={
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <Typography variant="h6" component="span">
+                                  {list.name}
+                                </Typography>
+                                <Chip
+                                  size="small"
+                                  label="Public"
+                                  color="primary"
+                                />
+                              </Box>
+                            }
+                            secondary={
+                              <Box>
+                                {list.description && (
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    mb={1}
+                                  >
+                                    {list.description}
+                                  </Typography>
+                                )}
+                                <Typography
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  {list.presets?.length || 0} presets •{" "}
+                                  {list.filmSims?.length || 0} film sims
+                                </Typography>
+                              </Box>
+                            }
+                          />
+                        </ListItemButton>
+                      </ListItem>
+                      {index < publicLists.length - 1 && <Divider />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </AccordionDetails>
+            </Accordion>
           </Box>
         )}
 
@@ -362,6 +483,20 @@ const PublicProfile: React.FC = () => {
           </Box>
         )}
       </Paper>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <MuiAlert
+          onClose={handleSnackbarClose}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          {snackbarMessage}
+        </MuiAlert>
+      </Snackbar>
     </Container>
   );
 };

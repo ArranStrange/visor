@@ -53,7 +53,7 @@ const NavBar: React.FC = () => {
       icon: <AccountCircleIcon />,
       onClick: () => {
         handleMenuClose();
-        navigate("/profile");
+        navigate(`/profile/${user?.id}`);
       },
       divider: true,
     },
