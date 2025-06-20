@@ -22,6 +22,7 @@ import Lists from "./pages/Lists";
 import ListDetail from "./pages/ListDetail";
 import { visorTheme } from "./theme/visorTheme";
 import CreateList from "./pages/CreateList";
+import PublicProfile from "./pages/PublicProfile";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/preset/:slug" element={<PresetDetailPage />} />
                 <Route path="/filmsim/:slug" element={<FilmSimPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/profile/:userId" element={<PublicProfile />} />
                 <Route path="/upload" element={<UploadPage />} />
                 <Route path="/upload/preset" element={<UploadPreset />} />
                 <Route path="/upload/filmsim" element={<UploadFilmSim />} />

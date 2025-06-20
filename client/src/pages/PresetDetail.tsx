@@ -22,12 +22,13 @@ import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
 import AddToListButton from "../components/AddToListButton";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
     variables: { slug },
   });
@@ -170,8 +171,18 @@ const PresetDetails: React.FC = () => {
           {preset.title}
         </Typography>
         <Stack direction="row" alignItems="center" spacing={1} mt={1}>
-          <Avatar src={preset.creator.avatar} alt={preset.creator.username} />
-          <Typography variant="subtitle2" color="text.secondary">
+          <Avatar
+            src={preset.creator.avatar}
+            alt={preset.creator.username}
+            sx={{ cursor: "pointer" }}
+            onClick={() => navigate(`/profile/${preset.creator.id}`)}
+          />
+          <Typography
+            variant="subtitle2"
+            color="text.secondary"
+            sx={{ cursor: "pointer" }}
+            onClick={() => navigate(`/profile/${preset.creator.id}`)}
+          >
             {preset.creator.username}
           </Typography>
           {preset.creator.instagram && (

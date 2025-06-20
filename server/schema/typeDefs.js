@@ -109,8 +109,8 @@ module.exports = gql`
 
   type Image {
     id: ID!
-    url: String!
-    publicId: String!
+    url: String
+    publicId: String
     caption: String
     associatedWith: AssociatedWith
     uploader: User

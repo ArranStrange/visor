@@ -16,7 +16,7 @@ import {
   Avatar,
   Button,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import PresetCard from "../components/PresetCard";
@@ -44,6 +44,7 @@ const CREATE_COMMENT = gql`
 
 const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [commentInput, setCommentInput] = React.useState("");
   const [localComments, setLocalComments] = React.useState<any[]>([]);
@@ -142,8 +143,15 @@ const FilmSimDetails: React.FC = () => {
             <Avatar
               src={filmSim.creator.avatar}
               alt={filmSim.creator.username}
+              sx={{ cursor: "pointer" }}
+              onClick={() => navigate(`/profile/${filmSim.creator.id}`)}
             />
-            <Typography variant="subtitle2" color="text.secondary">
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              sx={{ cursor: "pointer" }}
+              onClick={() => navigate(`/profile/${filmSim.creator.id}`)}
+            >
               {filmSim.creator.username}
             </Typography>
             {filmSim.creator.instagram && (
@@ -344,9 +352,16 @@ const FilmSimDetails: React.FC = () => {
                       borderRadius: "50%",
                       objectFit: "cover",
                       border: "2px solid #eee",
+                      cursor: "pointer",
                     }}
+                    onClick={() => navigate(`/profile/${filmSim.creator.id}`)}
                   />
-                  <Typography variant="subtitle1" fontWeight={600}>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={600}
+                    sx={{ cursor: "pointer" }}
+                    onClick={() => navigate(`/profile/${filmSim.creator.id}`)}
+                  >
                     {filmSim.creator.username}
                   </Typography>
                 </Box>

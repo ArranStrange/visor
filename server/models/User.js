@@ -12,7 +12,7 @@ const userSchema = new Schema(
 
     // Uploads by the user
     uploadedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
-    uploadedFilmSims: [{ type: Schema.Types.ObjectId, ref: "FilmSimulation" }],
+    uploadedFilmSims: [{ type: Schema.Types.ObjectId, ref: "FilmSim" }],
 
     // Favourites stored as references to custom lists
     favouriteLists: [{ type: Schema.Types.ObjectId, ref: "UserList" }],

@@ -9,6 +9,8 @@ module.exports = gql`
     email: String!
     instagram: String
     cameras: [String]
+    presets: [Preset!]!
+    filmSims: [FilmSim!]!
   }
 
   type AuthPayload {
