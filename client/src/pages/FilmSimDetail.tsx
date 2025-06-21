@@ -15,10 +15,22 @@ import {
   AccordionDetails,
   Avatar,
   Button,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  Grid,
+  Paper,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
+import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
 import PresetCard from "../components/PresetCard";
 import AddToListButton from "../components/AddToListButton";
 import CommentSection from "../components/CommentSection";
@@ -26,6 +38,9 @@ import { useAuth } from "../context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InstagramIcon from "@mui/icons-material/Instagram";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 const CREATE_COMMENT = gql`
   mutation CreateComment($filmSimId: ID!, $content: String!) {
@@ -53,9 +68,17 @@ const FilmSimDetails: React.FC = () => {
   });
   const [createComment, { loading: creatingComment }] =
     useMutation(CREATE_COMMENT);
+  const [deleteFilmSim, { loading: deletingFilmSim }] =
+    useMutation(DELETE_FILMSIM);
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
     null
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
+    null
+  );
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const menuOpen = Boolean(menuAnchorEl);
 
   if (loading) {
     return (
@@ -128,18 +151,43 @@ const FilmSimDetails: React.FC = () => {
     }
   };
 
+  const handleDeleteFilmSim = async () => {
+    try {
+      await deleteFilmSim({
+        variables: { id: filmSim.id },
+      });
+      navigate("/");
+    } catch (err) {
+      console.error("Error deleting film simulation:", err);
+    }
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, position: "relative" }}>
       <AddToListButton filmSimId={filmSim.id} itemName={filmSim.name} />
 
-      {/* Header */}
-      <Typography variant="h4" fontWeight={700} gutterBottom>
-        {filmSim.name}
-      </Typography>
-      {/* Uploaded by section */}
+      {/* Creator Information */}
       {filmSim.creator && (
-        <Box mb={3}>
-          <Stack direction="row" alignItems="center" spacing={1} mt={1}>
+        <Box mb={2}>
+          <Stack direction="row" alignItems="center" spacing={1}>
             <Avatar
               src={filmSim.creator.avatar}
               alt={filmSim.creator.username}
@@ -168,6 +216,56 @@ const FilmSimDetails: React.FC = () => {
           </Stack>
         </Box>
       )}
+
+      {/* Header */}
+      <Box display="flex" alignItems="center" gap={2} mb={2}>
+        <Typography variant="h4" fontWeight={700}>
+          {filmSim.name}
+        </Typography>
+        {currentUser &&
+          filmSim.creator &&
+          currentUser.id === filmSim.creator.id && (
+            <IconButton
+              onClick={handleMenuOpen}
+              size="small"
+              sx={{
+                backgroundColor: "rgba(255, 255, 255, 0.1)",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+              }}
+            >
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
+          )}
+      </Box>
+      {/* Dropdown Menu */}
+      {currentUser &&
+        filmSim.creator &&
+        currentUser.id === filmSim.creator.id && (
+          <Menu
+            anchorEl={menuAnchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: "background.paper",
+                boxShadow: 1,
+              },
+            }}
+          >
+            <MenuItem onClick={handleEdit}>
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Edit" />
+            </MenuItem>
+            <MenuItem onClick={handleDelete}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText primary="Delete" />
+            </MenuItem>
+          </Menu>
+        )}
       <Typography variant="body1" color="text.secondary" mb={2}>
         {filmSim.description}
       </Typography>
@@ -529,6 +627,186 @@ const FilmSimDetails: React.FC = () => {
           </Box>
         </Box>
       </Box>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "background.paper",
+            maxHeight: "90vh",
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h4" gutterBottom>
+            Edit Film Simulation
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" sx={{ mt: 2 }}>
+            <Stack spacing={3}>
+              <TextField
+                label="Name"
+                defaultValue={filmSim.name}
+                fullWidth
+                required
+              />
+
+              <TextField
+                label="Description"
+                multiline
+                minRows={3}
+                defaultValue={filmSim.description || ""}
+                fullWidth
+              />
+
+              <TextField
+                label="Creator Notes"
+                multiline
+                minRows={3}
+                defaultValue={filmSim.notes || ""}
+                fullWidth
+              />
+
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Tags (comma-separated)
+                </Typography>
+                <TextField
+                  fullWidth
+                  defaultValue={
+                    filmSim.tags?.map((tag) => tag.displayName).join(", ") || ""
+                  }
+                  placeholder="e.g., portrait, landscape, street"
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Compatible Cameras (comma-separated)
+                </Typography>
+                <TextField
+                  fullWidth
+                  defaultValue={filmSim.compatibleCameras?.join(", ") || ""}
+                  placeholder="e.g., X-T4, X-T5, X-H2"
+                />
+              </Box>
+
+              {/* Camera Settings */}
+              <Paper sx={{ p: 3, mt: 2 }}>
+                <Typography variant="h6" gutterBottom>
+                  Camera Settings
+                </Typography>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 2,
+                  }}
+                >
+                  {[
+                    { key: "dynamicRange", label: "Dynamic Range" },
+                    { key: "highlight", label: "Highlight Tone" },
+                    { key: "shadow", label: "Shadow Tone" },
+                    { key: "colour", label: "Colour" },
+                    { key: "sharpness", label: "Sharpness" },
+                    { key: "noiseReduction", label: "Noise Reduction" },
+                    { key: "grainEffect", label: "Grain Effect" },
+                    { key: "clarity", label: "Clarity" },
+                    { key: "whiteBalance", label: "White Balance" },
+                  ].map((setting) => (
+                    <Box key={setting.key}>
+                      <TextField
+                        label={setting.label}
+                        defaultValue={filmSim.settings?.[setting.key] || ""}
+                        fullWidth
+                      />
+                    </Box>
+                  ))}
+                </Box>
+
+                {/* WB Shift */}
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle2" gutterBottom>
+                    White Balance Shift
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 2,
+                    }}
+                  >
+                    <Box>
+                      <TextField
+                        label="Red"
+                        type="number"
+                        defaultValue={filmSim.settings?.wbShift?.r || 0}
+                        fullWidth
+                      />
+                    </Box>
+                    <Box>
+                      <TextField
+                        label="Blue"
+                        type="number"
+                        defaultValue={filmSim.settings?.wbShift?.b || 0}
+                        fullWidth
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+              </Paper>
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              // TODO: Implement save functionality
+              console.log("Save edit functionality to be implemented");
+              setEditDialogOpen(false);
+            }}
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">
+          Delete Film Simulation
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete "{filmSim.name}"? This action cannot
+            be undone and will permanently remove the film simulation and all
+            associated images from the database.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleDeleteFilmSim}
+            color="error"
+            variant="contained"
+            disabled={deletingFilmSim}
+          >
+            {deletingFilmSim ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

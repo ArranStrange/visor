@@ -14,24 +14,78 @@ import {
   AccordionDetails,
   CircularProgress,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  IconButton,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  TextField,
+  Grid,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DownloadIcon from "@mui/icons-material/Download";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
 import AddToListButton from "../components/AddToListButton";
+import XmpParser from "../components/XmpParser";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@apollo/client";
+import { useQuery, useMutation } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
+import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
+import { useAuth } from "../context/AuthContext";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
     variables: { slug },
   });
+  const [deletePreset, { loading: deletingPreset }] =
+    useMutation(DELETE_PRESET);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
+    null
+  );
+  const [parsedSettings, setParsedSettings] = React.useState<any>(null);
+  const menuOpen = Boolean(menuAnchorEl);
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null);
+  };
+
+  const handleEdit = () => {
+    handleMenuClose();
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = () => {
+    handleMenuClose();
+    setDeleteDialogOpen(true);
+  };
+
+  const handleSettingsParsed = (settings: any) => {
+    if (!settings || typeof settings !== "object") {
+      console.error("Invalid settings format received from XMP parser");
+      return;
+    }
+    setParsedSettings(settings);
+  };
 
   if (loading) {
     return (
@@ -111,6 +165,17 @@ const PresetDetails: React.FC = () => {
     return outputPoints;
   };
 
+  const handleDeletePreset = async () => {
+    try {
+      await deletePreset({
+        variables: { id: preset.id },
+      });
+      navigate("/");
+    } catch (err) {
+      console.error("Error deleting preset:", err);
+    }
+  };
+
   const renderAccordionSection = (
     title: string,
     keys: string[],
@@ -165,12 +230,9 @@ const PresetDetails: React.FC = () => {
     <Container maxWidth="md" sx={{ mt: 6, mb: 10, position: "relative" }}>
       <AddToListButton presetId={preset.id} itemName={preset.title} />
 
-      {/* Title & Creator */}
-      <Box mb={3}>
-        <Typography variant="h4" fontWeight="bold">
-          {preset.title}
-        </Typography>
-        <Stack direction="row" alignItems="center" spacing={1} mt={1}>
+      {/* Creator Information */}
+      <Box mb={2}>
+        <Stack direction="row" alignItems="center" spacing={1}>
           <Avatar
             src={preset.creator.avatar}
             alt={preset.creator.username}
@@ -197,6 +259,29 @@ const PresetDetails: React.FC = () => {
             </Button>
           )}
         </Stack>
+      </Box>
+
+      {/* Title & Edit Menu */}
+      <Box mb={3}>
+        <Box display="flex" alignItems="center" gap={2} mb={1}>
+          <Typography variant="h4" fontWeight="bold">
+            {preset.title}
+          </Typography>
+          {currentUser &&
+            preset.creator &&
+            currentUser.id === preset.creator.id && (
+              <IconButton
+                onClick={handleMenuOpen}
+                size="small"
+                sx={{
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+                }}
+              >
+                <MoreVertIcon fontSize="small" />
+              </IconButton>
+            )}
+        </Box>
         <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
           {preset.tags.map((tag) => (
             <Chip
@@ -208,6 +293,36 @@ const PresetDetails: React.FC = () => {
           ))}
         </Stack>
       </Box>
+
+      {/* Dropdown Menu */}
+      {currentUser &&
+        preset.creator &&
+        currentUser.id === preset.creator.id && (
+          <Menu
+            anchorEl={menuAnchorEl}
+            open={menuOpen}
+            onClose={handleMenuClose}
+            PaperProps={{
+              sx: {
+                backgroundColor: "background.paper",
+                boxShadow: 1,
+              },
+            }}
+          >
+            <MenuItem onClick={handleEdit}>
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="Edit" />
+            </MenuItem>
+            <MenuItem onClick={handleDelete}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" color="error" />
+              </ListItemIcon>
+              <ListItemText primary="Delete" />
+            </MenuItem>
+          </Menu>
+        )}
 
       {/* Before/After Images */}
       <Box sx={{ mb: 4 }}>
@@ -326,6 +441,360 @@ const PresetDetails: React.FC = () => {
           </Typography>
         </>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={editDialogOpen}
+        onClose={() => setEditDialogOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: "background.paper",
+            maxHeight: "90vh",
+          },
+        }}
+      >
+        <DialogTitle>
+          <Typography variant="h4" gutterBottom>
+            Edit Preset
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box component="form" sx={{ mt: 2 }}>
+            <Stack spacing={3}>
+              <TextField
+                label="Title"
+                defaultValue={preset.title}
+                fullWidth
+                required
+              />
+
+              <TextField
+                label="Description"
+                multiline
+                minRows={3}
+                defaultValue={preset.description || ""}
+                fullWidth
+              />
+
+              <TextField
+                label="Creator Notes"
+                multiline
+                minRows={3}
+                defaultValue={preset.notes || ""}
+                fullWidth
+              />
+
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  Tags (comma-separated)
+                </Typography>
+                <TextField
+                  fullWidth
+                  defaultValue={
+                    preset.tags?.map((tag) => tag.displayName).join(", ") || ""
+                  }
+                  placeholder="e.g., portrait, landscape, street"
+                />
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle1" gutterBottom>
+                  New XMP File (Optional)
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Upload a new XMP file to update the preset settings. Leave
+                  empty to keep current settings.
+                </Typography>
+                <XmpParser onSettingsParsed={handleSettingsParsed} />
+              </Box>
+
+              {parsedSettings && (
+                <>
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Light Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        {[
+                          { key: "exposure", label: "Exposure" },
+                          { key: "contrast", label: "Contrast" },
+                          { key: "highlights", label: "Highlights" },
+                          { key: "shadows", label: "Shadows" },
+                          { key: "whites", label: "Whites" },
+                          { key: "blacks", label: "Blacks" },
+                        ].map((setting) => (
+                          <Box key={setting.key}>
+                            <SettingSliderDisplay
+                              label={setting.label}
+                              value={
+                                parsedSettings[setting.key]
+                                  ? parsedSettings[setting.key].toFixed(1)
+                                  : "0"
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Color Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        {[
+                          { key: "temp", label: "Temperature" },
+                          { key: "tint", label: "Tint" },
+                          { key: "vibrance", label: "Vibrance" },
+                          { key: "saturation", label: "Saturation" },
+                        ].map((setting) => (
+                          <Box key={setting.key}>
+                            <SettingSliderDisplay
+                              label={setting.label}
+                              value={
+                                parsedSettings[setting.key]
+                                  ? parsedSettings[setting.key].toFixed(1)
+                                  : "0"
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Effects Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        {[
+                          { key: "clarity", label: "Clarity" },
+                          { key: "dehaze", label: "Dehaze" },
+                        ].map((setting) => (
+                          <Box key={setting.key}>
+                            <SettingSliderDisplay
+                              label={setting.label}
+                              value={
+                                parsedSettings[setting.key]
+                                  ? parsedSettings[setting.key].toFixed(1)
+                                  : "0"
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Grain Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        {parsedSettings.grain && (
+                          <>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Amount"
+                                value={
+                                  parsedSettings.grain.amount
+                                    ? parsedSettings.grain.amount.toFixed(1)
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Size"
+                                value={
+                                  parsedSettings.grain.size
+                                    ? parsedSettings.grain.size.toFixed(1)
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Frequency"
+                                value={
+                                  parsedSettings.grain.frequency
+                                    ? parsedSettings.grain.frequency.toFixed(1)
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                          </>
+                        )}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">
+                        Noise Reduction Settings
+                      </Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        {parsedSettings.noiseReduction && (
+                          <>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Luminance"
+                                value={
+                                  parsedSettings.noiseReduction.luminance
+                                    ? parsedSettings.noiseReduction.luminance.toFixed(
+                                        1
+                                      )
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Color"
+                                value={
+                                  parsedSettings.noiseReduction.color
+                                    ? parsedSettings.noiseReduction.color.toFixed(
+                                        1
+                                      )
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                            <Box>
+                              <SettingSliderDisplay
+                                label="Detail"
+                                value={
+                                  parsedSettings.noiseReduction.detail
+                                    ? parsedSettings.noiseReduction.detail.toFixed(
+                                        1
+                                      )
+                                    : "0"
+                                }
+                              />
+                            </Box>
+                          </>
+                        )}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Detail Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        <Box>
+                          <SettingSliderDisplay
+                            label="Texture"
+                            value={
+                              parsedSettings.texture
+                                ? parsedSettings.texture.toFixed(1)
+                                : "0"
+                            }
+                          />
+                        </Box>
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+                </>
+              )}
+            </Stack>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              // TODO: Implement save functionality
+              console.log("Save edit functionality to be implemented");
+              setEditDialogOpen(false);
+            }}
+          >
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Preset</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="delete-dialog-description">
+            Are you sure you want to delete "{preset.title}"? This action cannot
+            be undone and will permanently remove the preset and all associated
+            images from the database.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleDeletePreset}
+            color="error"
+            variant="contained"
+            disabled={deletingPreset}
+          >
+            {deletingPreset ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

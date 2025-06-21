@@ -12,6 +12,7 @@ export const GET_ALL_PRESETS = gql`
         displayName
       }
       creator {
+        id
         username
         avatar
       }

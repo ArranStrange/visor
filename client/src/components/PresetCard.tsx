@@ -2,37 +2,43 @@ import React from "react";
 import {
   Card,
   CardMedia,
-  CardContent,
   Typography,
-  Stack,
   Chip,
   Box,
+  Avatar,
+  IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import AddIcon from "@mui/icons-material/Add";
+import AddToListDialog from "./AddToListDialog";
 
 // Placeholder image for presets without thumbnails
 const PLACEHOLDER_IMAGE =
   "https://placehold.co/600x400/2a2a2a/ffffff?text=No+Image";
 
 interface PresetCardProps {
-  id: string;
   slug: string;
   title: string;
   afterImage?: any;
-  description?: string;
   tags: { displayName: string }[];
+  creator?: {
+    username: string;
+    avatar?: string;
+    id?: string;
+  };
+  id?: string;
 }
 
 const PresetCard: React.FC<PresetCardProps> = ({
-  id,
   slug,
   title,
   afterImage,
-  description,
   tags,
+  creator,
+  id,
 }) => {
   const navigate = useNavigate();
-  const [loaded, setLoaded] = React.useState(false);
+  const [addToListOpen, setAddToListOpen] = React.useState(false);
 
   // Determine the correct image URL
   let imageUrl = PLACEHOLDER_IMAGE;
@@ -44,92 +50,208 @@ const PresetCard: React.FC<PresetCardProps> = ({
     }
   }
 
+  const handleAddToList = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAddToListOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setAddToListOpen(false);
+  };
+
+  const handleCardClick = () => {
+    if (!addToListOpen) {
+      navigate(`/preset/${slug}`);
+    }
+  };
+
   return (
     <Card
       sx={{
-        backgroundColor: "background.paper",
-        borderRadius: 3,
+        position: "relative",
+        aspectRatio: "3/4", // Slightly longer than 4/3
+        borderRadius: 1,
         cursor: "pointer",
-        transition: "all 0.2s ease-in-out",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.3)",
+        overflow: "hidden", // to contain the overlay and for border-radius on image
+        "&:hover .tags-overlay": {
+          opacity: 1,
+        },
+        "&:hover .title-overlay": {
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
+        },
+        "&:hover .creator-avatar": {
+          opacity: 1,
+        },
+        "&:hover .add-to-list-button": {
+          opacity: 1,
         },
       }}
-      onClick={() => navigate(`/preset/${slug}`)}
+      onClick={handleCardClick}
     >
       <CardMedia
-        component="img"
-        image={imageUrl}
-        alt={title}
-        height="180"
-        onLoad={() => setLoaded(true)}
+        component="div"
         sx={{
-          borderTopLeftRadius: 12,
-          borderTopRightRadius: 12,
-          objectFit: "cover",
-          filter: loaded ? "none" : "blur(16px)",
-          transition: "filter 0.4s cubic-bezier(.4,0,.2,1)",
+          height: "100%",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundImage: `url(${imageUrl})`,
+          transition: "transform 0.3s ease-in-out",
+          "&:hover": {
+            transform: "scale(1.05)",
+          },
         }}
       />
 
+      {/* Add to List Button */}
       <Box
+        className="add-to-list-button"
         sx={{
           position: "absolute",
-          top: 8,
-          right: 30,
-          backgroundColor: "rgba(0,0,0,0.7)",
-          color: "#fff",
-          px: 0.5,
-          py: 0.5,
-          borderRadius: 1,
-          fontSize: "0.7rem",
-          fontWeight: "bold",
-          textTransform: "uppercase",
+          top: 12,
+          right: 12,
+          zIndex: 10,
+          opacity: 0,
+          transition: "opacity 0.3s ease-in-out",
         }}
       >
-        Lightroom Preset
-      </Box>
-
-      <CardContent sx={{ p: 2 }}>
-        <Typography variant="h6" fontWeight="bold" gutterBottom noWrap>
-          {title}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
+        <IconButton
+          onClick={handleAddToList}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
           sx={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            display: "-webkit-box",
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: "vertical",
-            mb: 2,
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            width: 32,
+            height: 32,
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.9)",
+            },
           }}
         >
-          {description}
-        </Typography>
+          <AddIcon fontSize="small" />
+        </IconButton>
+      </Box>
 
-        <Stack
-          direction="row"
-          gap={1}
-          m={0.5}
-          flexWrap="wrap"
-          justifyContent="start"
-          sx={{ minWidth: "100%" }}
+      {/* Creator Avatar */}
+      {creator && (
+        <Box
+          sx={{
+            position: "absolute",
+            top: 12,
+            left: 12,
+            zIndex: 2,
+            opacity: 0,
+            transition: "opacity 0.3s ease-in-out",
+            cursor: "pointer",
+          }}
+          className="creator-avatar"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (creator.id) {
+              navigate(`/profile/${creator.id}`);
+            }
+          }}
         >
-          {tags.slice(0, 3).map((tag, index) => (
+          <Avatar
+            src={creator.avatar}
+            alt={creator.username}
+            sx={{
+              width: 32,
+              height: 32,
+              backgroundColor: "rgba(0, 0, 0, 0.6)",
+            }}
+          >
+            {creator.username.charAt(0).toUpperCase()}
+          </Avatar>
+        </Box>
+      )}
+
+      <Box
+        className="title-overlay"
+        sx={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "white",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
+          textAlign: "center",
+          transition: "background-color 0.3s ease-in-out",
+          p: 2,
+        }}
+      >
+        <Typography
+          variant="h5"
+          fontWeight="bold"
+          sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.7)" }}
+        >
+          {title}
+        </Typography>
+        <Typography
+          variant="subtitle1"
+          sx={{ textShadow: "1px 1px 2px rgba(0,0,0,0.7)" }}
+        >
+          Lightroom Preset
+        </Typography>
+      </Box>
+
+      <Box
+        className="tags-overlay"
+        sx={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          p: 1.5,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)",
+          opacity: 0,
+          transition: "opacity 0.3s ease-in-out",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 0.5,
+          justifyContent: "flex-start",
+        }}
+      >
+        {tags
+          .slice(0, 3)
+          .reverse()
+          .map((tag, index) => (
             <Chip
               key={index}
               label={tag.displayName}
               size="small"
-              variant="outlined"
+              sx={{
+                color: "white",
+                backgroundColor: "black",
+                border: "none",
+                cursor: "pointer",
+                "& .MuiChip-label": {
+                  color: "white",
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                },
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`);
+              }}
             />
           ))}
-        </Stack>
-      </CardContent>
+      </Box>
+
+      <AddToListDialog
+        open={addToListOpen}
+        onClose={handleCloseDialog}
+        presetId={id}
+        itemName={title}
+      />
     </Card>
   );
 };
