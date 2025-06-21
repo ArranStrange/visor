@@ -12,6 +12,7 @@ export const GET_ALL_FILMSIMS = gql`
         displayName
       }
       creator {
+        id
         username
         avatar
       }

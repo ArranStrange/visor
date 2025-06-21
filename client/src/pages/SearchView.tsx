@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -8,6 +8,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useQuery } from "@apollo/client";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 import ContentTypeToggle from "../components/ContentTypeToggle";
 import ContentGridLoader from "../components/ContentGridLoader";
@@ -20,6 +21,8 @@ import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
 import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const SearchView: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
@@ -45,6 +48,19 @@ const SearchView: React.FC = () => {
   const allTags =
     tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
 
+  // Read tag parameter from URL on component mount
+  useEffect(() => {
+    const tagParam = searchParams.get("tag");
+    if (tagParam) {
+      const tag = allTags.find(
+        (t: any) => t.displayName.toLowerCase() === tagParam.toLowerCase()
+      );
+      if (tag) {
+        setActiveTagId(tag.id);
+      }
+    }
+  }, [searchParams, allTags]);
+
   const activeTagDisplayName = useMemo(() => {
     return (
       allTags.find((tag: any) => tag.id === activeTagId)?.displayName || null
@@ -54,6 +70,18 @@ const SearchView: React.FC = () => {
   const handleClear = () => {
     setKeyword("");
     setActiveTagId(null);
+    setSearchParams({});
+  };
+
+  const handleTagClick = (tagId: string, tagDisplayName: string) => {
+    const newActiveTagId = activeTagId === tagId ? null : tagId;
+    setActiveTagId(newActiveTagId);
+
+    if (newActiveTagId) {
+      setSearchParams({ tag: tagDisplayName });
+    } else {
+      setSearchParams({});
+    }
   };
 
   // Filter data locally based on active tag
@@ -205,9 +233,7 @@ const SearchView: React.FC = () => {
           {allTags.map((tag: any) => (
             <Typography
               key={tag.id}
-              onClick={() =>
-                setActiveTagId((prev) => (prev === tag.id ? null : tag.id))
-              }
+              onClick={() => handleTagClick(tag.id, tag.displayName)}
               sx={{
                 cursor: "pointer",
                 fontWeight: activeTagId === tag.id ? "bold" : "normal",

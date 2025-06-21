@@ -103,11 +103,16 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
     const updateColumns = () => {
       const containerWidth = containerRef.current?.offsetWidth || 0;
-      const newColumnCount = Math.max(
-        1,
-        Math.floor((containerWidth + gap) / (minWidth + gap))
-      );
-      setColumnCount(newColumnCount);
+      // On mobile (smaller than 768px), always use 2 columns
+      if (containerWidth < 768) {
+        setColumnCount(2);
+      } else {
+        const newColumnCount = Math.max(
+          1,
+          Math.floor((containerWidth + gap) / (minWidth + gap))
+        );
+        setColumnCount(newColumnCount);
+      }
     };
 
     updateColumns();
