@@ -56,10 +56,32 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const navigate = useNavigate();
   const [loaded, setLoaded] = React.useState(false);
   const [addToListOpen, setAddToListOpen] = React.useState(false);
+  const [showOptions, setShowOptions] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  // Check if we're on mobile
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia("(hover: none)").matches);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleClick = () => {
     if (!addToListOpen) {
-      navigate(`/filmsim/${slug}`);
+      if (isMobile) {
+        // On mobile: first click shows options, second click navigates
+        if (!showOptions) {
+          setShowOptions(true);
+        } else {
+          navigate(`/filmsim/${slug}`);
+        }
+      } else {
+        // On desktop: direct navigation
+        navigate(`/filmsim/${slug}`);
+      }
     }
   };
 
@@ -71,6 +93,16 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const handleCloseDialog = () => {
     setAddToListOpen(false);
   };
+
+  // Hide options when clicking outside (desktop only)
+  React.useEffect(() => {
+    if (!isMobile && showOptions) {
+      const timer = setTimeout(() => {
+        setShowOptions(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showOptions, isMobile]);
 
   return (
     <Card
@@ -89,6 +121,18 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         },
         "&:hover .add-to-list-button": {
           opacity: 1,
+        },
+        // Mobile: show options when showOptions is true
+        "@media (hover: none)": {
+          "& .tags-container": {
+            opacity: showOptions ? 1 : 0,
+          },
+          "& .creator-avatar": {
+            opacity: showOptions ? 1 : 0,
+          },
+          "& .add-to-list-button": {
+            opacity: showOptions ? 1 : 0,
+          },
         },
       }}
       onClick={handleClick}
@@ -208,11 +252,12 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           Film Sim
         </Typography>
       </Box>
+
       <Box
         className="tags-container"
         sx={{
           position: "absolute",
-          bottom: 16,
+          bottom: 0,
           left: 0,
           width: "100%",
           p: 2,

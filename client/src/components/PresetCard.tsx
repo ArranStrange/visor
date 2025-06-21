@@ -13,8 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
 
 // Placeholder image for presets without thumbnails
-const PLACEHOLDER_IMAGE =
-  "https://placehold.co/600x400/2a2a2a/ffffff?text=No+Image";
+const placeholderImage = "/placeholder-image.jpg";
 
 interface PresetCardProps {
   slug: string;
@@ -39,13 +38,25 @@ const PresetCard: React.FC<PresetCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const [addToListOpen, setAddToListOpen] = React.useState(false);
+  const [showOptions, setShowOptions] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(false);
+
+  // Check if we're on mobile
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia("(hover: none)").matches);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Determine the correct image URL
-  let imageUrl = PLACEHOLDER_IMAGE;
+  let imageUrl = placeholderImage;
   if (afterImage) {
     if (typeof afterImage === "string") {
       imageUrl = afterImage;
-    } else if (typeof afterImage === "object" && afterImage.url) {
+    } else if (afterImage.url) {
       imageUrl = afterImage.url;
     }
   }
@@ -61,9 +72,29 @@ const PresetCard: React.FC<PresetCardProps> = ({
 
   const handleCardClick = () => {
     if (!addToListOpen) {
-      navigate(`/preset/${slug}`);
+      if (isMobile) {
+        // On mobile: first click shows options, second click navigates
+        if (!showOptions) {
+          setShowOptions(true);
+        } else {
+          navigate(`/preset/${slug}`);
+        }
+      } else {
+        // On desktop: direct navigation
+        navigate(`/preset/${slug}`);
+      }
     }
   };
+
+  // Hide options when clicking outside (desktop only)
+  React.useEffect(() => {
+    if (!isMobile && showOptions) {
+      const timer = setTimeout(() => {
+        setShowOptions(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showOptions, isMobile]);
 
   return (
     <Card
@@ -84,6 +115,18 @@ const PresetCard: React.FC<PresetCardProps> = ({
         },
         "&:hover .add-to-list-button": {
           opacity: 1,
+        },
+        // Mobile: show options when showOptions is true
+        "@media (hover: none)": {
+          "& .tags-overlay": {
+            opacity: showOptions ? 1 : 0,
+          },
+          "& .creator-avatar": {
+            opacity: showOptions ? 1 : 0,
+          },
+          "& .add-to-list-button": {
+            opacity: showOptions ? 1 : 0,
+          },
         },
       }}
       onClick={handleCardClick}
