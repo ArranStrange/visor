@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
+import { useImageColor } from "../hooks/useImageColor";
 
 // Placeholder image for presets without thumbnails
 const placeholderImage = "/placeholder-image.jpg";
@@ -60,6 +61,14 @@ const PresetCard: React.FC<PresetCardProps> = ({
       imageUrl = afterImage.url;
     }
   }
+
+  // Get dynamic off-white color based on image
+  const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log("PresetCard:", { title, imageUrl, offWhiteColor, isAnalyzing });
+  }, [title, imageUrl, offWhiteColor, isAnalyzing]);
 
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -221,7 +230,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          color: "white",
           backgroundColor: "rgba(0, 0, 0, 0.4)",
           textAlign: "center",
           transition: "background-color 0.3s ease-in-out",
@@ -231,13 +239,19 @@ const PresetCard: React.FC<PresetCardProps> = ({
         <Typography
           variant="h5"
           fontWeight="bold"
-          sx={{ textShadow: "2px 2px 4px rgba(0,0,0,0.7)" }}
+          sx={{
+            color: offWhiteColor,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+          }}
         >
           {title}
         </Typography>
         <Typography
-          variant="subtitle1"
-          sx={{ textShadow: "1px 1px 2px rgba(0,0,0,0.7)" }}
+          variant="body2"
+          sx={{
+            color: offWhiteColor,
+            textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
+          }}
         >
           Lightroom Preset
         </Typography>

@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
+import { useImageColor } from "../hooks/useImageColor";
 
 interface FilmSimCardProps {
   id: string;
@@ -58,6 +59,19 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+
+  // Get dynamic off-white color based on image
+  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log("FilmSimCard:", {
+      name,
+      thumbnail,
+      offWhiteColor,
+      isAnalyzing,
+    });
+  }, [name, thumbnail, offWhiteColor, isAnalyzing]);
 
   // Check if we're on mobile
   React.useEffect(() => {
@@ -236,18 +250,23 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         }}
       >
         <Typography
-          variant="h4"
-          component="h2"
+          variant="h5"
           fontWeight="bold"
-          color="white"
-          sx={{ textShadow: "2px 2px 8px rgba(0,0,0,0.7)" }}
+          sx={{
+            color: offWhiteColor,
+            textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+            lineHeight: 1.2,
+          }}
         >
           {name}
         </Typography>
         <Typography
-          variant="subtitle1"
-          color="rgba(255, 255, 255, 0.9)"
-          sx={{ textShadow: "1px 1px 4px rgba(0,0,0,0.7)" }}
+          variant="body2"
+          sx={{
+            color: offWhiteColor,
+            textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
+            lineHeight: 1.2,
+          }}
         >
           Film Sim
         </Typography>
