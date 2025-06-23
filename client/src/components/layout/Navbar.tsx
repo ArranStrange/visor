@@ -66,11 +66,11 @@ const NavBar: React.FC = () => {
       },
     },
     {
-      text: "Forum",
+      text: "Discussions",
       icon: <ForumIcon />,
       onClick: () => {
         handleMenuClose();
-        navigate("/forum");
+        navigate("/discussions");
       },
     },
     {
