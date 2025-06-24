@@ -18,6 +18,7 @@ import {
   ImageListItem,
   ImageListItemBar,
   Link,
+  CircularProgress,
 } from "@mui/material";
 import {
   Reply as ReplyIcon,
@@ -59,6 +60,7 @@ interface PostProps {
   hasReplies?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: (postId: string) => void;
+  isDeleting?: boolean;
 }
 
 interface ReactionButtonProps {
@@ -82,6 +84,12 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
         return <HeartIcon fontSize="small" />;
       case "thinking":
         return <ThinkingIcon fontSize="small" />;
+      case "👍":
+        return <LikeIcon fontSize="small" />;
+      case "❤️":
+        return <HeartIcon fontSize="small" />;
+      case "🤔":
+        return <ThinkingIcon fontSize="small" />;
       default:
         return <LikeIcon fontSize="small" />;
     }
@@ -91,10 +99,13 @@ const ReactionButton: React.FC<ReactionButtonProps> = ({
     if (!isActive) return "default";
     switch (type) {
       case "like":
+      case "👍":
         return "primary";
       case "heart":
+      case "❤️":
         return "error";
       case "thinking":
+      case "🤔":
         return "warning";
       default:
         return "default";
@@ -144,6 +155,7 @@ const Post: React.FC<PostProps> = ({
   hasReplies = false,
   isCollapsed = true,
   onToggleCollapse,
+  isDeleting,
 }) => {
   const { user } = useAuth();
   const [isReplying, setIsReplying] = useState(false);
@@ -280,7 +292,21 @@ const Post: React.FC<PostProps> = ({
               {/* Post content */}
               {!isEditing ? (
                 <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
-                  {renderContent(post.content)}
+                  {post.isDeleted ? (
+                    <Box
+                      sx={{
+                        fontStyle: "italic",
+                        color: "text.secondary",
+                        backgroundColor: "grey.100",
+                        padding: 1,
+                        borderRadius: 1,
+                      }}
+                    >
+                      [This post has been deleted]
+                    </Box>
+                  ) : (
+                    renderContent(post.content)
+                  )}
                 </Typography>
               ) : (
                 <Box>
@@ -380,35 +406,37 @@ const Post: React.FC<PostProps> = ({
               )}
 
               {/* Action buttons */}
-              <Box display="flex" alignItems="center" gap={1} mt={2}>
-                <Tooltip title="Reply">
-                  <IconButton
-                    size="small"
-                    onClick={() => setIsReplying(!isReplying)}
-                  >
-                    <ReplyIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-
-                {/* Add reaction button */}
-                <Tooltip title="Add reaction">
-                  <IconButton
-                    size="small"
-                    onClick={() => onReact(post.id, "👍")}
-                  >
-                    <LikeIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-
-                {/* More options */}
-                {(isAuthor || user) && (
-                  <Tooltip title="More options">
-                    <IconButton size="small" onClick={handleMenuOpen}>
-                      <MoreVertIcon fontSize="small" />
+              {!post.isDeleted && (
+                <Box display="flex" alignItems="center" gap={1} mt={2}>
+                  <Tooltip title="Reply">
+                    <IconButton
+                      size="small"
+                      onClick={() => setIsReplying(!isReplying)}
+                    >
+                      <ReplyIcon fontSize="small" />
                     </IconButton>
                   </Tooltip>
-                )}
-              </Box>
+
+                  {/* Add reaction button */}
+                  <Tooltip title="Add reaction">
+                    <IconButton
+                      size="small"
+                      onClick={() => onReact(post.id, "like")}
+                    >
+                      <LikeIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+
+                  {/* More options */}
+                  {(isAuthor || user) && (
+                    <Tooltip title="More options">
+                      <IconButton size="small" onClick={handleMenuOpen}>
+                        <MoreVertIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
+              )}
 
               {/* Reply composer */}
               {isReplying && (
@@ -490,9 +518,15 @@ const Post: React.FC<PostProps> = ({
             </MenuItem>
             <MenuItem onClick={handleDelete}>
               <ListItemIcon>
-                <DeleteIcon fontSize="small" />
+                {isDeleting ? (
+                  <CircularProgress size={16} />
+                ) : (
+                  <DeleteIcon fontSize="small" />
+                )}
               </ListItemIcon>
-              <ListItemText>Delete</ListItemText>
+              <ListItemText>
+                {isDeleting ? "Deleting..." : "Delete"}
+              </ListItemText>
             </MenuItem>
           </>
         )}

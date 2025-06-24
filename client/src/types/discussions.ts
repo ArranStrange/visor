@@ -92,10 +92,12 @@ export interface UpdateDiscussionInput {
 }
 
 export interface CreatePostInput {
-  discussionId: string;
+  discussionId?: string;
   parentId?: string;
   content: string;
   imageUrl?: string;
+  linkedToType?: DiscussionTargetType;
+  linkedToId?: string;
 }
 
 export interface UpdatePostInput {

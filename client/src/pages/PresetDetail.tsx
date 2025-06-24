@@ -452,6 +452,7 @@ const PresetDetails: React.FC = () => {
           itemSlug={preset.slug}
           itemThumbnail={preset.thumbnail}
           isEmbedded={true}
+          showPreviewOnly={true}
         />
       </Box>
 

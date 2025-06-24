@@ -35,6 +35,10 @@ import { CREATE_POST } from "../../graphql/mutations/discussions";
 import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
+  DELETE_POST,
+  UPDATE_POST,
+  ADD_REACTION,
+  REMOVE_REACTION,
 } from "../../graphql/mutations/discussions";
 import Post from "./Post";
 import PostComposer from "./PostComposer";
@@ -48,6 +52,7 @@ interface DiscussionThreadProps {
   itemSlug: string;
   itemThumbnail?: string;
   isEmbedded?: boolean;
+  showPreviewOnly?: boolean;
 }
 
 const DiscussionThread: React.FC<DiscussionThreadProps> = ({
@@ -57,6 +62,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemSlug,
   itemThumbnail,
   isEmbedded = true,
+  showPreviewOnly = false,
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -65,6 +71,10 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
   const [replyImageUrl, setReplyImageUrl] = useState<string | undefined>();
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+  const [expandedPosts, setExpandedPosts] = useState<Set<string>>(new Set());
+  const [loadedPostCount, setLoadedPostCount] = useState(10);
 
   const client = useApolloClient();
 
@@ -211,47 +221,57 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   });
 
   // Create post mutation
-  const [createPost, { loading: creatingPost }] = useMutation(CREATE_POST, {
-    update: (cache, { data, errors }) => {
+  const [createPost, { loading: creatingPost }] = useMutation(CREATE_POST);
+
+  // Create discussion mutation
+  const [createDiscussion, { loading: creatingDiscussion }] = useMutation(
+    CREATE_DISCUSSION,
+    {
+      refetchQueries: [
+        {
+          query: GET_DISCUSSION_BY_ITEM,
+          variables: {
+            type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
+            refId: itemId,
+          },
+        },
+      ],
+    }
+  );
+
+  // Delete post mutation
+  const [deletePost] = useMutation(DELETE_POST, {
+    update: (cache, { data, errors }, { variables }) => {
       if (errors) {
-        console.error("Mutation had errors:", errors);
+        console.error("Delete post mutation had errors:", errors);
         return;
       }
 
-      if (data?.createPost && discussion?.id) {
-        console.log(
-          "DiscussionThread - Manually updating cache with new post:",
-          data.createPost
-        );
+      if (data?.deletePost) {
+        console.log("Post deleted successfully, updating cache");
 
-        // Read the existing posts
-        const existingPosts = cache.readQuery({
-          query: GET_POSTS,
-          variables: {
-            discussionId: discussion.id,
-            page: 1,
-            limit: isEmbedded && !showFullThread ? 3 : 20,
+        // Remove the specific post from cache using cache.modify
+        cache.modify({
+          fields: {
+            getPosts(existingPosts = {}, { readField }) {
+              if (existingPosts.posts) {
+                const filteredPosts = existingPosts.posts.filter(
+                  (post: any) => {
+                    const postId = readField("id", post);
+                    return postId !== variables?.id;
+                  }
+                );
+
+                return {
+                  ...existingPosts,
+                  posts: filteredPosts,
+                  totalCount: existingPosts.totalCount - 1,
+                };
+              }
+              return existingPosts;
+            },
           },
-        }) as any;
-
-        if (existingPosts?.getPosts) {
-          // Add the new post to the cache
-          cache.writeQuery({
-            query: GET_POSTS,
-            variables: {
-              discussionId: discussion.id,
-              page: 1,
-              limit: isEmbedded && !showFullThread ? 3 : 20,
-            },
-            data: {
-              getPosts: {
-                ...existingPosts.getPosts,
-                posts: [...existingPosts.getPosts.posts, data.createPost],
-                totalCount: existingPosts.getPosts.totalCount + 1,
-              },
-            },
-          });
-        }
+        });
 
         // Update the discussion's postCount
         const existingDiscussion = cache.readQuery({
@@ -273,32 +293,158 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
               getDiscussionByLinkedItem: {
                 ...existingDiscussion.getDiscussionByLinkedItem,
                 postCount:
-                  existingDiscussion.getDiscussionByLinkedItem.postCount + 1,
+                  existingDiscussion.getDiscussionByLinkedItem.postCount - 1,
               },
             },
           });
         }
-      } else {
-        console.log("No createPost data returned from mutation");
       }
     },
   });
 
-  // Create discussion mutation
-  const [createDiscussion, { loading: creatingDiscussion }] = useMutation(
-    CREATE_DISCUSSION,
-    {
-      refetchQueries: [
-        {
-          query: GET_DISCUSSION_BY_ITEM,
+  // Update post mutation
+  const [updatePost] = useMutation(UPDATE_POST, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Update post mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.updatePost) {
+        console.log("Post updated successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
           variables: {
-            type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-            refId: itemId,
+            discussionId: discussion?.id || "",
+            parentId: null,
+            page: 1,
+            limit: isEmbedded && !showFullThread ? 3 : 20,
           },
-        },
-      ],
-    }
-  );
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.updatePost.id ? data.updatePost : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussion?.id || "",
+              parentId: null,
+              page: 1,
+              limit: isEmbedded && !showFullThread ? 3 : 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
+  // Add reaction mutation
+  const [addReaction] = useMutation(ADD_REACTION, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Add reaction mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.addReaction) {
+        console.log("Reaction added successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
+          variables: {
+            discussionId: discussion?.id || "",
+            parentId: null,
+            page: 1,
+            limit: isEmbedded && !showFullThread ? 3 : 20,
+          },
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.addReaction.id ? data.addReaction : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussion?.id || "",
+              parentId: null,
+              page: 1,
+              limit: isEmbedded && !showFullThread ? 3 : 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
+  // Remove reaction mutation
+  const [removeReaction] = useMutation(REMOVE_REACTION, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Remove reaction mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.removeReaction) {
+        console.log("Reaction removed successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
+          variables: {
+            discussionId: discussion?.id || "",
+            parentId: null,
+            page: 1,
+            limit: isEmbedded && !showFullThread ? 3 : 20,
+          },
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.removeReaction.id ? data.removeReaction : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussion?.id || "",
+              parentId: null,
+              page: 1,
+              limit: isEmbedded && !showFullThread ? 3 : 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
 
   const isUserFollowing = (discussion: DiscussionType): boolean => {
     if (!user) return false;
@@ -318,6 +464,42 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       }
     } catch (error) {
       console.error("Failed to follow/unfollow discussion:", error);
+    }
+  };
+
+  const handleCreateReply = async (content: string, images?: File[]) => {
+    if (!content.trim() || !replyingTo) return;
+
+    try {
+      // For now, we'll handle image upload separately
+      let imageUrl: string | undefined;
+
+      if (images && images.length > 0) {
+        // TODO: Implement image upload to your storage service
+        console.log("Image upload not implemented yet");
+      }
+
+      const postInput = {
+        discussionId: discussion?.id,
+        parentId: replyingTo,
+        content: content.trim(),
+        imageUrl,
+      };
+
+      console.log("Creating reply with input:", postInput);
+
+      const result = await createPost({
+        variables: { input: postInput },
+      });
+
+      if (result.data?.createPost) {
+        console.log("Reply created successfully:", result.data.createPost);
+        setReplyingTo(null);
+        // Refetch top-level posts to get the new reply
+        await refetchTopLevel();
+      }
+    } catch (error) {
+      console.error("Error creating reply:", error);
     }
   };
 
@@ -425,18 +607,212 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   };
 
   const handleEdit = async (postId: string, content: string) => {
-    // TODO: Implement edit functionality
-    console.log("Edit post:", postId, content);
+    // Find the post to get more details
+    const postToEdit = posts.find((p) => p.id === postId);
+
+    if (!postToEdit) {
+      console.error("Post not found. Please refresh the page and try again.");
+      return;
+    }
+
+    if (!user) {
+      console.error("You must be logged in to edit posts.");
+      return;
+    }
+
+    if (postToEdit.author.id !== user.id) {
+      console.error("You can only edit your own posts.");
+      return;
+    }
+
+    try {
+      const result = await updatePost({
+        variables: {
+          id: postId,
+          input: { content: content.trim() },
+        },
+      });
+
+      if (result.data?.updatePost) {
+        console.log("Post updated successfully");
+        // Refetch posts to update the UI
+        await refetchTopLevel();
+      } else {
+        console.error("Failed to update post - no data returned");
+      }
+    } catch (error: any) {
+      console.error("Error updating post:", error);
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to update post. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      console.error("Update post error:", errorMessage);
+    }
   };
 
   const handleDelete = async (postId: string) => {
-    // TODO: Implement delete functionality
-    console.log("Delete post:", postId);
+    console.log("Attempting to delete post:", postId);
+
+    // Find the post to get more details
+    const postToDelete = posts.find((p) => p.id === postId);
+
+    if (!postToDelete) {
+      setDeleteError("Post not found. Please refresh the page and try again.");
+      return;
+    }
+
+    if (!user) {
+      setDeleteError("You must be logged in to delete posts.");
+      return;
+    }
+
+    if (postToDelete.author.id !== user.id) {
+      setDeleteError("You can only delete your own posts.");
+      return;
+    }
+
+    setDeleteError(null); // Clear any previous errors
+    setDeletingPostId(postId);
+
+    try {
+      const result = await deletePost({
+        variables: { id: postId },
+      });
+
+      if (result.data?.deletePost) {
+        console.log("Post deleted successfully");
+        // Refetch posts to update the UI
+        await refetchTopLevel();
+      } else if (result.errors && result.errors.length > 0) {
+        console.error("Backend returned errors:", result.errors);
+
+        // Log the complete error structure for debugging
+        result.errors.forEach((err: any, index: number) => {
+          console.log(`Error ${index + 1} complete structure:`, {
+            message: err.message,
+            path: err.path,
+            extensions: err.extensions,
+            locations: err.locations,
+            originalError: err.originalError,
+            fullError: err,
+          });
+        });
+
+        // Extract error message from the first error
+        const firstError = result.errors[0];
+        let errorMessage = "Failed to delete post. Please try again.";
+
+        if (firstError.message) {
+          errorMessage = firstError.message;
+        }
+
+        // Check for specific error types
+        if (firstError.extensions?.code) {
+          switch (firstError.extensions.code) {
+            case "UNAUTHENTICATED":
+              errorMessage = "You must be logged in to delete posts.";
+              break;
+            case "FORBIDDEN":
+              errorMessage = "You can only delete your own posts.";
+              break;
+            case "NOT_FOUND":
+              errorMessage =
+                "Post not found. It may have already been deleted.";
+              break;
+            case "INTERNAL_SERVER_ERROR":
+              console.error(
+                "Backend server error - check server logs for details"
+              );
+              errorMessage =
+                "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
+              break;
+            default:
+              errorMessage = firstError.message || errorMessage;
+          }
+        }
+
+        setDeleteError(errorMessage);
+      } else {
+        console.error("Failed to delete post - no data returned");
+        setDeleteError("Failed to delete post. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Delete post error:", error);
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to delete post. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      setDeleteError(errorMessage);
+    } finally {
+      setDeletingPostId(null);
+    }
   };
 
   const handleReact = async (postId: string, reactionType: string) => {
-    // TODO: Implement reaction functionality
-    console.log("React to post:", postId, reactionType);
+    try {
+      // Check if user already has this reaction
+      const post = posts.find((p) => p.id === postId);
+      const hasReaction = post?.reactions.some(
+        (r: any) =>
+          r.emoji === reactionType &&
+          r.users.some((u: any) => u.id === user?.id)
+      );
+
+      if (hasReaction) {
+        // Remove reaction
+        const result = await removeReaction({
+          variables: {
+            input: { postId, emoji: reactionType },
+          },
+        });
+
+        if (result.data?.removeReaction) {
+          console.log("Reaction removed successfully");
+          // Refetch posts to update the UI
+          await refetchTopLevel();
+        } else {
+          console.error("Failed to remove reaction - no data returned");
+        }
+      } else {
+        // Add reaction
+        const result = await addReaction({
+          variables: {
+            input: { postId, emoji: reactionType },
+          },
+        });
+
+        if (result.data?.addReaction) {
+          console.log("Reaction added successfully");
+          // Refetch posts to update the UI
+          await refetchTopLevel();
+        } else {
+          console.error("Failed to add reaction - no data returned");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error handling reaction:", error);
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to update reaction. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      // You might want to show this error to the user
+      console.error("Reaction error:", errorMessage);
+    }
   };
 
   const formatDate = (dateString: string | undefined | null): string => {
@@ -482,9 +858,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
   // Render a post and its replies recursively
   const renderPostWithReplies = (post: DiscussionPost, depth: number = 0) => {
-    const hasReplies = post.replies && post.replies.length > 0;
-    const isCollapsed = collapsedPosts.has(post.id);
-
     return (
       <Box key={post.id}>
         <Post
@@ -494,25 +867,100 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           onEdit={handleEdit}
           onDelete={handleDelete}
           onReact={handleReact}
-          onPin={() => {}}
-          onHighlight={() => {}}
-          onReport={() => {}}
-          onBlock={() => {}}
+          onPin={() => {}} // Not implemented in new schema
+          onHighlight={() => {}} // Not implemented in new schema
+          onReport={() => {}} // Not implemented in new schema
+          onBlock={() => {}} // Not implemented in new schema
           maxDepth={3}
-          hasReplies={hasReplies}
-          isCollapsed={isCollapsed}
-          onToggleCollapse={handleToggleCollapse}
         />
-        {/* Render replies only if not collapsed */}
-        {hasReplies && !isCollapsed && depth < 3 && (
+        {/* Render replies */}
+        {post.replies && post.replies.length > 0 && depth < 3 && (
           <Box>
-            {post.replies.map((reply) =>
+            {post.replies.map((reply: DiscussionPost) =>
               renderPostWithReplies(reply, depth + 1)
             )}
           </Box>
         )}
       </Box>
     );
+  };
+
+  // Render a collapsed post for preview mode
+  const renderCollapsedPost = (post: DiscussionPost) => {
+    const isExpanded = expandedPosts.has(post.id);
+    const hasReplies = post.replies && post.replies.length > 0;
+
+    return (
+      <Box key={post.id}>
+        <Post
+          post={post}
+          depth={0}
+          onReply={handleReply}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onReact={handleReact}
+          onPin={() => {}}
+          onHighlight={() => {}}
+          onReport={() => {}}
+          onBlock={() => {}}
+          maxDepth={3}
+        />
+
+        {/* Show replies only if expanded */}
+        {hasReplies && isExpanded && post.replies && (
+          <Box ml={3} mt={1}>
+            {post.replies.map((reply: DiscussionPost) => (
+              <Post
+                key={reply.id}
+                post={reply}
+                depth={1}
+                onReply={handleReply}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onReact={handleReact}
+                onPin={() => {}}
+                onHighlight={() => {}}
+                onReport={() => {}}
+                onBlock={() => {}}
+                maxDepth={3}
+              />
+            ))}
+          </Box>
+        )}
+
+        {/* Expand/Collapse button for posts with replies */}
+        {hasReplies && post.replies && (
+          <Box ml={3} mt={1}>
+            <Button
+              size="small"
+              variant="text"
+              onClick={() => handleToggleExpand(post.id)}
+              sx={{ minWidth: "auto", px: 1 }}
+            >
+              {isExpanded
+                ? `Hide ${post.replies.length} replies`
+                : `Show ${post.replies.length} replies`}
+            </Button>
+          </Box>
+        )}
+      </Box>
+    );
+  };
+
+  const handleToggleExpand = (postId: string) => {
+    setExpandedPosts((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(postId)) {
+        newSet.delete(postId);
+      } else {
+        newSet.add(postId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleLoadMore = () => {
+    setLoadedPostCount((prev) => prev + 10);
   };
 
   if (discussionLoading || postsLoading) {
@@ -538,11 +986,13 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           <Typography variant="h6" gutterBottom>
             💬 Discussions
           </Typography>
-          <Alert severity="warning" sx={{ mb: 2 }}>
-            Unable to load posts at this time. The discussion system is being
-            updated.
-          </Alert>
-          {discussion && user && (
+          {!showPreviewOnly && (
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Unable to load posts at this time. The discussion system is being
+              updated.
+            </Alert>
+          )}
+          {discussion && user && !showPreviewOnly && (
             <PostComposer
               onSubmit={handleCreatePost}
               placeholder={`Start a discussion about this ${itemType}...`}
@@ -561,10 +1011,12 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           <Typography variant="h6" gutterBottom>
             💬 Discussions
           </Typography>
-          <Typography variant="body2" color="text.secondary" mb={2}>
-            No discussion thread found for this {itemType}.
-          </Typography>
-          {user && (
+          {!showPreviewOnly && (
+            <Typography variant="body2" color="text.secondary" mb={2}>
+              No discussion thread found for this {itemType}.
+            </Typography>
+          )}
+          {user && !showPreviewOnly && (
             <PostComposer
               onSubmit={handleCreatePost}
               placeholder={`Start a discussion about this ${itemType}...`}
@@ -578,173 +1030,231 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
   // Show only the first few posts if embedded and not expanded
   const displayPosts =
-    isEmbedded && !showFullThread ? posts.slice(0, 3) : posts;
-  const hasMorePosts = isEmbedded && posts.length > 3;
+    isEmbedded && !showFullThread
+      ? posts.slice(0, showPreviewOnly ? loadedPostCount : 3)
+      : posts;
+  const hasMorePosts =
+    isEmbedded && posts.length > (showPreviewOnly ? loadedPostCount : 3);
 
   // Organize posts into threaded structure
   const threadedPosts = organizePostsIntoThreads(displayPosts);
 
   return (
     <Box>
-      {/* Discussion Header */}
-      <Card sx={{ mb: 2 }}>
+      {/* Discussion Header - matching DiscussionDetail layout */}
+      <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-            mb={2}
-          >
-            <Box display="flex" alignItems="center" gap={2}>
-              <Typography variant="h6">💬 Discussions</Typography>
-            </Box>
-
-            <Box display="flex" alignItems="center" gap={1}>
-              {/* Follow button */}
-              <Tooltip
-                title={isUserFollowing(discussion) ? "Unfollow" : "Follow"}
-              >
-                <IconButton
-                  size="small"
-                  onClick={handleFollow}
-                  color={isUserFollowing(discussion) ? "primary" : "default"}
-                >
-                  {isUserFollowing(discussion) ? (
-                    <BookmarkIcon />
-                  ) : (
-                    <BookmarkBorderIcon />
-                  )}
-                </IconButton>
-              </Tooltip>
-
-              {/* View full thread button */}
-              {isEmbedded && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() => navigate(`/discussions/${discussion.id}`)}
-                >
-                  View Full Thread
-                </Button>
-              )}
-            </Box>
-          </Box>
-
-          {/* Discussion info */}
-          <Box display="flex" alignItems="center" gap={2} mb={2}>
+          <Box display="flex" alignItems="flex-start" gap={2}>
             <Avatar
               src={discussion.createdBy.avatar}
-              sx={{ width: 32, height: 32 }}
+              sx={{ width: 50, height: 50, mt: 0.5 }}
             >
               {discussion.createdBy.username.charAt(0).toUpperCase()}
             </Avatar>
-            <Box>
-              <Box display="flex" alignItems="center" gap={1}>
-                <Typography variant="subtitle2">
-                  {discussion.createdBy.username}
+            <Box flex={1}>
+              <Box display="flex" alignItems="center" gap={1} mb={1}>
+                <Typography variant="h4" component="h1" sx={{ flex: 1 }}>
+                  {discussion.title}
                 </Typography>
+
+                {/* Follow button */}
+                <Tooltip
+                  title={isUserFollowing(discussion) ? "Unfollow" : "Follow"}
+                >
+                  <IconButton
+                    size="small"
+                    onClick={handleFollow}
+                    color={isUserFollowing(discussion) ? "primary" : "default"}
+                  >
+                    {isUserFollowing(discussion) ? (
+                      <BookmarkIcon />
+                    ) : (
+                      <BookmarkBorderIcon />
+                    )}
+                  </IconButton>
+                </Tooltip>
+
+                {/* View full thread button */}
+                {isEmbedded && (
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    onClick={() => navigate(`/discussions/${discussion.id}`)}
+                  >
+                    View Full Thread
+                  </Button>
+                )}
               </Box>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(discussion.createdAt)}
-              </Typography>
+
+              {/* Linked item */}
+              {discussion.linkedTo && (
+                <Box display="flex" gap={1} mb={2}>
+                  <Chip
+                    icon={
+                      discussion.linkedTo.type === "PRESET" ? (
+                        <PresetIcon />
+                      ) : (
+                        <CameraIcon />
+                      )
+                    }
+                    label={
+                      discussion.linkedTo.preset?.title ||
+                      discussion.linkedTo.filmSim?.name
+                    }
+                    size="small"
+                    variant="outlined"
+                    onClick={() => {
+                      const path =
+                        discussion.linkedTo.type === "PRESET"
+                          ? `/preset/${discussion.linkedTo.preset?.slug}`
+                          : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
+                      navigate(path);
+                    }}
+                    sx={{ cursor: "pointer" }}
+                  />
+                </Box>
+              )}
+
+              {/* Tags */}
+              {discussion.tags.length > 0 && (
+                <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
+                  {discussion.tags.map((tag) => (
+                    <Chip
+                      key={tag}
+                      label={tag}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontSize: "0.7rem" }}
+                    />
+                  ))}
+                </Box>
+              )}
+
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+              >
+                <Typography variant="caption" color="text.secondary">
+                  by {discussion.createdBy.username}
+                  {" • "}
+                  {formatDate(discussion.createdAt)}
+                </Typography>
+                <Box display="flex" gap={1}>
+                  <Typography variant="caption" color="text.secondary">
+                    {discussion.postCount} posts
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {discussion.followers.length} followers
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Last activity {formatDate(discussion.lastActivity)}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
-          </Box>
-
-          {/* Discussion title */}
-          <Typography variant="h6" gutterBottom>
-            {discussion.title}
-          </Typography>
-
-          {/* Linked item info */}
-          {discussion.linkedTo && (
-            <Box display="flex" alignItems="center" gap={1} mb={2}>
-              <Chip
-                icon={
-                  discussion.linkedTo.type === "PRESET" ? (
-                    <PresetIcon />
-                  ) : (
-                    <CameraIcon />
-                  )
-                }
-                label={
-                  discussion.linkedTo.preset?.title ||
-                  discussion.linkedTo.filmSim?.name
-                }
-                size="small"
-                variant="outlined"
-                onClick={() => {
-                  const path =
-                    discussion.linkedTo.type === "PRESET"
-                      ? `/preset/${discussion.linkedTo.preset?.slug}`
-                      : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
-                  navigate(path);
-                }}
-                sx={{ cursor: "pointer" }}
-              />
-            </Box>
-          )}
-
-          {/* Tags */}
-          {discussion.tags.length > 0 && (
-            <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
-              {discussion.tags.map((tag) => (
-                <Chip
-                  key={tag}
-                  label={tag}
-                  size="small"
-                  variant="outlined"
-                  sx={{ fontSize: "0.7rem" }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {/* Stats */}
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="caption" color="text.secondary">
-              {discussion.postCount} posts
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {discussion.followers.length} followers
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Last activity {formatDate(discussion.lastActivity)}
-            </Typography>
           </Box>
         </CardContent>
       </Card>
 
-      {/* Posts */}
-      <Box>
-        {threadedPosts.length === 0 ? (
-          <Alert severity="info">
-            No posts yet. Be the first to join the discussion!
-          </Alert>
-        ) : (
-          threadedPosts.map((post: DiscussionPost) =>
-            renderPostWithReplies(post)
-          )
-        )}
+      {/* Show the rest of the component only if not in preview mode */}
+      {!showPreviewOnly ? (
+        <>
+          {/* Error Alert */}
+          {deleteError && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setDeleteError(null)}
+            >
+              {deleteError}
+            </Alert>
+          )}
 
-        {/* Show more button */}
-        {hasMorePosts && (
-          <Box textAlign="center" mt={2}>
-            <Button variant="outlined" onClick={() => setShowFullThread(true)}>
-              Show {posts.length - 3} more posts
-            </Button>
+          {/* Post composer - moved above posts */}
+          {user && (
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <PostComposer
+                  onSubmit={handleCreatePost}
+                  placeholder="Add to the discussion..."
+                  buttonText={creatingPost ? "Posting..." : "Post"}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Posts */}
+          <Box>
+            {threadedPosts.length === 0 ? (
+              <Alert severity="info">
+                No posts yet. Be the first to join the discussion!
+              </Alert>
+            ) : (
+              threadedPosts.map((post: DiscussionPost) =>
+                renderPostWithReplies(post)
+              )
+            )}
+
+            {/* Show more button */}
+            {hasMorePosts && (
+              <Box textAlign="center" mt={2}>
+                <Button variant="outlined" onClick={handleLoadMore}>
+                  Load {Math.min(10, posts.length - loadedPostCount)} more posts
+                </Button>
+              </Box>
+            )}
           </Box>
-        )}
-      </Box>
+        </>
+      ) : (
+        // Preview mode - show full functionality but simplified post display
+        <>
+          {/* Error Alert */}
+          {deleteError && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              onClose={() => setDeleteError(null)}
+            >
+              {deleteError}
+            </Alert>
+          )}
 
-      {/* Post composer */}
-      {user && (
-        <Box mt={2}>
-          <PostComposer
-            onSubmit={handleCreatePost}
-            placeholder="Add to the discussion..."
-            buttonText={creatingPost ? "Posting..." : "Post"}
-          />
-        </Box>
+          {/* Post composer - moved above posts */}
+          {user && (
+            <Card sx={{ mb: 2 }}>
+              <CardContent>
+                <PostComposer
+                  onSubmit={handleCreatePost}
+                  placeholder="Add to the discussion..."
+                  buttonText={creatingPost ? "Posting..." : "Post"}
+                />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Posts - using the same Post component as DiscussionDetail */}
+          <Box>
+            {threadedPosts.length === 0 ? (
+              <Alert severity="info">
+                No posts yet. Be the first to join the discussion!
+              </Alert>
+            ) : (
+              threadedPosts.map((post: DiscussionPost) =>
+                renderCollapsedPost(post)
+              )
+            )}
+
+            {/* Show more button */}
+            {hasMorePosts && (
+              <Box textAlign="center" mt={2}>
+                <Button variant="outlined" onClick={handleLoadMore}>
+                  Load {Math.min(10, posts.length - loadedPostCount)} more posts
+                </Button>
+              </Box>
+            )}
+          </Box>
+        </>
       )}
     </Box>
   );

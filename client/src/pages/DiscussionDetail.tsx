@@ -22,7 +22,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "../context/AuthContext";
 import { GET_DISCUSSION, GET_POSTS } from "../graphql/queries/discussions";
-import { CREATE_POST } from "../graphql/mutations/discussions";
+import {
+  CREATE_POST,
+  DELETE_POST,
+  UPDATE_POST,
+  ADD_REACTION,
+  REMOVE_REACTION,
+} from "../graphql/mutations/discussions";
 import {
   Discussion as DiscussionType,
   DiscussionPost,
@@ -143,6 +149,221 @@ const DiscussionDetail: React.FC = () => {
     },
   });
 
+  const [deletePost] = useMutation(DELETE_POST, {
+    update: (cache, { data, errors }, { variables }) => {
+      if (errors) {
+        console.error("Delete post mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.deletePost) {
+        console.log("Post deleted successfully, updating cache");
+
+        // Option 1: Remove the post completely from cache (hard deletion)
+        cache.modify({
+          fields: {
+            getPosts(existingPosts = {}, { readField }) {
+              if (existingPosts.posts) {
+                const filteredPosts = existingPosts.posts.filter(
+                  (post: any) => {
+                    const postId = readField("id", post);
+                    return postId !== variables?.id;
+                  }
+                );
+
+                return {
+                  ...existingPosts,
+                  posts: filteredPosts,
+                  totalCount: existingPosts.totalCount - 1,
+                };
+              }
+              return existingPosts;
+            },
+          },
+        });
+
+        // Option 2: Mark the post as deleted (soft deletion)
+        // This approach keeps the post in the cache but marks it as deleted
+        try {
+          const postRef = cache.identify({
+            __typename: "DiscussionPost",
+            id: variables?.id,
+          });
+          if (postRef) {
+            cache.modify({
+              id: postRef,
+              fields: {
+                isDeleted: () => true,
+                deletedAt: () => new Date().toISOString(),
+                deletedBy: () => ({
+                  __typename: "User",
+                  id: user?.id,
+                  username: user?.username,
+                }),
+              },
+            });
+          }
+        } catch (error) {
+          console.log("Could not update post in cache, will refetch instead");
+        }
+
+        // Update the discussion's postCount
+        const existingDiscussion = cache.readQuery({
+          query: GET_DISCUSSION,
+          variables: { id: discussionId! },
+        }) as any;
+
+        if (existingDiscussion?.getDiscussion) {
+          cache.writeQuery({
+            query: GET_DISCUSSION,
+            variables: { id: discussionId! },
+            data: {
+              getDiscussion: {
+                ...existingDiscussion.getDiscussion,
+                postCount: existingDiscussion.getDiscussion.postCount - 1,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
+  const [updatePost] = useMutation(UPDATE_POST, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Update post mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.updatePost) {
+        console.log("Post updated successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
+          variables: {
+            discussionId: discussionId!,
+            page: 1,
+            limit: 20,
+          },
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.updatePost.id ? data.updatePost : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussionId!,
+              page: 1,
+              limit: 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
+  const [addReaction] = useMutation(ADD_REACTION, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Add reaction mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.addReaction) {
+        console.log("Reaction added successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
+          variables: {
+            discussionId: discussionId!,
+            page: 1,
+            limit: 20,
+          },
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.addReaction.id ? data.addReaction : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussionId!,
+              page: 1,
+              limit: 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
+  const [removeReaction] = useMutation(REMOVE_REACTION, {
+    update: (cache, { data, errors }) => {
+      if (errors) {
+        console.error("Remove reaction mutation had errors:", errors);
+        return;
+      }
+
+      if (data?.removeReaction) {
+        console.log("Reaction removed successfully, updating cache");
+
+        // Read the existing posts
+        const existingPosts = cache.readQuery({
+          query: GET_POSTS,
+          variables: {
+            discussionId: discussionId!,
+            page: 1,
+            limit: 20,
+          },
+        }) as any;
+
+        if (existingPosts?.getPosts) {
+          // Update the post in cache
+          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
+            post.id === data.removeReaction.id ? data.removeReaction : post
+          );
+
+          cache.writeQuery({
+            query: GET_POSTS,
+            variables: {
+              discussionId: discussionId!,
+              page: 1,
+              limit: 20,
+            },
+            data: {
+              getPosts: {
+                ...existingPosts.getPosts,
+                posts: updatedPosts,
+              },
+            },
+          });
+        }
+      }
+    },
+  });
+
   const handleCreatePost = async (content: string, images?: File[]) => {
     if (!discussionId || !content.trim()) {
       console.log("Missing discussionId or content:", {
@@ -244,24 +465,210 @@ const DiscussionDetail: React.FC = () => {
   };
 
   const handleEdit = async (postId: string, content: string) => {
-    // This would be implemented with the UPDATE_POST mutation
-    console.log("Editing post:", { postId, content });
-    refetchDiscussion();
-    refetchPosts();
+    // Find the post to get more details
+    const postToEdit = posts.find((p: DiscussionPost) => p.id === postId);
+
+    if (!postToEdit) {
+      console.error("Post not found. Please refresh the page and try again.");
+      return;
+    }
+
+    if (!user) {
+      console.error("You must be logged in to edit posts.");
+      return;
+    }
+
+    if (postToEdit.author.id !== user.id) {
+      console.error("You can only edit your own posts.");
+      return;
+    }
+
+    try {
+      const result = await updatePost({
+        variables: {
+          id: postId,
+          input: { content: content.trim() },
+        },
+      });
+
+      if (result.data?.updatePost) {
+        console.log("Post updated successfully");
+        // Refetch posts to update the UI
+        await refetchPosts();
+      } else {
+        console.error("Failed to update post - no data returned");
+      }
+    } catch (error: any) {
+      console.error("Error updating post:", error);
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to update post. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      console.error("Update post error:", errorMessage);
+    }
   };
 
   const handleDelete = async (postId: string) => {
-    // This would be implemented with the DELETE_POST mutation
-    console.log("Deleting post:", { postId });
-    refetchDiscussion();
-    refetchPosts();
+    console.log("Attempting to delete post:", postId);
+
+    // Find the post to get more details
+    const postToDelete = posts.find((p: DiscussionPost) => p.id === postId);
+
+    if (!postToDelete) {
+      console.error("Post not found. Please refresh the page and try again.");
+      return;
+    }
+
+    if (!user) {
+      console.error("You must be logged in to delete posts.");
+      return;
+    }
+
+    if (postToDelete.author.id !== user.id) {
+      console.error("You can only delete your own posts.");
+      return;
+    }
+
+    try {
+      const result = await deletePost({
+        variables: { id: postId },
+      });
+
+      console.log("Delete post result:", result);
+
+      if (result.data?.deletePost) {
+        console.log("Post deleted successfully");
+        // Refetch posts to update the UI
+        await refetchPosts();
+      } else if (result.errors && result.errors.length > 0) {
+        console.error("Backend returned errors:", result.errors);
+
+        // Log the complete error structure for debugging
+        result.errors.forEach((err: any, index: number) => {
+          console.log(`Error ${index + 1} complete structure:`, {
+            message: err.message,
+            path: err.path,
+            extensions: err.extensions,
+            locations: err.locations,
+            originalError: err.originalError,
+            fullError: err,
+          });
+        });
+
+        // Extract error message from the first error
+        const firstError = result.errors[0];
+        let errorMessage = "Failed to delete post. Please try again.";
+
+        if (firstError.message) {
+          errorMessage = firstError.message;
+        }
+
+        // Check for specific error types
+        if (firstError.extensions?.code) {
+          switch (firstError.extensions.code) {
+            case "UNAUTHENTICATED":
+              errorMessage = "You must be logged in to delete posts.";
+              break;
+            case "FORBIDDEN":
+              errorMessage = "You can only delete your own posts.";
+              break;
+            case "NOT_FOUND":
+              errorMessage =
+                "Post not found. It may have already been deleted.";
+              break;
+            case "INTERNAL_SERVER_ERROR":
+              console.error(
+                "Backend server error - check server logs for details"
+              );
+              errorMessage =
+                "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
+              break;
+            default:
+              errorMessage = firstError.message || errorMessage;
+          }
+        }
+
+        console.error("Delete post error:", errorMessage);
+      } else {
+        console.error("Failed to delete post - no data returned");
+      }
+    } catch (error: any) {
+      console.error("Error deleting post:", error);
+      console.error("Error details:", {
+        message: error.message,
+        graphQLErrors: error.graphQLErrors,
+        networkError: error.networkError,
+      });
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to delete post. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      console.error("Delete post error:", errorMessage);
+    }
   };
 
   const handleReact = async (postId: string, reactionType: string) => {
-    // This would be implemented with the ADD_REACTION mutation
-    console.log("Reacting to post:", { postId, reactionType });
-    refetchDiscussion();
-    refetchPosts();
+    try {
+      // Check if user already has this reaction
+      const post = posts.find((p: DiscussionPost) => p.id === postId);
+      const hasReaction = post?.reactions.some(
+        (r: any) =>
+          r.emoji === reactionType &&
+          r.users.some((u: any) => u.id === user?.id)
+      );
+
+      if (hasReaction) {
+        // Remove reaction
+        const result = await removeReaction({
+          variables: {
+            input: { postId, emoji: reactionType },
+          },
+        });
+
+        if (result.data?.removeReaction) {
+          console.log("Reaction removed successfully");
+          await refetchPosts();
+        } else {
+          console.error("Failed to remove reaction - no data returned");
+        }
+      } else {
+        // Add reaction
+        const result = await addReaction({
+          variables: {
+            input: { postId, emoji: reactionType },
+          },
+        });
+
+        if (result.data?.addReaction) {
+          console.log("Reaction added successfully");
+          await refetchPosts();
+        } else {
+          console.error("Failed to add reaction - no data returned");
+        }
+      }
+    } catch (error: any) {
+      console.error("Error handling reaction:", error);
+
+      // Extract error message from GraphQL errors
+      let errorMessage = "Failed to update reaction. Please try again.";
+      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+        errorMessage = error.graphQLErrors[0].message || errorMessage;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      console.error("Reaction error:", errorMessage);
+    }
   };
 
   const formatDate = (dateString: string | undefined | null): string => {
@@ -408,19 +815,6 @@ const DiscussionDetail: React.FC = () => {
                   </Box>
                 </CardContent>
               </Card>
-
-              {/* Post Composer */}
-              {user && (
-                <Card sx={{ mb: 3 }}>
-                  <CardContent>
-                    <PostComposer
-                      onSubmit={handleCreatePost}
-                      placeholder="Add to the discussion..."
-                      buttonText="Post"
-                    />
-                  </CardContent>
-                </Card>
-              )}
             </>
           )}
         </Box>
@@ -549,6 +943,19 @@ const DiscussionDetail: React.FC = () => {
           </CardContent>
         </Card>
 
+        {/* Post composer - moved above posts */}
+        {user && (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              <PostComposer
+                onSubmit={handleCreatePost}
+                placeholder="Add to the discussion..."
+                buttonText="Post"
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Posts */}
         <Box>
           {posts.length === 0 ? (
@@ -561,13 +968,6 @@ const DiscussionDetail: React.FC = () => {
             )
           )}
         </Box>
-
-        {/* New post composer */}
-        <PostComposer
-          onSubmit={handleCreatePost}
-          placeholder="Add to the discussion..."
-          buttonText="Post"
-        />
       </Box>
     </Container>
   );
