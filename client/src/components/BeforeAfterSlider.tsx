@@ -122,7 +122,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           top: 0,
           left: 0,
           clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
-          transition: "clip-path 0.1s",
         }}
       />
 
