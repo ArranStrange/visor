@@ -26,6 +26,7 @@ import PublicProfile from "./pages/PublicProfile";
 import Discussions from "./pages/Discussions";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateDiscussion from "./pages/CreateDiscussion";
+import BuyMeACoffeeDemo from "./pages/BuyMeACoffeeDemo";
 
 function App() {
   return (
@@ -56,6 +57,10 @@ function App() {
                 <Route
                   path="/discussions/:discussionId"
                   element={<DiscussionDetail />}
+                />
+                <Route
+                  path="/buy-me-a-coffee-demo"
+                  element={<BuyMeACoffeeDemo />}
                 />
                 <Route path="*" element={<NotFound />} />
               </Routes>

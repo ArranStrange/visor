@@ -8,6 +8,7 @@ import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 import PresetCard from "./PresetCard";
 import FilmSimCard from "./FilmSimCard";
+import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import StaggeredGrid from "./StaggeredGrid";
 
 interface ContentGridLoaderProps {
@@ -29,6 +30,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 }) => {
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const { randomizeOrder } = useContentType();
 
@@ -60,7 +62,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       return customData;
     }
 
-    const results: { type: "preset" | "film"; data: any }[] = [];
+    const results: { type: "preset" | "film" | "buymeacoffee"; data: any }[] =
+      [];
 
     if (
       (contentType === "all" || contentType === "presets") &&
@@ -95,12 +98,30 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       );
     }
 
+    // Add Buy Me a Coffee card at specific position
+    const buyMeACoffeeCard = {
+      type: "buymeacoffee" as const,
+      data: {
+        id: "buymeacoffee",
+        title: "Buy Me a Coffee",
+      },
+    };
+
+    // Always insert at position 0 (first card) to ensure it's on the top row
+    // This works regardless of mobile/desktop and ensures it stays in the first few positions even after shuffling
+    if (results.length > 0) {
+      results.splice(0, 0, buyMeACoffeeCard);
+    } else {
+      // If no other items, add to the beginning
+      results.unshift(buyMeACoffeeCard);
+    }
+
     return searchQuery
       ? results.filter((item) =>
           item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
         )
       : results;
-  }, [customData, contentType, presetData, filmSimData, searchQuery]);
+  }, [customData, contentType, presetData, filmSimData, searchQuery, isMobile]);
 
   // Reset visible items when data changes
   React.useEffect(() => {
@@ -114,6 +135,16 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   // Check if we have more items to load
   const hasMore = visibleItems < combined.length;
+
+  // Check if we're on mobile
+  React.useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.matchMedia("(hover: none)").matches);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   if (isError) {
     return (
@@ -141,6 +172,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       </React.Fragment>
     ) : item.type === "preset" ? (
       <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
+    ) : item.type === "buymeacoffee" ? (
+      <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
     ) : (
       <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
     )

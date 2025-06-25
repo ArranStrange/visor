@@ -13,24 +13,20 @@ const Discussions: React.FC = () => {
         {/* Header */}
         <Box
           display="flex"
-          alignItems="center"
+          alignItems={{ xs: "stretch", sm: "center" }}
+          flexDirection={{ xs: "column", sm: "row" }}
           justifyContent="space-between"
           mb={3}
+          gap={2}
         >
-          <Box>
-            <Typography variant="h3" component="h1" gutterBottom>
-              💬 Discussions
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Join the VISOR community conversation about presets, film
-              simulations, and photography
-            </Typography>
-          </Box>
-
           <Button
             variant="contained"
             startIcon={<AddIcon />}
             onClick={() => navigate("/discussions/new")}
+            sx={{
+              alignSelf: { xs: "flex-start", sm: "center" },
+              mt: { xs: 2, sm: 0 },
+            }}
           >
             Start Discussion
           </Button>

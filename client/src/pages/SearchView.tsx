@@ -86,7 +86,18 @@ const SearchView: React.FC = () => {
 
   // Filter data locally based on active tag
   const filteredData = useMemo(() => {
-    const results: { type: "preset" | "film"; data: any }[] = [];
+    const results: { type: "preset" | "film" | "buymeacoffee"; data: any }[] =
+      [];
+
+    // Add Buy Me a Coffee card at the beginning
+    const buyMeACoffeeCard = {
+      type: "buymeacoffee" as const,
+      data: {
+        id: "buymeacoffee",
+        title: "Buy Me a Coffee",
+      },
+    };
+    results.push(buyMeACoffeeCard);
 
     // Filter presets
     if (
