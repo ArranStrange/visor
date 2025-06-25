@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import { useQuery } from "@apollo/client";
 import { CircularProgress, Alert, Box } from "@mui/material";
 import { useContentType } from "../context/ContentTypeFilter";
@@ -18,6 +18,8 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
+const ITEMS_PER_PAGE = 10;
+
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
   filter,
@@ -25,6 +27,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   customData,
   renderItem,
 }) => {
+  const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
+
   const {
     data: presetData,
     loading: loadingPresets,
@@ -97,6 +101,19 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   const { randomizeOrder } = useContentType();
 
+  // Reset visible items when data changes
+  React.useEffect(() => {
+    setVisibleItems(ITEMS_PER_PAGE);
+  }, [combined.length]);
+
+  // Load more items when intersection observer triggers
+  const loadMore = useCallback(() => {
+    setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, combined.length));
+  }, [combined.length]);
+
+  // Check if we have more items to load
+  const hasMore = visibleItems < combined.length;
+
   if (isError) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
@@ -115,7 +132,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
-  const children = combined.map((item, index) =>
+  const visibleData = combined.slice(0, visibleItems);
+  const children = visibleData.map((item, index) =>
     renderItem ? (
       <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
         {renderItem(item.data)}
@@ -129,7 +147,13 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   return (
     <Box>
-      <StaggeredGrid randomizeOrder={randomizeOrder} loading={isLoading}>
+      <StaggeredGrid
+        randomizeOrder={randomizeOrder}
+        loading={false} // Disable skeleton loading
+        onLoadMore={loadMore}
+        hasMore={hasMore}
+        isLoading={isLoading}
+      >
         {children}
       </StaggeredGrid>
     </Box>

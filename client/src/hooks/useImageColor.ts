@@ -7,7 +7,10 @@ interface ColorData {
   count: number;
 }
 
-export const useImageColor = (imageUrl: string) => {
+// Global cache for analyzed images to avoid re-processing
+const colorCache = new Map<string, string>();
+
+export const useImageColor = (imageUrl: string | undefined) => {
   const [offWhiteColor, setOffWhiteColor] = useState<string>("#f8f8f8");
   const [imageDimensions, setImageDimensions] = useState<{
     width: number;
@@ -21,6 +24,13 @@ export const useImageColor = (imageUrl: string) => {
       // console.log("useImageColor: Using default color for placeholder");
       setOffWhiteColor("#f8f8f8");
       setImageDimensions(null);
+      return;
+    }
+
+    // Check cache first
+    const cachedColor = colorCache.get(imageUrl);
+    if (cachedColor) {
+      setOffWhiteColor(cachedColor);
       return;
     }
 
@@ -54,8 +64,8 @@ export const useImageColor = (imageUrl: string) => {
           // Store image dimensions
           setImageDimensions({ width: img.width, height: img.height });
 
-          // Set canvas size (we'll scale down for performance)
-          const scale = 0.1; // Analyze 10% of the image for performance
+          // Set canvas size (we'll scale down even more for performance)
+          const scale = 0.02; // Analyze only 2% of the image for much better performance
           canvas.width = img.width * scale;
           canvas.height = img.height * scale;
 
@@ -76,11 +86,11 @@ export const useImageColor = (imageUrl: string) => {
           // console.log("useImageColor: Image data length:", data.length);
 
           // Sample colors from the image
-          const colors: ColorData[] = [];
           const colorMap = new Map<string, ColorData>();
 
-          // Sample every 4th pixel for performance
-          for (let i = 0; i < data.length; i += 16) {
+          // Sample every 1000th pixel for maximum performance
+          for (let i = 0; i < data.length; i += 4000) {
+            // 1000 pixels * 4 channels (RGBA)
             const r = data[i];
             const g = data[i + 1];
             const b = data[i + 2];
@@ -89,10 +99,10 @@ export const useImageColor = (imageUrl: string) => {
             const brightness = (r + g + b) / 3;
             if (brightness < 30 || brightness > 225) continue;
 
-            // Quantize colors to reduce noise
-            const quantizedR = Math.floor(r / 32) * 32;
-            const quantizedG = Math.floor(g / 32) * 32;
-            const quantizedB = Math.floor(b / 32) * 32;
+            // More aggressive quantization for better performance
+            const quantizedR = Math.floor(r / 64) * 64;
+            const quantizedG = Math.floor(g / 64) * 64;
+            const quantizedB = Math.floor(b / 64) * 64;
 
             const key = `${quantizedR},${quantizedG},${quantizedB}`;
 
@@ -106,6 +116,9 @@ export const useImageColor = (imageUrl: string) => {
                 count: 1,
               });
             }
+
+            // Early termination if we have enough colors
+            if (colorMap.size >= 10) break;
           }
 
           // console.log("useImageColor: Found", colorMap.size, "unique colors");
@@ -113,13 +126,15 @@ export const useImageColor = (imageUrl: string) => {
           // Convert map to array and sort by frequency
           const sortedColors = Array.from(colorMap.values())
             .sort((a, b) => b.count - a.count)
-            .slice(0, 5); // Take top 5 most frequent colors
+            .slice(0, 3); // Take only top 3 most frequent colors
 
           // console.log("useImageColor: Top colors:", sortedColors);
 
           if (sortedColors.length === 0) {
             // console.log("useImageColor: No valid colors found, using default");
-            setOffWhiteColor("#f8f8f8");
+            const defaultColor = "#f8f8f8";
+            setOffWhiteColor(defaultColor);
+            colorCache.set(imageUrl, defaultColor);
             return;
           }
 
@@ -130,7 +145,7 @@ export const useImageColor = (imageUrl: string) => {
           let weightedB = 0;
 
           sortedColors.forEach((color, index) => {
-            const weight = color.count * (1 / (index + 1)); // Give more weight to more frequent colors
+            const weight = color.count * (1 / (index + 1));
             totalWeight += weight;
             weightedR += color.r * weight;
             weightedG += color.g * weight;
@@ -148,9 +163,8 @@ export const useImageColor = (imageUrl: string) => {
           // });
 
           // Create an off-white color influenced by the dominant colors
-          // Mix the dominant color with white (60% white, 40% dominant color) - subtle effect
-          const whiteInfluence = 0.6;
-          const dominantInfluence = 0.4;
+          const whiteInfluence = 0.7; // More white influence for subtlety
+          const dominantInfluence = 0.3;
 
           const finalR = Math.round(
             255 * whiteInfluence + avgR * dominantInfluence
@@ -165,26 +179,39 @@ export const useImageColor = (imageUrl: string) => {
           const offWhite = `rgb(${finalR}, ${finalG}, ${finalB})`;
           // console.log("useImageColor: Final off-white color:", offWhite);
           setOffWhiteColor(offWhite);
+
+          // Cache the result
+          colorCache.set(imageUrl, offWhite);
+
+          // Limit cache size to prevent memory leaks
+          if (colorCache.size > 50) {
+            const firstKey = colorCache.keys().next().value;
+            colorCache.delete(firstKey);
+          }
         };
 
         img.onerror = (error) => {
           console.error("useImageColor: Image load error:", error);
-          setOffWhiteColor("#f8f8f8");
+          const defaultColor = "#f8f8f8";
+          setOffWhiteColor(defaultColor);
+          colorCache.set(imageUrl, defaultColor);
           setImageDimensions(null);
         };
 
         img.src = imageUrl;
       } catch (error) {
         console.error("Error analyzing image color:", error);
-        setOffWhiteColor("#f8f8f8");
+        const defaultColor = "#f8f8f8";
+        setOffWhiteColor(defaultColor);
+        colorCache.set(imageUrl, defaultColor);
         setImageDimensions(null);
       } finally {
         setIsAnalyzing(false);
       }
     };
 
-    // Debounce the analysis to avoid excessive processing
-    const timeoutId = setTimeout(analyzeImage, 100);
+    // Increased debounce time to reduce processing frequency
+    const timeoutId = setTimeout(analyzeImage, 300);
 
     return () => {
       clearTimeout(timeoutId);

@@ -62,6 +62,19 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
 
   // Get dynamic off-white color based on image
   const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
+  const [showColor, setShowColor] = React.useState(false);
+
+  // Show color with a delay after analysis completes
+  React.useEffect(() => {
+    if (!isAnalyzing && offWhiteColor) {
+      const timer = setTimeout(() => {
+        setShowColor(true);
+      }, 500); // 500ms delay after analysis completes
+      return () => clearTimeout(timer);
+    } else {
+      setShowColor(false);
+    }
+  }, [isAnalyzing, offWhiteColor]);
 
   // Debug logging
   // React.useEffect(() => {
@@ -253,9 +266,10 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           variant="h5"
           fontWeight="bold"
           sx={{
-            color: offWhiteColor,
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
+            transition: "color 0.8s ease-in-out",
           }}
         >
           {name}
@@ -263,9 +277,10 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: offWhiteColor,
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
+            transition: "color 0.8s ease-in-out",
           }}
         >
           Film Sim

@@ -1,5 +1,11 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Skeleton } from "@mui/material";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
+import { Box, CircularProgress } from "@mui/material";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -8,78 +14,11 @@ interface StaggeredGridProps {
   minWidth?: number; // min width of card in px (e.g., 250)
   gap?: number; // gap between cards in px (e.g., 16)
   randomizeOrder?: boolean; // whether to randomize the order of items
-  loading?: boolean; // whether to show loading skeletons
+  loading?: boolean; // whether to show loading skeletons (deprecated)
+  onLoadMore?: () => void; // callback to load more items
+  hasMore?: boolean; // whether there are more items to load
+  isLoading?: boolean; // whether more items are being loaded
 }
-
-// Skeleton Card Component
-const SkeletonCard: React.FC = () => (
-  <Box
-    sx={{
-      backgroundColor: "background.paper",
-      borderRadius: 3,
-      overflow: "hidden",
-      boxShadow: "0 2px 12px rgba(0,0,0,0.25)",
-      animation: "pulse 2s ease-in-out infinite",
-      "@keyframes pulse": {
-        "0%": {
-          opacity: 0.7,
-        },
-        "50%": {
-          opacity: 1,
-        },
-        "100%": {
-          opacity: 0.7,
-        },
-      },
-    }}
-  >
-    <Skeleton
-      variant="rectangular"
-      height={180}
-      sx={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-    />
-    <Box sx={{ p: 2 }}>
-      <Skeleton
-        variant="text"
-        width="80%"
-        height={24}
-        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 1 }}
-      />
-      <Skeleton
-        variant="text"
-        width="100%"
-        height={16}
-        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 1 }}
-      />
-      <Skeleton
-        variant="text"
-        width="60%"
-        height={16}
-        sx={{ backgroundColor: "rgba(255,255,255,0.1)", mb: 2 }}
-      />
-      <Box sx={{ display: "flex", gap: 1 }}>
-        <Skeleton
-          variant="rectangular"
-          width={60}
-          height={24}
-          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={50}
-          height={24}
-          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
-        />
-        <Skeleton
-          variant="rectangular"
-          width={70}
-          height={24}
-          sx={{ borderRadius: 1, backgroundColor: "rgba(255,255,255,0.1)" }}
-        />
-      </Box>
-    </Box>
-  </Box>
-);
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
@@ -87,44 +26,92 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   gap = 16,
   randomizeOrder = true,
   loading = false,
+  onLoadMore,
+  hasMore = false,
+  isLoading = false,
 }) => {
   const { ref: triggerRef, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
+  const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
+    threshold: 0.1,
+    rootMargin: "100px", // Start loading 100px before reaching the bottom
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
-  const [columns, setColumns] = useState<number[][]>([[]]);
   const [columnCount, setColumnCount] = useState(3);
+
+  // Memoize the column count calculation
+  const calculateColumnCount = useCallback(
+    (containerWidth: number) => {
+      if (containerWidth < 768) {
+        // Small screens: minimum 2 columns
+        const calculatedColumns = Math.max(
+          2,
+          Math.floor((containerWidth + gap) / (minWidth + gap))
+        );
+        return Math.min(calculatedColumns, 3); // Cap at 3 for small screens
+      } else if (containerWidth < 1200) {
+        // Medium screens (laptops): minimum 3 columns
+        const calculatedColumns = Math.max(
+          3,
+          Math.floor((containerWidth + gap) / (minWidth + gap))
+        );
+        return Math.min(calculatedColumns, 4); // Cap at 4 for medium screens
+      } else {
+        // Large screens: minimum 4 columns
+        const calculatedColumns = Math.max(
+          4,
+          Math.floor((containerWidth + gap) / (minWidth + gap))
+        );
+        return calculatedColumns;
+      }
+    },
+    [minWidth, gap]
+  );
+
+  // Optimized resize handler with debouncing
+  const updateColumns = useCallback(() => {
+    if (!containerRef.current) return;
+
+    const containerWidth = containerRef.current.offsetWidth;
+    const newColumnCount = calculateColumnCount(containerWidth);
+
+    if (newColumnCount !== columnCount) {
+      setColumnCount(newColumnCount);
+    }
+  }, [calculateColumnCount, columnCount]);
 
   // Calculate number of columns based on container width
   useEffect(() => {
-    if (!containerRef.current) return;
+    updateColumns();
 
-    const updateColumns = () => {
-      const containerWidth = containerRef.current?.offsetWidth || 0;
-      // On mobile (smaller than 768px), always use 2 columns
-      if (containerWidth < 768) {
-        setColumnCount(2);
-      } else {
-        const newColumnCount = Math.max(
-          1,
-          Math.floor((containerWidth + gap) / (minWidth + gap))
-        );
-        setColumnCount(newColumnCount);
-      }
+    let timeoutId: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(updateColumns, 100); // Debounce resize events
     };
 
-    updateColumns();
-    window.addEventListener("resize", updateColumns);
-    return () => window.removeEventListener("resize", updateColumns);
-  }, [minWidth, gap]);
+    window.addEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timeoutId);
+    };
+  }, [updateColumns]);
 
-  // Distribute items into columns
+  // Load more items when intersection observer triggers
   useEffect(() => {
+    if (loadMoreInView && hasMore && !isLoading && onLoadMore) {
+      onLoadMore();
+    }
+  }, [loadMoreInView, hasMore, isLoading, onLoadMore]);
+
+  // Memoize column distribution to avoid recalculation on every render
+  const columns = useMemo(() => {
     if (!children.length) {
-      setColumns([[]]);
-      return;
+      return Array.from({ length: columnCount }, () => []);
     }
 
     // Create array of indices
@@ -132,6 +119,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
     // Shuffle the indices if randomizeOrder is true
     if (randomizeOrder) {
+      // Use a more efficient shuffle algorithm
       for (let i = itemIndices.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [itemIndices[i], itemIndices[j]] = [itemIndices[j], itemIndices[i]];
@@ -143,26 +131,18 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       () => []
     );
 
-    // Distribute items to shortest column
-    itemIndices.forEach((itemIndex) => {
-      // Find the shortest column
-      const shortestColumn = newColumns.reduce(
-        (shortest, current, i) =>
-          current.length < newColumns[shortest].length ? i : shortest,
-        0
-      );
-      newColumns[shortestColumn].push(itemIndex);
+    // Optimized distribution: use modulo for better performance
+    itemIndices.forEach((itemIndex, index) => {
+      const columnIndex = index % columnCount;
+      newColumns[columnIndex].push(itemIndex);
     });
 
-    setColumns(newColumns);
-  }, [children, columnCount, randomizeOrder]);
+    return newColumns;
+  }, [children.length, columnCount, randomizeOrder]);
 
   if (!children.length && !loading) {
     return null;
   }
-
-  // When loading, render nothing (no skeletons)
-  const displayItems = loading ? [] : children;
 
   return (
     <Box>
@@ -198,9 +178,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                           y: 0,
                           scale: 1,
                           transition: {
-                            delay: loading
-                              ? 0.05 * itemIndex
-                              : 0.02 * itemIndex,
+                            delay: 0.02 * itemIndex,
                             duration: 0.6,
                             ease: [0.25, 0.46, 0.45, 0.94], // Custom easing
                           },
@@ -210,13 +188,31 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                   exit={{ opacity: 0, y: -20, scale: 0.95 }}
                   style={{ width: "100%" }} // Ensure motion.div takes full width
                 >
-                  {displayItems[itemIndex]}
+                  {children[itemIndex]}
                 </motion.div>
               ))}
             </Box>
           ))}
         </AnimatePresence>
       </Box>
+
+      {/* Load More Trigger */}
+      {hasMore && (
+        <Box
+          ref={loadMoreRef}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            py: 4,
+            mt: 2,
+          }}
+        >
+          {isLoading && (
+            <CircularProgress size={24} sx={{ color: "text.secondary" }} />
+          )}
+        </Box>
+      )}
     </Box>
   );
 };

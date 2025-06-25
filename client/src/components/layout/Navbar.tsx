@@ -15,12 +15,10 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
-import NotificationPanel from "./NotificationPanel";
 import UploadIcon from "@mui/icons-material/CloudUpload";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
 import ForumIcon from "@mui/icons-material/Forum";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import { useAuth } from "../../context/AuthContext";
@@ -73,15 +71,6 @@ const NavBar: React.FC = () => {
         navigate("/discussions");
       },
     },
-    {
-      text: "Notifications",
-      icon: <NotificationsIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate("/notifications");
-      },
-      divider: true,
-    },
   ];
 
   return (
@@ -112,12 +101,9 @@ const NavBar: React.FC = () => {
             <SearchIcon />
           </IconButton>
           {isAuthenticated && (
-            <>
-              <NotificationPanel />
-              <IconButton onClick={() => navigate("/upload")} color="inherit">
-                <UploadIcon />
-              </IconButton>
-            </>
+            <IconButton onClick={() => navigate("/upload")} color="inherit">
+              <UploadIcon />
+            </IconButton>
           )}
 
           {isAuthenticated && user ? (
