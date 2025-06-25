@@ -5,10 +5,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:prod": "vite build --mode production",
     "preview": "vite preview",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
-    "deploy": "npm run build && firebase deploy --only hosting"
+    "deploy": "npm run build:prod && firebase deploy --only hosting"
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
