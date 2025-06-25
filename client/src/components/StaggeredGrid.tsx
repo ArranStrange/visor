@@ -52,7 +52,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           2,
           Math.floor((containerWidth + gap) / (minWidth + gap))
         );
-        return Math.min(calculatedColumns, 3); // Cap at 3 for small screens
+        return Math.min(calculatedColumns, 4); // Cap at 3 for small screens
       } else if (containerWidth < 1200) {
         // Medium screens (laptops): minimum 3 columns
         const calculatedColumns = Math.max(
