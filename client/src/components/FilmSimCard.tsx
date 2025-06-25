@@ -64,14 +64,14 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
 
   // Debug logging
-  React.useEffect(() => {
-    console.log("FilmSimCard:", {
-      name,
-      thumbnail,
-      offWhiteColor,
-      isAnalyzing,
-    });
-  }, [name, thumbnail, offWhiteColor, isAnalyzing]);
+  // React.useEffect(() => {
+  //   console.log("FilmSimCard:", {
+  //     name,
+  //     thumbnail,
+  //     offWhiteColor,
+  //     isAnalyzing,
+  //   });
+  // }, [name, thumbnail, offWhiteColor, isAnalyzing]);
 
   // Check if we're on mobile
   React.useEffect(() => {

@@ -18,13 +18,13 @@ export const useImageColor = (imageUrl: string) => {
 
   useEffect(() => {
     if (!imageUrl || imageUrl === "/placeholder-image.jpg") {
-      console.log("useImageColor: Using default color for placeholder");
+      // console.log("useImageColor: Using default color for placeholder");
       setOffWhiteColor("#f8f8f8");
       setImageDimensions(null);
       return;
     }
 
-    console.log("useImageColor: Analyzing image:", imageUrl);
+    // console.log("useImageColor: Analyzing image:", imageUrl);
 
     const analyzeImage = async () => {
       setIsAnalyzing(true);
@@ -34,7 +34,7 @@ export const useImageColor = (imageUrl: string) => {
         const ctx = canvas.getContext("2d");
 
         if (!ctx) {
-          console.log("useImageColor: No canvas context available");
+          // console.log("useImageColor: No canvas context available");
           setOffWhiteColor("#f8f8f8");
           setImageDimensions(null);
           return;
@@ -44,12 +44,12 @@ export const useImageColor = (imageUrl: string) => {
         img.crossOrigin = "anonymous";
 
         img.onload = () => {
-          console.log(
-            "useImageColor: Image loaded, dimensions:",
-            img.width,
-            "x",
-            img.height
-          );
+          // console.log(
+          //   "useImageColor: Image loaded, dimensions:",
+          //   img.width,
+          //   "x",
+          //   img.height
+          // );
 
           // Store image dimensions
           setImageDimensions({ width: img.width, height: img.height });
@@ -59,12 +59,12 @@ export const useImageColor = (imageUrl: string) => {
           canvas.width = img.width * scale;
           canvas.height = img.height * scale;
 
-          console.log(
-            "useImageColor: Canvas size:",
-            canvas.width,
-            "x",
-            canvas.height
-          );
+          // console.log(
+          //   "useImageColor: Canvas size:",
+          //   canvas.width,
+          //   "x",
+          //   canvas.height
+          // );
 
           // Draw the image to canvas
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -73,7 +73,7 @@ export const useImageColor = (imageUrl: string) => {
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const data = imageData.data;
 
-          console.log("useImageColor: Image data length:", data.length);
+          // console.log("useImageColor: Image data length:", data.length);
 
           // Sample colors from the image
           const colors: ColorData[] = [];
@@ -108,17 +108,17 @@ export const useImageColor = (imageUrl: string) => {
             }
           }
 
-          console.log("useImageColor: Found", colorMap.size, "unique colors");
+          // console.log("useImageColor: Found", colorMap.size, "unique colors");
 
           // Convert map to array and sort by frequency
           const sortedColors = Array.from(colorMap.values())
             .sort((a, b) => b.count - a.count)
             .slice(0, 5); // Take top 5 most frequent colors
 
-          console.log("useImageColor: Top colors:", sortedColors);
+          // console.log("useImageColor: Top colors:", sortedColors);
 
           if (sortedColors.length === 0) {
-            console.log("useImageColor: No valid colors found, using default");
+            // console.log("useImageColor: No valid colors found, using default");
             setOffWhiteColor("#f8f8f8");
             return;
           }
@@ -141,11 +141,11 @@ export const useImageColor = (imageUrl: string) => {
           const avgG = Math.round(weightedG / totalWeight);
           const avgB = Math.round(weightedB / totalWeight);
 
-          console.log("useImageColor: Average dominant color:", {
-            r: avgR,
-            g: avgG,
-            b: avgB,
-          });
+          // console.log("useImageColor: Average dominant color:", {
+          //   r: avgR,
+          //   g: avgG,
+          //   b: avgB,
+          // });
 
           // Create an off-white color influenced by the dominant colors
           // Mix the dominant color with white (60% white, 40% dominant color) - subtle effect
@@ -163,7 +163,7 @@ export const useImageColor = (imageUrl: string) => {
           );
 
           const offWhite = `rgb(${finalR}, ${finalG}, ${finalB})`;
-          console.log("useImageColor: Final off-white color:", offWhite);
+          // console.log("useImageColor: Final off-white color:", offWhite);
           setOffWhiteColor(offWhite);
         };
 

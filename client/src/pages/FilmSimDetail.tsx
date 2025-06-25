@@ -33,7 +33,7 @@ import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
 import PresetCard from "../components/PresetCard";
 import AddToListButton from "../components/AddToListButton";
-import CommentSection from "../components/CommentSection";
+import DiscussionThread from "../components/discussions/DiscussionThread";
 import { useAuth } from "../context/AuthContext";
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -537,96 +537,18 @@ const FilmSimDetails: React.FC = () => {
         </Accordion>
       </Box>
 
-      {/* Comments Section */}
+      {/* Discussion Thread */}
       <Divider sx={{ my: 4 }} />
-      <CommentSection
-        comments={allComments.map((comment: any) => ({
-          id: comment.id,
-          username: comment.author?.username || "Anonymous",
-          avatarUrl: comment.author?.avatar || undefined,
-          content: comment.content,
-          timestamp: comment.createdAt
-            ? new Date(comment.createdAt).toLocaleString()
-            : "",
-        }))}
+      <DiscussionThread
+        itemId={filmSim.id}
+        itemType="filmsim"
+        itemTitle={filmSim.name}
+        itemSlug={filmSim.slug}
+        itemThumbnail={filmSim.thumbnail}
+        isEmbedded={true}
+        showPreviewOnly={true}
+        minimalHeader={true}
       />
-      {/* Add Comment Form */}
-      <Box
-        component="form"
-        onSubmit={handleAddComment}
-        sx={{
-          display: "flex",
-          alignItems: "space-around",
-          gap: 2,
-          mt: 2,
-          p: 2,
-          borderRadius: 2,
-          bgcolor: "background.paper",
-          boxShadow: 1,
-          maxWidth: "750px",
-        }}
-      >
-        <Box
-          component="img"
-          src={currentUser?.avatar}
-          alt={currentUser?.username}
-          sx={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-          }}
-        />
-        <Box sx={{ flex: 1 }}>
-          <Box
-            sx={{
-              display: "flex",
-              gap: 1,
-              alignItems: "center",
-            }}
-          >
-            <input
-              type="text"
-              placeholder={
-                currentUser ? "Add a comment..." : "Log in to comment"
-              }
-              value={commentInput}
-              onChange={(e) => setCommentInput(e.target.value)}
-              style={{
-                flex: 1,
-                padding: "10px 14px",
-                borderRadius: 8,
-                border: "1.5px solid white",
-                fontSize: 16,
-                width: "100%",
-                maxWidth: "750px",
-                background: "#181818",
-                color: "#fff",
-                outline: "none",
-                transition: "border 0.2s",
-              }}
-              disabled={!currentUser || creatingComment}
-            />
-            <button
-              type="submit"
-              style={{
-                padding: "10px 20px",
-                borderRadius: 8,
-                border: "1.5px solid white",
-                background: "#181818",
-                color: "#fff",
-                fontWeight: 600,
-                cursor:
-                  !currentUser || creatingComment ? "not-allowed" : "pointer",
-                opacity: !currentUser || creatingComment ? 0.7 : 1,
-                transition: "background 0.2s",
-              }}
-              disabled={!currentUser || creatingComment || !commentInput.trim()}
-            >
-              {creatingComment ? "Posting..." : "Post"}
-            </button>
-          </Box>
-        </Box>
-      </Box>
 
       {/* Edit Dialog */}
       <Dialog

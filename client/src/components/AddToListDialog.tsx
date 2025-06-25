@@ -75,7 +75,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  console.log("AddToListDialog - Current user:", currentUser);
+  // console.log("AddToListDialog - Current user:", currentUser);
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -93,7 +93,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 
   const [addToList] = useMutation(ADD_TO_LIST, {
     onCompleted: (data) => {
-      console.log("Mutation completed successfully:", data);
+      // console.log("Mutation completed successfully:", data);
       setSuccess("Added to list successfully!");
       // Refetch the lists to get updated data
       refetch();
@@ -117,12 +117,12 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 
   const handleAddToList = async (listId: string) => {
     try {
-      console.log("Adding to list with params:", {
-        listId,
-        presetId: presetId || null,
-        filmSimId: filmSimId || null,
-        currentUser: currentUser,
-      });
+      // console.log("Adding to list with params:", {
+      //   listId,
+      //   presetId: presetId || null,
+      //   filmSimId: filmSimId || null,
+      //   currentUser: currentUser,
+      // });
 
       // Validate that we have at least one item to add
       if (!presetId && !filmSimId) {
@@ -147,7 +147,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
         },
       });
 
-      console.log("Mutation result:", result);
+      // console.log("Mutation result:", result);
     } catch (err) {
       console.error("Error adding to list:", err);
       setError(err instanceof Error ? err.message : "Failed to add to list");
