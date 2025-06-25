@@ -33,6 +33,18 @@ import {
   Schedule as ScheduleIcon,
   ThumbUp as LikeIcon,
   Chat as ChatIcon,
+  School as TechniqueIcon,
+  Build as EquipmentIcon,
+  LocationOn as LocationIcon,
+  MenuBook as TutorialIcon,
+  Star as ReviewIcon,
+  EmojiEvents as ChallengeIcon,
+  Timeline as WorkflowIcon,
+  Lightbulb as InspirationIcon,
+  RateReview as CritiqueIcon,
+  Article as NewsIcon,
+  Event as EventIcon,
+  Forum as GeneralIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useQuery, useMutation } from "@apollo/client";
@@ -325,7 +337,8 @@ const DiscussionList: React.FC = () => {
   };
 
   const getItemTitle = (linkedTo: any): string => {
-    if (!linkedTo) return "Linked item";
+    if (!linkedTo || !linkedTo.refId)
+      return getDiscussionTypeLabel(linkedTo?.type || "GENERAL");
 
     try {
       if (linkedTo.type === "PRESET" && linkedTo.preset) {
@@ -337,7 +350,77 @@ const DiscussionList: React.FC = () => {
       console.error("Error getting item title:", error);
     }
 
-    return "Linked item";
+    return getDiscussionTypeLabel(linkedTo?.type || "GENERAL");
+  };
+
+  const getDiscussionTypeIcon = (type: string) => {
+    switch (type) {
+      case "PRESET":
+        return <PresetIcon />;
+      case "FILMSIM":
+        return <CameraIcon />;
+      case "TECHNIQUE":
+        return <TechniqueIcon />;
+      case "EQUIPMENT":
+        return <EquipmentIcon />;
+      case "LOCATION":
+        return <LocationIcon />;
+      case "TUTORIAL":
+        return <TutorialIcon />;
+      case "REVIEW":
+        return <ReviewIcon />;
+      case "CHALLENGE":
+        return <ChallengeIcon />;
+      case "WORKFLOW":
+        return <WorkflowIcon />;
+      case "INSPIRATION":
+        return <InspirationIcon />;
+      case "CRITIQUE":
+        return <CritiqueIcon />;
+      case "NEWS":
+        return <NewsIcon />;
+      case "EVENT":
+        return <EventIcon />;
+      case "GENERAL":
+        return <GeneralIcon />;
+      default:
+        return <GeneralIcon />;
+    }
+  };
+
+  const getDiscussionTypeLabel = (type: string) => {
+    switch (type) {
+      case "PRESET":
+        return "Preset";
+      case "FILMSIM":
+        return "Film Simulation";
+      case "TECHNIQUE":
+        return "Technique";
+      case "EQUIPMENT":
+        return "Equipment";
+      case "LOCATION":
+        return "Location";
+      case "TUTORIAL":
+        return "Tutorial";
+      case "REVIEW":
+        return "Review";
+      case "CHALLENGE":
+        return "Challenge";
+      case "WORKFLOW":
+        return "Workflow";
+      case "INSPIRATION":
+        return "Inspiration";
+      case "CRITIQUE":
+        return "Critique";
+      case "NEWS":
+        return "News";
+      case "EVENT":
+        return "Event";
+      case "GENERAL":
+        return "General";
+      default:
+        return type;
+    }
   };
 
   // Debug logging for discussions data
@@ -454,6 +537,20 @@ const DiscussionList: React.FC = () => {
                   <MenuItem value="all">All discussions</MenuItem>
                   <MenuItem value="PRESET">Preset discussions</MenuItem>
                   <MenuItem value="FILMSIM">Film sim discussions</MenuItem>
+                  <MenuItem value="TECHNIQUE">Technique discussions</MenuItem>
+                  <MenuItem value="EQUIPMENT">Equipment discussions</MenuItem>
+                  <MenuItem value="LOCATION">Location discussions</MenuItem>
+                  <MenuItem value="TUTORIAL">Tutorial discussions</MenuItem>
+                  <MenuItem value="REVIEW">Review discussions</MenuItem>
+                  <MenuItem value="CHALLENGE">Challenge discussions</MenuItem>
+                  <MenuItem value="WORKFLOW">Workflow discussions</MenuItem>
+                  <MenuItem value="INSPIRATION">
+                    Inspiration discussions
+                  </MenuItem>
+                  <MenuItem value="CRITIQUE">Critique discussions</MenuItem>
+                  <MenuItem value="NEWS">News discussions</MenuItem>
+                  <MenuItem value="EVENT">Event discussions</MenuItem>
+                  <MenuItem value="GENERAL">General discussions</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -576,7 +673,33 @@ const DiscussionList: React.FC = () => {
                             >
                               {discussion.linkedTo.type === "PRESET"
                                 ? "P"
-                                : "F"}
+                                : discussion.linkedTo.type === "FILMSIM"
+                                ? "F"
+                                : discussion.linkedTo.type === "TECHNIQUE"
+                                ? "T"
+                                : discussion.linkedTo.type === "EQUIPMENT"
+                                ? "E"
+                                : discussion.linkedTo.type === "LOCATION"
+                                ? "L"
+                                : discussion.linkedTo.type === "TUTORIAL"
+                                ? "TU"
+                                : discussion.linkedTo.type === "REVIEW"
+                                ? "R"
+                                : discussion.linkedTo.type === "CHALLENGE"
+                                ? "C"
+                                : discussion.linkedTo.type === "WORKFLOW"
+                                ? "W"
+                                : discussion.linkedTo.type === "INSPIRATION"
+                                ? "I"
+                                : discussion.linkedTo.type === "CRITIQUE"
+                                ? "CR"
+                                : discussion.linkedTo.type === "NEWS"
+                                ? "N"
+                                : discussion.linkedTo.type === "EVENT"
+                                ? "EV"
+                                : discussion.linkedTo.type === "GENERAL"
+                                ? "G"
+                                : "?"}
                             </Box>
                           );
                         }
@@ -619,24 +742,34 @@ const DiscussionList: React.FC = () => {
                     {discussion.linkedTo && (
                       <Box display="flex" alignItems="center" gap={1} mb={1}>
                         <Chip
-                          icon={
-                            discussion.linkedTo.type === "PRESET" ? (
-                              <PresetIcon />
-                            ) : (
-                              <CameraIcon />
-                            )
-                          }
-                          label={getItemTitle(discussion.linkedTo)}
+                          icon={getDiscussionTypeIcon(discussion.linkedTo.type)}
+                          label={getDiscussionTypeLabel(
+                            discussion.linkedTo.type
+                          )}
                           size="small"
                           variant="outlined"
                           onClick={() => {
-                            const path =
-                              discussion.linkedTo.type === "PRESET"
-                                ? `/preset/${discussion.linkedTo.preset?.slug}`
-                                : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
-                            navigate(path);
+                            // Only navigate if there's a specific item linked
+                            if (discussion.linkedTo.refId) {
+                              const path =
+                                discussion.linkedTo.type === "PRESET" &&
+                                discussion.linkedTo.preset?.slug
+                                  ? `/preset/${discussion.linkedTo.preset.slug}`
+                                  : discussion.linkedTo.type === "FILMSIM" &&
+                                    discussion.linkedTo.filmSim?.slug
+                                  ? `/filmsim/${discussion.linkedTo.filmSim.slug}`
+                                  : null;
+                              if (path) {
+                                navigate(path);
+                              }
+                            }
                           }}
-                          sx={{ cursor: "pointer" }}
+                          sx={{
+                            cursor: discussion.linkedTo.refId
+                              ? "pointer"
+                              : "default",
+                            opacity: discussion.linkedTo.refId ? 1 : 0.7,
+                          }}
                         />
                       </Box>
                     )}

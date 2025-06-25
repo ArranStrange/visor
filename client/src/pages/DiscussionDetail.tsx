@@ -41,6 +41,11 @@ const DiscussionDetail: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  // Debug logging - commented out to reduce console noise
+  // console.log("DiscussionDetail - discussionId:", discussionId);
+  // console.log("DiscussionDetail - discussionId type:", typeof discussionId);
+  // console.log("DiscussionDetail - discussionId is valid:", discussionId && discussionId !== "new");
+
   const {
     loading: discussionLoading,
     error: discussionError,
@@ -48,7 +53,7 @@ const DiscussionDetail: React.FC = () => {
     refetch: refetchDiscussion,
   } = useQuery(GET_DISCUSSION, {
     variables: { id: discussionId! },
-    skip: !discussionId,
+    skip: !discussionId || discussionId === "new",
   });
 
   const discussion = discussionData?.getDiscussion;
@@ -65,12 +70,12 @@ const DiscussionDetail: React.FC = () => {
       page: 1,
       limit: 20,
     },
-    skip: !discussionId,
+    skip: !discussionId || discussionId === "new",
   });
 
   const posts = postsData?.getPosts?.posts || [];
 
-  // Debug posts data
+  // Debug posts data - commented out to reduce console noise
   // console.log("Posts query data:", postsData);
   // console.log("Posts array:", posts);
   // console.log("Posts count:", posts.length);

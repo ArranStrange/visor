@@ -180,21 +180,21 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const postsLoading = topLevelLoading || loadingReplies;
   const postsError = topLevelError;
 
-  // Debug posts data
-  console.log("DiscussionThread - Posts query data:", topLevelPostsData);
-  console.log("DiscussionThread - Posts array:", posts);
-  console.log("DiscussionThread - Posts count:", posts.length);
+  // Debug posts data - commented out to reduce console noise
+  // console.log("DiscussionThread - Posts query data:", topLevelPostsData);
+  // console.log("DiscussionThread - Posts array:", posts);
+  // console.log("DiscussionThread - Posts count:", posts.length);
 
-  // Log individual posts to see their structure
-  posts.forEach((post: any, index: number) => {
-    console.log(`DiscussionThread - Post ${index}:`, {
-      id: post.id,
-      parentId: post.parentId,
-      content: post.content,
-      author: post.author?.username || post.author,
-      discussionId: post.discussionId,
-    });
-  });
+  // Log individual posts to see their structure - commented out to reduce console noise
+  // posts.forEach((post: any, index: number) => {
+  //   console.log(`DiscussionThread - Post ${index}:`, {
+  //     id: post.id,
+  //     parentId: post.parentId,
+  //     content: post.content,
+  //     author: post.author?.username || post.author,
+  //     discussionId: post.discussionId,
+  //   });
+  // });
 
   const [followDiscussion] = useMutation(FOLLOW_DISCUSSION, {
     refetchQueries: [
