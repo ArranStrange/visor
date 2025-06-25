@@ -547,6 +547,7 @@ const FilmSimDetails: React.FC = () => {
         itemThumbnail={filmSim.thumbnail}
         isEmbedded={true}
         showPreviewOnly={true}
+        minimalHeader={true}
       />
 
       {/* Edit Dialog */}

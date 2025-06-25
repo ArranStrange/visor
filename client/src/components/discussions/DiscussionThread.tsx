@@ -53,6 +53,7 @@ interface DiscussionThreadProps {
   itemThumbnail?: string;
   isEmbedded?: boolean;
   showPreviewOnly?: boolean;
+  minimalHeader?: boolean;
 }
 
 const DiscussionThread: React.FC<DiscussionThreadProps> = ({
@@ -63,6 +64,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   itemThumbnail,
   isEmbedded = true,
   showPreviewOnly = false,
+  minimalHeader = false,
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -1044,19 +1046,16 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       {/* Discussion Header - matching DiscussionDetail layout */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Box display="flex" alignItems="flex-start" gap={2}>
-            <Avatar
-              src={discussion.createdBy.avatar}
-              sx={{ width: 50, height: 50, mt: 0.5 }}
+          {minimalHeader ? (
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
             >
-              {discussion.createdBy.username.charAt(0).toUpperCase()}
-            </Avatar>
-            <Box flex={1}>
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
-                <Typography variant="h4" component="h1" sx={{ flex: 1 }}>
-                  {discussion.title}
-                </Typography>
-
+              <Typography variant="h6" gutterBottom>
+                Discussions
+              </Typography>
+              <Box display="flex" alignItems="center" gap={1}>
                 {/* Follow button */}
                 <Tooltip
                   title={isUserFollowing(discussion) ? "Unfollow" : "Follow"}
@@ -1085,75 +1084,121 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                   </Button>
                 )}
               </Box>
+            </Box>
+          ) : (
+            <Box display="flex" alignItems="flex-start" gap={2}>
+              <Avatar
+                src={discussion.createdBy.avatar}
+                sx={{ width: 50, height: 50, mt: 0.5 }}
+              >
+                {discussion.createdBy.username.charAt(0).toUpperCase()}
+              </Avatar>
+              <Box flex={1}>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <Typography variant="h4" component="h1" sx={{ flex: 1 }}>
+                    {discussion.title}
+                  </Typography>
 
-              {/* Linked item */}
-              {discussion.linkedTo && (
-                <Box display="flex" gap={1} mb={2}>
-                  <Chip
-                    icon={
-                      discussion.linkedTo.type === "PRESET" ? (
-                        <PresetIcon />
+                  {/* Follow button */}
+                  <Tooltip
+                    title={isUserFollowing(discussion) ? "Unfollow" : "Follow"}
+                  >
+                    <IconButton
+                      size="small"
+                      onClick={handleFollow}
+                      color={
+                        isUserFollowing(discussion) ? "primary" : "default"
+                      }
+                    >
+                      {isUserFollowing(discussion) ? (
+                        <BookmarkIcon />
                       ) : (
-                        <CameraIcon />
-                      )
-                    }
-                    label={
-                      discussion.linkedTo.preset?.title ||
-                      discussion.linkedTo.filmSim?.name
-                    }
-                    size="small"
-                    variant="outlined"
-                    onClick={() => {
-                      const path =
-                        discussion.linkedTo.type === "PRESET"
-                          ? `/preset/${discussion.linkedTo.preset?.slug}`
-                          : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
-                      navigate(path);
-                    }}
-                    sx={{ cursor: "pointer" }}
-                  />
-                </Box>
-              )}
+                        <BookmarkBorderIcon />
+                      )}
+                    </IconButton>
+                  </Tooltip>
 
-              {/* Tags */}
-              {discussion.tags.length > 0 && (
-                <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
-                  {discussion.tags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
+                  {/* View full thread button */}
+                  {isEmbedded && (
+                    <Button
                       size="small"
                       variant="outlined"
-                      sx={{ fontSize: "0.7rem" }}
-                    />
-                  ))}
+                      onClick={() => navigate(`/discussions/${discussion.id}`)}
+                    >
+                      View Full Thread
+                    </Button>
+                  )}
                 </Box>
-              )}
 
-              <Box
-                display="flex"
-                justifyContent="space-between"
-                alignItems="center"
-              >
-                <Typography variant="caption" color="text.secondary">
-                  by {discussion.createdBy.username}
-                  {" • "}
-                  {formatDate(discussion.createdAt)}
-                </Typography>
-                <Box display="flex" gap={1}>
+                {/* Linked item */}
+                {discussion.linkedTo && (
+                  <Box display="flex" gap={1} mb={2}>
+                    <Chip
+                      icon={
+                        discussion.linkedTo.type === "PRESET" ? (
+                          <PresetIcon />
+                        ) : (
+                          <CameraIcon />
+                        )
+                      }
+                      label={
+                        discussion.linkedTo.preset?.title ||
+                        discussion.linkedTo.filmSim?.name
+                      }
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        const path =
+                          discussion.linkedTo.type === "PRESET"
+                            ? `/preset/${discussion.linkedTo.preset?.slug}`
+                            : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
+                        navigate(path);
+                      }}
+                      sx={{ cursor: "pointer" }}
+                    />
+                  </Box>
+                )}
+
+                {/* Tags */}
+                {discussion.tags.length > 0 && (
+                  <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
+                    {discussion.tags.map((tag) => (
+                      <Chip
+                        key={tag}
+                        label={tag}
+                        size="small"
+                        variant="outlined"
+                        sx={{ fontSize: "0.7rem" }}
+                      />
+                    ))}
+                  </Box>
+                )}
+
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
                   <Typography variant="caption" color="text.secondary">
-                    {discussion.postCount} posts
+                    by {discussion.createdBy.username}
+                    {" • "}
+                    {formatDate(discussion.createdAt)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {discussion.followers.length} followers
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Last activity {formatDate(discussion.lastActivity)}
-                  </Typography>
+                  <Box display="flex" gap={1}>
+                    <Typography variant="caption" color="text.secondary">
+                      {discussion.postCount} posts
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {discussion.followers.length} followers
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Last activity {formatDate(discussion.lastActivity)}
+                    </Typography>
+                  </Box>
                 </Box>
               </Box>
             </Box>
-          </Box>
+          )}
         </CardContent>
       </Card>
 

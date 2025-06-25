@@ -453,6 +453,7 @@ const PresetDetails: React.FC = () => {
           itemThumbnail={preset.thumbnail}
           isEmbedded={true}
           showPreviewOnly={true}
+          minimalHeader={true}
         />
       </Box>
 
