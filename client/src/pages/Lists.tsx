@@ -189,34 +189,76 @@ const Lists: React.FC = () => {
           </Box>
         ) : (
           <List
-            sx={{ bgcolor: "background.paper", borderRadius: 2, boxShadow: 1 }}
+            sx={{
+              bgcolor: "background.paper",
+              borderRadius: 2,
+              boxShadow: 1,
+              overflow: "hidden",
+            }}
           >
             {lists.map((list, index) => (
               <React.Fragment key={list.id}>
                 <ListItem disablePadding>
-                  <ListItemButton onClick={() => handleListClick(list.id)}>
+                  <ListItemButton
+                    onClick={() => handleListClick(list.id)}
+                    sx={{
+                      overflow: "hidden",
+                      borderRadius: 0,
+                      height: "100%",
+                    }}
+                  >
                     <ListItemText
                       primary={
                         <Box
                           display="flex"
                           alignItems="center"
-                          gap={1}
+                          justifyContent="space-between"
                           component="span"
+                          sx={{
+                            minWidth: 0,
+                            gap: 1,
+                            pr: 1,
+                          }}
                         >
-                          <ListIcon color="primary" />
-                          <Typography variant="h6" component="span">
-                            {list.name}
-                          </Typography>
-                          {list.isPublic && (
-                            <Chip size="small" label="Public" color="primary" />
-                          )}
-                          {!list.isPublic && (
-                            <Chip
-                              size="small"
-                              label="Private"
-                              color="default"
-                            />
-                          )}
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            gap={1}
+                            sx={{
+                              minWidth: 0,
+                              flex: 1,
+                              overflow: "hidden",
+                            }}
+                          >
+                            <ListIcon color="primary" sx={{ flexShrink: 0 }} />
+                            <Typography
+                              variant="h6"
+                              component="span"
+                              sx={{
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {list.name}
+                            </Typography>
+                          </Box>
+                          <Box sx={{ flexShrink: 0 }}>
+                            {list.isPublic && (
+                              <Chip
+                                size="small"
+                                label="Public"
+                                color="primary"
+                              />
+                            )}
+                            {!list.isPublic && (
+                              <Chip
+                                size="small"
+                                label="Private"
+                                color="default"
+                              />
+                            )}
+                          </Box>
                         </Box>
                       }
                       secondary={

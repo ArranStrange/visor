@@ -41,13 +41,40 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     setSliderPosition(Math.min(Math.max(percentage, 0), 100));
   };
 
+  // Touch event handlers for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+  };
+
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!isDragging.current || !containerRef.current) return;
+
+    e.preventDefault();
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX - rect.left;
+    const percentage = (x / rect.width) * 100;
+
+    setSliderPosition(Math.min(Math.max(percentage, 0), 100));
+  };
+
+  const handleTouchEnd = () => {
+    isDragging.current = false;
+  };
+
   useEffect(() => {
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("touchmove", handleTouchMove, { passive: false });
+    document.addEventListener("touchend", handleTouchEnd);
 
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("touchmove", handleTouchMove);
+      document.removeEventListener("touchend", handleTouchEnd);
     };
   }, []);
 
@@ -65,6 +92,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         touchAction: "none",
       }}
       onMouseDown={handleMouseDown}
+      onTouchStart={handleTouchStart}
     >
       {/* After Image (full width, background) */}
       <Box
