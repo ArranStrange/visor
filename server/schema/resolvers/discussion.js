@@ -618,22 +618,55 @@ const discussionResolvers = {
 
     updatePost: async (_, { id, input }, { user }) => {
       try {
+        console.log("[DEBUG] updatePost called with id:", id);
+        console.log("[DEBUG] User context:", user);
+
         if (!user) {
+          console.log(
+            "[DEBUG] No user context - throwing authentication error"
+          );
           throw new AuthenticationError("Not authenticated");
         }
 
         const post = await DiscussionPost.findById(id);
         if (!post) {
+          console.log("[DEBUG] Post not found");
           throw new Error("Post not found");
         }
 
+        console.log("[DEBUG] Post found:", {
+          id: post._id,
+          author: post.author,
+          authorType: typeof post.author,
+          authorString: post.author.toString(),
+          user: user.id,
+          userType: typeof user.id,
+        });
+
         // Check if user is author
-        if (post.author.toString() !== user.id) {
+        const authorString = post.author.toString();
+        const userIdString = user.id.toString();
+        const idsMatch = authorString === userIdString;
+
+        console.log("[DEBUG] Authorization check:", {
+          authorString,
+          userIdString,
+          idsMatch,
+          comparison: `${authorString} === ${userIdString}`,
+        });
+
+        if (!idsMatch) {
+          console.log("[DEBUG] Authorization failed - user is not the author");
           throw new AuthenticationError("Not authorized");
         }
 
+        console.log(
+          "[DEBUG] Authorization successful - proceeding with update"
+        );
+
         // Check if post is deleted
         if (post.isDeleted) {
+          console.log("[DEBUG] Post is deleted - cannot edit");
           throw new Error("Cannot edit deleted post");
         }
 
@@ -653,6 +686,7 @@ const discussionResolvers = {
           .populate("author", "id username avatar")
           .populate("parent", "id content author");
 
+        console.log("[DEBUG] Post updated successfully");
         return updatedPost;
       } catch (error) {
         console.error("Error in updatePost:", error);
@@ -686,22 +720,55 @@ const discussionResolvers = {
 
     deletePost: async (_, { id }, { user }) => {
       try {
+        console.log("[DEBUG] deletePost called with id:", id);
+        console.log("[DEBUG] User context:", user);
+
         if (!user) {
+          console.log(
+            "[DEBUG] No user context - throwing authentication error"
+          );
           throw new AuthenticationError("Not authenticated");
         }
 
         const post = await DiscussionPost.findById(id);
         if (!post) {
+          console.log("[DEBUG] Post not found");
           throw new Error("Post not found");
         }
 
+        console.log("[DEBUG] Post found:", {
+          id: post._id,
+          author: post.author,
+          authorType: typeof post.author,
+          authorString: post.author.toString(),
+          user: user.id,
+          userType: typeof user.id,
+        });
+
         // Check if user is author
-        if (post.author.toString() !== user.id) {
+        const authorString = post.author.toString();
+        const userIdString = user.id.toString();
+        const idsMatch = authorString === userIdString;
+
+        console.log("[DEBUG] Authorization check:", {
+          authorString,
+          userIdString,
+          idsMatch,
+          comparison: `${authorString} === ${userIdString}`,
+        });
+
+        if (!idsMatch) {
+          console.log("[DEBUG] Authorization failed - user is not the author");
           throw new AuthenticationError("Not authorized");
         }
 
+        console.log(
+          "[DEBUG] Authorization successful - proceeding with deletion"
+        );
+
         // Check if post is already deleted
         if (post.isDeleted) {
+          console.log("[DEBUG] Post is already deleted");
           throw new Error("Post is already deleted");
         }
 
@@ -716,6 +783,7 @@ const discussionResolvers = {
           $inc: { postCount: -1 },
         });
 
+        console.log("[DEBUG] Post deleted successfully");
         return true;
       } catch (error) {
         console.error("Error in deletePost:", error);

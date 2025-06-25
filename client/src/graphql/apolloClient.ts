@@ -61,6 +61,13 @@ const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
   const token = localStorage.getItem("visor_token");
 
+  // Debug: Log the token being sent
+  console.log("[DEBUG] Auth token being sent:", token ? "exists" : "missing");
+  if (token) {
+    console.log("[DEBUG] Token length:", token.length);
+    console.log("[DEBUG] Token starts with:", token.substring(0, 20) + "...");
+  }
+
   // return the headers to the context so httpLink can read them
   return {
     headers: {

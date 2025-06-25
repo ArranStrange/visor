@@ -71,20 +71,20 @@ const DiscussionDetail: React.FC = () => {
   const posts = postsData?.getPosts?.posts || [];
 
   // Debug posts data
-  console.log("Posts query data:", postsData);
-  console.log("Posts array:", posts);
-  console.log("Posts count:", posts.length);
+  // console.log("Posts query data:", postsData);
+  // console.log("Posts array:", posts);
+  // console.log("Posts count:", posts.length);
 
   // Log individual posts to see their structure
-  posts.forEach((post: any, index: number) => {
-    console.log(`Post ${index}:`, {
-      id: post.id,
-      parentId: post.parentId,
-      content: post.content,
-      author: post.author.username,
-      discussionId: post.discussionId,
-    });
-  });
+  // posts.forEach((post: any, index: number) => {
+  //   console.log(`Post ${index}:`, {
+  //     id: post.id,
+  //     parentId: post.parentId,
+  //     content: post.content,
+  //     author: post.author.username,
+  //     discussionId: post.discussionId,
+  //   });
+  // });
 
   const [createPost] = useMutation(CREATE_POST, {
     update: (cache, { data, errors }) => {
@@ -94,7 +94,7 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.createPost) {
-        console.log("Manually updating cache with new post:", data.createPost);
+        // console.log("Manually updating cache with new post:", data.createPost);
 
         // Read the existing posts
         const existingPosts = cache.readQuery({
@@ -157,7 +157,7 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.deletePost) {
-        console.log("Post deleted successfully, updating cache");
+        // console.log("Post deleted successfully, updating cache");
 
         // Option 1: Remove the post completely from cache (hard deletion)
         cache.modify({
@@ -395,7 +395,7 @@ const DiscussionDetail: React.FC = () => {
         imageUrl,
       };
 
-      console.log("Creating post with input:", input);
+      // console.log("Creating post with input:", input);
 
       const result = await createPost({
         variables: {
@@ -403,7 +403,7 @@ const DiscussionDetail: React.FC = () => {
         },
       });
 
-      console.log("Post created successfully:", result);
+      // console.log("Post created successfully:", result);
     } catch (error: any) {
       console.error("Failed to create post:", error);
       console.error("Error details:", {
@@ -428,15 +428,15 @@ const DiscussionDetail: React.FC = () => {
 
       if (images && images.length > 0) {
         // TODO: Implement image upload to your storage service
-        console.log("Image upload not implemented yet");
+        // console.log("Image upload not implemented yet");
       }
 
-      console.log("Creating reply with input:", {
-        discussionId,
-        parentId: postId,
-        content: content.trim(),
-        imageUrl,
-      });
+      // console.log("Creating reply with input:", {
+      //   discussionId,
+      //   parentId: postId,
+      //   content: content.trim(),
+      //   imageUrl,
+      // });
 
       const result = await createPost({
         variables: {
@@ -449,10 +449,10 @@ const DiscussionDetail: React.FC = () => {
         },
       });
 
-      console.log("Reply created successfully");
-      console.log("Reply result:", result);
-      console.log("Reply data:", result.data);
-      console.log("Reply errors:", result.errors);
+      // console.log("Reply created successfully");
+      // console.log("Reply result:", result);
+      // console.log("Reply data:", result.data);
+      // console.log("Reply errors:", result.errors);
     } catch (error: any) {
       console.error("Failed to create reply:", error);
       console.error("Error details:", {
@@ -473,15 +473,20 @@ const DiscussionDetail: React.FC = () => {
       return;
     }
 
-    if (!user) {
-      console.error("You must be logged in to edit posts.");
-      return;
-    }
-
-    if (postToEdit.author.id !== user.id) {
-      console.error("You can only edit your own posts.");
-      return;
-    }
+    // Debug: Log the current user and post author
+    console.log("[DEBUG] Edit attempt:", {
+      currentUser: user,
+      postAuthor: postToEdit.author,
+      postId: postId,
+      tokenExists: !!localStorage.getItem("visor_token"),
+      userComparison: {
+        currentUserId: user?.id,
+        postAuthorId: postToEdit.author?.id,
+        idsMatch: user?.id === postToEdit.author?.id,
+        currentUserType: typeof user?.id,
+        postAuthorType: typeof postToEdit.author?.id,
+      },
+    });
 
     try {
       const result = await updatePost({
@@ -492,7 +497,7 @@ const DiscussionDetail: React.FC = () => {
       });
 
       if (result.data?.updatePost) {
-        console.log("Post updated successfully");
+        // console.log("Post updated successfully");
         // Refetch posts to update the UI
         await refetchPosts();
       } else {
@@ -510,11 +515,12 @@ const DiscussionDetail: React.FC = () => {
       }
 
       console.error("Update post error:", errorMessage);
+      // You could show a toast notification here with the error message
     }
   };
 
   const handleDelete = async (postId: string) => {
-    console.log("Attempting to delete post:", postId);
+    // console.log("Attempting to delete post:", postId);
 
     // Find the post to get more details
     const postToDelete = posts.find((p: DiscussionPost) => p.id === postId);
@@ -524,41 +530,46 @@ const DiscussionDetail: React.FC = () => {
       return;
     }
 
-    if (!user) {
-      console.error("You must be logged in to delete posts.");
-      return;
-    }
-
-    if (postToDelete.author.id !== user.id) {
-      console.error("You can only delete your own posts.");
-      return;
-    }
+    // Debug: Log the current user and post author
+    console.log("[DEBUG] Delete attempt:", {
+      currentUser: user,
+      postAuthor: postToDelete.author,
+      postId: postId,
+      tokenExists: !!localStorage.getItem("visor_token"),
+      userComparison: {
+        currentUserId: user?.id,
+        postAuthorId: postToDelete.author?.id,
+        idsMatch: user?.id === postToDelete.author?.id,
+        currentUserType: typeof user?.id,
+        postAuthorType: typeof postToDelete.author?.id,
+      },
+    });
 
     try {
       const result = await deletePost({
         variables: { id: postId },
       });
 
-      console.log("Delete post result:", result);
+      // console.log("Delete post result:", result);
 
       if (result.data?.deletePost) {
-        console.log("Post deleted successfully");
+        // console.log("Post deleted successfully");
         // Refetch posts to update the UI
         await refetchPosts();
       } else if (result.errors && result.errors.length > 0) {
         console.error("Backend returned errors:", result.errors);
 
         // Log the complete error structure for debugging
-        result.errors.forEach((err: any, index: number) => {
-          console.log(`Error ${index + 1} complete structure:`, {
-            message: err.message,
-            path: err.path,
-            extensions: err.extensions,
-            locations: err.locations,
-            originalError: err.originalError,
-            fullError: err,
-          });
-        });
+        // result.errors.forEach((err: any, index: number) => {
+        //   console.log(`Error ${index + 1} complete structure:`, {
+        //     message: err.message,
+        //     path: err.path,
+        //     extensions: err.extensions,
+        //     locations: err.locations,
+        //     originalError: err.originalError,
+        //     fullError: err,
+        //   });
+        // });
 
         // Extract error message from the first error
         const firstError = result.errors[0];
@@ -594,6 +605,7 @@ const DiscussionDetail: React.FC = () => {
         }
 
         console.error("Delete post error:", errorMessage);
+        // You could show a toast notification here with the error message
       } else {
         console.error("Failed to delete post - no data returned");
       }
@@ -614,6 +626,7 @@ const DiscussionDetail: React.FC = () => {
       }
 
       console.error("Delete post error:", errorMessage);
+      // You could show a toast notification here with the error message
     }
   };
 
@@ -679,6 +692,22 @@ const DiscussionDetail: React.FC = () => {
       return formatDistanceToNow(date, { addSuffix: true });
     } catch (e) {
       return "an unknown time ago";
+    }
+  };
+
+  // Check if the auth token is valid
+  const isTokenValid = (): boolean => {
+    const token = localStorage.getItem("visor_token");
+    if (!token) return false;
+
+    try {
+      // Basic JWT token validation - check if it's not expired
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      const currentTime = Date.now() / 1000;
+      return payload.exp > currentTime;
+    } catch (error) {
+      console.error("Error parsing token:", error);
+      return false;
     }
   };
 

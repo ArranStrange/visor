@@ -227,6 +227,7 @@ const Post: React.FC<PostProps> = ({
 
   const isAuthor = user?.id === post.author.id;
   const isHighlighted = false;
+  const isLoggedIn = !!user;
 
   return (
     <Box
@@ -427,8 +428,8 @@ const Post: React.FC<PostProps> = ({
                     </IconButton>
                   </Tooltip>
 
-                  {/* More options */}
-                  {(isAuthor || user) && (
+                  {/* More options - only show for post creator */}
+                  {isLoggedIn && isAuthor && (
                     <Tooltip title="More options">
                       <IconButton size="small" onClick={handleMenuOpen}>
                         <MoreVertIcon fontSize="small" />
@@ -503,7 +504,7 @@ const Post: React.FC<PostProps> = ({
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        {isAuthor && (
+        {isLoggedIn && isAuthor && (
           <>
             <MenuItem
               onClick={() => {
@@ -530,7 +531,7 @@ const Post: React.FC<PostProps> = ({
             </MenuItem>
           </>
         )}
-        {user && !isAuthor && (
+        {isLoggedIn && !isAuthor && (
           <>
             <MenuItem
               onClick={() => {
