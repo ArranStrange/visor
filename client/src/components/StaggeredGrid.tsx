@@ -80,12 +80,12 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     const newColumnCount = calculateColumnCount(containerWidth);
 
     // Debug logging
-    console.log(
-      "Container width:",
-      containerWidth,
-      "New column count:",
-      newColumnCount
-    );
+    // console.log(
+    //   "Container width:",
+    //   containerWidth,
+    //   "New column count:",
+    //   newColumnCount
+    // );
 
     if (newColumnCount !== columnCount) {
       setColumnCount(newColumnCount);
