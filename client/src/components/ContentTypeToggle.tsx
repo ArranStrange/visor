@@ -31,11 +31,11 @@ const ContentTypeToggle: React.FC = () => {
   };
 
   const handleShuffleClick = () => {
+    // console.log('Shuffle button clicked', { currentRandomizeOrder: randomizeOrder });
     setRandomizeOrder(!randomizeOrder);
-    if (randomizeOrder) {
-      // If we're enabling shuffle, trigger a new shuffle
-      triggerShuffle();
-    }
+    // Always trigger shuffle when button is clicked
+    triggerShuffle();
+    // console.log('triggerShuffle called');
   };
 
   const options = [

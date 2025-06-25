@@ -18,7 +18,7 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 8;
+const ITEMS_PER_PAGE = 10;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
@@ -29,6 +29,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 }) => {
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const { randomizeOrder } = useContentType();
 
   const {
     data: presetData,
@@ -154,10 +156,12 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       }}
     >
       <StaggeredGrid
-        loading={false} // Disable skeleton loading
+        key={`grid-${contentType}`}
+        loading={false}
         onLoadMore={loadMore}
         hasMore={hasMore}
         isLoading={isLoading}
+        randomizeOrder={randomizeOrder}
       >
         {children}
       </StaggeredGrid>

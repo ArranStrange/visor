@@ -24,7 +24,8 @@ interface StaggeredGridProps {
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
   minWidth = 200,
-  gap = 16,
+  gap = 10,
+  randomizeOrder = false,
   loading = false,
   onLoadMore,
   hasMore = false,
@@ -46,14 +47,18 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     if (typeof window !== "undefined") {
       const windowWidth = window.innerWidth;
       if (windowWidth < 700) return 2;
-      if (windowWidth < 900) return 3;
-      return 4;
+      if (windowWidth < 900) return 4;
+      return 5;
     }
     return 4; // fallback
   });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  const { randomizeOrder, shuffleCounter } = useContentType();
+  const { shuffleCounter } = useContentType();
+
+  // Store the shuffled order in a ref to maintain consistency without causing re-renders
+  const shuffledOrderRef = useRef<number[]>([]);
+  const lastShuffleCounterRef = useRef<number>(shuffleCounter);
 
   // Memoize the column count calculation
   const calculateColumnCount = useCallback(
@@ -117,6 +122,16 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     }
   }, [updateColumns]);
 
+  // Force column recalculation when content changes (e.g., content type toggle)
+  useEffect(() => {
+    if (containerRef.current) {
+      // Small delay to ensure DOM has updated
+      setTimeout(() => {
+        updateColumns();
+      }, 50);
+    }
+  }, [children.length, updateColumns]);
+
   // Load more items when intersection observer triggers
   useEffect(() => {
     if (
@@ -141,7 +156,8 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     //   childrenLength: children.length,
     //   columnCount,
     //   randomizeOrder,
-    //   shuffleCounter
+    //   shuffleCounter,
+    //   lastShuffleCounter: lastShuffleCounterRef.current
     // });
 
     if (!children.length) {
@@ -151,18 +167,61 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     // Create array of indices
     let itemIndices = Array.from({ length: children.length }, (_, i) => i);
 
-    // Re-enable randomization with truly random shuffle
+    // Handle shuffle logic
     if (randomizeOrder) {
-      const shuffled = [...itemIndices];
+      // Create shuffled order that maintains previous 10-card chunks
+      // console.log('Creating shuffled order with 10-card chunk preservation');
 
-      // Fisher-Yates shuffle with Math.random() for true randomness
-      for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      const chunkSize = 10;
+      const shuffled: number[] = [];
+
+      // Process items in chunks of 10
+      for (
+        let chunkStart = 0;
+        chunkStart < children.length;
+        chunkStart += chunkSize
+      ) {
+        const chunkEnd = Math.min(chunkStart + chunkSize, children.length);
+        const chunkIndices = Array.from(
+          { length: chunkEnd - chunkStart },
+          (_, i) => chunkStart + i
+        );
+
+        // Check if we have a stored order for this chunk
+        const storedChunk = shuffledOrderRef.current.slice(
+          chunkStart,
+          chunkEnd
+        );
+
+        if (storedChunk.length === chunkIndices.length) {
+          // Use stored order for this chunk
+          shuffled.push(...storedChunk);
+        } else {
+          // Create new shuffled order for this chunk
+          const shuffledChunk = [...chunkIndices];
+
+          // Fisher-Yates shuffle for this chunk
+          for (let i = shuffledChunk.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffledChunk[i], shuffledChunk[j]] = [
+              shuffledChunk[j],
+              shuffledChunk[i],
+            ];
+          }
+
+          shuffled.push(...shuffledChunk);
+        }
       }
 
       itemIndices = shuffled;
-      // console.log('StaggeredGrid: Shuffled indices', itemIndices);
+      shuffledOrderRef.current = shuffled;
+      lastShuffleCounterRef.current = shuffleCounter;
+      // console.log('StaggeredGrid: New shuffled indices with chunk preservation', itemIndices);
+    } else {
+      // console.log('Shuffle disabled, using original order');
+      // Clear shuffled order when randomization is disabled
+      shuffledOrderRef.current = [];
+      lastShuffleCounterRef.current = shuffleCounter;
     }
 
     const newColumns: number[][] = Array.from(
@@ -178,6 +237,14 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
     return newColumns;
   }, [children.length, columnCount, randomizeOrder, shuffleCounter]);
+
+  // Handle shuffled order updates separately to avoid dependency issues
+  useEffect(() => {
+    if (!randomizeOrder) {
+      shuffledOrderRef.current = [];
+      lastShuffleCounterRef.current = shuffleCounter;
+    }
+  }, [randomizeOrder, shuffleCounter]);
 
   if (!children.length && !loading) {
     return null;
