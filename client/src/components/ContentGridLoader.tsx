@@ -61,8 +61,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     ) {
       results.push(
         ...presetData.listPresets
-          .filter((p) => p && p.creator)
-          .map((p) => ({
+          .filter((p: any) => p && p.creator)
+          .map((p: any) => ({
             type: "preset" as const,
             data: p,
           }))
@@ -75,8 +75,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     ) {
       results.push(
         ...filmSimData.listFilmSims
-          .filter((f) => f && f.creator)
-          .map((f) => ({
+          .filter((f: any) => f && f.creator)
+          .map((f: any) => ({
             type: "film" as const,
             data: {
               ...f,

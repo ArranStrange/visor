@@ -84,5 +84,7 @@ discussionPostSchema.index({ parentId: 1, createdAt: 1 });
 discussionPostSchema.index({ author: 1, createdAt: -1 });
 discussionPostSchema.index({ content: "text" });
 discussionPostSchema.index({ "mentions.refId": 1 });
+discussionPostSchema.index({ "reactions.users": 1 });
+discussionPostSchema.index({ isDeleted: 1, createdAt: -1 });
 
 module.exports = mongoose.model("DiscussionPost", discussionPostSchema);

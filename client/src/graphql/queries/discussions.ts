@@ -12,13 +12,17 @@ export const GET_DISCUSSION = gql`
           id
           title
           slug
-          thumbnail
+          afterImage {
+            url
+          }
         }
         filmSim {
           id
           name
           slug
-          thumbnail
+          sampleImages {
+            url
+          }
         }
       }
       tags
@@ -68,13 +72,17 @@ export const GET_DISCUSSIONS = gql`
             id
             title
             slug
-            thumbnail
+            afterImage {
+              url
+            }
           }
           filmSim {
             id
             name
             slug
-            thumbnail
+            sampleImages {
+              url
+            }
           }
         }
         tags
@@ -113,13 +121,17 @@ export const GET_DISCUSSION_BY_ITEM = gql`
           id
           title
           slug
-          thumbnail
+          afterImage {
+            url
+          }
         }
         filmSim {
           id
           name
           slug
-          thumbnail
+          sampleImages {
+            url
+          }
         }
       }
       tags

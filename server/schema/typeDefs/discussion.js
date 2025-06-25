@@ -95,10 +95,12 @@ module.exports = gql`
   }
 
   input CreatePostInput {
-    discussionId: ID!
+    discussionId: ID
     parentId: ID
     content: String!
     imageUrl: String
+    linkedToType: DiscussionTargetType
+    linkedToId: ID
   }
 
   input UpdatePostInput {

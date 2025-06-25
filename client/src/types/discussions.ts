@@ -126,12 +126,16 @@ export interface Preset {
   id: string;
   title: string;
   slug: string;
-  thumbnail?: string;
+  afterImage?: {
+    url: string;
+  };
 }
 
 export interface FilmSim {
   id: string;
   name: string;
   slug: string;
-  thumbnail?: string;
+  sampleImages?: Array<{
+    url: string;
+  }>;
 }

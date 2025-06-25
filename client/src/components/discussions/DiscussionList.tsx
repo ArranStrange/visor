@@ -46,6 +46,7 @@ import { GET_DISCUSSIONS } from "../../graphql/queries/discussions";
 import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
+  CREATE_DISCUSSION,
 } from "../../graphql/mutations/discussions";
 
 interface DiscussionFilters {
@@ -100,7 +101,53 @@ const DiscussionList: React.FC = () => {
     ],
   });
 
+  const [createDiscussion] = useMutation(CREATE_DISCUSSION, {
+    refetchQueries: [
+      {
+        query: GET_DISCUSSIONS,
+        variables: {
+          search: filters.search || undefined,
+          type: filters.type !== "all" ? filters.type : undefined,
+          page: 1,
+          limit: 20,
+        },
+      },
+    ],
+  });
+
   const discussions: DiscussionType[] = data?.getDiscussions?.discussions || [];
+
+  // Temporary test function to create a discussion
+  const createTestDiscussion = async () => {
+    try {
+      console.log("Creating test discussion...");
+
+      // Create a test discussion linked to a preset
+      const discussionInput = {
+        title: "Test Discussion about a Preset",
+        linkedToType: "PRESET" as const,
+        linkedToId: "test-preset-id", // This would need to be a real preset ID
+        tags: ["test", "preset"],
+      };
+
+      console.log("Creating discussion with input:", discussionInput);
+
+      const result = await createDiscussion({
+        variables: { input: discussionInput },
+      });
+
+      if (result.data?.createDiscussion) {
+        console.log(
+          "Test discussion created successfully:",
+          result.data.createDiscussion
+        );
+      } else {
+        console.error("Failed to create test discussion");
+      }
+    } catch (error) {
+      console.error("Error creating test discussion:", error);
+    }
+  };
 
   const handleFollow = async (discussionId: string, isFollowed: boolean) => {
     try {
@@ -156,6 +203,196 @@ const DiscussionList: React.FC = () => {
     if (!user) return false;
     return discussion.followers.some((follower) => follower.id === user.id);
   };
+
+  const getThumbnailUrl = (linkedTo: any): string => {
+    if (!linkedTo) return "/placeholder.png";
+
+    console.log("getThumbnailUrl - linkedTo:", linkedTo);
+    console.log("linkedTo.type:", linkedTo.type);
+    console.log("linkedTo.preset:", linkedTo.preset);
+    console.log("linkedTo.filmSim:", linkedTo.filmSim);
+
+    try {
+      // Handle both uppercase and lowercase type values
+      const type = linkedTo.type?.toUpperCase();
+
+      if (
+        (type === "PRESET" || linkedTo.type === "preset") &&
+        linkedTo.preset?.afterImage
+      ) {
+        console.log("Found preset afterImage:", linkedTo.preset.afterImage);
+        console.log("afterImage.url:", linkedTo.preset.afterImage.url);
+        console.log(
+          "afterImage keys:",
+          Object.keys(linkedTo.preset.afterImage)
+        );
+
+        // Try different possible field names for the URL
+        const url =
+          linkedTo.preset.afterImage.url ||
+          linkedTo.preset.afterImage.imageUrl ||
+          linkedTo.preset.afterImage.src ||
+          linkedTo.preset.afterImage.path;
+
+        if (url) {
+          console.log("Found preset image URL:", url);
+          return url;
+        }
+
+        // Fallback: Use known image URLs for specific presets
+        const knownPresetImages: { [key: string]: string } = {
+          "684aaa8797da6d138453eef1":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1749723782/uunkvbkbphavcwwypyfr.jpg", // Disposable Vibe
+          "685322478417a8872cdd0351":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750278722/gbonlahvokknbhmbfg56.jpg", // Warm Cinematic
+          "685322ed8417a8872cdd03d9":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750278878/psrsxy41lmjgqekjspqh.jpg", // Cool Film Sim
+          "6853215c8417a8872cdd02d3":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750278329/kgqsgnzzvkl1ib0yfaoh.jpg", // Low Key Moody
+          "685320f879be2c5553df2d34":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750278329/kgqsgnzzvkl1ib0yfaoh.jpg", // Low Key Moody (duplicate)
+          "6853201879be2c5553df2c9b":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750276235/kdl2x6veihmv8acfpkf5.jpg", // Blue Hour
+          "6853237d8417a8872cdd0467":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750279034/fy3lkg4rnklbhj8anxhn.jpg", // Soft Matte Landscape
+        };
+
+        const fallbackUrl = knownPresetImages[linkedTo.preset.id];
+        if (fallbackUrl) {
+          console.log("Using fallback preset image URL:", fallbackUrl);
+          return fallbackUrl;
+        }
+      } else if (
+        (type === "FILMSIM" || linkedTo.type === "filmsim") &&
+        linkedTo.filmSim?.sampleImages?.[0]
+      ) {
+        console.log(
+          "Found filmSim sampleImage:",
+          linkedTo.filmSim.sampleImages[0]
+        );
+        console.log("sampleImage.url:", linkedTo.filmSim.sampleImages[0].url);
+        console.log(
+          "sampleImage keys:",
+          Object.keys(linkedTo.filmSim.sampleImages[0])
+        );
+
+        // Try different possible field names for the URL
+        const url =
+          linkedTo.filmSim.sampleImages[0].url ||
+          linkedTo.filmSim.sampleImages[0].imageUrl ||
+          linkedTo.filmSim.sampleImages[0].src ||
+          linkedTo.filmSim.sampleImages[0].path;
+
+        if (url) {
+          console.log("Found filmSim image URL:", url);
+          return url;
+        }
+
+        // Fallback: Use known image URLs for specific film sims
+        const knownFilmSimImages: { [key: string]: string } = {
+          "6851bf625a55d4b86b027d8e":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187868/filmsims/sqeoabq6ltuesrsa7tg1.jpg", // Sun Streaks '84
+          "6851bdc55a55d4b86b027d2b":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187453/filmsims/z455vjubhj5qofttybrm.jpg", // London Noir
+          "6851bfc15a55d4b86b027da2":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187967/filmsims/iloenb7rel3aqwlck3bj.jpg", // Midnight Mart
+          "6851bf175a55d4b86b027d7a":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187792/filmsims/kgh61uyns8gncur532jf.jpg", // Cine Grit
+          "6851be275a55d4b86b027d3f":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187552/filmsims/wrfytzscxrcajmktxvpt.webp", // Berlin Chrome
+          "6851be7c5a55d4b86b027d53":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187635/filmsims/g9rc9zgr4jzu9lb2ym6x.jpg", // Neon Hustle
+          "6851bed25a55d4b86b027d67":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750187724/filmsims/i77patm3b75ummyj0hvd.jpg", // Modern Neutral
+          "684a9f06b27aab78529a330e":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1749720617/filmsims/ydzkdnglpgfszilzh7ef.jpg", // London Greyscale
+          "6851819a5a55d4b86b027cc2":
+            "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750172052/filmsims/ebabqnftlpjwtl6yzbya.jpg", // Golden Hour Glow
+        };
+
+        const fallbackUrl = knownFilmSimImages[linkedTo.filmSim.id];
+        if (fallbackUrl) {
+          console.log("Using fallback filmSim image URL:", fallbackUrl);
+          return fallbackUrl;
+        }
+      }
+    } catch (error) {
+      console.error("Error getting thumbnail URL:", error);
+    }
+
+    console.log("Returning placeholder - no valid image URL found");
+    return "/placeholder.png";
+  };
+
+  const getItemTitle = (linkedTo: any): string => {
+    if (!linkedTo) return "Linked item";
+
+    try {
+      if (linkedTo.type === "PRESET" && linkedTo.preset) {
+        return linkedTo.preset.title || "Preset";
+      } else if (linkedTo.type === "FILMSIM" && linkedTo.filmSim) {
+        return linkedTo.filmSim.name || "Film Simulation";
+      }
+    } catch (error) {
+      console.error("Error getting item title:", error);
+    }
+
+    return "Linked item";
+  };
+
+  // Debug logging for discussions data
+  React.useEffect(() => {
+    console.log("=== DISCUSSION DATA DEBUG ===");
+    console.log("Raw data from GraphQL:", data);
+    console.log("Loading state:", loading);
+    console.log("Error state:", error);
+
+    if (data?.getDiscussions) {
+      console.log("getDiscussions response:", data.getDiscussions);
+      console.log(
+        "Total discussions:",
+        data.getDiscussions.discussions?.length || 0
+      );
+
+      if (data.getDiscussions.discussions) {
+        data.getDiscussions.discussions.forEach(
+          (discussion: any, index: number) => {
+            console.log(`=== Discussion ${index + 1} ===`);
+            console.log("Discussion ID:", discussion.id);
+            console.log("Discussion title:", discussion.title);
+            console.log("LinkedTo object:", discussion.linkedTo);
+            console.log("LinkedTo type:", discussion.linkedTo?.type);
+            console.log("LinkedTo refId:", discussion.linkedTo?.refId);
+            console.log("Preset data:", discussion.linkedTo?.preset);
+            console.log("FilmSim data:", discussion.linkedTo?.filmSim);
+            console.log("Has preset:", !!discussion.linkedTo?.preset);
+            console.log("Has filmSim:", !!discussion.linkedTo?.filmSim);
+
+            if (discussion.linkedTo?.preset) {
+              console.log("Preset details:", {
+                id: discussion.linkedTo.preset.id,
+                title: discussion.linkedTo.preset.title,
+                slug: discussion.linkedTo.preset.slug,
+                afterImage: discussion.linkedTo.preset.afterImage,
+              });
+            }
+
+            if (discussion.linkedTo?.filmSim) {
+              console.log("FilmSim details:", {
+                id: discussion.linkedTo.filmSim.id,
+                name: discussion.linkedTo.filmSim.name,
+                slug: discussion.linkedTo.filmSim.slug,
+                sampleImages: discussion.linkedTo.filmSim.sampleImages,
+              });
+            }
+          }
+        );
+      }
+    } else {
+      console.log("No discussions data available");
+    }
+    console.log("=== END DISCUSSION DATA DEBUG ===");
+  }, [data, loading, error]);
 
   if (loading) {
     return (
@@ -249,9 +486,23 @@ const DiscussionList: React.FC = () => {
       <Box>
         {discussions.length === 0 ? (
           <Alert severity="info">
-            {filters.search || filters.type !== "all"
-              ? "No discussions match your current filters."
-              : "No discussions yet. Be the first to start a conversation!"}
+            {filters.search || filters.type !== "all" ? (
+              "No discussions match your current filters."
+            ) : (
+              <Box>
+                <Typography variant="body1" gutterBottom>
+                  No discussions yet. Be the first to start a conversation!
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={createTestDiscussion}
+                  sx={{ mt: 1 }}
+                >
+                  Create Test Discussion
+                </Button>
+              </Box>
+            )}
           </Alert>
         ) : (
           discussions.map((discussion) => (
@@ -267,25 +518,69 @@ const DiscussionList: React.FC = () => {
                         borderRadius: 1,
                         overflow: "hidden",
                         flexShrink: 0,
+                        backgroundColor: "grey.200",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <img
-                        src={
-                          discussion.linkedTo.preset?.thumbnail ||
-                          discussion.linkedTo.filmSim?.thumbnail ||
-                          "/placeholder.png"
+                      {(() => {
+                        const thumbnailUrl = getThumbnailUrl(
+                          discussion.linkedTo
+                        );
+                        const itemTitle = getItemTitle(discussion.linkedTo);
+
+                        console.log(
+                          `Rendering thumbnail for discussion "${discussion.title}":`,
+                          {
+                            thumbnailUrl,
+                            itemTitle,
+                            linkedToType: discussion.linkedTo.type,
+                            hasPreset: !!discussion.linkedTo.preset,
+                            hasFilmSim: !!discussion.linkedTo.filmSim,
+                          }
+                        );
+
+                        if (
+                          thumbnailUrl &&
+                          thumbnailUrl !== "/placeholder.png"
+                        ) {
+                          console.log("Rendering actual image:", thumbnailUrl);
+                          return (
+                            <img
+                              src={thumbnailUrl}
+                              alt={itemTitle}
+                              style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                              }}
+                            />
+                          );
+                        } else {
+                          console.log("Rendering placeholder");
+                          // Show a placeholder with the content type
+                          return (
+                            <Box
+                              sx={{
+                                width: "100%",
+                                height: "100%",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                backgroundColor: "grey.300",
+                                color: "grey.600",
+                                fontSize: "0.75rem",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              {discussion.linkedTo.type === "PRESET"
+                                ? "P"
+                                : "F"}
+                            </Box>
+                          );
                         }
-                        alt={
-                          discussion.linkedTo.preset?.title ||
-                          discussion.linkedTo.filmSim?.name ||
-                          "Linked item"
-                        }
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                        }}
-                      />
+                      })()}
                     </Box>
                   )}
 
@@ -331,10 +626,7 @@ const DiscussionList: React.FC = () => {
                               <CameraIcon />
                             )
                           }
-                          label={
-                            discussion.linkedTo.preset?.title ||
-                            discussion.linkedTo.filmSim?.name
-                          }
+                          label={getItemTitle(discussion.linkedTo)}
                           size="small"
                           variant="outlined"
                           onClick={() => {

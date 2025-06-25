@@ -12,13 +12,17 @@ export const CREATE_DISCUSSION = gql`
           id
           title
           slug
-          thumbnail
+          afterImage {
+            url
+          }
         }
         filmSim {
           id
           name
           slug
-          thumbnail
+          sampleImages {
+            url
+          }
         }
       }
       tags
@@ -53,13 +57,17 @@ export const UPDATE_DISCUSSION = gql`
           id
           title
           slug
-          thumbnail
+          afterImage {
+            url
+          }
         }
         filmSim {
           id
           name
           slug
-          thumbnail
+          sampleImages {
+            url
+          }
         }
       }
       tags
