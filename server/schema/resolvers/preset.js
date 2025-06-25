@@ -3,6 +3,7 @@ const User = require("../../models/User");
 const FilmSim = require("../../models/FilmSim");
 const Tag = require("../../models/Tag");
 const Image = require("../../models/Image");
+const Discussion = require("../../models/Discussion");
 const {
   AuthenticationError,
   ValidationError,
@@ -405,6 +406,33 @@ const presetResolvers = {
         }
 
         console.log("Preset upload completed successfully");
+
+        // Create discussion for the preset
+        try {
+          const discussion = new Discussion({
+            title: `Discussion: ${title}`,
+            linkedTo: {
+              type: "preset",
+              refId: preset._id,
+            },
+            tags: tags || [],
+            createdBy: user._id,
+            followers: [user._id], // Auto-subscribe creator
+          });
+
+          await discussion.save();
+          console.log(
+            "Discussion created successfully for preset:",
+            discussion._id
+          );
+        } catch (discussionError) {
+          console.error(
+            "Error creating discussion for preset:",
+            discussionError
+          );
+          // Don't fail the preset creation if discussion creation fails
+        }
+
         return finalPreset;
       } catch (error) {
         console.error("Error in uploadPreset resolver:", error);

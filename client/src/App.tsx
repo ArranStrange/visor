@@ -20,9 +20,12 @@ import UploadFilmSim from "./pages/UploadFilmSim";
 import NotFound from "./pages/NotFound";
 import Lists from "./pages/Lists";
 import ListDetail from "./pages/ListDetail";
-import { visorTheme } from "./theme/visorTheme";
+import { visorTheme } from "./theme/VISORTheme";
 import CreateList from "./pages/CreateList";
 import PublicProfile from "./pages/PublicProfile";
+import Discussions from "./pages/Discussions";
+import DiscussionDetail from "./pages/DiscussionDetail";
+import CreateDiscussion from "./pages/CreateDiscussion";
 
 function App() {
   return (
@@ -48,6 +51,12 @@ function App() {
                 <Route path="/lists" element={<Lists />} />
                 <Route path="/list/:id" element={<ListDetail />} />
                 <Route path="/create-list" element={<CreateList />} />
+                <Route path="/discussions" element={<Discussions />} />
+                <Route path="/discussions/new" element={<CreateDiscussion />} />
+                <Route
+                  path="/discussions/:discussionId"
+                  element={<DiscussionDetail />}
+                />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </ContentTypeProvider>

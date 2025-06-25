@@ -66,11 +66,11 @@ const NavBar: React.FC = () => {
       },
     },
     {
-      text: "Forum",
+      text: "Discussions",
       icon: <ForumIcon />,
       onClick: () => {
         handleMenuClose();
-        navigate("/forum");
+        navigate("/discussions");
       },
     },
     {
@@ -136,15 +136,15 @@ const NavBar: React.FC = () => {
                     bgcolor: user.avatar ? "transparent" : "primary.main",
                   }}
                   onError={(e) => {
-                    console.log("Avatar image failed to load:", user.avatar);
+                    // console.log("Avatar image failed to load:", user.avatar);
                     // Don't hide the avatar, just log the error
                   }}
-                  onLoad={() => {
-                    console.log(
-                      "Avatar image loaded successfully:",
-                      user.avatar
-                    );
-                  }}
+                  // onLoad={() => {
+                  //   console.log(
+                  //     "Avatar image loaded successfully:",
+                  //     user.avatar
+                  //   );
+                  // }}
                 >
                   {user.username?.[0]?.toUpperCase()}
                 </Avatar>

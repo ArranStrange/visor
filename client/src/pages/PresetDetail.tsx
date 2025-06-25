@@ -38,6 +38,7 @@ import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
 import AddToListButton from "../components/AddToListButton";
 import XmpParser from "../components/XmpParser";
+import DiscussionThread from "../components/discussions/DiscussionThread";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
@@ -442,83 +443,47 @@ const PresetDetails: React.FC = () => {
         </>
       )}
 
+      {/* Discussion Thread */}
+      <Box mt={4}>
+        <DiscussionThread
+          itemId={preset.id}
+          itemType="preset"
+          itemTitle={preset.title}
+          itemSlug={preset.slug}
+          itemThumbnail={preset.thumbnail}
+          isEmbedded={true}
+          showPreviewOnly={true}
+          minimalHeader={true}
+        />
+      </Box>
+
       {/* Edit Dialog */}
       <Dialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
-        maxWidth="lg"
+        maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            backgroundColor: "background.paper",
-            maxHeight: "90vh",
-          },
-        }}
       >
-        <DialogTitle>
-          <Typography variant="h4" gutterBottom>
-            Edit Preset
-          </Typography>
-        </DialogTitle>
+        <DialogTitle>Edit Preset</DialogTitle>
         <DialogContent>
-          <Box component="form" sx={{ mt: 2 }}>
-            <Stack spacing={3}>
-              <TextField
-                label="Title"
-                defaultValue={preset.title}
-                fullWidth
-                required
-              />
-
-              <TextField
-                label="Description"
-                multiline
-                minRows={3}
-                defaultValue={preset.description || ""}
-                fullWidth
-              />
-
-              <TextField
-                label="Creator Notes"
-                multiline
-                minRows={3}
-                defaultValue={preset.notes || ""}
-                fullWidth
-              />
-
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  Tags (comma-separated)
-                </Typography>
-                <TextField
-                  fullWidth
-                  defaultValue={
-                    preset.tags?.map((tag) => tag.displayName).join(", ") || ""
-                  }
-                  placeholder="e.g., portrait, landscape, street"
-                />
-              </Box>
-
-              <Box>
-                <Typography variant="subtitle1" gutterBottom>
-                  New XMP File (Optional)
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ mb: 2 }}
-                >
-                  Upload a new XMP file to update the preset settings. Leave
-                  empty to keep current settings.
-                </Typography>
-                <XmpParser onSettingsParsed={handleSettingsParsed} />
-              </Box>
-
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <TextField label="Title" fullWidth defaultValue={preset.title} />
+            <TextField
+              label="Description"
+              fullWidth
+              multiline
+              rows={3}
+              defaultValue={preset.description}
+            />
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Settings
+              </Typography>
               {parsedSettings && (
                 <>
                   <Accordion>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography variant="h6">Light Settings</Typography>
+                      <Typography variant="h6">Basic Settings</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <Box
@@ -535,70 +500,9 @@ const PresetDetails: React.FC = () => {
                           { key: "shadows", label: "Shadows" },
                           { key: "whites", label: "Whites" },
                           { key: "blacks", label: "Blacks" },
-                        ].map((setting) => (
-                          <Box key={setting.key}>
-                            <SettingSliderDisplay
-                              label={setting.label}
-                              value={
-                                parsedSettings[setting.key]
-                                  ? parsedSettings[setting.key].toFixed(1)
-                                  : "0"
-                              }
-                            />
-                          </Box>
-                        ))}
-                      </Box>
-                    </AccordionDetails>
-                  </Accordion>
-
-                  <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography variant="h6">Color Settings</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Box
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 2,
-                        }}
-                      >
-                        {[
-                          { key: "temp", label: "Temperature" },
-                          { key: "tint", label: "Tint" },
+                          { key: "clarity", label: "Clarity" },
                           { key: "vibrance", label: "Vibrance" },
                           { key: "saturation", label: "Saturation" },
-                        ].map((setting) => (
-                          <Box key={setting.key}>
-                            <SettingSliderDisplay
-                              label={setting.label}
-                              value={
-                                parsedSettings[setting.key]
-                                  ? parsedSettings[setting.key].toFixed(1)
-                                  : "0"
-                              }
-                            />
-                          </Box>
-                        ))}
-                      </Box>
-                    </AccordionDetails>
-                  </Accordion>
-
-                  <Accordion>
-                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography variant="h6">Effects Settings</Typography>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Box
-                        sx={{
-                          display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
-                          gap: 2,
-                        }}
-                      >
-                        {[
-                          { key: "clarity", label: "Clarity" },
-                          { key: "dehaze", label: "Dehaze" },
                         ].map((setting) => (
                           <Box key={setting.key}>
                             <SettingSliderDisplay
@@ -750,8 +654,8 @@ const PresetDetails: React.FC = () => {
                   </Accordion>
                 </>
               )}
-            </Stack>
-          </Box>
+            </Box>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>

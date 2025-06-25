@@ -18,12 +18,14 @@ const filmSimTypeDefs = require("./schema/typeDefs/filmSim");
 const listTypeDefs = require("./schema/typeDefs/list");
 const tagTypeDefs = require("./schema/typeDefs/tag");
 const userTypeDefs = require("./schema/typeDefs/user");
+const discussionTypeDefs = require("./schema/typeDefs/discussion");
 const mainResolvers = require("./schema/resolvers");
 const presetResolvers = require("./schema/resolvers/preset");
 const filmSimResolvers = require("./schema/resolvers/filmSim");
 const listResolvers = require("./schema/resolvers/list");
 const tagResolvers = require("./schema/resolvers/tag");
 const userResolvers = require("./schema/resolvers/user");
+const discussionResolvers = require("./schema/resolvers/discussion");
 
 const typeDefs = mergeTypeDefs([
   mainTypeDefs,
@@ -32,6 +34,7 @@ const typeDefs = mergeTypeDefs([
   listTypeDefs,
   tagTypeDefs,
   userTypeDefs,
+  discussionTypeDefs,
 ]);
 const resolvers = mergeResolvers([
   mainResolvers,
@@ -40,6 +43,7 @@ const resolvers = mergeResolvers([
   listResolvers,
   tagResolvers,
   userResolvers,
+  discussionResolvers,
 ]);
 
 const PORT = process.env.PORT || 4000;
@@ -95,6 +99,7 @@ const startServer = async () => {
         : [
             "http://localhost:5173",
             "http://localhost:5174",
+            "http://localhost:5175",
             "http://localhost:3000",
             "https://visor-c51a1.web.app",
             "https://visor-c51a1.firebaseapp.com",

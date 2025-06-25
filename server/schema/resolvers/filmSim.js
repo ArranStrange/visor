@@ -2,6 +2,7 @@ const { AuthenticationError } = require("../../utils/errors");
 const FilmSim = require("../../models/FilmSim");
 const Tag = require("../../models/Tag");
 const Image = require("../../models/Image");
+const Discussion = require("../../models/Discussion");
 
 const filmSimResolvers = {
   Query: {
@@ -268,6 +269,32 @@ const filmSimResolvers = {
           // Update the film simulation with the sample image IDs
           filmSim.sampleImages = sampleImageIds;
           await filmSim.save();
+
+          // Create discussion for the film sim
+          try {
+            const discussion = new Discussion({
+              title: `Discussion: ${name}`,
+              linkedTo: {
+                type: "filmsim",
+                refId: filmSim._id,
+              },
+              tags: tags || [],
+              createdBy: user._id,
+              followers: [user._id], // Auto-subscribe creator
+            });
+
+            await discussion.save();
+            console.log(
+              "Discussion created successfully for film sim:",
+              discussion._id
+            );
+          } catch (discussionError) {
+            console.error(
+              "Error creating discussion for film sim:",
+              discussionError
+            );
+            // Don't fail the film sim creation if discussion creation fails
+          }
         }
 
         return filmSim;

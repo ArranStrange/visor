@@ -66,9 +66,9 @@ const PresetCard: React.FC<PresetCardProps> = ({
   const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
 
   // Debug logging
-  React.useEffect(() => {
-    console.log("PresetCard:", { title, imageUrl, offWhiteColor, isAnalyzing });
-  }, [title, imageUrl, offWhiteColor, isAnalyzing]);
+  // React.useEffect(() => {
+  //   console.log("PresetCard:", { title, imageUrl, offWhiteColor, isAnalyzing });
+  // }, [title, imageUrl, offWhiteColor, isAnalyzing]);
 
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
