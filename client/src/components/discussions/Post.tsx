@@ -232,15 +232,15 @@ const Post: React.FC<PostProps> = ({
   return (
     <Box
       sx={{
-        ml: depth * 3,
-        mb: 2,
+        ml: depth * 2,
+        mb: 1.2,
         position: "relative",
         "&::before":
           depth > 0
             ? {
                 content: '""',
                 position: "absolute",
-                left: -12,
+                left: -10,
                 top: 0,
                 bottom: 0,
                 width: 2,
@@ -258,33 +258,45 @@ const Post: React.FC<PostProps> = ({
           backgroundColor: "background.paper",
         }}
       >
-        <CardContent sx={{ pt: 2 }}>
+        <CardContent sx={{ pt: 1.2, pb: 1.2, pl: 1.5, pr: 1.5 }}>
           {/* Post Header */}
-          <Box display="flex" alignItems="flex-start" gap={2} mb={2}>
+          <Box display="flex" alignItems="flex-start" gap={1.2} mb={1.2}>
             <Box position="relative">
-              <Avatar src={post.author.avatar} sx={{ width: 40, height: 40 }}>
+              <Avatar src={post.author.avatar} sx={{ width: 32, height: 32 }}>
                 {post.author.username.charAt(0).toUpperCase()}
               </Avatar>
             </Box>
 
             <Box flex={1}>
-              <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+              <Box display="flex" alignItems="center" gap={0.7} mb={0.2}>
                 <Typography variant="subtitle2" fontWeight="bold">
                   {post.author.username}
                 </Typography>
 
                 {post.parentId && (
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontSize={12}
+                  >
                     replying to a post
                   </Typography>
                 )}
 
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  fontSize={12}
+                >
                   {formatDate(post.createdAt)}
                 </Typography>
 
                 {post.isEdited && (
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontSize={12}
+                  >
                     (edited)
                   </Typography>
                 )}
@@ -299,7 +311,7 @@ const Post: React.FC<PostProps> = ({
                         fontStyle: "italic",
                         color: "text.secondary",
                         backgroundColor: "grey.100",
-                        padding: 1,
+                        padding: 0.7,
                         borderRadius: 1,
                       }}
                     >
