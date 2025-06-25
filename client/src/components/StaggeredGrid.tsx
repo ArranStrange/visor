@@ -170,8 +170,10 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           minHeight: "100vh", // Prevent layout shift
           contain: "layout", // CSS containment for better performance
         }}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        {...({} as any)}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {columns.map((column, columnIndex) => (
             <Box
               key={columnIndex}

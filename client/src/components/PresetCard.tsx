@@ -3,6 +3,7 @@ import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
+import { useImageColor } from "../hooks/useImageColor";
 import FastImage from "./FastImage";
 
 // Placeholder image for presets without thumbnails
@@ -53,6 +54,22 @@ const PresetCard: React.FC<PresetCardProps> = ({
       imageUrl = afterImage.url;
     }
   }
+
+  // Get dynamic off-white color based on image (lightweight version)
+  const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
+  const [showColor, setShowColor] = React.useState(false);
+
+  // Show color with a short delay after analysis completes
+  React.useEffect(() => {
+    if (!isAnalyzing && offWhiteColor) {
+      const timer = setTimeout(() => {
+        setShowColor(true);
+      }, 100); // Much shorter delay than before
+      return () => clearTimeout(timer);
+    } else {
+      setShowColor(false);
+    }
+  }, [isAnalyzing, offWhiteColor]);
 
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -221,7 +238,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
           variant="h5"
           fontWeight="bold"
           sx={{
-            color: "rgba(255, 255, 255, 0.5)",
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}
@@ -231,7 +248,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: "rgba(255, 255, 255, 0.5)",
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}

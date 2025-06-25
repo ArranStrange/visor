@@ -152,6 +152,14 @@ const PublicProfile: React.FC = () => {
     })),
   ];
 
+  // Filter content based on contentType
+  const filteredContent = allContent.filter((item) => {
+    if (contentType === "all") return true;
+    if (contentType === "presets") return item.type === "preset";
+    if (contentType === "films") return item.type === "film";
+    return true;
+  });
+
   const handleShare = async () => {
     const shareData = {
       title: `${user.username}'s Profile on VISOR`,
@@ -162,7 +170,7 @@ const PublicProfile: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err) {
+      } catch (err: any) {
         if (err.name !== "AbortError") {
           console.error("Error sharing profile:", err);
         }
@@ -173,7 +181,7 @@ const PublicProfile: React.FC = () => {
         await navigator.clipboard.writeText(window.location.href);
         setSnackbarMessage("Profile URL copied to clipboard!");
         setSnackbarOpen(true);
-      } catch (err) {
+      } catch (err: any) {
         setSnackbarMessage("Failed to copy URL.");
         setSnackbarOpen(true);
       }
@@ -411,7 +419,12 @@ const PublicProfile: React.FC = () => {
                         >
                           <ListItemText
                             primary={
-                              <Box display="flex" alignItems="center" gap={1}>
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                                component="span"
+                              >
                                 <Typography variant="h6" component="span">
                                   {list.name}
                                 </Typography>
@@ -423,12 +436,13 @@ const PublicProfile: React.FC = () => {
                               </Box>
                             }
                             secondary={
-                              <Box>
+                              <Box component="span">
                                 {list.description && (
                                   <Typography
                                     variant="body2"
                                     color="text.secondary"
-                                    mb={1}
+                                    component="span"
+                                    sx={{ display: "block", mb: 1 }}
                                   >
                                     {list.description}
                                   </Typography>
@@ -436,6 +450,7 @@ const PublicProfile: React.FC = () => {
                                 <Typography
                                   variant="body2"
                                   color="text.secondary"
+                                  component="span"
                                 >
                                   {list.presets?.length || 0} presets •{" "}
                                   {list.filmSims?.length || 0} film sims
@@ -467,10 +482,13 @@ const PublicProfile: React.FC = () => {
         </Box>
 
         {/* Content Grid */}
-        <ContentGridLoader contentType={contentType} customData={allContent} />
+        <ContentGridLoader
+          contentType={contentType}
+          customData={filteredContent}
+        />
 
         {/* Empty State */}
-        {allContent.length === 0 && (
+        {filteredContent.length === 0 && (
           <Box display="flex" flexDirection="column" alignItems="center" py={8}>
             <Typography variant="h6" color="text.secondary" gutterBottom>
               No content yet

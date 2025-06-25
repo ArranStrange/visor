@@ -19,13 +19,13 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
       );
 
       // Debug: Log the exact error message to see if it's triggering logout
-      console.log(`[DEBUG] Checking error message: "${message}"`);
-      console.log(`[DEBUG] Error path: ${path}`);
-      console.log(
-        `[DEBUG] Current token: ${
-          localStorage.getItem("visor_token") ? "exists" : "missing"
-        }`
-      );
+      // console.log(`[DEBUG] Checking error message: "${message}"`);
+      // console.log(`[DEBUG] Error path: ${path}`);
+      // console.log(
+      //   `[DEBUG] Current token: ${
+      //     localStorage.getItem("visor_token") ? "exists" : "missing"
+      //   }`
+      // );
 
       // Handle authentication errors including JWT expiration
       // Only logout for actual authentication failures, not authorization errors
@@ -38,7 +38,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         (message.includes("Not authenticated") &&
           !message.includes("Not authorized"))
       ) {
-        console.log(`[DEBUG] Authentication error detected - logging out`);
+        // console.log(`[DEBUG] Authentication error detected - logging out`);
         // Clear local storage
         localStorage.removeItem("visor_token");
         localStorage.removeItem("user");
@@ -48,10 +48,10 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
           window.location.href = "/login";
         }
       } else {
-        console.log(`[DEBUG] Not an authentication error - not logging out`);
-        console.log(
-          `[DEBUG] This appears to be an authorization or validation error`
-        );
+        // console.log(`[DEBUG] Not an authentication error - not logging out`);
+        // console.log(
+        //   `[DEBUG] This appears to be an authorization or validation error`
+        // );
       }
     });
   }
@@ -66,10 +66,10 @@ const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("visor_token");
 
   // Debug: Log the token being sent
-  console.log("[DEBUG] Auth token being sent:", token ? "exists" : "missing");
+  // console.log("[DEBUG] Auth token being sent:", token ? "exists" : "missing");
   if (token) {
-    console.log("[DEBUG] Token length:", token.length);
-    console.log("[DEBUG] Token starts with:", token.substring(0, 20) + "...");
+    // console.log("[DEBUG] Token length:", token.length);
+    // console.log("[DEBUG] Token starts with:", token.substring(0, 20) + "...");
   }
 
   // return the headers to the context so httpLink can read them

@@ -204,13 +204,22 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
                     <ListItemText
                       primary={list.name}
                       secondary={
-                        <Box>
+                        <Box component="span">
                           {list.description && (
-                            <Typography variant="body2" color="text.secondary">
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              component="span"
+                              sx={{ display: "block", mb: 1 }}
+                            >
                               {list.description}
                             </Typography>
                           )}
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            component="span"
+                          >
                             {list.presets?.length || 0} presets •{" "}
                             {list.filmSims?.length || 0} film sims
                             {list.isPublic && " • Public"}

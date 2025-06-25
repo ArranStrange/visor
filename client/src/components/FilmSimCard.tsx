@@ -11,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
+import { useImageColor } from "../hooks/useImageColor";
 import FastImage from "./FastImage";
 
 interface FilmSimCardProps {
@@ -58,6 +59,22 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
+
+  // Get dynamic off-white color based on image (lightweight version)
+  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
+  const [showColor, setShowColor] = React.useState(false);
+
+  // Show color with a short delay after analysis completes
+  React.useEffect(() => {
+    if (!isAnalyzing && offWhiteColor) {
+      const timer = setTimeout(() => {
+        setShowColor(true);
+      }, 100); // Much shorter delay than before
+      return () => clearTimeout(timer);
+    } else {
+      setShowColor(false);
+    }
+  }, [isAnalyzing, offWhiteColor]);
 
   // Check if we're on mobile
   React.useEffect(() => {
@@ -237,7 +254,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           variant="h5"
           fontWeight="bold"
           sx={{
-            color: "rgba(255, 255, 255, 0.5)",
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",
@@ -248,7 +265,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: "rgba(255, 255, 255, 0.5)",
+            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",

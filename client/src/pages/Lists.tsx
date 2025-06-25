@@ -197,7 +197,12 @@ const Lists: React.FC = () => {
                   <ListItemButton onClick={() => handleListClick(list.id)}>
                     <ListItemText
                       primary={
-                        <Box display="flex" alignItems="center" gap={1}>
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                          component="span"
+                        >
                           <ListIcon color="primary" />
                           <Typography variant="h6" component="span">
                             {list.name}
@@ -215,17 +220,22 @@ const Lists: React.FC = () => {
                         </Box>
                       }
                       secondary={
-                        <Box>
+                        <Box component="span">
                           {list.description && (
                             <Typography
                               variant="body2"
                               color="text.secondary"
-                              mb={1}
+                              component="span"
+                              sx={{ display: "block", mb: 1 }}
                             >
                               {list.description}
                             </Typography>
                           )}
-                          <Typography variant="body2" color="text.secondary">
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            component="span"
+                          >
                             {list.presets?.length || 0} presets •{" "}
                             {list.filmSims?.length || 0} film sims
                           </Typography>
