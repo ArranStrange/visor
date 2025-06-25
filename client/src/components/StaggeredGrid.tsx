@@ -22,7 +22,7 @@ interface StaggeredGridProps {
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   children,
-  minWidth = 250,
+  minWidth = 200,
   gap = 16,
   randomizeOrder = true,
   loading = false,
@@ -37,36 +37,38 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
   const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
     threshold: 0.1,
-    rootMargin: "100px", // Start loading 100px before reaching the bottom
+    rootMargin: "200px", // Increased margin to load earlier
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const [columnCount, setColumnCount] = useState(3);
+  const [columnCount, setColumnCount] = useState(4); // Start with 4 for desktop
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Memoize the column count calculation
   const calculateColumnCount = useCallback(
     (containerWidth: number) => {
       if (containerWidth < 768) {
-        // Small screens: minimum 2 columns
+        // Mobile screens: minimum 2 columns, max 3
         const calculatedColumns = Math.max(
           2,
           Math.floor((containerWidth + gap) / (minWidth + gap))
         );
-        return Math.min(calculatedColumns, 4); // Cap at 3 for small screens
+        return Math.min(calculatedColumns, 3); // Cap at 3 for mobile
       } else if (containerWidth < 1200) {
-        // Medium screens (laptops): minimum 3 columns
+        // Tablet/Medium screens: minimum 3 columns, max 4
         const calculatedColumns = Math.max(
           3,
           Math.floor((containerWidth + gap) / (minWidth + gap))
         );
-        return Math.min(calculatedColumns, 4); // Cap at 4 for medium screens
+        return Math.min(calculatedColumns, 4); // Cap at 4 for tablet
       } else {
-        // Large screens: minimum 4 columns
+        // Desktop/Large screens: minimum 4 columns, no max
         const calculatedColumns = Math.max(
           4,
           Math.floor((containerWidth + gap) / (minWidth + gap))
         );
-        return calculatedColumns;
+        // Ensure we get at least 4 columns on desktop, even if calculation suggests fewer
+        return Math.max(calculatedColumns, 4);
       }
     },
     [minWidth, gap]
@@ -103,10 +105,21 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
   // Load more items when intersection observer triggers
   useEffect(() => {
-    if (loadMoreInView && hasMore && !isLoading && onLoadMore) {
-      onLoadMore();
+    if (
+      loadMoreInView &&
+      hasMore &&
+      !isLoading &&
+      !isLoadingMore &&
+      onLoadMore
+    ) {
+      setIsLoadingMore(true);
+      // Use setTimeout to prevent immediate re-triggering
+      setTimeout(() => {
+        onLoadMore();
+        setIsLoadingMore(false);
+      }, 100);
     }
-  }, [loadMoreInView, hasMore, isLoading, onLoadMore]);
+  }, [loadMoreInView, hasMore, isLoading, isLoadingMore, onLoadMore]);
 
   // Memoize column distribution to avoid recalculation on every render
   const columns = useMemo(() => {
@@ -117,21 +130,21 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     // Create array of indices
     let itemIndices = Array.from({ length: children.length }, (_, i) => i);
 
-    // Shuffle the indices if randomizeOrder is true
-    if (randomizeOrder) {
-      // Use a more efficient shuffle algorithm
-      for (let i = itemIndices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [itemIndices[i], itemIndices[j]] = [itemIndices[j], itemIndices[i]];
-      }
-    }
+    // Temporarily disable randomization to prevent layout shifts
+    // if (randomizeOrder) {
+    //   // Use a more efficient shuffle algorithm
+    //   for (let i = itemIndices.length - 1; i > 0; i--) {
+    //     const j = Math.floor(Math.random() * (i + 1));
+    //     [itemIndices[i], itemIndices[j]] = [itemIndices[j], itemIndices[i]];
+    //   }
+    // }
 
     const newColumns: number[][] = Array.from(
       { length: columnCount },
       () => []
     );
 
-    // Optimized distribution: use modulo for better performance
+    // Consistent distribution: always distribute items in the same order
     itemIndices.forEach((itemIndex, index) => {
       const columnIndex = index % columnCount;
       newColumns[columnIndex].push(itemIndex);
@@ -154,9 +167,11 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
           gap: `${gap}px`,
           alignItems: "start", // Ensure columns start from the top
+          minHeight: "100vh", // Prevent layout shift
+          contain: "layout", // CSS containment for better performance
         }}
       >
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {columns.map((column, columnIndex) => (
             <Box
               key={columnIndex}
@@ -169,23 +184,22 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
             >
               {column.map((itemIndex) => (
                 <motion.div
-                  key={itemIndex}
-                  initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                  key={`item-${itemIndex}`}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={
                     inView
                       ? {
                           opacity: 1,
                           y: 0,
-                          scale: 1,
                           transition: {
-                            delay: 0.02 * itemIndex,
-                            duration: 0.6,
-                            ease: [0.25, 0.46, 0.45, 0.94], // Custom easing
+                            delay: 0.01 * itemIndex, // Faster delay
+                            duration: 0.3, // Shorter duration
+                            ease: "easeOut", // Simpler easing
                           },
                         }
                       : {}
                   }
-                  exit={{ opacity: 0, y: -20, scale: 0.95 }}
+                  exit={{ opacity: 0, y: -10 }}
                   style={{ width: "100%" }} // Ensure motion.div takes full width
                 >
                   {children[itemIndex]}
@@ -206,6 +220,9 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
             alignItems: "center",
             py: 4,
             mt: 2,
+            minHeight: 60, // Prevent layout shift
+            position: "relative", // Ensure stable positioning
+            contain: "layout", // CSS containment
           }}
         >
           {isLoading && (

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef } from "react";
 import { useQuery } from "@apollo/client";
 import { CircularProgress, Alert, Box } from "@mui/material";
 import { useContentType } from "../context/ContentTypeFilter";
@@ -18,7 +18,7 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 8;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
@@ -28,6 +28,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   renderItem,
 }) => {
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const {
     data: presetData,
@@ -146,7 +147,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   );
 
   return (
-    <Box>
+    <Box ref={containerRef}>
       <StaggeredGrid
         randomizeOrder={randomizeOrder}
         loading={false} // Disable skeleton loading

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Card,
-  CardMedia,
   Typography,
   Box,
   Chip,
@@ -12,7 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
-import { useImageColor } from "../hooks/useImageColor";
+import FastImage from "./FastImage";
 
 interface FilmSimCardProps {
   id: string;
@@ -59,32 +58,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
-
-  // Get dynamic off-white color based on image
-  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
-  const [showColor, setShowColor] = React.useState(false);
-
-  // Show color with a delay after analysis completes
-  React.useEffect(() => {
-    if (!isAnalyzing && offWhiteColor) {
-      const timer = setTimeout(() => {
-        setShowColor(true);
-      }, 500); // 500ms delay after analysis completes
-      return () => clearTimeout(timer);
-    } else {
-      setShowColor(false);
-    }
-  }, [isAnalyzing, offWhiteColor]);
-
-  // Debug logging
-  // React.useEffect(() => {
-  //   console.log("FilmSimCard:", {
-  //     name,
-  //     thumbnail,
-  //     offWhiteColor,
-  //     isAnalyzing,
-  //   });
-  // }, [name, thumbnail, offWhiteColor, isAnalyzing]);
 
   // Check if we're on mobile
   React.useEffect(() => {
@@ -164,20 +137,18 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       }}
       onClick={handleClick}
     >
-      <CardMedia
-        component="img"
-        image={thumbnail || "/placeholder-image.jpg"}
+      <FastImage
+        src={thumbnail || "/placeholder-image.jpg"}
         alt={name}
+        aspectRatio="2:3"
         onLoad={() => setLoaded(true)}
-        sx={{
+        style={{
           position: "absolute",
           top: 0,
           left: 0,
           width: "100%",
           height: "100%",
           objectFit: "cover",
-          filter: loaded ? "none" : "blur(16px)",
-          transition: "filter 0.4s cubic-bezier(.4,0,.2,1)",
         }}
       />
 
@@ -266,7 +237,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           variant="h5"
           fontWeight="bold"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+            color: "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",
@@ -277,7 +248,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+            color: "rgba(255, 255, 255, 0.5)",
             textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
             lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",

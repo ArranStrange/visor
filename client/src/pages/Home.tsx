@@ -8,7 +8,7 @@ const HomePage: React.FC = () => {
   const { contentType } = useContentType();
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 2, mb: 6 }}>
+    <Container maxWidth="xl" sx={{ mt: 2, mb: 6 }}>
       <ContentTypeToggle />
       <ContentGridLoader contentType={contentType} />
     </Container>

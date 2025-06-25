@@ -1,17 +1,9 @@
 import React from "react";
-import {
-  Card,
-  CardMedia,
-  Typography,
-  Chip,
-  Box,
-  Avatar,
-  IconButton,
-} from "@mui/material";
+import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
-import { useImageColor } from "../hooks/useImageColor";
+import FastImage from "./FastImage";
 
 // Placeholder image for presets without thumbnails
 const placeholderImage = "/placeholder-image.jpg";
@@ -61,27 +53,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
       imageUrl = afterImage.url;
     }
   }
-
-  // Get dynamic off-white color based on image
-  const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
-  const [showColor, setShowColor] = React.useState(false);
-
-  // Show color with a delay after analysis completes
-  React.useEffect(() => {
-    if (!isAnalyzing && offWhiteColor) {
-      const timer = setTimeout(() => {
-        setShowColor(true);
-      }, 500); // 500ms delay after analysis completes
-      return () => clearTimeout(timer);
-    } else {
-      setShowColor(false);
-    }
-  }, [isAnalyzing, offWhiteColor]);
-
-  // Debug logging
-  // React.useEffect(() => {
-  //   console.log("PresetCard:", { title, imageUrl, offWhiteColor, isAnalyzing });
-  // }, [title, imageUrl, offWhiteColor, isAnalyzing]);
 
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -153,17 +124,14 @@ const PresetCard: React.FC<PresetCardProps> = ({
       }}
       onClick={handleCardClick}
     >
-      <CardMedia
-        component="div"
-        sx={{
+      <FastImage
+        src={imageUrl}
+        alt={title}
+        aspectRatio="3:4"
+        style={{
           height: "100%",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundImage: `url(${imageUrl})`,
-          transition: "transform 0.3s ease-in-out",
-          "&:hover": {
-            transform: "scale(1.05)",
-          },
+          width: "100%",
+          objectFit: "cover",
         }}
       />
 
@@ -253,7 +221,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
           variant="h5"
           fontWeight="bold"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+            color: "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}
@@ -263,7 +231,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+            color: "rgba(255, 255, 255, 0.5)",
             textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}
