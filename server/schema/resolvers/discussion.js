@@ -99,7 +99,45 @@ const discussionResolvers = {
         }
 
         if (search) {
-          query.$text = { $search: search };
+          // Enhanced search: search across discussion titles, tags, and post content
+          const searchRegex = new RegExp(search, "i");
+
+          // First, find discussions that match the search criteria directly
+          const directMatches = await Discussion.find({
+            ...query,
+            $or: [{ title: searchRegex }, { tags: { $in: [searchRegex] } }],
+          }).select("_id");
+
+          // Then, find discussions that have posts matching the search
+          const postsWithMatches = await DiscussionPost.find({
+            content: searchRegex,
+            isDeleted: false,
+          }).select("discussionId");
+
+          const discussionIdsFromPosts = [
+            ...new Set(postsWithMatches.map((p) => p.discussionId.toString())),
+          ];
+
+          // Combine both sets of discussion IDs
+          const allMatchingDiscussionIds = [
+            ...directMatches.map((d) => d._id.toString()),
+            ...discussionIdsFromPosts,
+          ];
+
+          // Remove duplicates
+          const uniqueDiscussionIds = [...new Set(allMatchingDiscussionIds)];
+
+          if (uniqueDiscussionIds.length > 0) {
+            query._id = { $in: uniqueDiscussionIds };
+          } else {
+            // If no matches found, return empty result
+            return {
+              discussions: [],
+              totalCount: 0,
+              hasNextPage: false,
+              hasPreviousPage: false,
+            };
+          }
         }
 
         if (createdBy) {
@@ -123,6 +161,7 @@ const discussionResolvers = {
           hasPreviousPage: page > 1,
         };
       } catch (error) {
+        console.error("Error in getDiscussions:", error);
         throw new Error("Failed to fetch discussions");
       }
     },
@@ -228,14 +267,50 @@ const discussionResolvers = {
     searchDiscussions: async (_, { query, page = 1, limit = 20 }) => {
       try {
         const skip = (page - 1) * limit;
+        const searchRegex = new RegExp(query, "i");
+
+        // First, find discussions that match the search criteria directly
+        const directMatches = await Discussion.find({
+          isActive: true,
+          $or: [{ title: searchRegex }, { tags: { $in: [searchRegex] } }],
+        }).select("_id");
+
+        // Then, find discussions that have posts matching the search
+        const postsWithMatches = await DiscussionPost.find({
+          content: searchRegex,
+          isDeleted: false,
+        }).select("discussionId");
+
+        const discussionIdsFromPosts = [
+          ...new Set(postsWithMatches.map((p) => p.discussionId.toString())),
+        ];
+
+        // Combine both sets of discussion IDs
+        const allMatchingDiscussionIds = [
+          ...directMatches.map((d) => d._id.toString()),
+          ...discussionIdsFromPosts,
+        ];
+
+        // Remove duplicates
+        const uniqueDiscussionIds = [...new Set(allMatchingDiscussionIds)];
+
+        if (uniqueDiscussionIds.length === 0) {
+          return {
+            discussions: [],
+            totalCount: 0,
+            hasNextPage: false,
+            hasPreviousPage: false,
+          };
+        }
+
         const searchQuery = {
-          $text: { $search: query },
+          _id: { $in: uniqueDiscussionIds },
           isActive: true,
         };
 
         const [discussions, totalCount] = await Promise.all([
           Discussion.find(searchQuery)
-            .sort({ score: { $meta: "textScore" } })
+            .sort({ lastActivity: -1 })
             .skip(skip)
             .limit(limit)
             .populate("createdBy", "id username avatar"),
@@ -249,6 +324,7 @@ const discussionResolvers = {
           hasPreviousPage: page > 1,
         };
       } catch (error) {
+        console.error("Error in searchDiscussions:", error);
         throw new Error("Failed to search discussions");
       }
     },

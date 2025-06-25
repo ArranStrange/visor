@@ -76,9 +76,20 @@ const DiscussionList: React.FC = () => {
     sortBy: "newest",
   });
 
+  const [searchDebounced, setSearchDebounced] = useState("");
+
+  // Debounce search input to avoid too many API calls
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchDebounced(filters.search || "");
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [filters.search]);
+
   const { loading, error, data, refetch } = useQuery(GET_DISCUSSIONS, {
     variables: {
-      search: filters.search || undefined,
+      search: searchDebounced || undefined,
       type: filters.type !== "all" ? filters.type : undefined,
       page: 1,
       limit: 20,
@@ -194,6 +205,65 @@ const DiscussionList: React.FC = () => {
     } catch (e) {
       return "an unknown time ago";
     }
+  };
+
+  // Helper function to highlight search terms in text
+  const highlightSearchTerms = (
+    text: string,
+    searchTerms: string
+  ): React.ReactNode => {
+    if (!searchTerms || !text) return text;
+
+    const terms = searchTerms
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((term) => term.length > 0);
+    if (terms.length === 0) return text;
+
+    let highlightedText = text;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    // Find all matches and create highlighted parts
+    terms.forEach((term) => {
+      const regex = new RegExp(`(${term})`, "gi");
+      const matches = [...highlightedText.matchAll(regex)];
+
+      matches.forEach((match) => {
+        const startIndex = match.index!;
+        const endIndex = startIndex + match[0].length;
+
+        // Add text before match
+        if (startIndex > lastIndex) {
+          parts.push(highlightedText.slice(lastIndex, startIndex));
+        }
+
+        // Add highlighted match
+        parts.push(
+          <Box
+            key={`${startIndex}-${endIndex}`}
+            component="span"
+            sx={{
+              backgroundColor: "rgba(255, 126, 77, 0.15)",
+              fontWeight: "bold",
+              borderRadius: "2px",
+              padding: "0 2px",
+            }}
+          >
+            {match[0]}
+          </Box>
+        );
+
+        lastIndex = endIndex;
+      });
+    });
+
+    // Add remaining text
+    if (lastIndex < highlightedText.length) {
+      parts.push(highlightedText.slice(lastIndex));
+    }
+
+    return parts.length > 0 ? <>{parts}</> : text;
   };
 
   const getSortIcon = (sortBy: string) => {
@@ -513,12 +583,23 @@ const DiscussionList: React.FC = () => {
               <TextField
                 fullWidth
                 size="small"
-                placeholder="Search discussions..."
+                placeholder="Search discussions, posts, and content..."
                 value={filters.search}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
+                  ),
+                  endAdornment: filters.search && (
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ mr: 1 }}
+                    >
+                      {loading
+                        ? "Searching..."
+                        : `${discussions.length} results`}
+                    </Typography>
                   ),
                 }}
               />
@@ -579,12 +660,59 @@ const DiscussionList: React.FC = () => {
         </CardContent>
       </Card>
 
+      {/* Search results summary */}
+      {filters.search && (
+        <Box mb={2}>
+          <Typography variant="body2" color="text.secondary">
+            {loading ? (
+              "Searching..."
+            ) : (
+              <>
+                Found {discussions.length} discussion
+                {discussions.length !== 1 ? "s" : ""}
+                {filters.type !== "all" &&
+                  ` in ${getDiscussionTypeLabel(
+                    filters.type as DiscussionTargetType
+                  )}`}
+                {filters.search && ` matching "${filters.search}"`}
+              </>
+            )}
+          </Typography>
+        </Box>
+      )}
+
       {/* Discussions list */}
       <Box>
         {discussions.length === 0 ? (
           <Alert severity="info">
-            {filters.search || filters.type !== "all" ? (
-              "No discussions match your current filters."
+            {filters.search ? (
+              <Box>
+                <Typography variant="body1" gutterBottom>
+                  No discussions found matching "{filters.search}".
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Try:
+                </Typography>
+                <Box component="ul" sx={{ pl: 2, mb: 2 }}>
+                  <li>Using different keywords</li>
+                  <li>Checking your spelling</li>
+                  <li>Using fewer words</li>
+                  <li>Clearing the type filter</li>
+                </Box>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, search: "", type: "all" }))
+                  }
+                >
+                  Clear Search
+                </Button>
+              </Box>
+            ) : filters.type !== "all" ? (
+              `No ${getDiscussionTypeLabel(
+                filters.type as string
+              ).toLowerCase()} discussions found.`
             ) : (
               <Box>
                 <Typography variant="body1" gutterBottom>
@@ -718,7 +846,10 @@ const DiscussionList: React.FC = () => {
                           navigate(`/discussions/${discussion.id}`)
                         }
                       >
-                        {discussion.title}
+                        {highlightSearchTerms(
+                          discussion.title,
+                          filters.search || ""
+                        )}
                       </Typography>
                     </Box>
 
@@ -780,7 +911,10 @@ const DiscussionList: React.FC = () => {
                         {discussion.tags.slice(0, 3).map((tag) => (
                           <Chip
                             key={tag}
-                            label={tag}
+                            label={highlightSearchTerms(
+                              tag,
+                              filters.search || ""
+                            )}
                             size="small"
                             variant="outlined"
                             sx={{ fontSize: "0.7rem" }}
