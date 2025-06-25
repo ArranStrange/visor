@@ -4,7 +4,7 @@ import { CloudinaryOptimizer } from "../utils/cloudinary";
 interface FastImageProps {
   src: string;
   alt: string;
-  aspectRatio?: "3:4" | "2:3";
+  aspectRatio?: "3:4" | "2:3" | "4:5";
   className?: string;
   style?: React.CSSProperties;
   onLoad?: () => void;

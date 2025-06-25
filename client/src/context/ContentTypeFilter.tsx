@@ -5,6 +5,8 @@ interface ContentTypeContextType {
   setContentType: (type: "all" | "presets" | "films") => void;
   randomizeOrder: boolean;
   setRandomizeOrder: (randomize: boolean) => void;
+  shuffleCounter: number;
+  triggerShuffle: () => void;
 }
 
 const ContentTypeContext = createContext<ContentTypeContextType | undefined>(
@@ -30,10 +32,22 @@ export const ContentTypeProvider: React.FC<ContentTypeProviderProps> = ({
     "all"
   );
   const [randomizeOrder, setRandomizeOrder] = useState(true);
+  const [shuffleCounter, setShuffleCounter] = useState(0);
+
+  const triggerShuffle = () => {
+    setShuffleCounter((prev) => prev + 1);
+  };
 
   return (
     <ContentTypeContext.Provider
-      value={{ contentType, setContentType, randomizeOrder, setRandomizeOrder }}
+      value={{
+        contentType,
+        setContentType,
+        randomizeOrder,
+        setRandomizeOrder,
+        shuffleCounter,
+        triggerShuffle,
+      }}
     >
       {children}
     </ContentTypeContext.Provider>

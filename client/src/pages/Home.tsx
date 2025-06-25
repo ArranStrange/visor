@@ -8,7 +8,16 @@ const HomePage: React.FC = () => {
   const { contentType } = useContentType();
 
   return (
-    <Container maxWidth="xl" sx={{ mt: 2, mb: 6 }}>
+    <Container
+      maxWidth="xl"
+      sx={{
+        mt: 2,
+        mb: 6,
+        width: "100%",
+        maxWidth: "100vw",
+        px: { xs: 2, sm: 3, md: 4 }, // Responsive padding
+      }}
+    >
       <ContentTypeToggle />
       <ContentGridLoader contentType={contentType} />
     </Container>

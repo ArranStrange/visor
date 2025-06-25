@@ -110,7 +110,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
     <Card
       sx={{
         position: "relative",
-        aspectRatio: "3/4", // Slightly longer than 4/3
+        aspectRatio: "4/5", // Shorter than 3/4 to create staggered effect
         borderRadius: 1,
         cursor: "pointer",
         overflow: "hidden", // to contain the overlay and for border-radius on image
@@ -144,7 +144,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
       <FastImage
         src={imageUrl}
         alt={title}
-        aspectRatio="3:4"
+        aspectRatio="4:5"
         style={{
           height: "100%",
           width: "100%",

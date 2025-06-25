@@ -37,11 +37,16 @@ export class CloudinaryOptimizer {
     return url.replace("/upload/", `/upload/${transformations}/`);
   }
 
-  static getThumbnail(url: string, aspectRatio: "3:4" | "2:3" = "3:4"): string {
+  static getThumbnail(
+    url: string,
+    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
+  ): string {
     const dimensions =
       aspectRatio === "3:4"
         ? { width: 300, height: 400 }
-        : { width: 300, height: 450 };
+        : aspectRatio === "2:3"
+        ? { width: 300, height: 450 }
+        : { width: 300, height: 375 }; // 4:5 ratio
 
     return this.optimize(url, {
       ...dimensions,
@@ -62,7 +67,7 @@ export class CloudinaryOptimizer {
 
   static getResponsiveSrcSet(
     url: string,
-    aspectRatio: "3:4" | "2:3" = "3:4"
+    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
   ): {
     mobile: string;
     tablet: string;
@@ -84,7 +89,7 @@ export class CloudinaryOptimizer {
           height: 533,
         }),
       };
-    } else {
+    } else if (aspectRatio === "2:3") {
       return {
         mobile: this.optimize(url, { ...baseOptions, width: 200, height: 300 }),
         tablet: this.optimize(url, { ...baseOptions, width: 300, height: 450 }),
@@ -94,12 +99,23 @@ export class CloudinaryOptimizer {
           height: 600,
         }),
       };
+    } else {
+      // 4:5 ratio
+      return {
+        mobile: this.optimize(url, { ...baseOptions, width: 200, height: 250 }),
+        tablet: this.optimize(url, { ...baseOptions, width: 300, height: 375 }),
+        desktop: this.optimize(url, {
+          ...baseOptions,
+          width: 400,
+          height: 500,
+        }),
+      };
     }
   }
 
   static getLazyLoadUrl(
     url: string,
-    aspectRatio: "3:4" | "2:3" = "3:4"
+    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
   ): {
     placeholder: string;
     full: string;

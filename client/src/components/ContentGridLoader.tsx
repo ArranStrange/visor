@@ -100,8 +100,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       : results;
   }, [customData, contentType, presetData, filmSimData, searchQuery]);
 
-  const { randomizeOrder } = useContentType();
-
   // Reset visible items when data changes
   React.useEffect(() => {
     setVisibleItems(ITEMS_PER_PAGE);
@@ -147,9 +145,15 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   );
 
   return (
-    <Box ref={containerRef}>
+    <Box
+      ref={containerRef}
+      sx={{
+        width: "100%",
+        maxWidth: "100vw",
+        overflow: "hidden",
+      }}
+    >
       <StaggeredGrid
-        randomizeOrder={randomizeOrder}
         loading={false} // Disable skeleton loading
         onLoadMore={loadMore}
         hasMore={hasMore}
