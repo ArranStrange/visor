@@ -30,6 +30,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
           r
           b
         }
+        filmSimulation
       }
       tags {
         id

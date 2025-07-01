@@ -26,6 +26,9 @@ import {
   TextField,
   Grid,
   Paper,
+  FormControl,
+  InputLabel,
+  Select,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
@@ -272,10 +275,10 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Tags and camera compatibility */}
       <Stack direction="row" spacing={1} mb={2} flexWrap="wrap">
-        {filmSim.tags?.map((tag) => (
+        {filmSim.tags?.map((tag: { id: string; displayName: string }) => (
           <Chip key={tag.id} label={tag.displayName} variant="outlined" />
         ))}
-        {filmSim.compatibleCameras?.map((camera) => (
+        {filmSim.compatibleCameras?.map((camera: string) => (
           <Chip key={camera} label={camera} color="secondary" />
         ))}
       </Stack>
@@ -298,6 +301,7 @@ const FilmSimDetails: React.FC = () => {
         }}
       >
         {[
+          { label: "Film Simulation", value: filmSim.settings?.filmSimulation },
           { label: "Dynamic Range", value: filmSim.settings?.dynamicRange },
           { label: "Highlight Tone", value: filmSim.settings?.highlight },
           { label: "Shadow Tone", value: filmSim.settings?.shadow },
@@ -351,16 +355,18 @@ const FilmSimDetails: React.FC = () => {
           gap: 2,
         }}
       >
-        {filmSim.sampleImages?.map((image) => (
-          <Box key={image.id}>
-            <img
-              src={image.url}
-              alt={image.caption || `Sample image for ${filmSim.name}`}
-              style={{ width: "100%", borderRadius: 12, cursor: "pointer" }}
-              onClick={() => setFullscreenImage(image.url)}
-            />
-          </Box>
-        ))}
+        {filmSim.sampleImages?.map(
+          (image: { id: string; url: string; caption?: string }) => (
+            <Box key={image.id}>
+              <img
+                src={image.url}
+                alt={image.caption || `Sample image for ${filmSim.name}`}
+                style={{ width: "100%", borderRadius: 12, cursor: "pointer" }}
+                onClick={() => setFullscreenImage(image.url)}
+              />
+            </Box>
+          )
+        )}
       </Box>
 
       {/* Fullscreen Image Modal */}
@@ -489,44 +495,53 @@ const FilmSimDetails: React.FC = () => {
             >
               {filmSim.recommendedPresets &&
               filmSim.recommendedPresets.length > 0 ? (
-                filmSim.recommendedPresets.map((preset) => (
-                  <Box
-                    key={preset.id}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      bgcolor: "background.default",
-                      boxShadow: 1,
-                      cursor: "pointer",
-                      "&:hover": {
-                        boxShadow: 2,
-                        bgcolor: "action.hover",
-                      },
-                    }}
-                    onClick={() =>
-                      (window.location.href = `/preset/${preset.slug}`)
-                    }
-                  >
-                    <Typography variant="h6" gutterBottom>
-                      {preset.title}
-                    </Typography>
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      flexWrap="wrap"
-                      useFlexGap
+                filmSim.recommendedPresets.map(
+                  (preset: {
+                    id: string;
+                    title: string;
+                    slug: string;
+                    tags?: { id: string; displayName: string }[];
+                  }) => (
+                    <Box
+                      key={preset.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: "background.default",
+                        boxShadow: 1,
+                        cursor: "pointer",
+                        "&:hover": {
+                          boxShadow: 2,
+                          bgcolor: "action.hover",
+                        },
+                      }}
+                      onClick={() =>
+                        (window.location.href = `/preset/${preset.slug}`)
+                      }
                     >
-                      {preset.tags?.map((tag) => (
-                        <Chip
-                          key={tag.id}
-                          label={tag.displayName}
-                          size="small"
-                          variant="outlined"
-                        />
-                      ))}
-                    </Stack>
-                  </Box>
-                ))
+                      <Typography variant="h6" gutterBottom>
+                        {preset.title}
+                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        flexWrap="wrap"
+                        useFlexGap
+                      >
+                        {preset.tags?.map(
+                          (tag: { id: string; displayName: string }) => (
+                            <Chip
+                              key={tag.id}
+                              label={tag.displayName}
+                              size="small"
+                              variant="outlined"
+                            />
+                          )
+                        )}
+                      </Stack>
+                    </Box>
+                  )
+                )
               ) : (
                 <Typography variant="body2" color="text.secondary">
                   No recommended presets available.
@@ -556,10 +571,12 @@ const FilmSimDetails: React.FC = () => {
         onClose={() => setEditDialogOpen(false)}
         maxWidth="lg"
         fullWidth
+        fullScreen={window.innerWidth < 768}
         PaperProps={{
           sx: {
             backgroundColor: "background.paper",
-            maxHeight: "90vh",
+            maxHeight: window.innerWidth < 768 ? "100vh" : "90vh",
+            height: window.innerWidth < 768 ? "100vh" : "auto",
           },
         }}
       >
@@ -568,7 +585,7 @@ const FilmSimDetails: React.FC = () => {
             Edit Film Simulation
           </Typography>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ overflowY: "auto", pb: 2 }}>
           <Box component="form" sx={{ mt: 2 }}>
             <Stack spacing={3}>
               <TextField
@@ -601,7 +618,9 @@ const FilmSimDetails: React.FC = () => {
                 <TextField
                   fullWidth
                   defaultValue={
-                    filmSim.tags?.map((tag) => tag.displayName).join(", ") || ""
+                    filmSim.tags
+                      ?.map((tag: { displayName: string }) => tag.displayName)
+                      .join(", ") || ""
                   }
                   placeholder="e.g., portrait, landscape, street"
                 />
@@ -618,6 +637,15 @@ const FilmSimDetails: React.FC = () => {
                 />
               </Box>
 
+              {/* Film Simulation Type */}
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Film Simulation Type</InputLabel>
+                <Select defaultValue={filmSim.type || "custom-recipe"} disabled>
+                  <MenuItem value="custom-recipe">Custom Recipe</MenuItem>
+                  <MenuItem value="fujifilm-native">Fujifilm Native</MenuItem>
+                </Select>
+              </FormControl>
+
               {/* Camera Settings */}
               <Paper sx={{ p: 3, mt: 2 }}>
                 <Typography variant="h6" gutterBottom>
@@ -626,11 +654,15 @@ const FilmSimDetails: React.FC = () => {
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: {
+                      xs: "1fr",
+                      sm: "1fr 1fr",
+                    },
                     gap: 2,
                   }}
                 >
                   {[
+                    { key: "filmSimulation", label: "Film Simulation" },
                     { key: "dynamicRange", label: "Dynamic Range" },
                     { key: "highlight", label: "Highlight Tone" },
                     { key: "shadow", label: "Shadow Tone" },
@@ -659,7 +691,10 @@ const FilmSimDetails: React.FC = () => {
                   <Box
                     sx={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
+                      gridTemplateColumns: {
+                        xs: "1fr",
+                        sm: "1fr 1fr",
+                      },
                       gap: 2,
                     }}
                   >
@@ -685,7 +720,7 @@ const FilmSimDetails: React.FC = () => {
             </Stack>
           </Box>
         </DialogContent>
-        <DialogActions>
+        <DialogActions sx={{ p: 2, pb: window.innerWidth < 768 ? 4 : 2 }}>
           <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
           <Button
             variant="contained"

@@ -33,6 +33,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import UploadIcon from "@mui/icons-material/Upload";
 import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
@@ -43,6 +44,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
+import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
 import { useAuth } from "../context/AuthContext";
 
 const PresetDetails: React.FC = () => {
@@ -54,12 +56,22 @@ const PresetDetails: React.FC = () => {
   });
   const [deletePreset, { loading: deletingPreset }] =
     useMutation(DELETE_PRESET);
+  const [updatePreset, { loading: updatingPreset }] =
+    useMutation(UPDATE_PRESET);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
     null
   );
   const [parsedSettings, setParsedSettings] = React.useState<any>(null);
+  const [editFormData, setEditFormData] = React.useState({
+    title: "",
+    description: "",
+    notes: "",
+    tags: "",
+  });
+  const [saveError, setSaveError] = React.useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -72,6 +84,17 @@ const PresetDetails: React.FC = () => {
 
   const handleEdit = () => {
     handleMenuClose();
+    setEditFormData({
+      title: preset.title,
+      description: preset.description || "",
+      notes: preset.notes || "",
+      tags: preset.tags
+        .map((tag: { displayName: string }) => tag.displayName)
+        .join(", "),
+    });
+    setParsedSettings(null);
+    setSaveError(null);
+    setSaveSuccess(false);
     setEditDialogOpen(true);
   };
 
@@ -86,6 +109,27 @@ const PresetDetails: React.FC = () => {
       return;
     }
     setParsedSettings(settings);
+  };
+
+  // Helper function to get current settings (either from XMP or original)
+  const getCurrentSettings = () => {
+    return parsedSettings || preset.settings;
+  };
+
+  // Helper function to strip __typename fields from objects
+  const stripTypename = (obj: any): any => {
+    if (obj === null || obj === undefined) return obj;
+    if (Array.isArray(obj)) return obj.map(stripTypename);
+    if (typeof obj === "object") {
+      const cleaned: any = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (key !== "__typename") {
+          cleaned[key] = stripTypename(value);
+        }
+      }
+      return cleaned;
+    }
+    return obj;
   };
 
   if (loading) {
@@ -174,6 +218,102 @@ const PresetDetails: React.FC = () => {
       navigate("/");
     } catch (err) {
       console.error("Error deleting preset:", err);
+    }
+  };
+
+  const handleSavePreset = async () => {
+    try {
+      // Process tags from comma-separated string
+      const tagNames = editFormData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter((tag) => tag.length > 0);
+
+      // Prepare the update input
+      const updateInput: any = {
+        title: editFormData.title,
+        description: editFormData.description,
+        notes: editFormData.notes,
+      };
+
+      // Always include settings - either from XMP or current preset
+      if (parsedSettings) {
+        // Use parsed settings from XMP
+        updateInput.settings = {
+          exposure: parsedSettings.exposure || 0,
+          contrast: parsedSettings.contrast || 0,
+          highlights: parsedSettings.highlights || 0,
+          shadows: parsedSettings.shadows || 0,
+          whites: parsedSettings.whites || 0,
+          blacks: parsedSettings.blacks || 0,
+          temp: parsedSettings.temp || 0,
+          tint: parsedSettings.tint || 0,
+          vibrance: parsedSettings.vibrance || 0,
+          saturation: parsedSettings.saturation || 0,
+          clarity: parsedSettings.clarity || 0,
+          dehaze: parsedSettings.dehaze || 0,
+          grain: parsedSettings.grain
+            ? {
+                amount: parsedSettings.grain.amount || 0,
+                size: parsedSettings.grain.size || 0,
+                roughness: parsedSettings.grain.roughness || 0,
+              }
+            : undefined,
+          sharpening: parsedSettings.sharpening || 0,
+          noiseReduction: parsedSettings.noiseReduction
+            ? {
+                luminance: parsedSettings.noiseReduction.luminance || 0,
+                detail: parsedSettings.noiseReduction.detail || 0,
+                color: parsedSettings.noiseReduction.color || 0,
+              }
+            : undefined,
+        };
+
+        // Include tone curve if present
+        if (parsedSettings.toneCurve) {
+          updateInput.toneCurve = {
+            rgb: parsedSettings.toneCurve.rgb || [],
+            red: parsedSettings.toneCurve.red || [],
+            green: parsedSettings.toneCurve.green || [],
+            blue: parsedSettings.toneCurve.blue || [],
+          };
+        }
+      } else {
+        // Use current preset settings
+        updateInput.settings = stripTypename(preset.settings);
+        if (preset.toneCurve) {
+          updateInput.toneCurve = stripTypename(preset.toneCurve);
+        }
+      }
+
+      // For now, we'll skip tag updates since the backend expects tag IDs
+      // and we're working with tag names. This would require additional
+      // backend support for tag creation/management.
+      console.log("Updating preset with input:", updateInput);
+      console.log("Tag names to be processed:", tagNames);
+
+      await updatePreset({
+        variables: {
+          id: preset.id,
+          input: updateInput,
+        },
+        refetchQueries: [
+          {
+            query: GET_PRESET_BY_SLUG,
+            variables: { slug: preset.slug },
+          },
+        ],
+      });
+
+      setEditDialogOpen(false);
+      setParsedSettings(null);
+      setSaveSuccess(true);
+      setSaveError(null);
+    } catch (err) {
+      console.error("Error updating preset:", err);
+      setSaveError(
+        "An error occurred while updating the preset. Please try again later."
+      );
     }
   };
 
@@ -284,7 +424,7 @@ const PresetDetails: React.FC = () => {
             )}
         </Box>
         <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
-          {preset.tags.map((tag) => (
+          {preset.tags.map((tag: { id: string; displayName: string }) => (
             <Chip
               key={tag.id}
               label={tag.displayName}
@@ -463,33 +603,98 @@ const PresetDetails: React.FC = () => {
         onClose={() => setEditDialogOpen(false)}
         maxWidth="md"
         fullWidth
+        fullScreen={window.innerWidth < 768}
+        PaperProps={{
+          sx: {
+            backgroundColor: "background.paper",
+            maxHeight: window.innerWidth < 768 ? "100vh" : "90vh",
+            height: window.innerWidth < 768 ? "100vh" : "auto",
+          },
+        }}
+        disableEnforceFocus={window.innerWidth < 768}
+        disableAutoFocus={false}
+        keepMounted={false}
       >
         <DialogTitle>Edit Preset</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ overflowY: "auto", pb: 2 }}>
           <Stack spacing={3} sx={{ mt: 2 }}>
-            <TextField label="Title" fullWidth defaultValue={preset.title} />
+            <TextField
+              label="Title"
+              fullWidth
+              value={editFormData.title}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, title: e.target.value })
+              }
+            />
             <TextField
               label="Description"
               fullWidth
               multiline
               rows={3}
-              defaultValue={preset.description}
+              value={editFormData.description}
+              onChange={(e) =>
+                setEditFormData({
+                  ...editFormData,
+                  description: e.target.value,
+                })
+              }
             />
+            <TextField
+              label="Creator Notes"
+              fullWidth
+              multiline
+              rows={3}
+              value={editFormData.notes}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, notes: e.target.value })
+              }
+            />
+            <TextField
+              label="Tags (comma-separated)"
+              fullWidth
+              value={editFormData.tags}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, tags: e.target.value })
+              }
+              placeholder="e.g., portrait, landscape, street"
+            />
+
+            {/* XMP Parser Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Update Settings from XMP File
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Upload a new XMP file to update the preset settings. This will
+                overwrite the current settings.
+              </Typography>
+              <XmpParser onSettingsParsed={handleSettingsParsed} />
+              {parsedSettings && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                  XMP file parsed successfully! Settings will be updated when
+                  you save.
+                </Alert>
+              )}
+            </Box>
+
             <Box>
               <Typography variant="h6" gutterBottom>
                 Settings
               </Typography>
-              {parsedSettings && (
+              {(parsedSettings || preset.settings) && (
                 <>
                   <Accordion>
                     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                      <Typography variant="h6">Basic Settings</Typography>
+                      <Typography variant="h6">Light Settings</Typography>
                     </AccordionSummary>
                     <AccordionDetails>
                       <Box
                         sx={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
                           gap: 2,
                         }}
                       >
@@ -500,7 +705,40 @@ const PresetDetails: React.FC = () => {
                           { key: "shadows", label: "Shadows" },
                           { key: "whites", label: "Whites" },
                           { key: "blacks", label: "Blacks" },
-                          { key: "clarity", label: "Clarity" },
+                        ].map((setting) => (
+                          <Box key={setting.key}>
+                            <SettingSliderDisplay
+                              label={setting.label}
+                              value={
+                                getCurrentSettings()[setting.key]
+                                  ? getCurrentSettings()[setting.key].toFixed(1)
+                                  : "0"
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Color Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
+                          gap: 2,
+                        }}
+                      >
+                        {[
+                          { key: "temp", label: "Temperature" },
+                          { key: "tint", label: "Tint" },
                           { key: "vibrance", label: "Vibrance" },
                           { key: "saturation", label: "Saturation" },
                         ].map((setting) => (
@@ -508,8 +746,42 @@ const PresetDetails: React.FC = () => {
                             <SettingSliderDisplay
                               label={setting.label}
                               value={
-                                parsedSettings[setting.key]
-                                  ? parsedSettings[setting.key].toFixed(1)
+                                getCurrentSettings()[setting.key]
+                                  ? getCurrentSettings()[setting.key].toFixed(1)
+                                  : "0"
+                              }
+                            />
+                          </Box>
+                        ))}
+                      </Box>
+                    </AccordionDetails>
+                  </Accordion>
+
+                  <Accordion>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Typography variant="h6">Effects Settings</Typography>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
+                          gap: 2,
+                        }}
+                      >
+                        {[
+                          { key: "clarity", label: "Clarity" },
+                          { key: "dehaze", label: "Dehaze" },
+                        ].map((setting) => (
+                          <Box key={setting.key}>
+                            <SettingSliderDisplay
+                              label={setting.label}
+                              value={
+                                getCurrentSettings()[setting.key]
+                                  ? getCurrentSettings()[setting.key].toFixed(1)
                                   : "0"
                               }
                             />
@@ -527,18 +799,23 @@ const PresetDetails: React.FC = () => {
                       <Box
                         sx={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
                           gap: 2,
                         }}
                       >
-                        {parsedSettings.grain && (
+                        {getCurrentSettings().grain && (
                           <>
                             <Box>
                               <SettingSliderDisplay
                                 label="Amount"
                                 value={
-                                  parsedSettings.grain.amount
-                                    ? parsedSettings.grain.amount.toFixed(1)
+                                  getCurrentSettings().grain.amount
+                                    ? getCurrentSettings().grain.amount.toFixed(
+                                        1
+                                      )
                                     : "0"
                                 }
                               />
@@ -547,18 +824,20 @@ const PresetDetails: React.FC = () => {
                               <SettingSliderDisplay
                                 label="Size"
                                 value={
-                                  parsedSettings.grain.size
-                                    ? parsedSettings.grain.size.toFixed(1)
+                                  getCurrentSettings().grain.size
+                                    ? getCurrentSettings().grain.size.toFixed(1)
                                     : "0"
                                 }
                               />
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Frequency"
+                                label="Roughness"
                                 value={
-                                  parsedSettings.grain.frequency
-                                    ? parsedSettings.grain.frequency.toFixed(1)
+                                  getCurrentSettings().grain.roughness
+                                    ? getCurrentSettings().grain.roughness.toFixed(
+                                        1
+                                      )
                                     : "0"
                                 }
                               />
@@ -579,18 +858,21 @@ const PresetDetails: React.FC = () => {
                       <Box
                         sx={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
                           gap: 2,
                         }}
                       >
-                        {parsedSettings.noiseReduction && (
+                        {getCurrentSettings().noiseReduction && (
                           <>
                             <Box>
                               <SettingSliderDisplay
                                 label="Luminance"
                                 value={
-                                  parsedSettings.noiseReduction.luminance
-                                    ? parsedSettings.noiseReduction.luminance.toFixed(
+                                  getCurrentSettings().noiseReduction.luminance
+                                    ? getCurrentSettings().noiseReduction.luminance.toFixed(
                                         1
                                       )
                                     : "0"
@@ -601,8 +883,8 @@ const PresetDetails: React.FC = () => {
                               <SettingSliderDisplay
                                 label="Color"
                                 value={
-                                  parsedSettings.noiseReduction.color
-                                    ? parsedSettings.noiseReduction.color.toFixed(
+                                  getCurrentSettings().noiseReduction.color
+                                    ? getCurrentSettings().noiseReduction.color.toFixed(
                                         1
                                       )
                                     : "0"
@@ -613,8 +895,8 @@ const PresetDetails: React.FC = () => {
                               <SettingSliderDisplay
                                 label="Detail"
                                 value={
-                                  parsedSettings.noiseReduction.detail
-                                    ? parsedSettings.noiseReduction.detail.toFixed(
+                                  getCurrentSettings().noiseReduction.detail
+                                    ? getCurrentSettings().noiseReduction.detail.toFixed(
                                         1
                                       )
                                     : "0"
@@ -635,16 +917,19 @@ const PresetDetails: React.FC = () => {
                       <Box
                         sx={{
                           display: "grid",
-                          gridTemplateColumns: "1fr 1fr",
+                          gridTemplateColumns: {
+                            xs: "1fr",
+                            sm: "1fr 1fr",
+                          },
                           gap: 2,
                         }}
                       >
                         <Box>
                           <SettingSliderDisplay
-                            label="Texture"
+                            label="Sharpening"
                             value={
-                              parsedSettings.texture
-                                ? parsedSettings.texture.toFixed(1)
+                              getCurrentSettings().sharpening
+                                ? getCurrentSettings().sharpening.toFixed(1)
                                 : "0"
                             }
                           />
@@ -655,19 +940,33 @@ const PresetDetails: React.FC = () => {
                 </>
               )}
             </Box>
+
+            {/* Success/Error Messages */}
+            {saveSuccess && (
+              <Alert severity="success" sx={{ mt: 2 }}>
+                Preset updated successfully!
+              </Alert>
+            )}
+            {saveError && (
+              <Alert severity="error" sx={{ mt: 2 }}>
+                {saveError}
+              </Alert>
+            )}
           </Stack>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+        <DialogActions sx={{ p: 2, pb: window.innerWidth < 768 ? 4 : 2 }}>
+          <Button
+            onClick={() => setEditDialogOpen(false)}
+            disabled={updatingPreset}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
-            onClick={() => {
-              // TODO: Implement save functionality
-              console.log("Save edit functionality to be implemented");
-              setEditDialogOpen(false);
-            }}
+            onClick={handleSavePreset}
+            disabled={updatingPreset}
           >
-            Save Changes
+            {updatingPreset ? "Saving..." : "Save Changes"}
           </Button>
         </DialogActions>
       </Dialog>

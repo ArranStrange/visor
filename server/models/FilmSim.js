@@ -27,6 +27,7 @@ const filmSimSchema = new Schema(
         r: { type: Number, default: 0 },
         b: { type: Number, default: 0 },
       },
+      filmSimulation: { type: String, default: "" },
     },
 
     toneCurve: {

@@ -142,7 +142,8 @@ const UPLOAD_FILM_SIM = gql`
   mutation UploadFilmSim(
     $name: String!
     $description: String
-    $settings: FilmSimSettingsInput!
+    $type: String!
+    $settings: JSON!
     $notes: String
     $tags: [String!]!
     $sampleImages: [SampleImageInput!]
@@ -150,6 +151,7 @@ const UPLOAD_FILM_SIM = gql`
     uploadFilmSim(
       name: $name
       description: $description
+      type: $type
       settings: $settings
       notes: $notes
       tags: $tags
@@ -202,6 +204,7 @@ const WHITE_BALANCE_MAP = {
 const UploadFilmSim: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState("custom-recipe");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [sampleImages, setSampleImages] = useState<File[]>([]);
@@ -377,10 +380,10 @@ const UploadFilmSim: React.FC = () => {
       // Generate slug from title
       const slug = slugify(title, { lower: true, strict: true });
 
-      // Format settings to match FilmSimSettingsInput type
+      // Format settings to match the database schema
       const formattedSettings = {
         dynamicRange: filmSettings.dynamicRange,
-        filmSimulation: filmSettings.filmSimulation,
+        type: filmSettings.filmSimulation, // This maps to settings.type in the database
         whiteBalance: filmSettings.whiteBalance,
         wbShift: {
           r: Math.round(filmSettings.wbShift.r) || 0,
@@ -410,6 +413,7 @@ const UploadFilmSim: React.FC = () => {
       const variables = {
         name: title,
         description,
+        type,
         settings: formattedSettings,
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
@@ -619,6 +623,18 @@ const UploadFilmSim: React.FC = () => {
               onChange={(e) => setDescription(e.target.value)}
               disabled={!user}
             />
+
+            <FormControl fullWidth>
+              <InputLabel>Film Simulation Type</InputLabel>
+              <Select
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+                disabled={!user}
+              >
+                <MenuItem value="custom-recipe">Custom Recipe</MenuItem>
+                <MenuItem value="fujifilm-native">Fujifilm Native</MenuItem>
+              </Select>
+            </FormControl>
 
             {user && renderFilmSettings()}
 

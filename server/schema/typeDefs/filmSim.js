@@ -12,6 +12,7 @@ const typeDefs = gql`
     clarity: Int
     whiteBalance: String
     wbShift: WhiteBalanceShift
+    filmSimulation: String
   }
 
   type WhiteBalanceShift {

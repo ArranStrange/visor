@@ -230,6 +230,7 @@ const filmSimResolvers = {
             clarity: parseInt(settings.clarity) || 0,
             whiteBalance: settings.whiteBalance || "auto",
             wbShift: settings.wbShift || { r: 0, b: 0 },
+            filmSimulation: settings.filmSimulation || "",
           },
           notes,
           tags: tagIds,
