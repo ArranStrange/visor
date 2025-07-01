@@ -79,6 +79,7 @@ module.exports = gql`
     clarity: Int
     whiteBalance: String
     wbShift: WhiteBalanceShift
+    filmSimulation: String
   }
 
   type WhiteBalanceShift {
