@@ -26,6 +26,8 @@ import {
   ListItemText,
   TextField,
   Grid,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -34,6 +36,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import UploadIcon from "@mui/icons-material/Upload";
+import AddIcon from "@mui/icons-material/Add";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import CloseIcon from "@mui/icons-material/Close";
 import ToneCurve from "../components/ToneCurve";
 import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
@@ -41,16 +46,43 @@ import AddToListButton from "../components/AddToListButton";
 import XmpParser from "../components/XmpParser";
 import DiscussionThread from "../components/discussions/DiscussionThread";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@apollo/client";
+import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
 import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
 import { useAuth } from "../context/AuthContext";
 
+const ADD_PHOTO_TO_PRESET = gql`
+  mutation AddPhotoToPreset(
+    $presetId: ID!
+    $imageUrl: String!
+    $caption: String
+  ) {
+    addPhotoToPreset(
+      presetId: $presetId
+      imageUrl: $imageUrl
+      caption: $caption
+    ) {
+      id
+      url
+      caption
+    }
+  }
+`;
+
+// Cloudinary configuration
+const cloudinaryConfig = {
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
+  apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
+};
+
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
     variables: { slug },
   });
@@ -58,6 +90,8 @@ const PresetDetails: React.FC = () => {
     useMutation(DELETE_PRESET);
   const [updatePreset, { loading: updatingPreset }] =
     useMutation(UPDATE_PRESET);
+  const [addPhotoToPreset, { loading: addingPhoto }] =
+    useMutation(ADD_PHOTO_TO_PRESET);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
@@ -72,6 +106,14 @@ const PresetDetails: React.FC = () => {
   });
   const [saveError, setSaveError] = React.useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = React.useState(false);
+  const [addPhotoDialogOpen, setAddPhotoDialogOpen] = React.useState(false);
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [photoCaption, setPhotoCaption] = React.useState("");
+  const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
+  const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
+    null
+  );
+  const [showAllImages, setShowAllImages] = React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -101,6 +143,78 @@ const PresetDetails: React.FC = () => {
   const handleDelete = () => {
     handleMenuClose();
     setDeleteDialogOpen(true);
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "PresetSamples");
+    formData.append("folder", "presets");
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to upload image to Cloudinary: ${
+            errorData.error?.message || "Unknown error"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error);
+      throw error;
+    }
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!photoFile || !currentUser) return;
+
+    try {
+      setUploadingPhoto(true);
+
+      // Upload to Cloudinary
+      const imageUrl = await uploadToCloudinary(photoFile);
+
+      // Add photo to preset
+      await addPhotoToPreset({
+        variables: {
+          presetId: preset.id,
+          imageUrl,
+          caption: photoCaption || undefined,
+        },
+      });
+
+      // Refresh the data
+      // Note: You might need to implement a refetch mechanism here
+
+      // Reset form
+      setPhotoFile(null);
+      setPhotoCaption("");
+      setAddPhotoDialogOpen(false);
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      // You could add error handling here
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+    }
   };
 
   const handleSettingsParsed = (settings: any) => {
@@ -467,6 +581,9 @@ const PresetDetails: React.FC = () => {
 
       {/* Before/After Images */}
       <Box sx={{ mb: 4 }}>
+        <Typography variant="h6" mb={2}>
+          Before & After
+        </Typography>
         <BeforeAfterSlider
           beforeImage={beforeImage}
           afterImage={afterImage}
@@ -558,6 +675,84 @@ const PresetDetails: React.FC = () => {
       )}
 
       {renderAccordionSection("Detail", ["sharpening"])}
+
+      {/* Sample Images */}
+      <Box sx={{ mt: 4, mb: 4 }}>
+        <Box
+          display="flex"
+          alignItems="center"
+          justifyContent="space-between"
+          mb={2}
+        >
+          <Typography variant="h6">Sample Images</Typography>
+          {currentUser && (
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => setAddPhotoDialogOpen(true)}
+              size="small"
+            >
+              Add Your Photo
+            </Button>
+          )}
+        </Box>
+        {afterImage ||
+        (preset.sampleImages && preset.sampleImages.length > 0) ? (
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: {
+                xs: "1fr 1fr",
+                md: "1fr 1fr",
+                lg: "repeat(3, 1fr)",
+              },
+              gap: 2,
+            }}
+          >
+            {/* After image as the first sample image */}
+            {afterImage && (
+              <Box>
+                <img
+                  src={afterImage}
+                  alt={`After applying ${preset.title}`}
+                  style={{
+                    width: "100%",
+                    height: 200,
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    objectFit: "cover",
+                  }}
+                  onClick={() => setFullscreenImage(afterImage)}
+                />
+              </Box>
+            )}
+            {/* Real sample images */}
+            {preset.sampleImages &&
+              preset.sampleImages.map(
+                (image: { id: string; url: string; caption?: string }) => (
+                  <Box key={image.id}>
+                    <img
+                      src={image.url}
+                      alt={image.caption || `Sample image for ${preset.title}`}
+                      style={{
+                        width: "100%",
+                        height: 200,
+                        borderRadius: 12,
+                        cursor: "pointer",
+                        objectFit: "cover",
+                      }}
+                      onClick={() => setFullscreenImage(image.url)}
+                    />
+                  </Box>
+                )
+              )}
+          </Box>
+        ) : (
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+            No sample images yet.
+          </Typography>
+        )}
+      </Box>
 
       {/* Download + Notes */}
       <Stack direction="row" alignItems="center" spacing={2} my={4}>
@@ -995,6 +1190,133 @@ const PresetDetails: React.FC = () => {
             disabled={deletingPreset}
           >
             {deletingPreset ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Fullscreen Image Modal */}
+      <Dialog
+        open={!!fullscreenImage}
+        onClose={() => setFullscreenImage(null)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            background: "rgba(0,0,0,0.95)",
+            boxShadow: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          },
+        }}
+      >
+        <IconButton
+          onClick={() => setFullscreenImage(null)}
+          sx={{
+            position: "absolute",
+            top: 16,
+            right: 16,
+            color: "white",
+            zIndex: 10,
+            background: "rgba(0,0,0,0.3)",
+            "&:hover": { background: "rgba(0,0,0,0.5)" },
+          }}
+        >
+          <CloseIcon />
+        </IconButton>
+        {fullscreenImage && (
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: 400,
+            }}
+          >
+            <img
+              src={fullscreenImage}
+              alt="Full size sample"
+              style={{
+                maxWidth: "90vw",
+                maxHeight: "80vh",
+                borderRadius: 12,
+                boxShadow: "0 0 32px 0 rgba(0,0,0,0.7)",
+                background: "#111",
+              }}
+            />
+          </Box>
+        )}
+      </Dialog>
+
+      {/* Add Photo Dialog */}
+      <Dialog
+        open={addPhotoDialogOpen}
+        onClose={() => setAddPhotoDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6">Add Your Photo</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Share a photo you've edited using the "{preset.title}" preset
+            </Typography>
+
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                fullWidth
+                sx={{ py: 2 }}
+              >
+                {photoFile ? photoFile.name : "Choose Photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoFileChange}
+                  style={{ display: "none" }}
+                />
+              </Button>
+            </Box>
+
+            {photoFile && (
+              <Box>
+                <img
+                  src={URL.createObjectURL(photoFile)}
+                  alt="Preview"
+                  style={{
+                    width: "100%",
+                    maxHeight: 200,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                />
+              </Box>
+            )}
+
+            <TextField
+              label="Caption (optional)"
+              value={photoCaption}
+              onChange={(e) => setPhotoCaption(e.target.value)}
+              multiline
+              rows={2}
+              placeholder="Describe your photo or how you used the preset..."
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddPhotoDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handlePhotoUpload}
+            variant="contained"
+            disabled={!photoFile || uploadingPhoto}
+            startIcon={uploadingPhoto ? <CircularProgress size={20} /> : null}
+          >
+            {uploadingPhoto ? "Uploading..." : "Upload Photo"}
           </Button>
         </DialogActions>
       </Dialog>

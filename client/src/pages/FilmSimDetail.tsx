@@ -29,6 +29,8 @@ import {
   FormControl,
   InputLabel,
   Select,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
@@ -38,12 +40,22 @@ import PresetCard from "../components/PresetCard";
 import AddToListButton from "../components/AddToListButton";
 import DiscussionThread from "../components/discussions/DiscussionThread";
 import { useAuth } from "../context/AuthContext";
+
+// Cloudinary configuration
+const cloudinaryConfig = {
+  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+  apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
+  apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
+};
+
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
+import AddIcon from "@mui/icons-material/Add";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 
 const CREATE_COMMENT = gql`
   mutation CreateComment($filmSimId: ID!, $content: String!) {
@@ -56,6 +68,24 @@ const CREATE_COMMENT = gql`
         avatar
       }
       createdAt
+    }
+  }
+`;
+
+const ADD_PHOTO_TO_FILMSIM = gql`
+  mutation AddPhotoToFilmSim(
+    $filmSimId: ID!
+    $imageUrl: String!
+    $caption: String
+  ) {
+    addPhotoToFilmSim(
+      filmSimId: $filmSimId
+      imageUrl: $imageUrl
+      caption: $caption
+    ) {
+      id
+      url
+      caption
     }
   }
 `;
@@ -73,6 +103,8 @@ const FilmSimDetails: React.FC = () => {
     useMutation(CREATE_COMMENT);
   const [deleteFilmSim, { loading: deletingFilmSim }] =
     useMutation(DELETE_FILMSIM);
+  const [addPhotoToFilmSim, { loading: addingPhoto }] =
+    useMutation(ADD_PHOTO_TO_FILMSIM);
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
     null
   );
@@ -81,7 +113,16 @@ const FilmSimDetails: React.FC = () => {
     null
   );
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
+  const [addPhotoDialogOpen, setAddPhotoDialogOpen] = React.useState(false);
+  const [photoFile, setPhotoFile] = React.useState<File | null>(null);
+  const [photoCaption, setPhotoCaption] = React.useState("");
+  const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
+  const [showAllImages, setShowAllImages] = React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const initialImageCount = isMobile ? 2 : 3;
 
   if (loading) {
     return (
@@ -181,6 +222,78 @@ const FilmSimDetails: React.FC = () => {
   const handleDelete = () => {
     handleMenuClose();
     setDeleteDialogOpen(true);
+  };
+
+  const uploadToCloudinary = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", "FilmSimSamples");
+    formData.append("folder", "filmsims");
+
+    try {
+      const response = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to upload image to Cloudinary: ${
+            errorData.error?.message || "Unknown error"
+          }`
+        );
+      }
+
+      const data = await response.json();
+      return data.secure_url;
+    } catch (error) {
+      console.error("Error uploading to Cloudinary:", error);
+      throw error;
+    }
+  };
+
+  const handlePhotoUpload = async () => {
+    if (!photoFile || !currentUser) return;
+
+    try {
+      setUploadingPhoto(true);
+
+      // Upload to Cloudinary
+      const imageUrl = await uploadToCloudinary(photoFile);
+
+      // Add photo to film simulation
+      await addPhotoToFilmSim({
+        variables: {
+          filmSimId: filmSim.id,
+          imageUrl,
+          caption: photoCaption || undefined,
+        },
+      });
+
+      // Refresh the data
+      refetch();
+
+      // Reset form
+      setPhotoFile(null);
+      setPhotoCaption("");
+      setAddPhotoDialogOpen(false);
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      // You could add error handling here
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+    }
   };
 
   return (
@@ -285,89 +398,62 @@ const FilmSimDetails: React.FC = () => {
 
       <Divider sx={{ my: 3 }} />
 
-      {/* Camera Settings */}
-      <Typography variant="h6" mt={4} mb={2}>
-        In-Camera Settings
-      </Typography>
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: {
-            xs: "1fr",
-            sm: "1fr 1fr",
-            md: "repeat(3, 1fr)",
-          },
-          gap: 2,
-        }}
-      >
-        {[
-          { label: "Film Simulation", value: filmSim.settings?.filmSimulation },
-          { label: "Dynamic Range", value: filmSim.settings?.dynamicRange },
-          { label: "Highlight Tone", value: filmSim.settings?.highlight },
-          { label: "Shadow Tone", value: filmSim.settings?.shadow },
-          { label: "Colour", value: filmSim.settings?.colour },
-          { label: "Sharpness", value: filmSim.settings?.sharpness },
-          { label: "Noise Reduction", value: filmSim.settings?.noiseReduction },
-          { label: "Grain Effect", value: filmSim.settings?.grainEffect },
-          { label: "Clarity", value: filmSim.settings?.clarity },
-          { label: "White Balance", value: filmSim.settings?.whiteBalance },
-          {
-            label: "WB Shift",
-            value: filmSim.settings?.wbShift
-              ? `R${formatSettingValue(
-                  filmSim.settings.wbShift.r
-                )} / B${formatSettingValue(filmSim.settings.wbShift.b)}`
-              : "N/A",
-          },
-        ].map((setting) => (
-          <Box
-            key={setting.label}
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              backgroundColor: "background.paper",
-              boxShadow: 1,
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              {setting.label}
-            </Typography>
-            <Typography variant="body1" fontWeight={500}>
-              {formatSettingValue(setting.value)}
-            </Typography>
-          </Box>
-        ))}
-      </Box>
-
-      <Divider sx={{ my: 3 }} />
-
       {/* Sample images */}
-      <Typography variant="h6" mt={4} mb={1}>
-        Sample Images
-      </Typography>
       <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr 1fr", md: "repeat(3, 1fr)" },
-          gap: 2,
-        }}
+        display="flex"
+        alignItems="center"
+        justifyContent="space-between"
+        mt={4}
+        mb={1}
       >
-        {filmSim.sampleImages?.map(
-          (image: { id: string; url: string; caption?: string }) => (
-            <Box key={image.id}>
-              <img
-                src={image.url}
-                alt={image.caption || `Sample image for ${filmSim.name}`}
-                style={{ width: "100%", borderRadius: 12, cursor: "pointer" }}
-                onClick={() => setFullscreenImage(image.url)}
-              />
-            </Box>
-          )
+        <Typography variant="h6">Sample Images</Typography>
+        {currentUser && (
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setAddPhotoDialogOpen(true)}
+            size="small"
+          >
+            Add Photo
+          </Button>
         )}
       </Box>
+      {filmSim.sampleImages && filmSim.sampleImages.length > 0 ? (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr 1fr",
+              md: "1fr 1fr",
+              lg: "repeat(3, 1fr)",
+            },
+            gap: 2,
+          }}
+        >
+          {filmSim.sampleImages.map(
+            (image: { id: string; url: string; caption?: string }) => (
+              <Box key={image.id}>
+                <img
+                  src={image.url}
+                  alt={image.caption || `Sample image for ${filmSim.name}`}
+                  style={{
+                    width: "100%",
+                    height: 200,
+                    borderRadius: 12,
+                    cursor: "pointer",
+                    objectFit: "cover",
+                  }}
+                  onClick={() => setFullscreenImage(image.url)}
+                />
+              </Box>
+            )
+          )}
+        </Box>
+      ) : (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+          No sample images yet.
+        </Typography>
+      )}
 
       {/* Fullscreen Image Modal */}
       <Dialog
@@ -761,6 +847,79 @@ const FilmSimDetails: React.FC = () => {
             disabled={deletingFilmSim}
           >
             {deletingFilmSim ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Add Photo Dialog */}
+      <Dialog
+        open={addPhotoDialogOpen}
+        onClose={() => setAddPhotoDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Typography variant="h6">Add Your Photo</Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              Share a photo you've taken using the "{filmSim.name}" film
+              simulation
+            </Typography>
+
+            <Box>
+              <Button
+                component="label"
+                variant="outlined"
+                startIcon={<CloudUploadIcon />}
+                fullWidth
+                sx={{ py: 2 }}
+              >
+                {photoFile ? photoFile.name : "Choose Photo"}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoFileChange}
+                  style={{ display: "none" }}
+                />
+              </Button>
+            </Box>
+
+            {photoFile && (
+              <Box>
+                <img
+                  src={URL.createObjectURL(photoFile)}
+                  alt="Preview"
+                  style={{
+                    width: "100%",
+                    maxHeight: 200,
+                    objectFit: "cover",
+                    borderRadius: 8,
+                  }}
+                />
+              </Box>
+            )}
+
+            <TextField
+              label="Caption (optional)"
+              value={photoCaption}
+              onChange={(e) => setPhotoCaption(e.target.value)}
+              multiline
+              rows={2}
+              placeholder="Describe your photo or the settings you used..."
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddPhotoDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handlePhotoUpload}
+            variant="contained"
+            disabled={!photoFile || uploadingPhoto}
+            startIcon={uploadingPhoto ? <CircularProgress size={20} /> : null}
+          >
+            {uploadingPhoto ? "Uploading..." : "Upload Photo"}
           </Button>
         </DialogActions>
       </Dialog>
