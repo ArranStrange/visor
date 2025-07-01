@@ -321,7 +321,7 @@ const FilmSimDetails: React.FC = () => {
             </Typography>
             {filmSim.creator.instagram && (
               <Button
-                href={filmSim.creator.instagram}
+                href={`https://instagram.com/${filmSim.creator.instagram}`}
                 target="_blank"
                 size="small"
                 variant="text"

@@ -504,7 +504,7 @@ const PresetDetails: React.FC = () => {
           </Typography>
           {preset.creator.instagram && (
             <Button
-              href={preset.creator.instagram}
+              href={`https://instagram.com/${preset.creator.instagram}`}
               target="_blank"
               size="small"
               variant="text"
