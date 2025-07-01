@@ -408,67 +408,144 @@ const FilmSimDetails: React.FC = () => {
         >
           In-Camera Settings
         </Typography>
-        <Grid container>
-          {(
-            [
-              {
-                key: "filmSimulation",
-                label: "Film Simulation",
-                value: filmSim.settings?.filmSimulation,
-              },
-              {
-                key: "grainEffect",
-                label: "Grain Effect",
-                value: filmSim.settings?.grainEffect,
-              },
-              {
-                key: "colorChromeEffect",
-                label: "Color Chrome Effect",
-                value: filmSim.settings?.colorChromeEffect,
-              },
-              {
-                key: "colorChromeFxBlue",
-                label: "Color Chrome FX Blue",
-                value: filmSim.settings?.colorChromeFxBlue,
-              },
-              {
-                key: "dynamicRange",
-                label: "Dynamic Range",
-                value: filmSim.settings?.dynamicRange,
-              },
-              {
-                key: "highlight",
-                label: "Highlight Tone",
-                value: filmSim.settings?.highlight,
-              },
-              {
-                key: "shadow",
-                label: "Shadow Tone",
-                value: filmSim.settings?.shadow,
-              },
-              {
-                key: "colour",
-                label: "Colour",
-                value: filmSim.settings?.colour,
-              },
-              {
-                key: "sharpness",
-                label: "Sharpness",
-                value: filmSim.settings?.sharpness,
-              },
-              {
-                key: "noiseReduction",
-                label: "Noise Reduction",
-                value: filmSim.settings?.noiseReduction,
-              },
-              {
-                key: "clarity",
-                label: "Clarity",
-                value: filmSim.settings?.clarity,
-              },
-            ] as { key: string; label: string; value: any }[]
-          ).map((setting) => (
-            <Grid item xs={6} sm={12} sx={{ gap: 10, mr: 2 }} key={setting.key}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: { xs: 0, md: 4 },
+          }}
+        >
+          {/* Left column: all settings except White Balance and WB Shift */}
+          <Box sx={{ flex: 1, width: { xs: "100%", md: "50%" } }}>
+            {(
+              [
+                {
+                  key: "filmSimulation",
+                  label: "Film Simulation",
+                  value: filmSim.settings?.filmSimulation,
+                },
+                {
+                  key: "grainEffect",
+                  label: "Grain Effect",
+                  value: filmSim.settings?.grainEffect,
+                },
+                {
+                  key: "colorChromeEffect",
+                  label: "Color Chrome Effect",
+                  value: filmSim.settings?.colorChromeEffect,
+                },
+                {
+                  key: "colorChromeFxBlue",
+                  label: "Color Chrome FX Blue",
+                  value: filmSim.settings?.colorChromeFxBlue,
+                },
+                {
+                  key: "dynamicRange",
+                  label: "Dynamic Range",
+                  value: filmSim.settings?.dynamicRange,
+                },
+                {
+                  key: "highlight",
+                  label: "Highlight Tone",
+                  value: filmSim.settings?.highlight,
+                },
+                {
+                  key: "shadow",
+                  label: "Shadow Tone",
+                  value: filmSim.settings?.shadow,
+                },
+                {
+                  key: "colour",
+                  label: "Colour",
+                  value: filmSim.settings?.colour,
+                },
+                {
+                  key: "sharpness",
+                  label: "Sharpness",
+                  value: filmSim.settings?.sharpness,
+                },
+                {
+                  key: "noiseReduction",
+                  label: "Noise Reduction",
+                  value: filmSim.settings?.noiseReduction,
+                },
+                {
+                  key: "clarity",
+                  label: "Clarity",
+                  value: filmSim.settings?.clarity,
+                },
+              ] as { key: string; label: string; value: any }[]
+            ).map((setting) => (
+              <Box
+                key={setting.key}
+                sx={{
+                  width: "100%",
+                  bgcolor: "grey.900",
+                  color: "grey.100",
+                  borderRadius: 2,
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 0.25, sm: 0.5 },
+                  position: "relative",
+                  display: "flex",
+                  alignItems: "center",
+                  fontWeight: 600,
+                  fontSize: { xs: "0.80rem", sm: "0.95rem" },
+                  letterSpacing: 0.2,
+                  minHeight: { xs: 22, sm: 30 },
+                  mb: 2,
+                }}
+              >
+                <span
+                  style={{
+                    opacity: 0.6,
+                    width: "50%",
+                    textAlign: "start",
+                    display: "inline-block",
+                    zIndex: 1,
+                  }}
+                >
+                  {setting.label}
+                </span>
+                <Box
+                  sx={{
+                    position: "absolute",
+                    left: "50%",
+                    top: 6,
+                    bottom: 6,
+                    height: "auto",
+                    borderLeft: "1px solid #444",
+                    transform: "translateX(-50%)",
+                    zIndex: 2,
+                  }}
+                />
+                <span
+                  style={{
+                    fontWeight: 700,
+                    width: "50%",
+                    textAlign: "end",
+                    display: "inline-block",
+                    zIndex: 1,
+                  }}
+                >
+                  {formatSettingValue(setting.value)}
+                </span>
+              </Box>
+            ))}
+          </Box>
+          {/* Right column: White Balance, WB Shift, and WhiteBalanceGrid */}
+          <Box
+            sx={{
+              flex: 1,
+              width: { xs: "100%", md: "50%" },
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: { md: "space-between" },
+              minHeight: { md: 340 },
+            }}
+          >
+            {/* White Balance pill */}
+            {filmSim.settings?.whiteBalance && (
               <Box
                 sx={{
                   width: "100%",
@@ -477,10 +554,9 @@ const FilmSimDetails: React.FC = () => {
                   borderRadius: 2,
                   px: { xs: 2, sm: 3 },
                   py: { xs: 0.25, sm: 0.5 },
+                  position: "relative",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 3,
                   fontWeight: 600,
                   fontSize: { xs: "0.80rem", sm: "0.95rem" },
                   letterSpacing: 0.2,
@@ -488,111 +564,119 @@ const FilmSimDetails: React.FC = () => {
                   mb: 2,
                 }}
               >
-                <span style={{ opacity: 0.6 }}>{setting.label}</span>
-                <Box sx={{ mx: 1, height: 18, borderLeft: "1px solid #444" }} />
                 <span
                   style={{
-                    fontWeight: 700,
-                    textAlign: "right",
+                    opacity: 0.6,
+                    width: "50%",
+                    textAlign: "start",
                     display: "inline-block",
+                    zIndex: 1,
                   }}
                 >
-                  {formatSettingValue(setting.value)}
+                  White Balance
                 </span>
-              </Box>
-            </Grid>
-          ))}
-          {/* White Balance and WB Shift pills, each on its own row */}
-          {filmSim.settings?.whiteBalance && (
-            <Grid item xs={12} sx={{ gap: 10, mr: 2 }}>
-              <Box
-                sx={{
-                  width: "100%",
-                  bgcolor: "grey.900",
-                  color: "grey.100",
-                  borderRadius: 2,
-                  px: 2,
-                  py: 0.5,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 5,
-                  fontWeight: 600,
-                  fontSize: "0.95rem",
-                  letterSpacing: 0.2,
-                  minHeight: 30,
-                  // mb: 2,
-                }}
-              >
-                <span style={{ opacity: 0.6 }}>White Balance</span>
                 <Box
-                  sx={{ mx: 1.5, height: 18, borderLeft: "1px solid #444" }}
+                  sx={{
+                    position: "absolute",
+                    left: "50%",
+                    top: 6,
+                    bottom: 6,
+                    height: "auto",
+                    borderLeft: "1px solid #444",
+                    transform: "translateX(-50%)",
+                    zIndex: 2,
+                  }}
                 />
                 <span
                   style={{
                     fontWeight: 700,
-                    textAlign: "right",
+                    width: "50%",
+                    textAlign: "end",
                     display: "inline-block",
+                    zIndex: 1,
                   }}
                 >
                   {formatSettingValue(filmSim.settings.whiteBalance)}
                 </span>
               </Box>
-            </Grid>
-          )}
-          {filmSim.settings?.wbShift && (
-            <Grid item xs={12} sx={{ gap: 10, mr: 2 }}>
+            )}
+            {/* WB Shift pill */}
+            {filmSim.settings?.wbShift && (
               <Box
                 sx={{
                   width: "100%",
                   bgcolor: "grey.900",
                   color: "grey.100",
                   borderRadius: 2,
-
+                  px: { xs: 2, sm: 3 },
+                  py: { xs: 0.25, sm: 0.5 },
+                  position: "relative",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 5,
                   fontWeight: 600,
-                  fontSize: "0.95rem",
+                  fontSize: { xs: "0.80rem", sm: "0.95rem" },
                   letterSpacing: 0.2,
-                  minHeight: 30,
+                  minHeight: { xs: 22, sm: 30 },
+                  mb: 2,
                 }}
               >
-                <span style={{ opacity: 0.6 }}>WB Shift</span>
+                <span
+                  style={{
+                    opacity: 0.6,
+                    width: "50%",
+                    textAlign: "start",
+                    display: "inline-block",
+                    zIndex: 1,
+                  }}
+                >
+                  WB Shift
+                </span>
                 <Box
-                  sx={{ mx: 1.5, height: 18, borderLeft: "1px solid #444" }}
+                  sx={{
+                    position: "absolute",
+                    left: "50%",
+                    top: 6,
+                    bottom: 6,
+                    height: "auto",
+                    borderLeft: "1px solid #444",
+                    transform: "translateX(-50%)",
+                    zIndex: 2,
+                  }}
                 />
                 <span
                   style={{
                     fontWeight: 700,
-                    textAlign: "right",
+                    width: "50%",
+                    textAlign: "end",
                     display: "inline-block",
+                    zIndex: 1,
                   }}
-                >{`R${filmSim.settings.wbShift.r} / B${filmSim.settings.wbShift.b}`}</span>
+                >
+                  {`R${filmSim.settings.wbShift.r} / B${filmSim.settings.wbShift.b}`}
+                </span>
               </Box>
-            </Grid>
-          )}
-        </Grid>
-        {/* White Balance Grid visual, after all pills */}
-        {filmSim.settings?.wbShift && (
-          <Box
-            sx={{
-              mt: 3,
-
-              px: 1,
-              mx: "auto",
-              width: "100%",
-              transform: "scale(0.75)",
-              transformOrigin: "top left",
-            }}
-          >
-            <WhiteBalanceGrid
-              value={filmSim.settings.wbShift}
-              onChange={() => {}}
-            />
+            )}
+            {/* WhiteBalanceGrid */}
+            {filmSim.settings?.wbShift && (
+              <Box
+                sx={{
+                  mt: { xs: 3, md: 0 },
+                  px: 1,
+                  mx: "auto",
+                  display: "flex",
+                  justifyContent: "center",
+                  flexGrow: 1,
+                  alignItems: "center",
+                }}
+              >
+                <WhiteBalanceGrid
+                  value={filmSim.settings.wbShift}
+                  onChange={() => {}}
+                />
+              </Box>
+            )}
           </Box>
-        )}
+        </Box>
       </Box>
 
       <Divider sx={{ my: 2 }} />
