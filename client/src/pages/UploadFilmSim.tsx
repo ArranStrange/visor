@@ -58,8 +58,10 @@ interface FilmSimSettings {
   highlight: number;
   shadow: number;
   noiseReduction: number;
-  grainEffect: number;
+  grainEffect: string;
   clarity: number;
+  colorChromeEffect: string;
+  colorChromeFxBlue: string;
 }
 
 interface SampleImageInput {
@@ -69,9 +71,9 @@ interface SampleImageInput {
 
 const DYNAMIC_RANGE_OPTIONS = [
   { value: "AUTO", label: "Auto" },
-  { value: "DR100", label: "DR100 (Normal)" },
-  { value: "DR200", label: "DR200 (Expanded, min ISO 400)" },
-  { value: "DR400", label: "DR400 (Max, min ISO 800)" },
+  { value: "DR100", label: "DR100" },
+  { value: "DR200", label: "DR200 (min ISO 400)" },
+  { value: "DR400", label: "DR400 (min ISO 800)" },
 ];
 
 const FILM_SIMULATION_OPTIONS = [
@@ -92,58 +94,89 @@ const WHITE_BALANCE_OPTIONS = [
   { value: "AUTO", label: "Auto" },
   { value: "DAYLIGHT", label: "Daylight" },
   { value: "SHADE", label: "Shade" },
-  { value: "FLUORESCENT_1", label: "Fluorescent 1" },
-  { value: "FLUORESCENT_2", label: "Fluorescent 2" },
-  { value: "FLUORESCENT_3", label: "Fluorescent 3" },
+  { value: "FLUORESCENT_1", label: "Fluorescent Light 1 (Daylight)" },
+  { value: "FLUORESCENT_2", label: "Fluorescent Light 2 (Warm White)" },
+  { value: "FLUORESCENT_3", label: "Fluorescent Light 3 (Cool White)" },
   { value: "INCANDESCENT", label: "Incandescent" },
   { value: "UNDERWATER", label: "Underwater" },
   { value: "CUSTOM", label: "Custom" },
 ];
 
-const TONE_OPTIONS = [
-  { value: -2, label: "Soft" },
-  { value: -1, label: "Medium Soft" },
-  { value: 0, label: "Standard" },
-  { value: 1, label: "Medium Hard" },
-  { value: 2, label: "Hard" },
+const TONE_SLIDER_OPTIONS = [
+  { value: -4, label: "-4" },
+  { value: -3, label: "-3" },
+  { value: -2, label: "-2" },
+  { value: -1, label: "-1" },
+  { value: 0, label: "0 (Standard)" },
+  { value: 1, label: "+1" },
+  { value: 2, label: "+2" },
+  { value: 3, label: "+3" },
+  { value: 4, label: "+4" },
 ];
 
 const COLOR_OPTIONS = [
-  { value: -2, label: "Low (Desaturated)" },
-  { value: -1, label: "Medium Low" },
-  { value: 0, label: "Medium" },
-  { value: 1, label: "Medium High" },
-  { value: 2, label: "High (Rich Saturation)" },
+  { value: -4, label: "-4" },
+  { value: -3, label: "-3" },
+  { value: -2, label: "-2" },
+  { value: -1, label: "-1" },
+  { value: 0, label: "0 (Standard)" },
+  { value: 1, label: "+1" },
+  { value: 2, label: "+2" },
+  { value: 3, label: "+3" },
+  { value: 4, label: "+4" },
 ];
 
 const NOISE_REDUCTION_OPTIONS = [
-  { value: -2, label: "Low" },
-  { value: -1, label: "Medium Low" },
-  { value: 0, label: "Medium" },
-  { value: 1, label: "Medium High" },
-  { value: 2, label: "High" },
+  { value: -4, label: "-4" },
+  { value: -3, label: "-3" },
+  { value: -2, label: "-2" },
+  { value: -1, label: "-1" },
+  { value: 0, label: "0 (Standard)" },
+  { value: 1, label: "+1" },
+  { value: 2, label: "+2" },
+  { value: 3, label: "+3" },
+  { value: 4, label: "+4" },
 ];
 
-const GRAIN_OPTIONS = [
-  { value: -1, label: "Weak" },
-  { value: 0, label: "Medium" },
-  { value: 2, label: "Strong" },
+const GRAIN_EFFECT_OPTIONS = [
+  { value: "OFF", label: "Off" },
+  { value: "WEAK_SMALL", label: "Weak / Small" },
+  { value: "WEAK_LARGE", label: "Weak / Large" },
+  { value: "STRONG_SMALL", label: "Strong / Small" },
+  { value: "STRONG_LARGE", label: "Strong / Large" },
 ];
 
 const CLARITY_OPTIONS = [
-  { value: -5, label: "Very Soft" },
-  { value: -2, label: "Soft" },
-  { value: 0, label: "Standard" },
-  { value: 2, label: "Crisp" },
-  { value: 5, label: "Very Punchy" },
+  { value: -5, label: "-5 (Softest)" },
+  { value: -4, label: "-4" },
+  { value: -3, label: "-3" },
+  { value: -2, label: "-2" },
+  { value: -1, label: "-1" },
+  { value: 0, label: "0 (Standard)" },
+  { value: 1, label: "+1" },
+  { value: 2, label: "+2" },
+  { value: 3, label: "+3" },
+  { value: 4, label: "+4" },
+  { value: 5, label: "+5 (Crispest)" },
+];
+
+const COLOR_CHROME_EFFECT_OPTIONS = [
+  { value: "OFF", label: "Off" },
+  { value: "WEAK", label: "Weak" },
+  { value: "STRONG", label: "Strong" },
+];
+
+const COLOR_CHROME_FX_BLUE_OPTIONS = [
+  { value: "OFF", label: "Off" },
+  { value: "WEAK", label: "Weak" },
+  { value: "STRONG", label: "Strong" },
 ];
 
 const UPLOAD_FILM_SIM = gql`
   mutation UploadFilmSim(
     $name: String!
     $description: String
-    $type: String!
-    $settings: JSON!
+    $settings: FilmSimSettingsInput!
     $notes: String
     $tags: [String!]!
     $sampleImages: [SampleImageInput!]
@@ -151,7 +184,6 @@ const UPLOAD_FILM_SIM = gql`
     uploadFilmSim(
       name: $name
       description: $description
-      type: $type
       settings: $settings
       notes: $notes
       tags: $tags
@@ -204,7 +236,6 @@ const WHITE_BALANCE_MAP = {
 const UploadFilmSim: React.FC = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState("custom-recipe");
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [sampleImages, setSampleImages] = useState<File[]>([]);
@@ -222,8 +253,10 @@ const UploadFilmSim: React.FC = () => {
     highlight: 0,
     shadow: 0,
     noiseReduction: 0,
-    grainEffect: 0,
+    grainEffect: "OFF",
     clarity: 0,
+    colorChromeEffect: "OFF",
+    colorChromeFxBlue: "OFF",
   });
   const [uploadFilmSim, { loading: uploadLoading }] =
     useMutation(UPLOAD_FILM_SIM);
@@ -380,10 +413,10 @@ const UploadFilmSim: React.FC = () => {
       // Generate slug from title
       const slug = slugify(title, { lower: true, strict: true });
 
-      // Format settings to match the database schema
+      // Format settings to match the backend schema
       const formattedSettings = {
         dynamicRange: filmSettings.dynamicRange,
-        type: filmSettings.filmSimulation, // This maps to settings.type in the database
+        filmSimulation: filmSettings.filmSimulation,
         whiteBalance: filmSettings.whiteBalance,
         wbShift: {
           r: Math.round(filmSettings.wbShift.r) || 0,
@@ -396,6 +429,8 @@ const UploadFilmSim: React.FC = () => {
         noiseReduction: Math.round(filmSettings.noiseReduction) || 0,
         grainEffect: Math.round(filmSettings.grainEffect) || 0,
         clarity: Math.round(filmSettings.clarity) || 0,
+        colorChromeEffect: filmSettings.colorChromeEffect,
+        colorChromeFxBlue: filmSettings.colorChromeFxBlue,
       };
 
       // Log the uploaded images to verify their structure
@@ -413,7 +448,6 @@ const UploadFilmSim: React.FC = () => {
       const variables = {
         name: title,
         description,
-        type,
         settings: formattedSettings,
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
@@ -532,7 +566,7 @@ const UploadFilmSim: React.FC = () => {
           "Sharpness",
           "Affects edge definition — use lower for softer, more filmic look",
           filmSettings.sharpness,
-          TONE_OPTIONS,
+          TONE_SLIDER_OPTIONS,
           "sharpness"
         )}
 
@@ -540,7 +574,7 @@ const UploadFilmSim: React.FC = () => {
           "Highlight Tone",
           "Controls how bright areas roll off — lower for softer highlights",
           filmSettings.highlight,
-          TONE_OPTIONS,
+          TONE_SLIDER_OPTIONS,
           "highlight"
         )}
 
@@ -548,7 +582,7 @@ const UploadFilmSim: React.FC = () => {
           "Shadow Tone",
           "Controls how dark areas roll in — lower for more detail in shadows",
           filmSettings.shadow,
-          TONE_OPTIONS,
+          TONE_SLIDER_OPTIONS,
           "shadow"
         )}
 
@@ -564,7 +598,7 @@ const UploadFilmSim: React.FC = () => {
           "Grain Effect",
           "Simulated film grain overlay, mostly cosmetic",
           filmSettings.grainEffect,
-          GRAIN_OPTIONS,
+          GRAIN_EFFECT_OPTIONS,
           "grainEffect"
         )}
 
@@ -574,6 +608,22 @@ const UploadFilmSim: React.FC = () => {
           filmSettings.clarity,
           CLARITY_OPTIONS,
           "clarity"
+        )}
+
+        {renderSettingWithTooltip(
+          "Color Chrome Effect",
+          "Enhances color separation and depth",
+          filmSettings.colorChromeEffect,
+          COLOR_CHROME_EFFECT_OPTIONS,
+          "colorChromeEffect"
+        )}
+
+        {renderSettingWithTooltip(
+          "Color Chrome FX Blue",
+          "Enhances blue color separation",
+          filmSettings.colorChromeFxBlue,
+          COLOR_CHROME_FX_BLUE_OPTIONS,
+          "colorChromeFxBlue"
         )}
       </Stack>
     </Paper>
@@ -623,18 +673,6 @@ const UploadFilmSim: React.FC = () => {
               onChange={(e) => setDescription(e.target.value)}
               disabled={!user}
             />
-
-            <FormControl fullWidth>
-              <InputLabel>Film Simulation Type</InputLabel>
-              <Select
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                disabled={!user}
-              >
-                <MenuItem value="custom-recipe">Custom Recipe</MenuItem>
-                <MenuItem value="fujifilm-native">Fujifilm Native</MenuItem>
-              </Select>
-            </FormControl>
 
             {user && renderFilmSettings()}
 

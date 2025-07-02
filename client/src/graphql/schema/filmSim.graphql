@@ -1,0 +1,173 @@
+# Base Types
+type CurvePoint {
+  x: Int!
+  y: Int!
+}
+
+type ToneCurve {
+  rgb: [CurvePoint!]!
+  red: [CurvePoint!]!
+  green: [CurvePoint!]!
+  blue: [CurvePoint!]!
+}
+
+input CurvePointInput {
+  x: Int!
+  y: Int!
+}
+
+input ToneCurveInput {
+  rgb: [CurvePointInput!]!
+  red: [CurvePointInput!]!
+  green: [CurvePointInput!]!
+  blue: [CurvePointInput!]!
+}
+
+# User Type
+type User {
+  id: ID!
+  username: String!
+  avatar: String
+  instagram: String
+}
+
+# Tag Type
+type Tag {
+  id: ID!
+  name: String!
+  displayName: String!
+}
+
+# Image Type
+type Image {
+  id: ID!
+  url: String!
+  publicId: String
+  caption: String
+}
+
+# Preset Type
+type Preset {
+  id: ID!
+  title: String!
+  slug: String!
+  description: String
+  afterImage: Image
+  creator: User
+  tags: [Tag!]
+}
+
+# Comment Type
+type Comment {
+  id: ID!
+  content: String!
+  author: User!
+  createdAt: String!
+}
+
+# Film Simulation Types
+type FilmSimSettings {
+  dynamicRange: Int
+  highlight: Int
+  shadow: Int
+  colour: Int
+  sharpness: Int
+  noiseReduction: Int
+  grainEffect: String
+  clarity: Int
+  whiteBalance: String
+  wbShift: WhiteBalanceShift
+  filmSimulation: String
+  colorChromeEffect: String
+  colorChromeFxBlue: String
+}
+
+type WhiteBalanceShift {
+  r: Int
+  b: Int
+}
+
+type FilmSim {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  type: String
+  settings: FilmSimSettings
+  toneCurve: ToneCurve
+  tags: [Tag]
+  sampleImages: [Image]
+  thumbnail: String
+  creator: User
+  recommendedPresets: [Preset]
+  compatibleCameras: [String]
+  notes: String
+  comments: [Comment]
+  likes: [User]
+  createdAt: String
+  updatedAt: String
+}
+
+# Input Types
+input FilmSimSettingsInput {
+  dynamicRange: String!
+  filmSimulation: String!
+  whiteBalance: String!
+  wbShift: WhiteBalanceShiftInput!
+  color: Int!
+  sharpness: Int!
+  highlight: Int!
+  shadow: Int!
+  noiseReduction: Int!
+  grainEffect: String!
+  clarity: Int!
+  colorChromeEffect: String!
+  colorChromeFxBlue: String!
+}
+
+input WhiteBalanceShiftInput {
+  r: Int!
+  b: Int!
+}
+
+input SampleImageInput {
+  publicId: String!
+  url: String!
+}
+
+input CreateFilmSimInput {
+  name: String!
+  slug: String!
+  description: String
+  type: String
+  settings: FilmSimSettingsInput
+  toneCurve: ToneCurveInput
+  tagIds: [ID!]
+  sampleImageIds: [ID!]
+  notes: String
+  recommendedPresetIds: [ID!]
+  compatibleCameras: [String!]
+}
+
+# Mutations
+extend type Mutation {
+  uploadFilmSim(
+    name: String!
+    description: String
+    settings: FilmSimSettingsInput!
+    notes: String
+    tags: [String!]!
+    sampleImages: [SampleImageInput!]
+  ): FilmSim!
+
+  createFilmSim(input: CreateFilmSimInput!): FilmSim
+  updateFilmSim(id: ID!, input: JSON!): FilmSim
+  deleteFilmSim(id: ID!): Boolean
+  likeFilmSim(filmSimId: ID!): Boolean
+}
+
+# Queries
+extend type Query {
+  getFilmSim(slug: String!): FilmSim
+  listFilmSims(filter: JSON): [FilmSim]
+}

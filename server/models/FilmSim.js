@@ -20,7 +20,7 @@ const filmSimSchema = new Schema(
       colour: { type: Number, default: 0 },
       sharpness: { type: Number, default: 0 },
       noiseReduction: { type: Number, default: 0 },
-      grainEffect: { type: Number, default: 0 },
+      grainEffect: { type: String, default: "OFF" },
       clarity: { type: Number, default: 0 },
       whiteBalance: { type: String, default: "auto" },
       wbShift: {
@@ -28,6 +28,8 @@ const filmSimSchema = new Schema(
         b: { type: Number, default: 0 },
       },
       filmSimulation: { type: String, default: "" },
+      colorChromeEffect: { type: String, default: "OFF" },
+      colorChromeFxBlue: { type: String, default: "OFF" },
     },
 
     toneCurve: {

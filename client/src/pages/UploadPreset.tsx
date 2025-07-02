@@ -277,36 +277,6 @@ const UPLOAD_PRESET = gql`
   }
 `;
 
-const UPLOAD_FILMSIM = gql`
-  mutation UploadFilmSim(
-    $title: String!
-    $description: String
-    $settings: JSON!
-    $notes: String
-    $tags: [String!]!
-    $cameraModel: String!
-    $filmType: String!
-    $beforeImage: Upload
-    $afterImage: Upload
-  ) {
-    uploadFilmSim(
-      title: $title
-      description: $description
-      settings: $settings
-      notes: $notes
-      tags: $tags
-      cameraModel: $cameraModel
-      filmType: $filmType
-      beforeImage: $beforeImage
-      afterImage: $afterImage
-    ) {
-      id
-      name
-      slug
-    }
-  }
-`;
-
 // Constants for file validation
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
