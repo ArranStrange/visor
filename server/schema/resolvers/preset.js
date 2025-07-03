@@ -26,11 +26,16 @@ const cleanSettings = (settings) => {
           amount: Number(settings.grain.amount) || 0,
           size: Number(settings.grain.size) || 0,
           frequency: Number(settings.grain.frequency) || 0,
+          roughness: Number(settings.grain.roughness) || 0,
         }
       : undefined,
     vignette: settings.vignette
       ? {
           amount: Number(settings.vignette.amount) || 0,
+          midpoint: Number(settings.vignette.midpoint) || 0,
+          feather: Number(settings.vignette.feather) || 0,
+          roundness: Number(settings.vignette.roundness) || 0,
+          style: settings.vignette.style || "Highlight Priority",
         }
       : undefined,
     colorAdjustments: settings.colorAdjustments
@@ -46,6 +51,7 @@ const cleanSettings = (settings) => {
             : undefined,
           orange: settings.colorAdjustments.orange
             ? {
+                hue: Number(settings.colorAdjustments.orange.hue) || 0,
                 saturation:
                   Number(settings.colorAdjustments.orange.saturation) || 0,
                 luminance:
@@ -66,6 +72,17 @@ const cleanSettings = (settings) => {
                 hue: Number(settings.colorAdjustments.green.hue) || 0,
                 saturation:
                   Number(settings.colorAdjustments.green.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.green.luminance) || 0,
+              }
+            : undefined,
+          aqua: settings.colorAdjustments.aqua
+            ? {
+                hue: Number(settings.colorAdjustments.aqua.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.aqua.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.aqua.luminance) || 0,
               }
             : undefined,
           blue: settings.colorAdjustments.blue
@@ -73,6 +90,26 @@ const cleanSettings = (settings) => {
                 hue: Number(settings.colorAdjustments.blue.hue) || 0,
                 saturation:
                   Number(settings.colorAdjustments.blue.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.blue.luminance) || 0,
+              }
+            : undefined,
+          purple: settings.colorAdjustments.purple
+            ? {
+                hue: Number(settings.colorAdjustments.purple.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.purple.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.purple.luminance) || 0,
+              }
+            : undefined,
+          magenta: settings.colorAdjustments.magenta
+            ? {
+                hue: Number(settings.colorAdjustments.magenta.hue) || 0,
+                saturation:
+                  Number(settings.colorAdjustments.magenta.saturation) || 0,
+                luminance:
+                  Number(settings.colorAdjustments.magenta.luminance) || 0,
               }
             : undefined,
         }
@@ -85,6 +122,15 @@ const cleanSettings = (settings) => {
           highlightSaturation:
             Number(settings.splitToning.highlightSaturation) || 0,
           balance: Number(settings.splitToning.balance) || 0,
+        }
+      : undefined,
+    noiseReduction: settings.noiseReduction
+      ? {
+          luminance: Number(settings.noiseReduction.luminance) || 0,
+          detail: Number(settings.noiseReduction.detail) || 0,
+          color: Number(settings.noiseReduction.color) || 0,
+          colorDetail: Number(settings.noiseReduction.colorDetail) || 0,
+          colorSmoothness: Number(settings.noiseReduction.colorSmoothness) || 0,
         }
       : undefined,
   };
@@ -104,6 +150,146 @@ const cleanToneCurve = (toneCurve) => {
     red: cleanPoints(toneCurve.red),
     green: cleanPoints(toneCurve.green),
     blue: cleanPoints(toneCurve.blue),
+  };
+};
+
+// Helper function to clean comprehensive settings
+const cleanComprehensiveSettings = (data) => {
+  if (!data) return {};
+
+  return {
+    // Camera & Profile Metadata
+    cameraProfileDigest: data.cameraProfileDigest || undefined,
+    profileName: data.profileName || undefined,
+    lookTableName: data.lookTableName || undefined,
+
+    // Color Grading
+    colorGrading: data.colorGrading
+      ? {
+          shadowHue: Number(data.colorGrading.shadowHue) || 0,
+          shadowSat: Number(data.colorGrading.shadowSat) || 0,
+          midtoneHue: Number(data.colorGrading.midtoneHue) || 0,
+          midtoneSat: Number(data.colorGrading.midtoneSat) || 0,
+          highlightHue: Number(data.colorGrading.highlightHue) || 0,
+          highlightSat: Number(data.colorGrading.highlightSat) || 0,
+          blending: Number(data.colorGrading.blending) || 0,
+          globalHue: Number(data.colorGrading.globalHue) || 0,
+          globalSat: Number(data.colorGrading.globalSat) || 0,
+          perceptual: Boolean(data.colorGrading.perceptual),
+        }
+      : undefined,
+
+    // Lens Corrections
+    lensCorrections: data.lensCorrections
+      ? {
+          enableLensProfileCorrections: Boolean(
+            data.lensCorrections.enableLensProfileCorrections
+          ),
+          lensProfileName: data.lensCorrections.lensProfileName || undefined,
+          lensManualDistortionAmount:
+            Number(data.lensCorrections.lensManualDistortionAmount) || 0,
+          perspectiveUpright: data.lensCorrections.perspectiveUpright || "Off",
+          autoLateralCA: Boolean(data.lensCorrections.autoLateralCA),
+        }
+      : undefined,
+
+    // Optics
+    optics: data.optics
+      ? {
+          removeChromaticAberration: Boolean(
+            data.optics.removeChromaticAberration
+          ),
+          vignetteAmount: Number(data.optics.vignetteAmount) || 0,
+          vignetteMidpoint: Number(data.optics.vignetteMidpoint) || 0,
+        }
+      : undefined,
+
+    // Transform
+    transform: data.transform
+      ? {
+          perspectiveVertical: Number(data.transform.perspectiveVertical) || 0,
+          perspectiveHorizontal:
+            Number(data.transform.perspectiveHorizontal) || 0,
+          perspectiveRotate: Number(data.transform.perspectiveRotate) || 0,
+          perspectiveScale: Number(data.transform.perspectiveScale) || 0,
+          perspectiveAspect: Number(data.transform.perspectiveAspect) || 0,
+          autoPerspective: Boolean(data.transform.autoPerspective),
+        }
+      : undefined,
+
+    // Effects
+    effects: data.effects
+      ? {
+          postCropVignetteAmount:
+            Number(data.effects.postCropVignetteAmount) || 0,
+          postCropVignetteMidpoint:
+            Number(data.effects.postCropVignetteMidpoint) || 0,
+          postCropVignetteFeather:
+            Number(data.effects.postCropVignetteFeather) || 0,
+          postCropVignetteRoundness:
+            Number(data.effects.postCropVignetteRoundness) || 0,
+          postCropVignetteStyle:
+            data.effects.postCropVignetteStyle || "Highlight Priority",
+          grainAmount: Number(data.effects.grainAmount) || 0,
+          grainSize: Number(data.effects.grainSize) || 0,
+          grainFrequency: Number(data.effects.grainFrequency) || 0,
+        }
+      : undefined,
+
+    // Calibration
+    calibration: data.calibration
+      ? {
+          cameraCalibrationBluePrimaryHue:
+            Number(data.calibration.cameraCalibrationBluePrimaryHue) || 0,
+          cameraCalibrationBluePrimarySaturation:
+            Number(data.calibration.cameraCalibrationBluePrimarySaturation) ||
+            0,
+          cameraCalibrationGreenPrimaryHue:
+            Number(data.calibration.cameraCalibrationGreenPrimaryHue) || 0,
+          cameraCalibrationGreenPrimarySaturation:
+            Number(data.calibration.cameraCalibrationGreenPrimarySaturation) ||
+            0,
+          cameraCalibrationRedPrimaryHue:
+            Number(data.calibration.cameraCalibrationRedPrimaryHue) || 0,
+          cameraCalibrationRedPrimarySaturation:
+            Number(data.calibration.cameraCalibrationRedPrimarySaturation) || 0,
+          cameraCalibrationShadowTint:
+            Number(data.calibration.cameraCalibrationShadowTint) || 0,
+          cameraCalibrationVersion:
+            data.calibration.cameraCalibrationVersion || undefined,
+        }
+      : undefined,
+
+    // Crop & Orientation
+    crop: data.crop
+      ? {
+          cropTop: Number(data.crop.cropTop) || 0,
+          cropLeft: Number(data.crop.cropLeft) || 0,
+          cropBottom: Number(data.crop.cropBottom) || 0,
+          cropRight: Number(data.crop.cropRight) || 0,
+          cropAngle: Number(data.crop.cropAngle) || 0,
+          cropConstrainToWarp: Boolean(data.crop.cropConstrainToWarp),
+        }
+      : undefined,
+    orientation: data.orientation || "0",
+
+    // Metadata
+    metadata: data.metadata
+      ? {
+          rating: Number(data.metadata.rating) || 0,
+          label: data.metadata.label || undefined,
+          title: data.metadata.title || undefined,
+          creator: data.metadata.creator || undefined,
+          dateCreated: data.metadata.dateCreated
+            ? new Date(data.metadata.dateCreated)
+            : undefined,
+        }
+      : undefined,
+
+    // Other
+    hasSettings: Boolean(data.hasSettings),
+    rawFileName: data.rawFileName || undefined,
+    snapshot: data.snapshot || undefined,
   };
 };
 
@@ -262,6 +448,22 @@ const presetResolvers = {
         beforeImage,
         afterImage,
         sampleImages,
+        // New comprehensive settings
+        cameraProfileDigest,
+        profileName,
+        lookTableName,
+        colorGrading,
+        lensCorrections,
+        optics,
+        transform,
+        effects,
+        calibration,
+        crop,
+        orientation,
+        metadata,
+        hasSettings,
+        rawFileName,
+        snapshot,
       },
       { user }
     ) => {
@@ -305,6 +507,26 @@ const presetResolvers = {
           "Creating preset with settings:",
           JSON.stringify(settings, null, 2)
         );
+
+        // Clean comprehensive settings
+        const comprehensiveSettings = cleanComprehensiveSettings({
+          cameraProfileDigest,
+          profileName,
+          lookTableName,
+          colorGrading,
+          lensCorrections,
+          optics,
+          transform,
+          effects,
+          calibration,
+          crop,
+          orientation,
+          metadata,
+          hasSettings,
+          rawFileName,
+          snapshot,
+        });
+
         const preset = new Preset({
           title,
           description,
@@ -314,6 +536,7 @@ const presetResolvers = {
           tags: tagDocuments,
           creator: user._id,
           slug,
+          ...comprehensiveSettings,
         });
 
         console.log("Saving preset...");

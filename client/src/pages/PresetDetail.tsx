@@ -225,6 +225,40 @@ const PresetDetails: React.FC = () => {
     setParsedSettings(settings);
   };
 
+  // Helper function to safely get setting values from the new comprehensive structure
+  const getSettingValue = (setting: string): number | undefined => {
+    switch (setting) {
+      case "exposure":
+        return preset.settings?.exposure;
+      case "contrast":
+        return preset.settings?.contrast;
+      case "highlights":
+        return preset.settings?.highlights;
+      case "shadows":
+        return preset.settings?.shadows;
+      case "whites":
+        return preset.settings?.whites;
+      case "blacks":
+        return preset.settings?.blacks;
+      case "temp":
+        return preset.settings?.temp;
+      case "tint":
+        return preset.settings?.tint;
+      case "vibrance":
+        return preset.settings?.vibrance;
+      case "saturation":
+        return preset.settings?.saturation;
+      case "clarity":
+        return preset.settings?.clarity;
+      case "dehaze":
+        return preset.settings?.dehaze;
+      case "texture":
+        return preset.settings?.texture;
+      default:
+        return undefined;
+    }
+  };
+
   // Helper function to get current settings (either from XMP or original)
   const getCurrentSettings = () => {
     return parsedSettings || preset.settings;
@@ -431,44 +465,6 @@ const PresetDetails: React.FC = () => {
     }
   };
 
-  const renderAccordionSection = (
-    title: string,
-    keys: string[],
-    content?: React.ReactNode
-  ) => {
-    const hasValidSettings = keys.some(
-      (key) => preset.settings[key] !== undefined
-    );
-    if (!hasValidSettings && !content) return null;
-
-    return (
-      <Accordion sx={{ backgroundColor: "background.default" }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6" fontWeight="bold">
-            {title}
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {content ? (
-            content
-          ) : (
-            <Box>
-              {keys.map((key) =>
-                preset.settings[key] !== undefined ? (
-                  <SettingSliderDisplay
-                    key={key}
-                    label={key}
-                    value={formatSettingValue(preset.settings[key] / 100)}
-                  />
-                ) : null
-              )}
-            </Box>
-          )}
-        </AccordionDetails>
-      </Accordion>
-    );
-  };
-
   // Get before/after images from beforeImage and afterImage fields
   const beforeImage = preset.beforeImage?.url;
   const afterImage = preset.afterImage?.url;
@@ -596,85 +592,944 @@ const PresetDetails: React.FC = () => {
       </Typography>
 
       {/* Accordion Sections */}
-      {renderAccordionSection("Light", [
-        "exposure",
-        "contrast",
-        "highlights",
-        "shadows",
-        "whites",
-        "blacks",
-      ])}
+      {/* Light */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Light
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Exposure"
+              value={formatSettingValue((preset.settings?.exposure || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Contrast"
+              value={formatSettingValue((preset.settings?.contrast || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Highlights"
+              value={formatSettingValue(
+                (preset.settings?.highlights || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Shadows"
+              value={formatSettingValue((preset.settings?.shadows || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Whites"
+              value={formatSettingValue((preset.settings?.whites || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Blacks"
+              value={formatSettingValue((preset.settings?.blacks || 0) / 100)}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
-      {renderAccordionSection(
-        "Tone Curve",
-        [],
-        <ToneCurve curves={toneCurveData} />
-      )}
+      {/* Tone Curve */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Tone Curve
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ToneCurve curves={toneCurveData} />
+        </AccordionDetails>
+      </Accordion>
 
-      {renderAccordionSection("Color", [
-        "temp",
-        "tint",
-        "vibrance",
-        "saturation",
-      ])}
+      {/* Color */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Color
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Temperature"
+              value={formatSettingValue((preset.settings?.temp || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Tint"
+              value={formatSettingValue((preset.settings?.tint || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Vibrance"
+              value={formatSettingValue((preset.settings?.vibrance || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.settings?.saturation || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
-      {renderAccordionSection("Effects", ["clarity", "dehaze"])}
+      {/* Effects */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Effects
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Clarity"
+              value={formatSettingValue((preset.settings?.clarity || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Dehaze"
+              value={formatSettingValue((preset.settings?.dehaze || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Texture"
+              value={formatSettingValue((preset.settings?.texture || 0) / 100)}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
-      {renderAccordionSection(
-        "Grain",
-        [],
-        <Box>
-          {preset.settings.grain && (
-            <>
+      {/* Split Toning */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Split Toning
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Shadows
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.splitToning?.shadowHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.splitToning?.shadowSaturation || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Highlights
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.splitToning?.highlightHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.splitToning?.highlightSaturation || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Balance
+            </Typography>
+            <SettingSliderDisplay
+              label="Balance"
+              value={formatSettingValue(
+                (preset.splitToning?.balance || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Grain */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Grain
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Amount"
+              value={formatSettingValue(
+                (preset.effects?.grainAmount || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Size"
+              value={formatSettingValue((preset.effects?.grainSize || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Frequency"
+              value={formatSettingValue(
+                (preset.effects?.grainFrequency || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Detail */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Detail
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Sharpening
+            </Typography>
+            <SettingSliderDisplay
+              label="Amount"
+              value={formatSettingValue(
+                (preset.settings?.sharpening || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Radius"
+              value={formatSettingValue(
+                (preset.settings?.sharpenRadius || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Detail"
+              value={formatSettingValue(
+                (preset.settings?.sharpenDetail || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Edge Masking"
+              value={formatSettingValue(
+                (preset.settings?.sharpenEdgeMasking || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Noise Reduction
+            </Typography>
+            <SettingSliderDisplay
+              label="Luminance Smoothing"
+              value={formatSettingValue(
+                (preset.settings?.luminanceSmoothing || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Luminance Detail"
+              value={formatSettingValue(
+                (preset.settings?.luminanceDetail || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Luminance Contrast"
+              value={formatSettingValue(
+                (preset.settings?.luminanceContrast || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Color Noise Reduction"
+              value={formatSettingValue(
+                (preset.settings?.noiseReduction?.color || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Color Detail"
+              value={formatSettingValue(
+                (preset.settings?.noiseReduction?.detail || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Color Smoothness"
+              value={formatSettingValue(
+                (preset.settings?.noiseReduction?.smoothness || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Color Adjustments (HSL) */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Color Adjustments (HSL)
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Red
+              </Typography>
               <SettingSliderDisplay
-                label="Amount"
-                value={formatSettingValue(preset.settings.grain.amount / 100)}
-              />
-              <SettingSliderDisplay
-                label="Size"
-                value={formatSettingValue(preset.settings.grain.size / 100)}
-              />
-              <SettingSliderDisplay
-                label="Roughness"
+                label="Hue"
                 value={formatSettingValue(
-                  preset.settings.grain.roughness / 100
+                  (preset.settings?.colorAdjustments?.red?.hue || 0) / 100
                 )}
               />
-            </>
-          )}
-        </Box>
-      )}
-
-      {renderAccordionSection(
-        "Noise Reduction",
-        [],
-        <Box>
-          {preset.settings.noiseReduction && (
-            <>
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.red?.saturation || 0) /
+                    100
+                )}
+              />
               <SettingSliderDisplay
                 label="Luminance"
                 value={formatSettingValue(
-                  preset.settings.noiseReduction.luminance / 100
+                  (preset.settings?.colorAdjustments?.red?.luminance || 0) / 100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Orange
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.orange?.hue || 0) / 100
                 )}
               />
               <SettingSliderDisplay
-                label="Color"
+                label="Saturation"
                 value={formatSettingValue(
-                  preset.settings.noiseReduction.color / 100
+                  (preset.settings?.colorAdjustments?.orange?.saturation || 0) /
+                    100
                 )}
               />
               <SettingSliderDisplay
-                label="Detail"
+                label="Luminance"
                 value={formatSettingValue(
-                  preset.settings.noiseReduction.detail / 100
+                  (preset.settings?.colorAdjustments?.orange?.luminance || 0) /
+                    100
                 )}
               />
-            </>
-          )}
-        </Box>
-      )}
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Yellow
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.yellow?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.yellow?.saturation || 0) /
+                    100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.yellow?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Green
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.green?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.green?.saturation || 0) /
+                    100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.green?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Aqua
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.aqua?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.aqua?.saturation || 0) /
+                    100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.aqua?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Blue
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.blue?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.blue?.saturation || 0) /
+                    100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.blue?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Purple
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.purple?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.purple?.saturation || 0) /
+                    100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.purple?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                gutterBottom
+              >
+                Magenta
+              </Typography>
+              <SettingSliderDisplay
+                label="Hue"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.magenta?.hue || 0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Saturation"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.magenta?.saturation ||
+                    0) / 100
+                )}
+              />
+              <SettingSliderDisplay
+                label="Luminance"
+                value={formatSettingValue(
+                  (preset.settings?.colorAdjustments?.magenta?.luminance || 0) /
+                    100
+                )}
+              />
+            </Box>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
-      {renderAccordionSection("Detail", ["sharpening"])}
+      {/* Color Grading */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Color Grading
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Shadows
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.colorGrading?.shadowHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.colorGrading?.shadowSat || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Midtones
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.colorGrading?.midtoneHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.colorGrading?.midtoneSat || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Highlights
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.colorGrading?.highlightHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.colorGrading?.highlightSat || 0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Global
+            </Typography>
+            <SettingSliderDisplay
+              label="Blending"
+              value={formatSettingValue(
+                (preset.colorGrading?.blending || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Global Hue"
+              value={formatSettingValue(
+                (preset.colorGrading?.globalHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Global Saturation"
+              value={formatSettingValue(
+                (preset.colorGrading?.globalSat || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Lens Corrections */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Lens Corrections
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Manual Distortion"
+              value={formatSettingValue(
+                (preset.lensCorrections?.lensManualDistortionAmount || 0) / 100
+              )}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Profile: {preset.lensCorrections?.lensProfileName || "None"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Perspective:{" "}
+              {preset.lensCorrections?.perspectiveUpright || "None"}
+            </Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Optics */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Optics
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Vignette Amount"
+              value={formatSettingValue(
+                (preset.optics?.vignetteAmount || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Vignette Midpoint"
+              value={formatSettingValue(
+                (preset.optics?.vignetteMidpoint || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Transform */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Transform
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Vertical"
+              value={formatSettingValue(
+                (preset.transform?.perspectiveVertical || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Horizontal"
+              value={formatSettingValue(
+                (preset.transform?.perspectiveHorizontal || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Rotate"
+              value={formatSettingValue(
+                (preset.transform?.perspectiveRotate || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Scale"
+              value={formatSettingValue(
+                (preset.transform?.perspectiveScale || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Aspect"
+              value={formatSettingValue(
+                (preset.transform?.perspectiveAspect || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Effects (Enhanced) */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Effects
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Post-Crop Vignette Amount"
+              value={formatSettingValue(
+                (preset.effects?.postCropVignetteAmount || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Post-Crop Vignette Midpoint"
+              value={formatSettingValue(
+                (preset.effects?.postCropVignetteMidpoint || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Post-Crop Vignette Feather"
+              value={formatSettingValue(
+                (preset.effects?.postCropVignetteFeather || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Post-Crop Vignette Roundness"
+              value={formatSettingValue(
+                (preset.effects?.postCropVignetteRoundness || 0) / 100
+              )}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Vignette Style:{" "}
+              {preset.effects?.postCropVignetteStyle || "Standard"}
+            </Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Calibration */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Camera Calibration
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Red Primary
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationRedPrimaryHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationRedPrimarySaturation ||
+                  0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Green Primary
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationGreenPrimaryHue || 0) /
+                  100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationGreenPrimarySaturation ||
+                  0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Blue Primary
+            </Typography>
+            <SettingSliderDisplay
+              label="Hue"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationBluePrimaryHue || 0) / 100
+              )}
+            />
+            <SettingSliderDisplay
+              label="Saturation"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationBluePrimarySaturation ||
+                  0) / 100
+              )}
+            />
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Shadow
+            </Typography>
+            <SettingSliderDisplay
+              label="Tint"
+              value={formatSettingValue(
+                (preset.calibration?.cameraCalibrationShadowTint || 0) / 100
+              )}
+            />
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Crop & Orientation */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Crop & Orientation
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <SettingSliderDisplay
+              label="Crop Top"
+              value={formatSettingValue((preset.crop?.cropTop || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Crop Left"
+              value={formatSettingValue((preset.crop?.cropLeft || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Crop Bottom"
+              value={formatSettingValue((preset.crop?.cropBottom || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Crop Right"
+              value={formatSettingValue((preset.crop?.cropRight || 0) / 100)}
+            />
+            <SettingSliderDisplay
+              label="Crop Angle"
+              value={formatSettingValue((preset.crop?.cropAngle || 0) / 100)}
+            />
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Orientation: {preset.orientation || "Normal"}
+            </Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Metadata */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Metadata
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              Rating: {preset.metadata?.rating || "None"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Label: {preset.metadata?.label || "None"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Creator: {preset.metadata?.creator || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Date Created: {preset.metadata?.dateCreated || "Unknown"}
+            </Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Camera & Profile Metadata */}
+      <Accordion sx={{ backgroundColor: "background.default" }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6" fontWeight="bold">
+            Camera & Profile
+          </Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <Box>
+            <Typography variant="body2" color="text.secondary">
+              Process Version: {preset.version || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Camera Profile: {preset.cameraProfile || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Profile Name: {preset.profileName || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              White Balance: {preset.whiteBalance || "Unknown"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              Look Table: {preset.lookTableName || "None"}
+            </Typography>
+          </Box>
+        </AccordionDetails>
+      </Accordion>
 
       {/* Sample Images */}
       <Box sx={{ mt: 4, mb: 4 }}>
@@ -1001,16 +1856,20 @@ const PresetDetails: React.FC = () => {
                           gap: 2,
                         }}
                       >
-                        {getCurrentSettings().grain && (
+                        {(getCurrentSettings().effects || preset.effects) && (
                           <>
                             <Box>
                               <SettingSliderDisplay
                                 label="Amount"
                                 value={
-                                  getCurrentSettings().grain.amount
-                                    ? getCurrentSettings().grain.amount.toFixed(
-                                        1
-                                      )
+                                  (
+                                    getCurrentSettings().effects ||
+                                    preset.effects
+                                  )?.grainAmount
+                                    ? (
+                                        getCurrentSettings().effects ||
+                                        preset.effects
+                                      ).grainAmount.toFixed(1)
                                     : "0"
                                 }
                               />
@@ -1019,20 +1878,30 @@ const PresetDetails: React.FC = () => {
                               <SettingSliderDisplay
                                 label="Size"
                                 value={
-                                  getCurrentSettings().grain.size
-                                    ? getCurrentSettings().grain.size.toFixed(1)
+                                  (
+                                    getCurrentSettings().effects ||
+                                    preset.effects
+                                  )?.grainSize
+                                    ? (
+                                        getCurrentSettings().effects ||
+                                        preset.effects
+                                      ).grainSize.toFixed(1)
                                     : "0"
                                 }
                               />
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Roughness"
+                                label="Frequency"
                                 value={
-                                  getCurrentSettings().grain.roughness
-                                    ? getCurrentSettings().grain.roughness.toFixed(
-                                        1
-                                      )
+                                  (
+                                    getCurrentSettings().effects ||
+                                    preset.effects
+                                  )?.grainFrequency
+                                    ? (
+                                        getCurrentSettings().effects ||
+                                        preset.effects
+                                      ).grainFrequency.toFixed(1)
                                     : "0"
                                 }
                               />
@@ -1060,14 +1929,14 @@ const PresetDetails: React.FC = () => {
                           gap: 2,
                         }}
                       >
-                        {getCurrentSettings().noiseReduction && (
+                        {getCurrentSettings().detail && (
                           <>
                             <Box>
                               <SettingSliderDisplay
-                                label="Luminance"
+                                label="Luminance Smoothing"
                                 value={
-                                  getCurrentSettings().noiseReduction.luminance
-                                    ? getCurrentSettings().noiseReduction.luminance.toFixed(
+                                  getCurrentSettings().detail.luminanceSmoothing
+                                    ? getCurrentSettings().detail.luminanceSmoothing.toFixed(
                                         1
                                       )
                                     : "0"
@@ -1076,10 +1945,11 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Color"
+                                label="Color Noise Reduction"
                                 value={
-                                  getCurrentSettings().noiseReduction.color
-                                    ? getCurrentSettings().noiseReduction.color.toFixed(
+                                  getCurrentSettings().detail
+                                    .colorNoiseReduction
+                                    ? getCurrentSettings().detail.colorNoiseReduction.toFixed(
                                         1
                                       )
                                     : "0"
@@ -1088,10 +1958,10 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Detail"
+                                label="Luminance Detail"
                                 value={
-                                  getCurrentSettings().noiseReduction.detail
-                                    ? getCurrentSettings().noiseReduction.detail.toFixed(
+                                  getCurrentSettings().detail.luminanceDetail
+                                    ? getCurrentSettings().detail.luminanceDetail.toFixed(
                                         1
                                       )
                                     : "0"
