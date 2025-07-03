@@ -4,11 +4,13 @@ import { Box, Typography } from "@mui/material";
 interface SettingSliderDisplayProps {
   label: string;
   value: number | string;
+  spectrum?: string; // Optional CSS linear-gradient
 }
 
 const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
   label,
   value,
+  spectrum,
 }) => {
   const parsed = parseFloat(value.toString());
   if (isNaN(parsed)) return null;
@@ -55,7 +57,7 @@ const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
           position: "relative",
           height: 6,
           borderRadius: 3,
-          backgroundColor: "divider",
+          background: spectrum ? spectrum : (theme) => theme.palette.divider,
         }}
       >
         {/* Fill from center */}
@@ -68,6 +70,7 @@ const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
             backgroundColor: "#fff",
             left: `${fromCenter >= 0 ? center : center - fillWidth}%`,
             borderRadius: 3,
+            opacity: spectrum ? 0.3 : 1,
           }}
         />
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Container,
@@ -28,6 +28,11 @@ import {
   Grid,
   useMediaQuery,
   useTheme,
+  Slider,
+  ToggleButtonGroup,
+  ToggleButton,
+  Card,
+  CardContent,
 } from "@mui/material";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -115,6 +120,18 @@ const PresetDetails: React.FC = () => {
   );
   const [showAllImages, setShowAllImages] = React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
+  const [selectedColor, setSelectedColor] = useState("blue"); // default to blue
+
+  const colorOrder = [
+    { key: "red", color: "#ff3b30" },
+    { key: "orange", color: "#ff9500" },
+    { key: "yellow", color: "#ffcc00" },
+    { key: "green", color: "#4cd964" },
+    { key: "aqua", color: "#5ac8fa" },
+    { key: "blue", color: "#007aff" },
+    { key: "purple", color: "#af52de" },
+    { key: "magenta", color: "#ff2d55" },
+  ];
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
@@ -278,6 +295,30 @@ const PresetDetails: React.FC = () => {
       return cleaned;
     }
     return obj;
+  };
+
+  // Helper to get a muted color for each channel
+  const colorMixerColor = (key: string) => {
+    switch (key) {
+      case "red":
+        return "#b94a4a";
+      case "orange":
+        return "#b98a4a";
+      case "yellow":
+        return "#b9b84a";
+      case "green":
+        return "#4ab96b";
+      case "aqua":
+        return "#4ab9b9";
+      case "blue":
+        return "#4a6ab9";
+      case "purple":
+        return "#8a4ab9";
+      case "magenta":
+        return "#b94a8a";
+      default:
+        return "#888";
+    }
   };
 
   if (loading) {
@@ -643,7 +684,7 @@ const PresetDetails: React.FC = () => {
         </AccordionDetails>
       </Accordion>
 
-      {/* Color */}
+      {/* Color (Lightroom style, in Accordion) */}
       <Accordion sx={{ backgroundColor: "background.default" }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" fontWeight="bold">
@@ -651,24 +692,102 @@ const PresetDetails: React.FC = () => {
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
-          <Box>
+          {/* White Balance and Color Sliders */}
+          <Typography variant="body2" gutterBottom>
+            White Balance: {preset.whiteBalance || "Custom"}
+          </Typography>
+          {[
+            {
+              label: "Temp",
+              key: "temp",
+              spectrum:
+                "linear-gradient(to right, #4a90e2, #eaeaea, #f7e7b6, #e2c44a)",
+            },
+            {
+              label: "Tint",
+              key: "tint",
+              spectrum: "linear-gradient(to right, #4ae2a1, #eaeaea, #e24ad6)",
+            },
+            {
+              label: "Vibrance",
+              key: "vibrance",
+              spectrum:
+                "linear-gradient(to right, #444, #3b4a6a, #3b6a4a, #6a6a3b, #6a4a3b, #b94a4a)",
+            },
+            {
+              label: "Saturation",
+              key: "saturation",
+              spectrum:
+                "linear-gradient(to right, #444, #3b4a6a, #3b6a4a, #6a6a3b, #6a4a3b, #b94a4a)",
+            },
+          ].map(({ label, key, spectrum }) => (
             <SettingSliderDisplay
-              label="Temperature"
-              value={formatSettingValue((preset.settings?.temp || 0) / 100)}
+              key={key}
+              label={label}
+              value={preset.settings?.[key] || 0}
+              spectrum={spectrum}
             />
+          ))}
+
+          {/* Color Mixer */}
+          <Box sx={{ mt: 3, mb: 2 }}>
+            <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+              Color Mixer
+            </Typography>
+            <ToggleButtonGroup
+              value={selectedColor}
+              exclusive
+              onChange={(_, v) => v && setSelectedColor(v)}
+              sx={{ mb: 2 }}
+            >
+              {colorOrder.map(({ key, color }) => (
+                <ToggleButton
+                  key={key}
+                  value={key}
+                  sx={{ p: 0.5, mx: 0.5, border: "none" }}
+                >
+                  <Box
+                    sx={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: "50%",
+                      background: color,
+                      border:
+                        selectedColor === key
+                          ? "2px solid #fff"
+                          : "2px solid #222",
+                    }}
+                  />
+                </ToggleButton>
+              ))}
+            </ToggleButtonGroup>
+            {/* Color Mixer Sliders */}
             <SettingSliderDisplay
-              label="Tint"
-              value={formatSettingValue((preset.settings?.tint || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Vibrance"
-              value={formatSettingValue((preset.settings?.vibrance || 0) / 100)}
+              label="Hue"
+              value={
+                preset.settings?.colorAdjustments?.[selectedColor]?.hue || 0
+              }
+              spectrum="linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)"
             />
             <SettingSliderDisplay
               label="Saturation"
-              value={formatSettingValue(
-                (preset.settings?.saturation || 0) / 100
-              )}
+              value={
+                preset.settings?.colorAdjustments?.[selectedColor]
+                  ?.saturation || 0
+              }
+              spectrum={`linear-gradient(to right, #888, ${colorMixerColor(
+                selectedColor
+              )}, #888)`}
+            />
+            <SettingSliderDisplay
+              label="Luminance"
+              value={
+                preset.settings?.colorAdjustments?.[selectedColor]?.luminance ||
+                0
+              }
+              spectrum={`linear-gradient(to right, #222, ${colorMixerColor(
+                selectedColor
+              )}, #fff)`}
             />
           </Box>
         </AccordionDetails>
@@ -1279,31 +1398,31 @@ const PresetDetails: React.FC = () => {
         <AccordionDetails>
           <Box>
             <SettingSliderDisplay
-              label="Vertical"
+              label="Perspective Vertical"
               value={formatSettingValue(
                 (preset.transform?.perspectiveVertical || 0) / 100
               )}
             />
             <SettingSliderDisplay
-              label="Horizontal"
+              label="Perspective Horizontal"
               value={formatSettingValue(
                 (preset.transform?.perspectiveHorizontal || 0) / 100
               )}
             />
             <SettingSliderDisplay
-              label="Rotate"
+              label="Perspective Rotate"
               value={formatSettingValue(
                 (preset.transform?.perspectiveRotate || 0) / 100
               )}
             />
             <SettingSliderDisplay
-              label="Scale"
+              label="Perspective Scale"
               value={formatSettingValue(
                 (preset.transform?.perspectiveScale || 0) / 100
               )}
             />
             <SettingSliderDisplay
-              label="Aspect"
+              label="Perspective Aspect"
               value={formatSettingValue(
                 (preset.transform?.perspectiveAspect || 0) / 100
               )}
@@ -1316,7 +1435,7 @@ const PresetDetails: React.FC = () => {
       <Accordion sx={{ backgroundColor: "background.default" }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" fontWeight="bold">
-            Effects
+            Effects (Enhanced)
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -1345,9 +1464,9 @@ const PresetDetails: React.FC = () => {
                 (preset.effects?.postCropVignetteRoundness || 0) / 100
               )}
             />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Vignette Style:{" "}
-              {preset.effects?.postCropVignetteStyle || "Standard"}
+            <Typography variant="body2" color="text.secondary">
+              Post-Crop Vignette Style:{" "}
+              {preset.effects?.postCropVignetteStyle || "None"}
             </Typography>
           </Box>
         </AccordionDetails>
@@ -1357,7 +1476,7 @@ const PresetDetails: React.FC = () => {
       <Accordion sx={{ backgroundColor: "background.default" }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Typography variant="h6" fontWeight="bold">
-            Camera Calibration
+            Calibration
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
@@ -1430,10 +1549,10 @@ const PresetDetails: React.FC = () => {
               gutterBottom
               sx={{ mt: 2 }}
             >
-              Shadow
+              Shadow Tint
             </Typography>
             <SettingSliderDisplay
-              label="Tint"
+              label="Shadow Tint"
               value={formatSettingValue(
                 (preset.calibration?.cameraCalibrationShadowTint || 0) / 100
               )}
@@ -1451,28 +1570,44 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
+            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+              Crop
+            </Typography>
             <SettingSliderDisplay
-              label="Crop Top"
+              label="Top"
               value={formatSettingValue((preset.crop?.cropTop || 0) / 100)}
             />
             <SettingSliderDisplay
-              label="Crop Left"
+              label="Left"
               value={formatSettingValue((preset.crop?.cropLeft || 0) / 100)}
             />
             <SettingSliderDisplay
-              label="Crop Bottom"
+              label="Bottom"
               value={formatSettingValue((preset.crop?.cropBottom || 0) / 100)}
             />
             <SettingSliderDisplay
-              label="Crop Right"
+              label="Right"
               value={formatSettingValue((preset.crop?.cropRight || 0) / 100)}
             />
             <SettingSliderDisplay
-              label="Crop Angle"
+              label="Angle"
               value={formatSettingValue((preset.crop?.cropAngle || 0) / 100)}
             />
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Orientation: {preset.orientation || "Normal"}
+            <Typography variant="body2" color="text.secondary">
+              Constrain to Warp:{" "}
+              {preset.crop?.cropConstrainToWarp ? "Yes" : "No"}
+            </Typography>
+
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              gutterBottom
+              sx={{ mt: 2 }}
+            >
+              Orientation
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {preset.orientation || "None"}
             </Typography>
           </Box>
         </AccordionDetails>
