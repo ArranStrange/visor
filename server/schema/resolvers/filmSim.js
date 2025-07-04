@@ -29,6 +29,10 @@ const filmSimResolvers = {
           .populate({
             path: "recommendedPresets",
             select: "id title slug tags afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url publicId",
+            },
           });
 
         if (!filmSim) {
@@ -77,7 +81,16 @@ const filmSimResolvers = {
           recommendedPresets: Array.isArray(filmSimObj.recommendedPresets)
             ? filmSimObj.recommendedPresets.map((preset) =>
                 preset && preset._id
-                  ? { ...preset, id: preset._id.toString() }
+                  ? {
+                      ...preset,
+                      id: preset._id.toString(),
+                      afterImage: preset.afterImage
+                        ? {
+                            ...preset.afterImage,
+                            id: preset.afterImage._id.toString(),
+                          }
+                        : null,
+                    }
                   : preset
               )
             : [],
@@ -109,7 +122,11 @@ const filmSimResolvers = {
           })
           .populate({
             path: "recommendedPresets",
-            select: "id title slug tags",
+            select: "id title slug tags afterImage",
+            populate: {
+              path: "afterImage",
+              select: "id url publicId",
+            },
           });
 
         // Convert MongoDB documents to plain objects and ensure all IDs are strings
@@ -153,7 +170,16 @@ const filmSimResolvers = {
             recommendedPresets: Array.isArray(filmSimObj.recommendedPresets)
               ? filmSimObj.recommendedPresets.map((preset) =>
                   preset && preset._id
-                    ? { ...preset, id: preset._id.toString() }
+                    ? {
+                        ...preset,
+                        id: preset._id.toString(),
+                        afterImage: preset.afterImage
+                          ? {
+                              ...preset.afterImage,
+                              id: preset.afterImage._id.toString(),
+                            }
+                          : null,
+                      }
                     : preset
                 )
               : [],
