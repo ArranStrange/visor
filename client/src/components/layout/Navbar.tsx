@@ -21,8 +21,10 @@ import ListIcon from "@mui/icons-material/List";
 import ForumIcon from "@mui/icons-material/Forum";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
+import NotificationBell from "./NotificationBell";
 
 const NavBar: React.FC = () => {
   const theme = useTheme();
@@ -71,6 +73,14 @@ const NavBar: React.FC = () => {
         navigate("/discussions");
       },
     },
+    {
+      text: "Notifications",
+      icon: <NotificationsIcon />,
+      onClick: () => {
+        handleMenuClose();
+        navigate("/notifications");
+      },
+    },
   ];
 
   return (
@@ -101,9 +111,12 @@ const NavBar: React.FC = () => {
             <SearchIcon />
           </IconButton>
           {isAuthenticated && (
-            <IconButton onClick={() => navigate("/upload")} color="inherit">
-              <UploadIcon />
-            </IconButton>
+            <>
+              <NotificationBell />
+              <IconButton onClick={() => navigate("/upload")} color="inherit">
+                <UploadIcon />
+              </IconButton>
+            </>
           )}
 
           {isAuthenticated && user ? (

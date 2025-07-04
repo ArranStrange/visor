@@ -70,6 +70,8 @@ interface DiscussionFilters {
 const DiscussionList: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+  console.log("DiscussionList component loaded");
   const [filters, setFilters] = useState<DiscussionFilters>({
     search: "",
     type: "all",
@@ -95,6 +97,8 @@ const DiscussionList: React.FC = () => {
       limit: 20,
     },
   });
+
+  console.log("DiscussionList query result:", { loading, error, data });
 
   const [followDiscussion] = useMutation(FOLLOW_DISCUSSION, {
     refetchQueries: [
@@ -139,6 +143,8 @@ const DiscussionList: React.FC = () => {
   });
 
   const discussions: DiscussionType[] = data?.getDiscussions?.discussions || [];
+
+  console.log("Discussions found:", discussions.length);
 
   // Temporary test function to create a discussion
   const createTestDiscussion = async () => {
@@ -475,10 +481,38 @@ const DiscussionList: React.FC = () => {
   }
 
   if (error) {
+    console.error("DiscussionList error details:", {
+      message: error.message,
+      graphQLErrors: error.graphQLErrors,
+      networkError: error.networkError,
+    });
+
     return (
-      <Alert severity="error" sx={{ mb: 2 }}>
-        Error loading discussions: {error.message}
-      </Alert>
+      <Box py={4}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Error Loading Discussions
+          </Typography>
+          <Typography variant="body2" gutterBottom>
+            {error.message}
+          </Typography>
+          <Box sx={{ mt: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => refetch()}
+              sx={{ mr: 2 }}
+            >
+              Retry
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => navigate("/discussions/new")}
+            >
+              Create New Discussion
+            </Button>
+          </Box>
+        </Alert>
+      </Box>
     );
   }
 

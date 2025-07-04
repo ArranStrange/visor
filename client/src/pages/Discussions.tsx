@@ -7,6 +7,8 @@ import DiscussionList from "../components/discussions/DiscussionList";
 const Discussions: React.FC = () => {
   const navigate = useNavigate();
 
+  console.log("Discussions page loaded");
+
   return (
     <Container maxWidth="lg">
       <Box py={4}>
@@ -19,6 +21,9 @@ const Discussions: React.FC = () => {
           mb={3}
           gap={2}
         >
+          <Typography variant="h4" component="h1">
+            Discussions
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}

@@ -3,6 +3,7 @@ const { gql } = require("apollo-server-express");
 module.exports = gql`
   scalar Upload
   scalar JSON
+  scalar ObjectId
 
   type PresetSettings {
     # Light settings

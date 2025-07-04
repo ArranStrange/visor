@@ -14,18 +14,39 @@ const httpLink = new HttpLink({
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
+      // Handle ObjectId serialization errors gracefully
+      if (
+        message.includes("ID cannot represent value") &&
+        message.includes("Buffer")
+      ) {
+        console.warn(
+          `[GraphQL warning]: ObjectId serialization issue at path: ${path}. This is a backend issue that needs to be fixed.`
+        );
+        return; // Don't treat this as a critical error
+      }
+
+      // Handle null field errors for required fields
+      if (message.includes("Cannot return null for non-nullable field")) {
+        console.warn(
+          `[GraphQL warning]: Null field error at path: ${path}. Some data may be missing or corrupted.`
+        );
+        return; // Don't treat this as a critical error
+      }
+
+      // Handle date serialization errors
+      if (
+        message.includes("String cannot represent value") &&
+        message.includes("createdAt")
+      ) {
+        console.warn(
+          `[GraphQL warning]: Date serialization issue at path: ${path}. Some dates may not be displaying correctly.`
+        );
+        return; // Don't treat this as a critical error
+      }
+
       console.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       );
-
-      // Debug: Log the exact error message to see if it's triggering logout
-      // console.log(`[DEBUG] Checking error message: "${message}"`);
-      // console.log(`[DEBUG] Error path: ${path}`);
-      // console.log(
-      //   `[DEBUG] Current token: ${
-      //     localStorage.getItem("visor_token") ? "exists" : "missing"
-      //   }`
-      // );
 
       // Handle authentication errors including JWT expiration
       // Only logout for actual authentication failures, not authorization errors
@@ -38,7 +59,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         (message.includes("Not authenticated") &&
           !message.includes("Not authorized"))
       ) {
-        // console.log(`[DEBUG] Authentication error detected - logging out`);
         // Clear local storage
         localStorage.removeItem("visor_token");
         localStorage.removeItem("user");
@@ -48,7 +68,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
           window.location.href = "/login";
         }
       } else {
-        // console.log(`[DEBUG] Not an authentication error - not logging out`);
         // console.log(
         //   `[DEBUG] This appears to be an authorization or validation error`
         // );
@@ -66,10 +85,8 @@ const authLink = setContext((_, { headers }) => {
   const token = localStorage.getItem("visor_token");
 
   // Debug: Log the token being sent
-  // console.log("[DEBUG] Auth token being sent:", token ? "exists" : "missing");
   if (token) {
-    // console.log("[DEBUG] Token length:", token.length);
-    // console.log("[DEBUG] Token starts with:", token.substring(0, 20) + "...");
+    // Token exists
   }
 
   // return the headers to the context so httpLink can read them

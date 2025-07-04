@@ -3,6 +3,12 @@ const DiscussionPost = require("../../models/DiscussionPost");
 const User = require("../../models/User");
 const Preset = require("../../models/Preset");
 const FilmSim = require("../../models/FilmSim");
+const { createPostNotifications } = require("../../utils/notificationUtils");
+const {
+  serializeDocument,
+  serializeReactions,
+  serializePost,
+} = require("../../utils/serializationUtils");
 const {
   AuthenticationError,
   UserInputError,
@@ -214,8 +220,11 @@ const discussionResolvers = {
           DiscussionPost.countDocuments(query),
         ]);
 
+        // Serialize posts to ensure ObjectIds are converted to strings
+        const serializedPosts = posts.map((post) => serializePost(post));
+
         return {
-          posts,
+          posts: serializedPosts,
           totalCount,
           hasNextPage: skip + limit < totalCount,
           hasPreviousPage: page > 1,
@@ -231,10 +240,22 @@ const discussionResolvers = {
 
     getPost: async (_, { id }) => {
       try {
-        return await DiscussionPost.findById(id)
+        const post = await DiscussionPost.findById(id)
           .populate("author", "id username avatar")
           .populate("parent", "id content author")
           .populate("deletedBy", "id username");
+
+        if (!post) {
+          throw new Error("Post not found");
+        }
+
+        // Serialize post to ensure ObjectIds are converted to strings
+        const serialized = serializeDocument(post.toObject());
+        if (serialized.reactions) {
+          serialized.reactions = serializeReactions(serialized.reactions);
+        }
+
+        return serialized;
       } catch (error) {
         throw new Error("Failed to fetch post");
       }
@@ -252,8 +273,11 @@ const discussionResolvers = {
           DiscussionPost.countDocuments({ author: authorId, isDeleted: false }),
         ]);
 
+        // Serialize posts to ensure ObjectIds are converted to strings
+        const serializedPosts = posts.map((post) => serializePost(post));
+
         return {
-          posts,
+          posts: serializedPosts,
           totalCount,
           hasNextPage: skip + limit < totalCount,
           hasPreviousPage: page > 1,
@@ -347,8 +371,11 @@ const discussionResolvers = {
           DiscussionPost.countDocuments(searchQuery),
         ]);
 
+        // Serialize posts to ensure ObjectIds are converted to strings
+        const serializedPosts = posts.map((post) => serializePost(post));
+
         return {
-          posts,
+          posts: serializedPosts,
           totalCount,
           hasNextPage: skip + limit < totalCount,
           hasPreviousPage: page > 1,
@@ -395,11 +422,16 @@ const discussionResolvers = {
 
     getRecentPosts: async (_, { limit = 10 }) => {
       try {
-        return await DiscussionPost.find({ isDeleted: false })
+        const posts = await DiscussionPost.find({ isDeleted: false })
           .sort({ createdAt: -1 })
           .limit(limit)
           .populate("author", "id username avatar")
           .populate("discussionId", "id title");
+
+        // Serialize posts to ensure ObjectIds are converted to strings
+        const serializedPosts = posts.map((post) => serializePost(post));
+
+        return serializedPosts;
       } catch (error) {
         throw new Error("Failed to fetch recent posts");
       }
@@ -658,9 +690,21 @@ const discussionResolvers = {
           lastActivity: new Date(),
         });
 
-        return await DiscussionPost.findById(post._id)
+        // Create notifications for the new post (only for replies, not for the first post)
+        if (parentId) {
+          try {
+            await createPostNotifications(post, discussion, user.id);
+          } catch (notificationError) {
+            console.error("Error creating notifications:", notificationError);
+            // Don't fail the post creation if notifications fail
+          }
+        }
+
+        const createdPost = await DiscussionPost.findById(post._id)
           .populate("author", "id username avatar")
           .populate("parent", "id content author");
+
+        return serializePost(createdPost);
       } catch (error) {
         console.error("Error in createPost:", error);
 
@@ -763,7 +807,7 @@ const discussionResolvers = {
           .populate("parent", "id content author");
 
         console.log("[DEBUG] Post updated successfully");
-        return updatedPost;
+        return serializePost(updatedPost);
       } catch (error) {
         console.error("Error in updatePost:", error);
 
