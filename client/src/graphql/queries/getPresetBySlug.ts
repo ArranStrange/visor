@@ -21,16 +21,66 @@ export const GET_PRESET_BY_SLUG = gql`
         temp
         tint
         dehaze
+        texture
         grain {
           amount
           size
           roughness
         }
         sharpening
+        sharpenRadius
+        sharpenDetail
+        sharpenEdgeMasking
+        luminanceSmoothing
+        luminanceDetail
+        luminanceContrast
         noiseReduction {
           luminance
           color
           detail
+          colorSmoothness
+        }
+        colorAdjustments {
+          red {
+            hue
+            saturation
+            luminance
+          }
+          orange {
+            hue
+            saturation
+            luminance
+          }
+          yellow {
+            hue
+            saturation
+            luminance
+          }
+          green {
+            hue
+            saturation
+            luminance
+          }
+          aqua {
+            hue
+            saturation
+            luminance
+          }
+          blue {
+            hue
+            saturation
+            luminance
+          }
+          purple {
+            hue
+            saturation
+            luminance
+          }
+          magenta {
+            hue
+            saturation
+            luminance
+          }
         }
       }
       toneCurve {

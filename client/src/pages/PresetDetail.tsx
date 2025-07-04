@@ -56,6 +56,7 @@ import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
 import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
 import { useAuth } from "../context/AuthContext";
+import { downloadXMP, type PresetData } from "../utils/xmpCompiler";
 
 const ADD_PHOTO_TO_PRESET = gql`
   mutation AddPhotoToPreset(
@@ -408,6 +409,35 @@ const PresetDetails: React.FC = () => {
     } catch (err) {
       console.error("Error deleting preset:", err);
     }
+  };
+
+  const handleDownloadXMP = () => {
+    // Convert tone curve data from database format to XMP compiler format
+    const convertToneCurve = (curveData: any) => {
+      if (!curveData || !Array.isArray(curveData)) return undefined;
+      return curveData.map((point: any) => ({ x: point.x, y: point.y }));
+    };
+
+    const presetData: PresetData = {
+      title: preset.title,
+      description: preset.description || "",
+      settings: preset.settings || {},
+      toneCurve: {
+        rgb: convertToneCurve(preset.toneCurve?.rgb),
+        red: convertToneCurve(preset.toneCurve?.red),
+        green: convertToneCurve(preset.toneCurve?.green),
+        blue: convertToneCurve(preset.toneCurve?.blue),
+      },
+      whiteBalance: "Custom", // Default value since field doesn't exist in backend
+      cameraProfile: "Adobe Standard", // Default value since field doesn't exist in backend
+      profileName: "Adobe Standard", // Default value since field doesn't exist in backend
+      version: "15.0", // Default value since field doesn't exist in backend
+      processVersion: "15.0", // Default value since field doesn't exist in backend
+      creator: preset.creator?.username || "VISOR",
+      dateCreated: preset.createdAt,
+    };
+
+    downloadXMP(presetData);
   };
 
   const handleSavePreset = async () => {
@@ -1746,14 +1776,24 @@ const PresetDetails: React.FC = () => {
 
       {/* Download + Notes */}
       <Stack direction="row" alignItems="center" spacing={2} my={4}>
-        <Button
-          href={preset.xmpUrl}
-          download
-          variant="contained"
-          startIcon={<DownloadIcon />}
-        >
-          Download .xmp
-        </Button>
+        {currentUser ? (
+          <Button
+            onClick={handleDownloadXMP}
+            variant="contained"
+            startIcon={<DownloadIcon />}
+          >
+            Download .xmp
+          </Button>
+        ) : (
+          <Button
+            onClick={() => navigate("/login")}
+            variant="outlined"
+            startIcon={<DownloadIcon />}
+            color="primary"
+          >
+            Login to Download .xmp
+          </Button>
+        )}
       </Stack>
 
       {preset.notes && (
