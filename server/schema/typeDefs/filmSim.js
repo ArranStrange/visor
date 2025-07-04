@@ -8,11 +8,13 @@ const typeDefs = gql`
     colour: Int
     sharpness: Int
     noiseReduction: Int
-    grainEffect: Int
+    grainEffect: String
     clarity: Int
     whiteBalance: String
     wbShift: WhiteBalanceShift
     filmSimulation: String
+    colorChromeEffect: String
+    colorChromeFxBlue: String
   }
 
   type WhiteBalanceShift {
@@ -51,8 +53,10 @@ const typeDefs = gql`
     highlight: Int!
     shadow: Int!
     noiseReduction: Int!
-    grainEffect: Int!
+    grainEffect: String!
     clarity: Int!
+    colorChromeEffect: String!
+    colorChromeFxBlue: String!
   }
 
   input WhiteBalanceShiftInput {
@@ -97,6 +101,9 @@ const typeDefs = gql`
     addComment(filmSimId: ID!, text: String!): Comment!
     updateComment(filmSimId: ID!, commentId: ID!, text: String!): Comment!
     deleteComment(filmSimId: ID!, commentId: ID!): Boolean!
+
+    addRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
+    removeRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
   }
 `;
 

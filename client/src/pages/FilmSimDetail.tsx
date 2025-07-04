@@ -40,6 +40,7 @@ import PresetCard from "../components/PresetCard";
 import AddToListButton from "../components/AddToListButton";
 import DiscussionThread from "../components/discussions/DiscussionThread";
 import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
+import RecommendedPresetsManager from "../components/RecommendedPresetsManager";
 import { useAuth } from "../context/AuthContext";
 
 // Cloudinary configuration
@@ -119,6 +120,8 @@ const FilmSimDetails: React.FC = () => {
   const [photoCaption, setPhotoCaption] = React.useState("");
   const [uploadingPhoto, setUploadingPhoto] = React.useState(false);
   const [showAllImages, setShowAllImages] = React.useState(false);
+  const [recommendedPresetsDialogOpen, setRecommendedPresetsDialogOpen] =
+    React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
 
   const theme = useTheme();
@@ -848,7 +851,45 @@ const FilmSimDetails: React.FC = () => {
             expandIcon={<ExpandMoreIcon />}
             sx={{ backgroundColor: "none" }}
           >
-            <Typography variant="h6">Recommended Presets</Typography>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <Typography variant="h6">Recommended Presets</Typography>
+              {currentUser &&
+                filmSim.creator &&
+                currentUser.id === filmSim.creator.id && (
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Box
+                      component="span"
+                      onClick={() => setRecommendedPresetsDialogOpen(true)}
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        px: 2,
+                        py: 0.5,
+                        border: "1px solid",
+                        borderColor: "primary.main",
+                        borderRadius: 1,
+                        color: "primary.main",
+                        cursor: "pointer",
+                        fontSize: "0.875rem",
+                        "&:hover": {
+                          backgroundColor: "primary.main",
+                          color: "white",
+                        },
+                        ml: 2,
+                      }}
+                    >
+                      Manage
+                    </Box>
+                  </div>
+                )}
+            </div>
           </AccordionSummary>
           <AccordionDetails>
             <Box
@@ -869,6 +910,9 @@ const FilmSimDetails: React.FC = () => {
                     id: string;
                     title: string;
                     slug: string;
+                    description?: string;
+                    afterImage?: { url: string };
+                    creator?: { id: string; username: string; avatar?: string };
                     tags?: { id: string; displayName: string }[];
                   }) => (
                     <Box
@@ -884,13 +928,57 @@ const FilmSimDetails: React.FC = () => {
                           bgcolor: "action.hover",
                         },
                       }}
-                      onClick={() =>
-                        (window.location.href = `/preset/${preset.slug}`)
-                      }
+                      onClick={() => navigate(`/preset/${preset.slug}`)}
                     >
+                      {preset.afterImage && (
+                        <Box
+                          sx={{
+                            width: "100%",
+                            height: 120,
+                            borderRadius: 1,
+                            overflow: "hidden",
+                            mb: 1,
+                          }}
+                        >
+                          <img
+                            src={preset.afterImage.url}
+                            alt={preset.title}
+                            style={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "cover",
+                            }}
+                          />
+                        </Box>
+                      )}
                       <Typography variant="h6" gutterBottom>
                         {preset.title}
                       </Typography>
+                      {preset.creator && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ mb: 1 }}
+                        >
+                          by {preset.creator.username}
+                        </Typography>
+                      )}
+                      {preset.description && (
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{
+                            mb: 1,
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                          }}
+                        >
+                          {preset.description}
+                        </Typography>
+                      )}
                       <Stack
                         direction="row"
                         spacing={1}
@@ -1206,6 +1294,15 @@ const FilmSimDetails: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Recommended Presets Manager */}
+      <RecommendedPresetsManager
+        open={recommendedPresetsDialogOpen}
+        onClose={() => setRecommendedPresetsDialogOpen(false)}
+        filmSimId={filmSim.id}
+        filmSimName={filmSim.name}
+        currentRecommendedPresets={filmSim.recommendedPresets || []}
+      />
     </Container>
   );
 };

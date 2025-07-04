@@ -52,6 +52,24 @@ export const GET_FILMSIM_BY_SLUG = gql`
           avatar
         }
       }
+      recommendedPresets {
+        id
+        title
+        slug
+        description
+        afterImage {
+          url
+        }
+        creator {
+          id
+          username
+          avatar
+        }
+        tags {
+          id
+          displayName
+        }
+      }
     }
   }
 `;

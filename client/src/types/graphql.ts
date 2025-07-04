@@ -63,6 +63,22 @@ export interface SplitToningSettings {
   balance: number;
 }
 
+export interface ColorGradingSettings {
+  shadowHue: number;
+  shadowSat: number;
+  shadowLuminance: number;
+  midtoneHue: number;
+  midtoneSat: number;
+  midtoneLuminance: number;
+  highlightHue: number;
+  highlightSat: number;
+  highlightLuminance: number;
+  blending: number;
+  globalHue: number;
+  globalSat: number;
+  perceptual: boolean;
+}
+
 export interface PresetSettings {
   // Light settings
   exposure: number;
@@ -85,6 +101,7 @@ export interface PresetSettings {
   vignette: VignetteSettings;
   colorAdjustments: ColorAdjustments;
   splitToning: SplitToningSettings;
+  colorGrading: ColorGradingSettings;
 
   // Detail
   sharpening: number;
@@ -94,6 +111,44 @@ export interface PresetSettings {
 export interface ImageInput {
   url: string;
   publicId: string;
+}
+
+export interface FilmSimSettingsInput {
+  dynamicRange: string;
+  filmSimulation: string;
+  whiteBalance: string;
+  wbShift: {
+    r: number;
+    b: number;
+  };
+  color: number;
+  sharpness: number;
+  highlight: number;
+  shadow: number;
+  noiseReduction: number;
+  grainEffect: string;
+  clarity: number;
+  colorChromeEffect: string;
+  colorChromeFxBlue: string;
+}
+
+export interface WhiteBalanceShiftInput {
+  r: number;
+  b: number;
+}
+
+export interface CreateFilmSimInput {
+  name: string;
+  slug: string;
+  description?: string;
+  type?: string;
+  settings?: FilmSimSettingsInput;
+  toneCurve?: ToneCurve;
+  tagIds?: string[];
+  sampleImageIds?: string[];
+  notes?: string;
+  recommendedPresetIds?: string[];
+  compatibleCameras?: string[];
 }
 
 export interface UploadPresetInput {

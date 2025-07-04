@@ -277,36 +277,6 @@ const UPLOAD_PRESET = gql`
   }
 `;
 
-const UPLOAD_FILMSIM = gql`
-  mutation UploadFilmSim(
-    $title: String!
-    $description: String
-    $settings: JSON!
-    $notes: String
-    $tags: [String!]!
-    $cameraModel: String!
-    $filmType: String!
-    $beforeImage: Upload
-    $afterImage: Upload
-  ) {
-    uploadFilmSim(
-      title: $title
-      description: $description
-      settings: $settings
-      notes: $notes
-      tags: $tags
-      cameraModel: $cameraModel
-      filmType: $filmType
-      beforeImage: $beforeImage
-      afterImage: $afterImage
-    ) {
-      id
-      name
-      slug
-    }
-  }
-`;
-
 // Constants for file validation
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -335,76 +305,8 @@ interface ImageInput {
 }
 
 // Interface matching the XMP parser output format
-interface XmpParsedSettings {
-  version?: string;
-  processVersion?: string;
-  whiteBalance?: string;
-  cameraProfile?: string;
-  toneCurveName?: string;
-  exposure?: number;
-  contrast?: number;
-  highlights?: number;
-  shadows?: number;
-  whites?: number;
-  blacks?: number;
-  temp?: number;
-  tint?: number;
-  vibrance?: number;
-  saturation?: number;
-  texture?: number;
-  clarity?: number;
-  dehaze?: number;
-  grain?: {
-    amount: number;
-    size: number;
-    frequency: number;
-  };
-  vignette?: {
-    amount: number;
-  };
-  colorAdjustments?: {
-    red?: {
-      hue: number;
-      saturation: number;
-      luminance: number;
-    };
-    orange?: {
-      saturation: number;
-      luminance: number;
-    };
-    yellow?: {
-      hue: number;
-      saturation: number;
-      luminance: number;
-    };
-    green?: {
-      hue: number;
-      saturation: number;
-    };
-    blue?: {
-      hue: number;
-      saturation: number;
-    };
-  };
-  splitToning?: {
-    shadowHue: number;
-    shadowSaturation: number;
-    highlightHue: number;
-    highlightSaturation: number;
-    balance: number;
-  };
-  noiseReduction?: {
-    luminance: number;
-    detail: number;
-    color: number;
-  };
-  toneCurve?: {
-    rgb: Array<{ x: number; y: number }>;
-    red: Array<{ x: number; y: number }>;
-    green: Array<{ x: number; y: number }>;
-    blue: Array<{ x: number; y: number }>;
-  };
-}
+// Import the comprehensive ParsedSettings interface from XmpParser
+import { ParsedSettings } from "../components/XmpParser";
 
 const UploadPreset: React.FC = () => {
   const [uploadType, setUploadType] = useState<UploadType>("preset");
@@ -415,8 +317,9 @@ const UploadPreset: React.FC = () => {
   const [beforeImage, setBeforeImage] = useState<File | null>(null);
   const [afterImage, setAfterImage] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
-  const [parsedSettings, setParsedSettings] =
-    useState<XmpParsedSettings | null>(null);
+  const [parsedSettings, setParsedSettings] = useState<ParsedSettings | null>(
+    null
+  );
   const [uploadPreset, { loading: uploadLoading }] = useMutation(UPLOAD_PRESET);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -536,7 +439,7 @@ const UploadPreset: React.FC = () => {
     }
   };
 
-  const handleSettingsParsed = (settings: XmpParsedSettings) => {
+  const handleSettingsParsed = (settings: ParsedSettings) => {
     if (!settings || typeof settings !== "object") {
       setError("Invalid settings format received from XMP parser");
       return;
@@ -592,9 +495,7 @@ const UploadPreset: React.FC = () => {
   };
 
   // Helper to map parsedSettings to backend expected structure
-  const buildSettingsForBackend = (
-    parsed: XmpParsedSettings
-  ): PresetSettings => ({
+  const buildSettingsForBackend = (parsed: ParsedSettings): PresetSettings => ({
     // Light settings
     exposure: Number(parsed.exposure) || 0,
     contrast: Number(parsed.contrast) || 0,
@@ -611,12 +512,12 @@ const UploadPreset: React.FC = () => {
     clarity: Number(parsed.clarity) || 0,
     dehaze: Number(parsed.dehaze) || 0,
     grain: {
-      amount: Number(parsed.grain?.amount) || 0,
-      size: Number(parsed.grain?.size) || 0,
-      roughness: Number(parsed.grain?.frequency) || 0, // Map frequency to roughness
+      amount: Number(parsed.effects?.grainAmount) || 0,
+      size: Number(parsed.effects?.grainSize) || 0,
+      roughness: Number(parsed.effects?.grainFrequency) || 0, // Map frequency to roughness
     },
     vignette: {
-      amount: Number(parsed.vignette?.amount) || 0,
+      amount: Number(parsed.effects?.postCropVignetteAmount) || 0,
     },
     colorAdjustments: {
       red: {
@@ -652,15 +553,13 @@ const UploadPreset: React.FC = () => {
     // Detail - map texture to sharpening
     sharpening: Number(parsed.texture) || 0,
     noiseReduction: {
-      luminance: Number(parsed.noiseReduction?.luminance) || 0,
-      detail: Number(parsed.noiseReduction?.detail) || 0,
-      color: Number(parsed.noiseReduction?.color) || 0,
+      luminance: Number(parsed.detail?.luminanceSmoothing) || 0,
+      detail: Number(parsed.detail?.luminanceDetail) || 0,
+      color: Number(parsed.detail?.colorNoiseReduction) || 0,
     },
   });
 
-  const buildToneCurveForBackend = (
-    parsed: XmpParsedSettings
-  ): ToneCurveType => {
+  const buildToneCurveForBackend = (parsed: ParsedSettings): ToneCurveType => {
     if (!parsed.toneCurve) {
       return {
         rgb: [
@@ -783,6 +682,40 @@ const UploadPreset: React.FC = () => {
     return isNaN(num) ? 0 : num;
   };
 
+  // Helper function to safely get setting values
+  const getSettingValue = (setting: string): number | undefined => {
+    switch (setting) {
+      case "exposure":
+        return parsedSettings?.exposure;
+      case "contrast":
+        return parsedSettings?.contrast;
+      case "highlights":
+        return parsedSettings?.highlights;
+      case "shadows":
+        return parsedSettings?.shadows;
+      case "whites":
+        return parsedSettings?.whites;
+      case "blacks":
+        return parsedSettings?.blacks;
+      case "temp":
+        return parsedSettings?.temp;
+      case "tint":
+        return parsedSettings?.tint;
+      case "vibrance":
+        return parsedSettings?.vibrance;
+      case "saturation":
+        return parsedSettings?.saturation;
+      case "clarity":
+        return parsedSettings?.clarity;
+      case "dehaze":
+        return parsedSettings?.dehaze;
+      case "texture":
+        return parsedSettings?.texture;
+      default:
+        return undefined;
+    }
+  };
+
   const renderAccordionSection = (
     title: string,
     settings: string[],
@@ -791,7 +724,7 @@ const UploadPreset: React.FC = () => {
     if (!parsedSettings) return null;
 
     const hasSettings = settings.some(
-      (setting) => parsedSettings[setting] !== undefined
+      (setting) => getSettingValue(setting) !== undefined
     );
     const hasCustomContent = !!customContent;
 
@@ -804,12 +737,13 @@ const UploadPreset: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           {settings.map((setting) => {
-            if (parsedSettings[setting] === undefined) return null;
+            const value = getSettingValue(setting);
+            if (value === undefined) return null;
             return (
               <SettingSliderDisplay
                 key={setting}
                 label={setting.charAt(0).toUpperCase() + setting.slice(1)}
-                value={formatSettingValue(parsedSettings[setting])}
+                value={formatSettingValue(value)}
               />
             );
           })}
@@ -886,22 +820,24 @@ const UploadPreset: React.FC = () => {
                   "Grain",
                   [],
                   <Box>
-                    {parsedSettings.grain && (
+                    {parsedSettings.effects && (
                       <>
                         <SettingSliderDisplay
                           label="Amount"
                           value={formatSettingValue(
-                            parsedSettings.grain.amount
+                            parsedSettings.effects.grainAmount
                           )}
                         />
                         <SettingSliderDisplay
                           label="Size"
-                          value={formatSettingValue(parsedSettings.grain.size)}
+                          value={formatSettingValue(
+                            parsedSettings.effects.grainSize
+                          )}
                         />
                         <SettingSliderDisplay
                           label="Frequency"
                           value={formatSettingValue(
-                            parsedSettings.grain.frequency
+                            parsedSettings.effects.grainFrequency
                           )}
                         />
                       </>
@@ -1089,11 +1025,11 @@ const UploadPreset: React.FC = () => {
                   "Vignette",
                   [],
                   <Box>
-                    {parsedSettings.vignette && (
+                    {parsedSettings.effects && (
                       <SettingSliderDisplay
                         label="Amount"
                         value={formatSettingValue(
-                          parsedSettings.vignette.amount
+                          parsedSettings.effects.postCropVignetteAmount
                         )}
                       />
                     )}
