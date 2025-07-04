@@ -44,6 +44,10 @@ import Post from "./Post";
 import PostComposer from "./PostComposer";
 import { CREATE_DISCUSSION } from "../../graphql/mutations/discussions";
 import { useApolloClient } from "@apollo/client";
+import {
+  useCreateNotification,
+  createDiscussionReplyNotification,
+} from "../../utils/notificationUtils";
 
 interface DiscussionThreadProps {
   itemId: string;
@@ -79,6 +83,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   const [loadedPostCount, setLoadedPostCount] = useState(10);
 
   const client = useApolloClient();
+  const createNotification = useCreateNotification();
 
   const {
     loading: discussionLoading,
@@ -559,6 +564,32 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
 
       if (result.data?.createPost) {
         console.log("Post created successfully:", result.data.createPost);
+
+        // Create notifications for the new post
+        if (discussion) {
+          const linkedItem = discussion.linkedTo.preset
+            ? {
+                type: "PRESET",
+                id: discussion.linkedTo.preset.id,
+                title: discussion.linkedTo.preset.title,
+                slug: discussion.linkedTo.preset.slug,
+              }
+            : discussion.linkedTo.filmSim
+            ? {
+                type: "FILMSIM",
+                id: discussion.linkedTo.filmSim.id,
+                title: discussion.linkedTo.filmSim.name,
+                slug: discussion.linkedTo.filmSim.slug,
+              }
+            : undefined;
+
+          await createDiscussionReplyNotification(
+            createNotification,
+            result.data.createPost,
+            discussion,
+            linkedItem
+          );
+        }
 
         // Refetch top-level posts to get the new post
         await refetchTopLevel();

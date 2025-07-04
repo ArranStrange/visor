@@ -10,6 +10,7 @@ import {
   Avatar,
   Chip,
   Alert,
+  AlertTitle,
   CircularProgress,
 } from "@mui/material";
 import {
@@ -35,20 +36,11 @@ import {
 } from "../types/discussions";
 import Post from "../components/discussions/Post";
 import PostComposer from "../components/discussions/PostComposer";
-import {
-  useCreateNotification,
-  createDiscussionReplyNotification,
-} from "../utils/notificationUtils";
 
 const DiscussionDetail: React.FC = () => {
   const { discussionId } = useParams<{ discussionId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
-
-  // Debug logging - commented out to reduce console noise
-  // console.log("DiscussionDetail - discussionId:", discussionId);
-  // console.log("DiscussionDetail - discussionId type:", typeof discussionId);
-  // console.log("DiscussionDetail - discussionId is valid:", discussionId && discussionId !== "new");
 
   const {
     loading: discussionLoading,
@@ -58,7 +50,6 @@ const DiscussionDetail: React.FC = () => {
   } = useQuery(GET_DISCUSSION, {
     variables: { id: discussionId! },
     skip: !discussionId || discussionId === "new",
-    errorPolicy: "all", // Allow partial results even with errors
   });
 
   const discussion = discussionData?.getDiscussion;
@@ -76,85 +67,41 @@ const DiscussionDetail: React.FC = () => {
       limit: 20,
     },
     skip: !discussionId || discussionId === "new",
-    errorPolicy: "all", // Allow partial results even with errors
   });
 
-  // Safely handle posts data, filtering out any posts with serialization errors
-  const posts = React.useMemo(() => {
-    const rawPosts = postsData?.getPosts?.posts || [];
+  // Enhanced data validation and filtering
+  const rawPosts = postsData?.getPosts?.posts || [];
+  const validPosts = rawPosts.filter((post: any) => {
+    // Validate required fields
+    const hasValidId = post?.id && typeof post.id === "string";
+    const hasValidDate = post?.createdAt && typeof post.createdAt === "string";
+    const hasValidContent = post?.content && typeof post.content === "string";
+    const hasValidAuthor = post?.author && typeof post.author === "object";
 
-    // Filter out posts that might have ObjectId serialization issues or null required fields
-    const filteredPosts = rawPosts.filter((post: any) => {
-      // Check if the post has valid ID and author (required fields)
-      if (!post?.id || typeof post.id !== "string") {
-        console.warn("Post with invalid ID found:", post);
-        return false;
-      }
+    // Log invalid posts for debugging
+    if (!hasValidId || !hasValidDate || !hasValidContent || !hasValidAuthor) {
+      console.warn("⚠️ Invalid post filtered out:", {
+        id: post?.id,
+        idType: typeof post?.id,
+        createdAt: post?.createdAt,
+        createdAtType: typeof post?.createdAt,
+        content: post?.content,
+        author: post?.author,
+        post: post,
+      });
+    }
 
-      if (!post?.author?.id || typeof post.author.id !== "string") {
-        console.warn("Post with invalid author ID found:", post);
-        return false;
-      }
+    return hasValidId && hasValidDate && hasValidContent && hasValidAuthor;
+  });
 
-      // Check if author has required fields
-      if (!post.author.username) {
-        console.warn("Post with missing author username found:", post);
-        return false;
-      }
+  // Enhanced error detection
+  const hasSerializationErrors = postsError?.graphQLErrors?.some(
+    (err: any) =>
+      err.message.includes("Cannot return null") ||
+      err.message.includes("String cannot represent value") ||
+      err.message.includes("Expected non-nullable")
+  );
 
-      // Check if post has required content
-      if (!post.content) {
-        console.warn("Post with missing content found:", post);
-        return false;
-      }
-
-      // Check if post has valid date fields
-      if (!post.createdAt || typeof post.createdAt !== "string") {
-        console.warn("Post with invalid createdAt found:", post);
-        return false;
-      }
-
-      // Check reactions for valid user IDs
-      if (post.reactions) {
-        for (const reaction of post.reactions) {
-          if (reaction.users) {
-            for (const user of reaction.users) {
-              if (!user?.id || typeof user.id !== "string") {
-                console.warn("Reaction with invalid user ID found:", reaction);
-                return false;
-              }
-              if (!user.username) {
-                console.warn("Reaction with missing username found:", reaction);
-                return false;
-              }
-            }
-          }
-        }
-      }
-
-      return true;
-    });
-
-    return filteredPosts;
-  }, [postsData]);
-
-  // Debug posts data - commented out to reduce console noise
-  // console.log("Posts query data:", postsData);
-  // console.log("Posts array:", posts);
-  // console.log("Posts count:", posts.length);
-
-  // Log individual posts to see their structure
-  // posts.forEach((post: any, index: number) => {
-  //   console.log(`Post ${index}:`, {
-  //     id: post.id,
-  //     parentId: post.parentId,
-  //     content: post.content,
-  //     author: post.author.username,
-  //     discussionId: post.discussionId,
-  //   });
-  // });
-
-  const createNotification = useCreateNotification();
   const [createPost] = useMutation(CREATE_POST, {
     update: (cache, { data, errors }) => {
       if (errors) {
@@ -163,8 +110,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.createPost) {
-        // console.log("Manually updating cache with new post:", data.createPost);
-
         // Read the existing posts
         const existingPosts = cache.readQuery({
           query: GET_POSTS,
@@ -212,8 +157,6 @@ const DiscussionDetail: React.FC = () => {
             },
           });
         }
-      } else {
-        console.log("No createPost data returned from mutation");
       }
     },
   });
@@ -226,9 +169,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.deletePost) {
-        // console.log("Post deleted successfully, updating cache");
-
-        // Option 1: Remove the post completely from cache (hard deletion)
         cache.modify({
           fields: {
             getPosts(existingPosts = {}, { readField }) {
@@ -250,31 +190,6 @@ const DiscussionDetail: React.FC = () => {
             },
           },
         });
-
-        // Option 2: Mark the post as deleted (soft deletion)
-        // This approach keeps the post in the cache but marks it as deleted
-        try {
-          const postRef = cache.identify({
-            __typename: "DiscussionPost",
-            id: variables?.id,
-          });
-          if (postRef) {
-            cache.modify({
-              id: postRef,
-              fields: {
-                isDeleted: () => true,
-                deletedAt: () => new Date().toISOString(),
-                deletedBy: () => ({
-                  __typename: "User",
-                  id: user?.id,
-                  username: user?.username,
-                }),
-              },
-            });
-          }
-        } catch (error) {
-          console.log("Could not update post in cache, will refetch instead");
-        }
 
         // Update the discussion's postCount
         const existingDiscussion = cache.readQuery({
@@ -306,8 +221,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.updatePost) {
-        console.log("Post updated successfully, updating cache");
-
         // Read the existing posts
         const existingPosts = cache.readQuery({
           query: GET_POSTS,
@@ -351,8 +264,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.addReaction) {
-        console.log("Reaction added successfully, updating cache");
-
         // Read the existing posts
         const existingPosts = cache.readQuery({
           query: GET_POSTS,
@@ -396,8 +307,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.removeReaction) {
-        console.log("Reaction removed successfully, updating cache");
-
         // Read the existing posts
         const existingPosts = cache.readQuery({
           query: GET_POSTS,
@@ -448,13 +357,9 @@ const DiscussionDetail: React.FC = () => {
     }
 
     try {
-      // For now, we'll handle image upload separately
-      // In a real implementation, you'd upload images first and get URLs
       let imageUrl: string | undefined;
 
       if (images && images.length > 0) {
-        // TODO: Implement image upload to your storage service
-        // For now, we'll skip image upload
         console.log("Image upload not implemented yet");
       }
 
@@ -464,41 +369,11 @@ const DiscussionDetail: React.FC = () => {
         imageUrl,
       };
 
-      // console.log("Creating post with input:", input);
-
       const result = await createPost({
         variables: {
           input,
         },
       });
-
-      // Create notifications for the new post
-      if (result.data?.createPost && discussion) {
-        const linkedItem = discussion.linkedTo.preset
-          ? {
-              type: "PRESET",
-              id: discussion.linkedTo.preset.id,
-              title: discussion.linkedTo.preset.title,
-              slug: discussion.linkedTo.preset.slug,
-            }
-          : discussion.linkedTo.filmSim
-          ? {
-              type: "FILMSIM",
-              id: discussion.linkedTo.filmSim.id,
-              title: discussion.linkedTo.filmSim.name,
-              slug: discussion.linkedTo.filmSim.slug,
-            }
-          : undefined;
-
-        await createDiscussionReplyNotification(
-          createNotification,
-          result.data.createPost,
-          discussion,
-          linkedItem
-        );
-      }
-
-      // console.log("Post created successfully:", result);
     } catch (error: any) {
       console.error("Failed to create post:", error);
       console.error("Error details:", {
@@ -506,7 +381,6 @@ const DiscussionDetail: React.FC = () => {
         graphQLErrors: error.graphQLErrors,
         networkError: error.networkError,
       });
-      // You might want to show an error message to the user here
     }
   };
 
@@ -518,62 +392,22 @@ const DiscussionDetail: React.FC = () => {
     if (!discussionId || !content.trim()) return;
 
     try {
-      // For now, we'll handle image upload separately
       let imageUrl: string | undefined;
 
       if (images && images.length > 0) {
-        // TODO: Implement image upload to your storage service
-        // console.log("Image upload not implemented yet");
+        console.log("Image upload not implemented yet");
       }
-
-      // console.log("Creating reply with input:", {
-      //   discussionId,
-      //   parentId: postId,
-      //   content: content.trim(),
-      //   imageUrl,
-      // });
 
       const result = await createPost({
         variables: {
           input: {
             discussionId,
-            parentId: postId, // This makes it a reply
+            parentId: postId,
             content: content.trim(),
             imageUrl,
           },
         },
       });
-
-      // Create notifications for the reply
-      if (result.data?.createPost && discussion) {
-        const linkedItem = discussion.linkedTo.preset
-          ? {
-              type: "PRESET",
-              id: discussion.linkedTo.preset.id,
-              title: discussion.linkedTo.preset.title,
-              slug: discussion.linkedTo.preset.slug,
-            }
-          : discussion.linkedTo.filmSim
-          ? {
-              type: "FILMSIM",
-              id: discussion.linkedTo.filmSim.id,
-              title: discussion.linkedTo.filmSim.name,
-              slug: discussion.linkedTo.filmSim.slug,
-            }
-          : undefined;
-
-        await createDiscussionReplyNotification(
-          createNotification,
-          result.data.createPost,
-          discussion,
-          linkedItem
-        );
-      }
-
-      // console.log("Reply created successfully");
-      // console.log("Reply result:", result);
-      // console.log("Reply data:", result.data);
-      // console.log("Reply errors:", result.errors);
     } catch (error: any) {
       console.error("Failed to create reply:", error);
       console.error("Error details:", {
@@ -586,13 +420,26 @@ const DiscussionDetail: React.FC = () => {
   };
 
   const handleEdit = async (postId: string, content: string) => {
-    // Find the post to get more details
-    const postToEdit = posts.find((p: DiscussionPost) => p.id === postId);
+    const postToEdit = validPosts.find((p: DiscussionPost) => p.id === postId);
 
     if (!postToEdit) {
       console.error("Post not found. Please refresh the page and try again.");
       return;
     }
+
+    console.log("[DEBUG] Edit attempt:", {
+      currentUser: user,
+      postAuthor: postToEdit.author,
+      postId: postId,
+      tokenExists: !!localStorage.getItem("visor_token"),
+      userComparison: {
+        currentUserId: user?.id,
+        postAuthorId: postToEdit.author?.id,
+        idsMatch: user?.id === postToEdit.author?.id,
+        currentUserType: typeof user?.id,
+        postAuthorType: typeof postToEdit.author?.id,
+      },
+    });
 
     try {
       const result = await updatePost({
@@ -603,8 +450,6 @@ const DiscussionDetail: React.FC = () => {
       });
 
       if (result.data?.updatePost) {
-        // console.log("Post updated successfully");
-        // Refetch posts to update the UI
         await refetchPosts();
       } else {
         console.error("Failed to update post - no data returned");
@@ -612,7 +457,6 @@ const DiscussionDetail: React.FC = () => {
     } catch (error: any) {
       console.error("Error updating post:", error);
 
-      // Extract error message from GraphQL errors
       let errorMessage = "Failed to update post. Please try again.";
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
         errorMessage = error.graphQLErrors[0].message || errorMessage;
@@ -621,48 +465,43 @@ const DiscussionDetail: React.FC = () => {
       }
 
       console.error("Update post error:", errorMessage);
-      // You could show a toast notification here with the error message
     }
   };
 
   const handleDelete = async (postId: string) => {
-    // console.log("Attempting to delete post:", postId);
-
-    // Find the post to get more details
-    const postToDelete = posts.find((p: DiscussionPost) => p.id === postId);
+    const postToDelete = validPosts.find(
+      (p: DiscussionPost) => p.id === postId
+    );
 
     if (!postToDelete) {
       console.error("Post not found. Please refresh the page and try again.");
       return;
     }
 
+    console.log("[DEBUG] Delete attempt:", {
+      currentUser: user,
+      postAuthor: postToDelete.author,
+      postId: postId,
+      tokenExists: !!localStorage.getItem("visor_token"),
+      userComparison: {
+        currentUserId: user?.id,
+        postAuthorId: postToDelete.author?.id,
+        idsMatch: user?.id === postToDelete.author?.id,
+        currentUserType: typeof user?.id,
+        postAuthorType: typeof postToDelete.author?.id,
+      },
+    });
+
     try {
       const result = await deletePost({
         variables: { id: postId },
       });
 
-      // console.log("Delete post result:", result);
-
       if (result.data?.deletePost) {
-        // console.log("Post deleted successfully");
-        // Refetch posts to update the UI
         await refetchPosts();
       } else if (result.errors && result.errors.length > 0) {
         console.error("Backend returned errors:", result.errors);
 
-        // Log the complete error structure for debugging
-        // result.errors.forEach((err: any, index: number) => {
-        //   console.log(`Error ${index + 1} complete structure:`, {
-        //     message: err.message,
-        //     path: err.path,
-        //     extensions: err.extensions,
-        //     locations: err.locations,
-        //     originalError: err.originalError,
-        //     fullError: err,
-        //   });
-        // });
-
-        // Extract error message from the first error
         const firstError = result.errors[0];
         let errorMessage = "Failed to delete post. Please try again.";
 
@@ -670,7 +509,6 @@ const DiscussionDetail: React.FC = () => {
           errorMessage = firstError.message;
         }
 
-        // Check for specific error types
         if (firstError.extensions?.code) {
           switch (firstError.extensions.code) {
             case "UNAUTHENTICATED":
@@ -696,7 +534,6 @@ const DiscussionDetail: React.FC = () => {
         }
 
         console.error("Delete post error:", errorMessage);
-        // You could show a toast notification here with the error message
       } else {
         console.error("Failed to delete post - no data returned");
       }
@@ -708,7 +545,6 @@ const DiscussionDetail: React.FC = () => {
         networkError: error.networkError,
       });
 
-      // Extract error message from GraphQL errors
       let errorMessage = "Failed to delete post. Please try again.";
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
         errorMessage = error.graphQLErrors[0].message || errorMessage;
@@ -717,14 +553,12 @@ const DiscussionDetail: React.FC = () => {
       }
 
       console.error("Delete post error:", errorMessage);
-      // You could show a toast notification here with the error message
     }
   };
 
   const handleReact = async (postId: string, reactionType: string) => {
     try {
-      // Check if user already has this reaction
-      const post = posts.find((p: DiscussionPost) => p.id === postId);
+      const post = validPosts.find((p: DiscussionPost) => p.id === postId);
       const hasReaction = post?.reactions.some(
         (r: any) =>
           r.emoji === reactionType &&
@@ -732,7 +566,6 @@ const DiscussionDetail: React.FC = () => {
       );
 
       if (hasReaction) {
-        // Remove reaction
         const result = await removeReaction({
           variables: {
             input: { postId, emoji: reactionType },
@@ -746,7 +579,6 @@ const DiscussionDetail: React.FC = () => {
           console.error("Failed to remove reaction - no data returned");
         }
       } else {
-        // Add reaction
         const result = await addReaction({
           variables: {
             input: { postId, emoji: reactionType },
@@ -763,7 +595,6 @@ const DiscussionDetail: React.FC = () => {
     } catch (error: any) {
       console.error("Error handling reaction:", error);
 
-      // Extract error message from GraphQL errors
       let errorMessage = "Failed to update reaction. Please try again.";
       if (error.graphQLErrors && error.graphQLErrors.length > 0) {
         errorMessage = error.graphQLErrors[0].message || errorMessage;
@@ -783,22 +614,6 @@ const DiscussionDetail: React.FC = () => {
       return formatDistanceToNow(date, { addSuffix: true });
     } catch (e) {
       return "an unknown time ago";
-    }
-  };
-
-  // Check if the auth token is valid
-  const isTokenValid = (): boolean => {
-    const token = localStorage.getItem("visor_token");
-    if (!token) return false;
-
-    try {
-      // Basic JWT token validation - check if it's not expired
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const currentTime = Date.now() / 1000;
-      return payload.exp > currentTime;
-    } catch (error) {
-      console.error("Error parsing token:", error);
-      return false;
     }
   };
 
@@ -876,47 +691,39 @@ const DiscussionDetail: React.FC = () => {
       <Container maxWidth="lg">
         <Box py={4}>
           <Alert severity="error">
-            Error loading discussion: {discussionError.message}
+            <AlertTitle>Error Loading Discussion</AlertTitle>
+            Unable to load the discussion. Please try refreshing the page.
+            {discussionError.message && (
+              <Box mt={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Error: {discussionError.message}
+                </Typography>
+              </Box>
+            )}
           </Alert>
         </Box>
       </Container>
     );
   }
 
-  // Check for ObjectId serialization errors, null field errors, and date serialization errors
-  const hasSerializationErrors = postsError?.graphQLErrors?.some(
-    (error: any) =>
-      (error.message.includes("ID cannot represent value") &&
-        error.message.includes("Buffer")) ||
-      error.message.includes("Cannot return null for non-nullable field") ||
-      (error.message.includes("String cannot represent value") &&
-        error.message.includes("createdAt"))
-  );
-
-  // Check if we have data but some posts were filtered out
-  const rawPostsCount = postsData?.getPosts?.posts?.length || 0;
-  const filteredPostsCount = posts.length;
-  const hasFilteredPosts = rawPostsCount > filteredPostsCount;
-
-  if (postsError) {
+  // Enhanced error handling for posts with serialization issues
+  if (postsError || hasSerializationErrors) {
     return (
       <Container maxWidth="lg">
         <Box py={4}>
-          {hasSerializationErrors || hasFilteredPosts ? (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              {hasFilteredPosts
-                ? `${
-                    rawPostsCount - filteredPostsCount
-                  } posts were filtered out due to data issues. Showing ${filteredPostsCount} valid posts.`
-                : "Some posts may not be displaying correctly due to backend data issues. Invalid or corrupted posts have been filtered out. This is being investigated and will be fixed soon."}
-            </Alert>
-          ) : (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              Unable to load existing posts due to a backend data issue. You can
-              still create new posts below. The existing posts will be restored
-              once the backend issue is fixed.
-            </Alert>
-          )}
+          <Alert severity="warning" sx={{ mb: 3 }}>
+            <AlertTitle>Data Loading Issue</AlertTitle>
+            Some posts couldn't be loaded due to backend data inconsistencies.
+            You can still view the discussion and create new posts.
+            {postsError?.message && (
+              <Box mt={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Technical details: {postsError.message}
+                </Typography>
+              </Box>
+            )}
+          </Alert>
+
           {discussion && (
             <>
               {/* Breadcrumbs */}
@@ -962,17 +769,14 @@ const DiscussionDetail: React.FC = () => {
                 </CardContent>
               </Card>
 
-              {/* Post Composer for when posts can't be loaded */}
+              {/* Post composer - show even when posts fail to load */}
               {user && (
                 <Card sx={{ mb: 3 }}>
                   <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Create New Post
-                    </Typography>
                     <PostComposer
                       onSubmit={handleCreatePost}
-                      placeholder="Start a new post in this discussion..."
-                      buttonText="Create Post"
+                      placeholder="Add to the discussion..."
+                      buttonText="Post"
                     />
                   </CardContent>
                 </Card>
@@ -988,17 +792,10 @@ const DiscussionDetail: React.FC = () => {
     return (
       <Container maxWidth="lg">
         <Box py={4}>
-          <Typography variant="h4" gutterBottom>
-            Discussion not found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-            Discussion ID: {discussionId}
-          </Typography>
-          {discussionError && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              Error: {(discussionError as any)?.message || "Unknown error"}
-            </Alert>
-          )}
+          <Alert severity="error">
+            <AlertTitle>Discussion Not Found</AlertTitle>
+            The discussion you're looking for doesn't exist or has been removed.
+          </Alert>
         </Box>
       </Container>
     );
@@ -1128,12 +925,12 @@ const DiscussionDetail: React.FC = () => {
 
         {/* Posts */}
         <Box>
-          {posts.length === 0 ? (
+          {validPosts.length === 0 ? (
             <Alert severity="info">
               No posts yet. Be the first to join the discussion!
             </Alert>
           ) : (
-            organizePostsIntoThreads(posts).map((post: DiscussionPost) =>
+            organizePostsIntoThreads(validPosts).map((post: DiscussionPost) =>
               renderPostWithReplies(post)
             )
           )}

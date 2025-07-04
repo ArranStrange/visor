@@ -1,13 +1,33 @@
 const { GraphQLUpload } = require("graphql-upload");
 const GraphQLJSON = require("graphql-type-json");
+const { GraphQLScalarType } = require("graphql");
 
 const Comment = require("../models/comment");
 const Image = require("../models/Image");
 const User = require("../models/User");
 
+// ObjectId scalar resolver
+const ObjectIdScalar = new GraphQLScalarType({
+  name: "ObjectId",
+  description: "ObjectId custom scalar type",
+  serialize(value) {
+    if (value instanceof require("mongoose").Types.ObjectId) {
+      return value.toString();
+    }
+    return value;
+  },
+  parseValue(value) {
+    return value;
+  },
+  parseLiteral(ast) {
+    return ast.value;
+  },
+});
+
 module.exports = {
   Upload: GraphQLUpload,
   JSON: GraphQLJSON,
+  ObjectId: ObjectIdScalar,
 
   Query: {
     getImage: async (_, { id }) => await Image.findById(id),
