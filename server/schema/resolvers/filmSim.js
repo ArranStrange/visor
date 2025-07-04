@@ -3,6 +3,7 @@ const FilmSim = require("../../models/FilmSim");
 const Tag = require("../../models/Tag");
 const Image = require("../../models/Image");
 const Discussion = require("../../models/Discussion");
+const Preset = require("../../models/Preset");
 
 const filmSimResolvers = {
   Query: {
@@ -502,6 +503,165 @@ const filmSimResolvers = {
         return true;
       } catch (error) {
         console.error("Delete comment error:", error);
+        throw error;
+      }
+    },
+
+    addRecommendedPreset: async (_, { filmSimId, presetId }, { user }) => {
+      if (!user) {
+        throw new AuthenticationError("Not authenticated");
+      }
+
+      try {
+        const filmSim = await FilmSim.findById(filmSimId);
+        if (!filmSim) {
+          throw new Error("Film simulation not found");
+        }
+
+        // Check if user is the creator of the film simulation
+        if (filmSim.creator.toString() !== user._id.toString()) {
+          throw new AuthenticationError(
+            "Not authorized to modify this film simulation"
+          );
+        }
+
+        // Check if preset exists
+        const preset = await Preset.findById(presetId);
+        if (!preset) {
+          throw new Error("Preset not found");
+        }
+
+        // Check if preset already exists in recommended presets
+        if (filmSim.recommendedPresets.includes(presetId)) {
+          throw new Error("Preset is already in recommended presets");
+        }
+
+        // Add preset to recommended presets
+        filmSim.recommendedPresets.push(presetId);
+        await filmSim.save();
+
+        // Return the updated film simulation with populated fields
+        const updatedFilmSim = await FilmSim.findById(filmSimId)
+          .populate({
+            path: "creator",
+            select: "id username avatar instagram",
+          })
+          .populate({
+            path: "tags",
+            select: "id name displayName",
+          })
+          .populate({
+            path: "sampleImages",
+            select: "id url caption",
+          })
+          .populate({
+            path: "recommendedPresets",
+            select: "id title slug tags afterImage",
+          });
+
+        return {
+          ...updatedFilmSim.toObject(),
+          id: updatedFilmSim._id.toString(),
+          creator: updatedFilmSim.creator
+            ? {
+                ...updatedFilmSim.creator.toObject(),
+                id: updatedFilmSim.creator._id.toString(),
+              }
+            : null,
+          tags: updatedFilmSim.tags.map((tag) => ({
+            ...tag.toObject(),
+            id: tag._id.toString(),
+          })),
+          sampleImages: updatedFilmSim.sampleImages.map((image) => ({
+            ...image.toObject(),
+            id: image._id.toString(),
+          })),
+          recommendedPresets: updatedFilmSim.recommendedPresets.map(
+            (preset) => ({
+              ...preset.toObject(),
+              id: preset._id.toString(),
+            })
+          ),
+        };
+      } catch (error) {
+        console.error("Add recommended preset error:", error);
+        throw error;
+      }
+    },
+
+    removeRecommendedPreset: async (_, { filmSimId, presetId }, { user }) => {
+      if (!user) {
+        throw new AuthenticationError("Not authenticated");
+      }
+
+      try {
+        const filmSim = await FilmSim.findById(filmSimId);
+        if (!filmSim) {
+          throw new Error("Film simulation not found");
+        }
+
+        // Check if user is the creator of the film simulation
+        if (filmSim.creator.toString() !== user._id.toString()) {
+          throw new AuthenticationError(
+            "Not authorized to modify this film simulation"
+          );
+        }
+
+        // Check if preset exists in recommended presets
+        const presetIndex = filmSim.recommendedPresets.indexOf(presetId);
+        if (presetIndex === -1) {
+          throw new Error("Preset is not in recommended presets");
+        }
+
+        // Remove preset from recommended presets
+        filmSim.recommendedPresets.splice(presetIndex, 1);
+        await filmSim.save();
+
+        // Return the updated film simulation with populated fields
+        const updatedFilmSim = await FilmSim.findById(filmSimId)
+          .populate({
+            path: "creator",
+            select: "id username avatar instagram",
+          })
+          .populate({
+            path: "tags",
+            select: "id name displayName",
+          })
+          .populate({
+            path: "sampleImages",
+            select: "id url caption",
+          })
+          .populate({
+            path: "recommendedPresets",
+            select: "id title slug tags afterImage",
+          });
+
+        return {
+          ...updatedFilmSim.toObject(),
+          id: updatedFilmSim._id.toString(),
+          creator: updatedFilmSim.creator
+            ? {
+                ...updatedFilmSim.creator.toObject(),
+                id: updatedFilmSim.creator._id.toString(),
+              }
+            : null,
+          tags: updatedFilmSim.tags.map((tag) => ({
+            ...tag.toObject(),
+            id: tag._id.toString(),
+          })),
+          sampleImages: updatedFilmSim.sampleImages.map((image) => ({
+            ...image.toObject(),
+            id: image._id.toString(),
+          })),
+          recommendedPresets: updatedFilmSim.recommendedPresets.map(
+            (preset) => ({
+              ...preset.toObject(),
+              id: preset._id.toString(),
+            })
+          ),
+        };
+      } catch (error) {
+        console.error("Remove recommended preset error:", error);
         throw error;
       }
     },

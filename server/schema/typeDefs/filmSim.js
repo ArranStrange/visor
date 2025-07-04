@@ -101,6 +101,9 @@ const typeDefs = gql`
     addComment(filmSimId: ID!, text: String!): Comment!
     updateComment(filmSimId: ID!, commentId: ID!, text: String!): Comment!
     deleteComment(filmSimId: ID!, commentId: ID!): Boolean!
+
+    addRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
+    removeRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
   }
 `;
 
