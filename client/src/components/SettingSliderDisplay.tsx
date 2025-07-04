@@ -5,12 +5,14 @@ interface SettingSliderDisplayProps {
   label: string;
   value: number | string;
   spectrum?: string; // Optional CSS linear-gradient
+  showLabel?: boolean; // Whether to show the label and value
 }
 
 const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
   label,
   value,
   spectrum,
+  showLabel = false, // Default to false since wrapper handles display
 }) => {
   const parsed = parseFloat(value.toString());
   if (isNaN(parsed)) return null;
@@ -32,25 +34,27 @@ const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
   const displayValue = parsed > 0 ? `+${parsed}` : parsed.toString();
 
   return (
-    <Box sx={{ mb: 2 }}>
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mb={0.5}
-      >
-        <Typography variant="body2" fontWeight={500}>
-          {label}
-        </Typography>
-        <Typography
-          variant="body2"
-          fontWeight={500}
-          color="text.secondary"
-          sx={{ minWidth: 40, textAlign: "right" }}
+    <Box sx={{ mb: showLabel ? 2 : 0 }}>
+      {showLabel && (
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mb={0.5}
         >
-          {displayValue}
-        </Typography>
-      </Box>
+          <Typography variant="body2" fontWeight={500}>
+            {label}
+          </Typography>
+          <Typography
+            variant="body2"
+            fontWeight={500}
+            color="text.secondary"
+            sx={{ minWidth: 40, textAlign: "right" }}
+          >
+            {displayValue}
+          </Typography>
+        </Box>
+      )}
 
       <Box
         sx={{

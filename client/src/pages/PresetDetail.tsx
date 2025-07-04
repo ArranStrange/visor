@@ -50,6 +50,7 @@ import BeforeAfterSlider from "../components/BeforeAfterSlider";
 import AddToListButton from "../components/AddToListButton";
 import XmpParser from "../components/XmpParser";
 import DiscussionThread from "../components/discussions/DiscussionThread";
+import ColorGradingWheels from "../components/ColorGradingWheels";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
@@ -672,32 +673,150 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Exposure"
-              value={formatSettingValue((preset.settings?.exposure || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Contrast"
-              value={formatSettingValue((preset.settings?.contrast || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Highlights"
-              value={formatSettingValue(
-                (preset.settings?.highlights || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Shadows"
-              value={formatSettingValue((preset.settings?.shadows || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Whites"
-              value={formatSettingValue((preset.settings?.whites || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Blacks"
-              value={formatSettingValue((preset.settings?.blacks || 0) / 100)}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Exposure
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Exposure"
+                  value={formatSettingValue(
+                    (preset.settings?.exposure || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.exposure || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Contrast
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Contrast"
+                  value={formatSettingValue(
+                    (preset.settings?.contrast || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.contrast || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Highlights
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Highlights"
+                  value={formatSettingValue(
+                    (preset.settings?.highlights || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.highlights || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Shadows
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Shadows"
+                  value={formatSettingValue(
+                    (preset.settings?.shadows || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.shadows || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Whites
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Whites"
+                  value={formatSettingValue(
+                    (preset.settings?.whites || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.whites || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Blacks
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Blacks"
+                  value={formatSettingValue(
+                    (preset.settings?.blacks || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.blacks || 0) / 100)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -751,12 +870,29 @@ const PresetDetails: React.FC = () => {
                 "linear-gradient(to right, #444, #3b4a6a, #3b6a4a, #6a6a3b, #6a4a3b, #b94a4a)",
             },
           ].map(({ label, key, spectrum }) => (
-            <SettingSliderDisplay
-              key={key}
-              label={label}
-              value={preset.settings?.[key] || 0}
-              spectrum={spectrum}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                {label}
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label={label}
+                  value={preset.settings?.[key] || 0}
+                  spectrum={spectrum}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.[key] || 0)}
+              </Typography>
+            </Box>
           ))}
 
           {/* Color Mixer */}
@@ -792,33 +928,95 @@ const PresetDetails: React.FC = () => {
               ))}
             </ToggleButtonGroup>
             {/* Color Mixer Sliders */}
-            <SettingSliderDisplay
-              label="Hue"
-              value={
-                preset.settings?.colorAdjustments?.[selectedColor]?.hue || 0
-              }
-              spectrum="linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)"
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={
-                preset.settings?.colorAdjustments?.[selectedColor]
-                  ?.saturation || 0
-              }
-              spectrum={`linear-gradient(to right, #888, ${colorMixerColor(
-                selectedColor
-              )}, #888)`}
-            />
-            <SettingSliderDisplay
-              label="Luminance"
-              value={
-                preset.settings?.colorAdjustments?.[selectedColor]?.luminance ||
-                0
-              }
-              spectrum={`linear-gradient(to right, #222, ${colorMixerColor(
-                selectedColor
-              )}, #fff)`}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Hue
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Hue"
+                  value={
+                    preset.settings?.colorAdjustments?.[selectedColor]?.hue || 0
+                  }
+                  spectrum="linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)"
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.settings?.colorAdjustments?.[selectedColor]?.hue || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Saturation"
+                  value={
+                    preset.settings?.colorAdjustments?.[selectedColor]
+                      ?.saturation || 0
+                  }
+                  spectrum={`linear-gradient(to right, #888, ${colorMixerColor(
+                    selectedColor
+                  )}, #888)`}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.settings?.colorAdjustments?.[selectedColor]
+                    ?.saturation || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Luminance
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Luminance"
+                  value={
+                    preset.settings?.colorAdjustments?.[selectedColor]
+                      ?.luminance || 0
+                  }
+                  spectrum={`linear-gradient(to right, #222, ${colorMixerColor(
+                    selectedColor
+                  )}, #fff)`}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.settings?.colorAdjustments?.[selectedColor]
+                    ?.luminance || 0
+                )}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -832,18 +1030,78 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Clarity"
-              value={formatSettingValue((preset.settings?.clarity || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Dehaze"
-              value={formatSettingValue((preset.settings?.dehaze || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Texture"
-              value={formatSettingValue((preset.settings?.texture || 0) / 100)}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Clarity
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Clarity"
+                  value={formatSettingValue(
+                    (preset.settings?.clarity || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.clarity || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Dehaze
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Dehaze"
+                  value={formatSettingValue(
+                    (preset.settings?.dehaze || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.dehaze || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Texture
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Texture"
+                  value={formatSettingValue(
+                    (preset.settings?.texture || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.settings?.texture || 0) / 100)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -860,18 +1118,54 @@ const PresetDetails: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Shadows
             </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.splitToning?.shadowHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.splitToning?.shadowSaturation || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Hue
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Shadow Hue"
+                  value={formatSettingValue(
+                    (preset.splitToning?.shadowHue || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.splitToning?.shadowHue || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Shadow Saturation"
+                  value={formatSettingValue(
+                    (preset.splitToning?.shadowSaturation || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.splitToning?.shadowSaturation || 0)}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -881,18 +1175,56 @@ const PresetDetails: React.FC = () => {
             >
               Highlights
             </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.splitToning?.highlightHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.splitToning?.highlightSaturation || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Hue
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Highlight Hue"
+                  value={formatSettingValue(
+                    (preset.splitToning?.highlightHue || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.splitToning?.highlightHue || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Highlight Saturation"
+                  value={formatSettingValue(
+                    (preset.splitToning?.highlightSaturation || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.splitToning?.highlightSaturation || 0
+                )}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -902,12 +1234,30 @@ const PresetDetails: React.FC = () => {
             >
               Balance
             </Typography>
-            <SettingSliderDisplay
-              label="Balance"
-              value={formatSettingValue(
-                (preset.splitToning?.balance || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Balance
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Balance"
+                  value={formatSettingValue(
+                    (preset.splitToning?.balance || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.splitToning?.balance || 0)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -921,22 +1271,78 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Amount"
-              value={formatSettingValue(
-                (preset.effects?.grainAmount || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Size"
-              value={formatSettingValue((preset.effects?.grainSize || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Frequency"
-              value={formatSettingValue(
-                (preset.effects?.grainFrequency || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Amount
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Grain Amount"
+                  value={formatSettingValue(
+                    (preset.effects?.grainAmount || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.effects?.grainAmount || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Size
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Grain Size"
+                  value={formatSettingValue(
+                    (preset.effects?.grainSize || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.effects?.grainSize || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Frequency
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Grain Frequency"
+                  value={formatSettingValue(
+                    (preset.effects?.grainFrequency || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.effects?.grainFrequency || 0)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -953,30 +1359,102 @@ const PresetDetails: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Sharpening
             </Typography>
-            <SettingSliderDisplay
-              label="Amount"
-              value={formatSettingValue(
-                (preset.settings?.sharpening || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Radius"
-              value={formatSettingValue(
-                (preset.settings?.sharpenRadius || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Detail"
-              value={formatSettingValue(
-                (preset.settings?.sharpenDetail || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Edge Masking"
-              value={formatSettingValue(
-                (preset.settings?.sharpenEdgeMasking || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Amount
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Sharpening Amount"
+                  value={formatSettingValue(
+                    (preset.settings?.sharpening || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.sharpening || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Radius
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Sharpening Radius"
+                  value={formatSettingValue(
+                    (preset.settings?.sharpenRadius || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.sharpenRadius || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Detail
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Sharpening Detail"
+                  value={formatSettingValue(
+                    (preset.settings?.sharpenDetail || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.sharpenDetail || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Edge Masking
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Sharpening Edge Masking"
+                  value={formatSettingValue(
+                    (preset.settings?.sharpenEdgeMasking || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.sharpenEdgeMasking || 0)}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -986,285 +1464,155 @@ const PresetDetails: React.FC = () => {
             >
               Noise Reduction
             </Typography>
-            <SettingSliderDisplay
-              label="Luminance Smoothing"
-              value={formatSettingValue(
-                (preset.settings?.luminanceSmoothing || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Luminance Detail"
-              value={formatSettingValue(
-                (preset.settings?.luminanceDetail || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Luminance Contrast"
-              value={formatSettingValue(
-                (preset.settings?.luminanceContrast || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Color Noise Reduction"
-              value={formatSettingValue(
-                (preset.settings?.noiseReduction?.color || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Color Detail"
-              value={formatSettingValue(
-                (preset.settings?.noiseReduction?.detail || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Color Smoothness"
-              value={formatSettingValue(
-                (preset.settings?.noiseReduction?.smoothness || 0) / 100
-              )}
-            />
-          </Box>
-        </AccordionDetails>
-      </Accordion>
-
-      {/* Color Adjustments (HSL) */}
-      <Accordion sx={{ backgroundColor: "background.default" }}>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6" fontWeight="bold">
-            Color Adjustments (HSL)
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Red
+                Luminance Smoothing
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.red?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.red?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.red?.luminance || 0) / 100
-                )}
-              />
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Luminance Smoothing"
+                  value={formatSettingValue(
+                    (preset.settings?.luminanceSmoothing || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.luminanceSmoothing || 0)}
+              </Typography>
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Orange
+                Luminance Detail
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.orange?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.orange?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.orange?.luminance || 0) /
-                    100
-                )}
-              />
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Luminance Detail"
+                  value={formatSettingValue(
+                    (preset.settings?.luminanceDetail || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.luminanceDetail || 0)}
+              </Typography>
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Yellow
+                Luminance Contrast
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.yellow?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.yellow?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.yellow?.luminance || 0) /
-                    100
-                )}
-              />
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Luminance Contrast"
+                  value={formatSettingValue(
+                    (preset.settings?.luminanceContrast || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.settings?.luminanceContrast || 0)}
+              </Typography>
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Green
+                Color Noise Reduction
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.green?.hue || 0) / 100
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Color Noise Reduction"
+                  value={formatSettingValue(
+                    (preset.settings?.noiseReduction?.color || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.settings?.noiseReduction?.color || 0
                 )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.green?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.green?.luminance || 0) /
-                    100
-                )}
-              />
+              </Typography>
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Aqua
+                Color Detail
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.aqua?.hue || 0) / 100
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Color Detail"
+                  value={formatSettingValue(
+                    (preset.settings?.noiseReduction?.detail || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.settings?.noiseReduction?.detail || 0
                 )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.aqua?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.aqua?.luminance || 0) /
-                    100
-                )}
-              />
+              </Typography>
             </Box>
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 90 }}
               >
-                Blue
+                Color Smoothness
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.blue?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.blue?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.blue?.luminance || 0) /
-                    100
-                )}
-              />
-            </Box>
-            <Box sx={{ mb: 3 }}>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Color Smoothness"
+                  value={formatSettingValue(
+                    (preset.settings?.noiseReduction?.smoothness || 0) / 100
+                  )}
+                />
+              </Box>
               <Typography
-                variant="subtitle2"
+                variant="body2"
                 color="text.secondary"
-                gutterBottom
+                sx={{ minWidth: 32, textAlign: "right" }}
               >
-                Purple
+                {formatSettingValue(
+                  preset.settings?.noiseReduction?.smoothness || 0
+                )}
               </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.purple?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.purple?.saturation || 0) /
-                    100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.purple?.luminance || 0) /
-                    100
-                )}
-              />
-            </Box>
-            <Box sx={{ mb: 3 }}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                gutterBottom
-              >
-                Magenta
-              </Typography>
-              <SettingSliderDisplay
-                label="Hue"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.magenta?.hue || 0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Saturation"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.magenta?.saturation ||
-                    0) / 100
-                )}
-              />
-              <SettingSliderDisplay
-                label="Luminance"
-                value={formatSettingValue(
-                  (preset.settings?.colorAdjustments?.magenta?.luminance || 0) /
-                    100
-                )}
-              />
             </Box>
           </Box>
         </AccordionDetails>
@@ -1279,89 +1627,18 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Shadows
-            </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.colorGrading?.shadowHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.colorGrading?.shadowSat || 0) / 100
-              )}
-            />
-
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              gutterBottom
-              sx={{ mt: 2 }}
-            >
-              Midtones
-            </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.colorGrading?.midtoneHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.colorGrading?.midtoneSat || 0) / 100
-              )}
-            />
-
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              gutterBottom
-              sx={{ mt: 2 }}
-            >
-              Highlights
-            </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.colorGrading?.highlightHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.colorGrading?.highlightSat || 0) / 100
-              )}
-            />
-
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              gutterBottom
-              sx={{ mt: 2 }}
-            >
-              Global
-            </Typography>
-            <SettingSliderDisplay
-              label="Blending"
-              value={formatSettingValue(
-                (preset.colorGrading?.blending || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Global Hue"
-              value={formatSettingValue(
-                (preset.colorGrading?.globalHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Global Saturation"
-              value={formatSettingValue(
-                (preset.colorGrading?.globalSat || 0) / 100
-              )}
+            <ColorGradingWheels
+              shadowHue={preset.colorGrading?.shadowHue || 0}
+              shadowSat={preset.colorGrading?.shadowSat || 0}
+              shadowLuminance={preset.colorGrading?.shadowLuminance || 0}
+              midtoneHue={preset.colorGrading?.midtoneHue || 0}
+              midtoneSat={preset.colorGrading?.midtoneSat || 0}
+              midtoneLuminance={preset.colorGrading?.midtoneLuminance || 0}
+              highlightHue={preset.colorGrading?.highlightHue || 0}
+              highlightSat={preset.colorGrading?.highlightSat || 0}
+              highlightLuminance={preset.colorGrading?.highlightLuminance || 0}
+              blending={preset.colorGrading?.blending || 50}
+              balance={preset.colorGrading?.balance || 0}
             />
           </Box>
         </AccordionDetails>
@@ -1376,12 +1653,33 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Manual Distortion"
-              value={formatSettingValue(
-                (preset.lensCorrections?.lensManualDistortionAmount || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Manual Distortion
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Manual Distortion"
+                  value={formatSettingValue(
+                    (preset.lensCorrections?.lensManualDistortionAmount || 0) /
+                      100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.lensCorrections?.lensManualDistortionAmount || 0
+                )}
+              </Typography>
+            </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               Profile: {preset.lensCorrections?.lensProfileName || "None"}
             </Typography>
@@ -1402,18 +1700,54 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Vignette Amount"
-              value={formatSettingValue(
-                (preset.optics?.vignetteAmount || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Vignette Midpoint"
-              value={formatSettingValue(
-                (preset.optics?.vignetteMidpoint || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Vignette Amount
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Vignette Amount"
+                  value={formatSettingValue(
+                    (preset.optics?.vignetteAmount || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.optics?.vignetteAmount || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Vignette Midpoint
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Vignette Midpoint"
+                  value={formatSettingValue(
+                    (preset.optics?.vignetteMidpoint || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.optics?.vignetteMidpoint || 0)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -1427,36 +1761,128 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Perspective Vertical"
-              value={formatSettingValue(
-                (preset.transform?.perspectiveVertical || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Perspective Horizontal"
-              value={formatSettingValue(
-                (preset.transform?.perspectiveHorizontal || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Perspective Rotate"
-              value={formatSettingValue(
-                (preset.transform?.perspectiveRotate || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Perspective Scale"
-              value={formatSettingValue(
-                (preset.transform?.perspectiveScale || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Perspective Aspect"
-              value={formatSettingValue(
-                (preset.transform?.perspectiveAspect || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Perspective Vertical
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Perspective Vertical"
+                  value={formatSettingValue(
+                    (preset.transform?.perspectiveVertical || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.transform?.perspectiveVertical || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Perspective Horizontal
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Perspective Horizontal"
+                  value={formatSettingValue(
+                    (preset.transform?.perspectiveHorizontal || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.transform?.perspectiveHorizontal || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Perspective Rotate
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Perspective Rotate"
+                  value={formatSettingValue(
+                    (preset.transform?.perspectiveRotate || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.transform?.perspectiveRotate || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Perspective Scale
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Perspective Scale"
+                  value={formatSettingValue(
+                    (preset.transform?.perspectiveScale || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.transform?.perspectiveScale || 0)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Perspective Aspect
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Perspective Aspect"
+                  value={formatSettingValue(
+                    (preset.transform?.perspectiveAspect || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(preset.transform?.perspectiveAspect || 0)}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -1470,30 +1896,110 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <SettingSliderDisplay
-              label="Post-Crop Vignette Amount"
-              value={formatSettingValue(
-                (preset.effects?.postCropVignetteAmount || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Post-Crop Vignette Midpoint"
-              value={formatSettingValue(
-                (preset.effects?.postCropVignetteMidpoint || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Post-Crop Vignette Feather"
-              value={formatSettingValue(
-                (preset.effects?.postCropVignetteFeather || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Post-Crop Vignette Roundness"
-              value={formatSettingValue(
-                (preset.effects?.postCropVignetteRoundness || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Post-Crop Vignette Amount
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Post-Crop Vignette Amount"
+                  value={formatSettingValue(
+                    (preset.effects?.postCropVignetteAmount || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.effects?.postCropVignetteAmount || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Post-Crop Vignette Midpoint
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Post-Crop Vignette Midpoint"
+                  value={formatSettingValue(
+                    (preset.effects?.postCropVignetteMidpoint || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.effects?.postCropVignetteMidpoint || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Post-Crop Vignette Feather
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Post-Crop Vignette Feather"
+                  value={formatSettingValue(
+                    (preset.effects?.postCropVignetteFeather || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.effects?.postCropVignetteFeather || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Post-Crop Vignette Roundness
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Post-Crop Vignette Roundness"
+                  value={formatSettingValue(
+                    (preset.effects?.postCropVignetteRoundness || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.effects?.postCropVignetteRoundness || 0
+                )}
+              </Typography>
+            </Box>
             <Typography variant="body2" color="text.secondary">
               Post-Crop Vignette Style:{" "}
               {preset.effects?.postCropVignetteStyle || "None"}
@@ -1511,22 +2017,60 @@ const PresetDetails: React.FC = () => {
         </AccordionSummary>
         <AccordionDetails>
           <Box>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Red Primary
-            </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationRedPrimaryHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationRedPrimarySaturation ||
-                  0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Red Primary
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Red Primary Hue"
+                  value={formatSettingValue(
+                    (preset.calibration?.cameraCalibrationRedPrimaryHue || 0) /
+                      100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationRedPrimaryHue || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Red Primary Saturation"
+                  value={formatSettingValue(
+                    (preset.calibration
+                      ?.cameraCalibrationRedPrimarySaturation || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationRedPrimarySaturation || 0
+                )}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -1536,20 +2080,61 @@ const PresetDetails: React.FC = () => {
             >
               Green Primary
             </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationGreenPrimaryHue || 0) /
-                  100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationGreenPrimarySaturation ||
-                  0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Hue
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Green Primary Hue"
+                  value={formatSettingValue(
+                    (preset.calibration?.cameraCalibrationGreenPrimaryHue ||
+                      0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationGreenPrimaryHue || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Green Primary Saturation"
+                  value={formatSettingValue(
+                    (preset.calibration
+                      ?.cameraCalibrationGreenPrimarySaturation || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationGreenPrimarySaturation ||
+                    0
+                )}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -1559,19 +2144,61 @@ const PresetDetails: React.FC = () => {
             >
               Blue Primary
             </Typography>
-            <SettingSliderDisplay
-              label="Hue"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationBluePrimaryHue || 0) / 100
-              )}
-            />
-            <SettingSliderDisplay
-              label="Saturation"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationBluePrimarySaturation ||
-                  0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Hue
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Blue Primary Hue"
+                  value={formatSettingValue(
+                    (preset.calibration?.cameraCalibrationBluePrimaryHue || 0) /
+                      100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationBluePrimaryHue || 0
+                )}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Saturation
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Blue Primary Saturation"
+                  value={formatSettingValue(
+                    (preset.calibration
+                      ?.cameraCalibrationBluePrimarySaturation || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationBluePrimarySaturation ||
+                    0
+                )}
+              </Typography>
+            </Box>
 
             <Typography
               variant="subtitle2"
@@ -1581,12 +2208,32 @@ const PresetDetails: React.FC = () => {
             >
               Shadow Tint
             </Typography>
-            <SettingSliderDisplay
-              label="Shadow Tint"
-              value={formatSettingValue(
-                (preset.calibration?.cameraCalibrationShadowTint || 0) / 100
-              )}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Shadow Tint
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Shadow Tint"
+                  value={formatSettingValue(
+                    (preset.calibration?.cameraCalibrationShadowTint || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue(
+                  preset.calibration?.cameraCalibrationShadowTint || 0
+                )}
+              </Typography>
+            </Box>
           </Box>
         </AccordionDetails>
       </Accordion>
@@ -1603,26 +2250,122 @@ const PresetDetails: React.FC = () => {
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
               Crop
             </Typography>
-            <SettingSliderDisplay
-              label="Top"
-              value={formatSettingValue((preset.crop?.cropTop || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Left"
-              value={formatSettingValue((preset.crop?.cropLeft || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Bottom"
-              value={formatSettingValue((preset.crop?.cropBottom || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Right"
-              value={formatSettingValue((preset.crop?.cropRight || 0) / 100)}
-            />
-            <SettingSliderDisplay
-              label="Angle"
-              value={formatSettingValue((preset.crop?.cropAngle || 0) / 100)}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Top
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Crop Top"
+                  value={formatSettingValue((preset.crop?.cropTop || 0) / 100)}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.crop?.cropTop || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Left
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Crop Left"
+                  value={formatSettingValue((preset.crop?.cropLeft || 0) / 100)}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.crop?.cropLeft || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Bottom
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Crop Bottom"
+                  value={formatSettingValue(
+                    (preset.crop?.cropBottom || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.crop?.cropBottom || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Right
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Crop Right"
+                  value={formatSettingValue(
+                    (preset.crop?.cropRight || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.crop?.cropRight || 0) / 100)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 90 }}
+              >
+                Angle
+              </Typography>
+              <Box sx={{ flex: 1, mx: 2 }}>
+                <SettingSliderDisplay
+                  label="Crop Angle"
+                  value={formatSettingValue(
+                    (preset.crop?.cropAngle || 0) / 100
+                  )}
+                />
+              </Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 32, textAlign: "right" }}
+              >
+                {formatSettingValue((preset.crop?.cropAngle || 0) / 100)}
+              </Typography>
+            </Box>
             <Typography variant="body2" color="text.secondary">
               Constrain to Warp:{" "}
               {preset.crop?.cropConstrainToWarp ? "Yes" : "No"}
@@ -2035,7 +2778,7 @@ const PresetDetails: React.FC = () => {
                           <>
                             <Box>
                               <SettingSliderDisplay
-                                label="Amount"
+                                label="Grain Amount"
                                 value={
                                   (
                                     getCurrentSettings().effects ||
@@ -2051,7 +2794,7 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Size"
+                                label="Grain Size"
                                 value={
                                   (
                                     getCurrentSettings().effects ||
@@ -2067,7 +2810,7 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Frequency"
+                                label="Grain Frequency"
                                 value={
                                   (
                                     getCurrentSettings().effects ||
@@ -2120,11 +2863,10 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Color Noise Reduction"
+                                label="Luminance Detail"
                                 value={
-                                  getCurrentSettings().detail
-                                    .colorNoiseReduction
-                                    ? getCurrentSettings().detail.colorNoiseReduction.toFixed(
+                                  getCurrentSettings().detail.luminanceDetail
+                                    ? getCurrentSettings().detail.luminanceDetail.toFixed(
                                         1
                                       )
                                     : "0"
@@ -2133,10 +2875,10 @@ const PresetDetails: React.FC = () => {
                             </Box>
                             <Box>
                               <SettingSliderDisplay
-                                label="Luminance Detail"
+                                label="Luminance Contrast"
                                 value={
-                                  getCurrentSettings().detail.luminanceDetail
-                                    ? getCurrentSettings().detail.luminanceDetail.toFixed(
+                                  getCurrentSettings().detail.luminanceContrast
+                                    ? getCurrentSettings().detail.luminanceContrast.toFixed(
                                         1
                                       )
                                     : "0"
@@ -2166,7 +2908,7 @@ const PresetDetails: React.FC = () => {
                       >
                         <Box>
                           <SettingSliderDisplay
-                            label="Sharpening"
+                            label="Sharpening Amount"
                             value={
                               getCurrentSettings().sharpening
                                 ? getCurrentSettings().sharpening.toFixed(1)

@@ -141,10 +141,13 @@ const presetSchema = new Schema(
     colorGrading: {
       shadowHue: { type: Number, default: 0 },
       shadowSat: { type: Number, default: 0 },
+      shadowLuminance: { type: Number, default: 0 },
       midtoneHue: { type: Number, default: 0 },
       midtoneSat: { type: Number, default: 0 },
+      midtoneLuminance: { type: Number, default: 0 },
       highlightHue: { type: Number, default: 0 },
       highlightSat: { type: Number, default: 0 },
+      highlightLuminance: { type: Number, default: 0 },
       blending: { type: Number, default: 0 },
       globalHue: { type: Number, default: 0 },
       globalSat: { type: Number, default: 0 },

@@ -38,15 +38,31 @@ async function migratePresetSchema() {
         updateData.colorGrading = {
           shadowHue: 0,
           shadowSat: 0,
+          shadowLuminance: 0,
           midtoneHue: 0,
           midtoneSat: 0,
+          midtoneLuminance: 0,
           highlightHue: 0,
           highlightSat: 0,
+          highlightLuminance: 0,
           blending: 0,
           globalHue: 0,
           globalSat: 0,
           perceptual: false,
         };
+      } else {
+        // Add missing luminance fields to existing colorGrading
+        const colorGradingUpdate = {};
+        if (preset.colorGrading.shadowLuminance === undefined) {
+          colorGradingUpdate["colorGrading.shadowLuminance"] = 0;
+        }
+        if (preset.colorGrading.midtoneLuminance === undefined) {
+          colorGradingUpdate["colorGrading.midtoneLuminance"] = 0;
+        }
+        if (preset.colorGrading.highlightLuminance === undefined) {
+          colorGradingUpdate["colorGrading.highlightLuminance"] = 0;
+        }
+        Object.assign(updateData, colorGradingUpdate);
       }
 
       // Lens Corrections

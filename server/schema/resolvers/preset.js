@@ -168,10 +168,13 @@ const cleanComprehensiveSettings = (data) => {
       ? {
           shadowHue: Number(data.colorGrading.shadowHue) || 0,
           shadowSat: Number(data.colorGrading.shadowSat) || 0,
+          shadowLuminance: Number(data.colorGrading.shadowLuminance) || 0,
           midtoneHue: Number(data.colorGrading.midtoneHue) || 0,
           midtoneSat: Number(data.colorGrading.midtoneSat) || 0,
+          midtoneLuminance: Number(data.colorGrading.midtoneLuminance) || 0,
           highlightHue: Number(data.colorGrading.highlightHue) || 0,
           highlightSat: Number(data.colorGrading.highlightSat) || 0,
+          highlightLuminance: Number(data.colorGrading.highlightLuminance) || 0,
           blending: Number(data.colorGrading.blending) || 0,
           globalHue: Number(data.colorGrading.globalHue) || 0,
           globalSat: Number(data.colorGrading.globalSat) || 0,

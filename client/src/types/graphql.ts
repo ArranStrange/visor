@@ -63,6 +63,22 @@ export interface SplitToningSettings {
   balance: number;
 }
 
+export interface ColorGradingSettings {
+  shadowHue: number;
+  shadowSat: number;
+  shadowLuminance: number;
+  midtoneHue: number;
+  midtoneSat: number;
+  midtoneLuminance: number;
+  highlightHue: number;
+  highlightSat: number;
+  highlightLuminance: number;
+  blending: number;
+  globalHue: number;
+  globalSat: number;
+  perceptual: boolean;
+}
+
 export interface PresetSettings {
   // Light settings
   exposure: number;
@@ -85,6 +101,7 @@ export interface PresetSettings {
   vignette: VignetteSettings;
   colorAdjustments: ColorAdjustments;
   splitToning: SplitToningSettings;
+  colorGrading: ColorGradingSettings;
 
   // Detail
   sharpening: number;

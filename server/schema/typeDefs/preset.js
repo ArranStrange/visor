@@ -72,10 +72,13 @@ const typeDefs = gql`
   type ColorGrading {
     shadowHue: Float
     shadowSat: Float
+    shadowLuminance: Float
     midtoneHue: Float
     midtoneSat: Float
+    midtoneLuminance: Float
     highlightHue: Float
     highlightSat: Float
+    highlightLuminance: Float
     blending: Float
     globalHue: Float
     globalSat: Float
@@ -286,10 +289,13 @@ const typeDefs = gql`
   input ColorGradingInput {
     shadowHue: Float
     shadowSat: Float
+    shadowLuminance: Float
     midtoneHue: Float
     midtoneSat: Float
+    midtoneLuminance: Float
     highlightHue: Float
     highlightSat: Float
+    highlightLuminance: Float
     blending: Float
     globalHue: Float
     globalSat: Float
