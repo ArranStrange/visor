@@ -8,6 +8,7 @@ export const GET_ALL_PRESETS = gql`
       title
       slug
       description
+      notes
       tags {
         displayName
       }

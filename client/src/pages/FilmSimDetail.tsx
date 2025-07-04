@@ -391,14 +391,24 @@ const FilmSimDetails: React.FC = () => {
       </Typography>
 
       {/* Tags and camera compatibility */}
-      <Stack direction="row" spacing={1} mb={2} flexWrap="wrap">
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 1,
+          mb: 2,
+          "& > *": {
+            marginBottom: 1,
+          },
+        }}
+      >
         {filmSim.tags?.map((tag: { id: string; displayName: string }) => (
           <Chip key={tag.id} label={tag.displayName} variant="outlined" />
         ))}
         {filmSim.compatibleCameras?.map((camera: string) => (
           <Chip key={camera} label={camera} color="secondary" />
         ))}
-      </Stack>
+      </Box>
 
       <Divider sx={{ my: 3 }} />
 
@@ -1183,7 +1193,6 @@ const FilmSimDetails: React.FC = () => {
             variant="contained"
             onClick={() => {
               // TODO: Implement save functionality
-              console.log("Save edit functionality to be implemented");
               setEditDialogOpen(false);
             }}
           >

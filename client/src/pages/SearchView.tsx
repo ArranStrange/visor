@@ -109,7 +109,7 @@ const SearchView: React.FC = () => {
         .filter((p: any) => {
           // Apply keyword filter - search across all fields
           if (keyword) {
-            const searchTerm = keyword.toLowerCase();
+            const searchTerm = keyword.toLowerCase().trim();
             const searchableText = [
               p.title,
               p.description,
@@ -117,10 +117,31 @@ const SearchView: React.FC = () => {
               p.creator?.username,
               ...(p.tags?.map((tag: any) => tag.displayName) || []),
             ]
+              .filter(Boolean) // Remove null/undefined values
               .join(" ")
               .toLowerCase();
 
-            if (!searchableText.includes(searchTerm)) {
+            // Split search term into words for more flexible matching
+            const searchWords = searchTerm
+              .split(/\s+/)
+              .filter((word) => word.length > 0);
+
+            // Check if all search words are found in the searchable text (partial matches allowed)
+            const allWordsFound = searchWords.every((word) => {
+              // Check if the word is found as a complete word or partial match
+              return (
+                searchableText.includes(word) ||
+                searchableText
+                  .split(/\s+/)
+                  .some(
+                    (textWord) =>
+                      textWord.toLowerCase().startsWith(word.toLowerCase()) ||
+                      textWord.toLowerCase().includes(word.toLowerCase())
+                  )
+              );
+            });
+
+            if (!allWordsFound) {
               return false;
             }
           }
@@ -147,7 +168,7 @@ const SearchView: React.FC = () => {
         .filter((f: any) => {
           // Apply keyword filter - search across all fields
           if (keyword) {
-            const searchTerm = keyword.toLowerCase();
+            const searchTerm = keyword.toLowerCase().trim();
             const searchableText = [
               f.name,
               f.description,
@@ -155,10 +176,31 @@ const SearchView: React.FC = () => {
               f.creator?.username,
               ...(f.tags?.map((tag: any) => tag.displayName) || []),
             ]
+              .filter(Boolean) // Remove null/undefined values
               .join(" ")
               .toLowerCase();
 
-            if (!searchableText.includes(searchTerm)) {
+            // Split search term into words for more flexible matching
+            const searchWords = searchTerm
+              .split(/\s+/)
+              .filter((word) => word.length > 0);
+
+            // Check if all search words are found in the searchable text (partial matches allowed)
+            const allWordsFound = searchWords.every((word) => {
+              // Check if the word is found as a complete word or partial match
+              return (
+                searchableText.includes(word) ||
+                searchableText
+                  .split(/\s+/)
+                  .some(
+                    (textWord) =>
+                      textWord.toLowerCase().startsWith(word.toLowerCase()) ||
+                      textWord.toLowerCase().includes(word.toLowerCase())
+                  )
+              );
+            });
+
+            if (!allWordsFound) {
               return false;
             }
           }

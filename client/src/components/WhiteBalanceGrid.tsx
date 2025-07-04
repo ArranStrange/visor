@@ -125,18 +125,14 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
         />
       </Box>
       <Typography
-        variant="h6"
+        variant="body1"
         sx={{
           mt: 2,
-          textAlign: "left",
-          color: "white",
-          background: "transparent",
-          borderRadius: 1,
-          width: GRID_PIXEL_SIZE,
-          ml: 0,
-          fontFamily: "monospace",
-          fontWeight: 500,
-          letterSpacing: 2,
+          textAlign: "center",
+          color: "text.primary",
+          fontSize: { xs: "0.80rem", sm: "0.95rem" },
+          fontWeight: 600,
+          letterSpacing: 0.2,
         }}
       >
         R:{value.r > 0 ? `+${value.r}` : value.r} B:

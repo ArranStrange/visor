@@ -127,11 +127,6 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
   const isAlreadyRecommended = (presetId: string) =>
     currentRecommendedPresets.some((preset) => preset.id === presetId);
 
-  // Debug logging
-  console.log("searchQuery:", searchQuery);
-  console.log("searchData:", presetData);
-  console.log("searchResults:", searchResults);
-
   return (
     <Dialog
       open={open}

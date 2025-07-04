@@ -143,8 +143,6 @@ const DiscussionList: React.FC = () => {
   // Temporary test function to create a discussion
   const createTestDiscussion = async () => {
     try {
-      console.log("Creating test discussion...");
-
       // Create a test discussion linked to a preset
       const discussionInput = {
         title: "Test Discussion about a Preset",
@@ -153,17 +151,12 @@ const DiscussionList: React.FC = () => {
         tags: ["test", "preset"],
       };
 
-      console.log("Creating discussion with input:", discussionInput);
-
       const result = await createDiscussion({
         variables: { input: discussionInput },
       });
 
       if (result.data?.createDiscussion) {
-        console.log(
-          "Test discussion created successfully:",
-          result.data.createDiscussion
-        );
+        // Test discussion created successfully
       } else {
         console.error("Failed to create test discussion");
       }
@@ -289,11 +282,6 @@ const DiscussionList: React.FC = () => {
   const getThumbnailUrl = (linkedTo: any): string => {
     if (!linkedTo) return "/placeholder.png";
 
-    console.log("getThumbnailUrl - linkedTo:", linkedTo);
-    console.log("linkedTo.type:", linkedTo.type);
-    console.log("linkedTo.preset:", linkedTo.preset);
-    console.log("linkedTo.filmSim:", linkedTo.filmSim);
-
     try {
       // Handle both uppercase and lowercase type values
       const type = linkedTo.type?.toUpperCase();
@@ -302,22 +290,14 @@ const DiscussionList: React.FC = () => {
         (type === "PRESET" || linkedTo.type === "preset") &&
         linkedTo.preset?.afterImage
       ) {
-        console.log("Found preset afterImage:", linkedTo.preset.afterImage);
-        console.log("afterImage.url:", linkedTo.preset.afterImage.url);
-        console.log(
-          "afterImage keys:",
-          Object.keys(linkedTo.preset.afterImage)
-        );
-
         // Try different possible field names for the URL
         const url =
-          linkedTo.preset.afterImage.url ||
-          linkedTo.preset.afterImage.imageUrl ||
-          linkedTo.preset.afterImage.src ||
-          linkedTo.preset.afterImage.path;
+          linkedTo.preset.afterImage?.url ||
+          linkedTo.preset.afterImage?.imageUrl ||
+          linkedTo.preset.afterImage?.src ||
+          linkedTo.preset.afterImage?.path;
 
-        if (url) {
-          console.log("Found preset image URL:", url);
+        if (url && url !== "null" && url !== "") {
           return url;
         }
 
@@ -337,36 +317,25 @@ const DiscussionList: React.FC = () => {
             "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750276235/kdl2x6veihmv8acfpkf5.jpg", // Blue Hour
           "6853237d8417a8872cdd0467":
             "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750279034/fy3lkg4rnklbhj8anxhn.jpg", // Soft Matte Landscape
+          // Add newer presets here as they are created
         };
 
         const fallbackUrl = knownPresetImages[linkedTo.preset.id];
         if (fallbackUrl) {
-          console.log("Using fallback preset image URL:", fallbackUrl);
           return fallbackUrl;
         }
       } else if (
         (type === "FILMSIM" || linkedTo.type === "filmsim") &&
         linkedTo.filmSim?.sampleImages?.[0]
       ) {
-        console.log(
-          "Found filmSim sampleImage:",
-          linkedTo.filmSim.sampleImages[0]
-        );
-        console.log("sampleImage.url:", linkedTo.filmSim.sampleImages[0].url);
-        console.log(
-          "sampleImage keys:",
-          Object.keys(linkedTo.filmSim.sampleImages[0])
-        );
-
         // Try different possible field names for the URL
         const url =
-          linkedTo.filmSim.sampleImages[0].url ||
-          linkedTo.filmSim.sampleImages[0].imageUrl ||
-          linkedTo.filmSim.sampleImages[0].src ||
-          linkedTo.filmSim.sampleImages[0].path;
+          linkedTo.filmSim.sampleImages[0]?.url ||
+          linkedTo.filmSim.sampleImages[0]?.imageUrl ||
+          linkedTo.filmSim.sampleImages[0]?.src ||
+          linkedTo.filmSim.sampleImages[0]?.path;
 
-        if (url) {
-          console.log("Found filmSim image URL:", url);
+        if (url && url !== "null" && url !== "") {
           return url;
         }
 
@@ -390,11 +359,11 @@ const DiscussionList: React.FC = () => {
             "https://res.cloudinary.com/dw6klz9kg/image/upload/v1749720617/filmsims/ydzkdnglpgfszilzh7ef.jpg", // London Greyscale
           "6851819a5a55d4b86b027cc2":
             "https://res.cloudinary.com/dw6klz9kg/image/upload/v1750172052/filmsims/ebabqnftlpjwtl6yzbya.jpg", // Golden Hour Glow
+          // Add newer film sims here as they are created
         };
 
         const fallbackUrl = knownFilmSimImages[linkedTo.filmSim.id];
         if (fallbackUrl) {
-          console.log("Using fallback filmSim image URL:", fallbackUrl);
           return fallbackUrl;
         }
       }
@@ -402,7 +371,6 @@ const DiscussionList: React.FC = () => {
       console.error("Error getting thumbnail URL:", error);
     }
 
-    console.log("Returning placeholder - no valid image URL found");
     return "/placeholder.png";
   };
 
@@ -495,56 +463,7 @@ const DiscussionList: React.FC = () => {
 
   // Debug logging for discussions data
   React.useEffect(() => {
-    console.log("=== DISCUSSION DATA DEBUG ===");
-    console.log("Raw data from GraphQL:", data);
-    console.log("Loading state:", loading);
-    console.log("Error state:", error);
-
-    if (data?.getDiscussions) {
-      console.log("getDiscussions response:", data.getDiscussions);
-      console.log(
-        "Total discussions:",
-        data.getDiscussions.discussions?.length || 0
-      );
-
-      if (data.getDiscussions.discussions) {
-        data.getDiscussions.discussions.forEach(
-          (discussion: any, index: number) => {
-            console.log(`=== Discussion ${index + 1} ===`);
-            console.log("Discussion ID:", discussion.id);
-            console.log("Discussion title:", discussion.title);
-            console.log("LinkedTo object:", discussion.linkedTo);
-            console.log("LinkedTo type:", discussion.linkedTo?.type);
-            console.log("LinkedTo refId:", discussion.linkedTo?.refId);
-            console.log("Preset data:", discussion.linkedTo?.preset);
-            console.log("FilmSim data:", discussion.linkedTo?.filmSim);
-            console.log("Has preset:", !!discussion.linkedTo?.preset);
-            console.log("Has filmSim:", !!discussion.linkedTo?.filmSim);
-
-            if (discussion.linkedTo?.preset) {
-              console.log("Preset details:", {
-                id: discussion.linkedTo.preset.id,
-                title: discussion.linkedTo.preset.title,
-                slug: discussion.linkedTo.preset.slug,
-                afterImage: discussion.linkedTo.preset.afterImage,
-              });
-            }
-
-            if (discussion.linkedTo?.filmSim) {
-              console.log("FilmSim details:", {
-                id: discussion.linkedTo.filmSim.id,
-                name: discussion.linkedTo.filmSim.name,
-                slug: discussion.linkedTo.filmSim.slug,
-                sampleImages: discussion.linkedTo.filmSim.sampleImages,
-              });
-            }
-          }
-        );
-      }
-    } else {
-      console.log("No discussions data available");
-    }
-    console.log("=== END DISCUSSION DATA DEBUG ===");
+    // Debug logging removed for production
   }, [data, loading, error]);
 
   if (loading) {
@@ -755,22 +674,10 @@ const DiscussionList: React.FC = () => {
                         );
                         const itemTitle = getItemTitle(discussion.linkedTo);
 
-                        console.log(
-                          `Rendering thumbnail for discussion "${discussion.title}":`,
-                          {
-                            thumbnailUrl,
-                            itemTitle,
-                            linkedToType: discussion.linkedTo.type,
-                            hasPreset: !!discussion.linkedTo.preset,
-                            hasFilmSim: !!discussion.linkedTo.filmSim,
-                          }
-                        );
-
                         if (
                           thumbnailUrl &&
                           thumbnailUrl !== "/placeholder.png"
                         ) {
-                          console.log("Rendering actual image:", thumbnailUrl);
                           return (
                             <img
                               src={thumbnailUrl}
@@ -783,7 +690,6 @@ const DiscussionList: React.FC = () => {
                             />
                           );
                         } else {
-                          console.log("Rendering placeholder");
                           // Show a placeholder with the content type
                           return (
                             <Box
