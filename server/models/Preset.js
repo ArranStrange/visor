@@ -33,6 +33,10 @@ const presetSchema = new Schema(
     cameraProfileDigest: String,
     profileName: String,
     lookTableName: String,
+    version: String,
+    processVersion: String,
+    cameraProfile: String,
+    whiteBalance: String,
 
     settings: {
       // Light settings
@@ -134,6 +138,7 @@ const presetSchema = new Schema(
         color: { type: Number, default: 0 },
         colorDetail: { type: Number, default: 0 },
         colorSmoothness: { type: Number, default: 0 },
+        smoothness: { type: Number, default: 0 },
       },
     },
 
@@ -149,6 +154,7 @@ const presetSchema = new Schema(
       highlightSat: { type: Number, default: 0 },
       highlightLuminance: { type: Number, default: 0 },
       blending: { type: Number, default: 0 },
+      balance: { type: Number, default: 0 },
       globalHue: { type: Number, default: 0 },
       globalSat: { type: Number, default: 0 },
       perceptual: { type: Boolean, default: false },

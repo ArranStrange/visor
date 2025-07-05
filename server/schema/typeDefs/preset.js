@@ -67,6 +67,7 @@ const typeDefs = gql`
     color: Float
     colorDetail: Float
     colorSmoothness: Float
+    smoothness: Float
   }
 
   type ColorGrading {
@@ -80,6 +81,7 @@ const typeDefs = gql`
     highlightSat: Float
     highlightLuminance: Float
     blending: Float
+    balance: Float
     globalHue: Float
     globalSat: Float
     perceptual: Boolean
@@ -174,6 +176,10 @@ const typeDefs = gql`
     cameraProfileDigest: String
     profileName: String
     lookTableName: String
+    version: String
+    processVersion: String
+    cameraProfile: String
+    whiteBalance: String
 
     # Color Grading
     colorGrading: ColorGrading
@@ -284,6 +290,7 @@ const typeDefs = gql`
     color: Float
     colorDetail: Float
     colorSmoothness: Float
+    smoothness: Float
   }
 
   input ColorGradingInput {
@@ -297,6 +304,7 @@ const typeDefs = gql`
     highlightSat: Float
     highlightLuminance: Float
     blending: Float
+    balance: Float
     globalHue: Float
     globalSat: Float
     perceptual: Boolean
@@ -380,6 +388,10 @@ const typeDefs = gql`
     cameraProfileDigest: String
     profileName: String
     lookTableName: String
+    version: String
+    processVersion: String
+    cameraProfile: String
+    whiteBalance: String
     colorGrading: ColorGradingInput
     lensCorrections: LensCorrectionsInput
     optics: OpticsSettingsInput
@@ -408,6 +420,10 @@ const typeDefs = gql`
     cameraProfileDigest: String
     profileName: String
     lookTableName: String
+    version: String
+    processVersion: String
+    cameraProfile: String
+    whiteBalance: String
     colorGrading: ColorGradingInput
     lensCorrections: LensCorrectionsInput
     optics: OpticsSettingsInput
@@ -436,6 +452,10 @@ const typeDefs = gql`
     cameraProfileDigest: String
     profileName: String
     lookTableName: String
+    version: String
+    processVersion: String
+    cameraProfile: String
+    whiteBalance: String
     colorGrading: ColorGradingInput
     lensCorrections: LensCorrectionsInput
     optics: OpticsSettingsInput
@@ -472,6 +492,10 @@ const typeDefs = gql`
       cameraProfileDigest: String
       profileName: String
       lookTableName: String
+      version: String
+      processVersion: String
+      cameraProfile: String
+      whiteBalance: String
       colorGrading: ColorGradingInput
       lensCorrections: LensCorrectionsInput
       optics: OpticsSettingsInput

@@ -92,11 +92,15 @@ export interface ParsedSettings {
   colorGrading?: {
     shadowHue: number;
     shadowSat: number;
+    shadowLuminance: number;
     midtoneHue: number;
     midtoneSat: number;
+    midtoneLuminance: number;
     highlightHue: number;
     highlightSat: number;
+    highlightLuminance: number;
     blending: number;
+    balance: number;
     globalHue: number;
     globalSat: number;
     perceptual: boolean;
@@ -114,6 +118,51 @@ export interface ParsedSettings {
     colorNoiseReduction: number;
     colorNoiseReductionDetail: number;
     colorNoiseReductionSmoothness: number;
+  };
+
+  // Settings (mapped to match PresetDetails structure)
+  settings?: {
+    exposure?: number;
+    contrast?: number;
+    highlights?: number;
+    shadows?: number;
+    whites?: number;
+    blacks?: number;
+    clarity?: number;
+    dehaze?: number;
+    texture?: number;
+    vibrance?: number;
+    saturation?: number;
+    temp?: number;
+    tint?: number;
+    sharpening?: number;
+    sharpenRadius?: number;
+    sharpenDetail?: number;
+    sharpenEdgeMasking?: number;
+    luminanceSmoothing?: number;
+    luminanceDetail?: number;
+    luminanceContrast?: number;
+    noiseReduction?: {
+      luminance?: number;
+      detail?: number;
+      color?: number;
+      smoothness?: number;
+    };
+    grain?: {
+      amount?: number;
+      size?: number;
+      roughness?: number;
+    };
+    colorAdjustments?: {
+      red?: { hue: number; saturation: number; luminance: number };
+      orange?: { hue: number; saturation: number; luminance: number };
+      yellow?: { hue: number; saturation: number; luminance: number };
+      green?: { hue: number; saturation: number; luminance: number };
+      aqua?: { hue: number; saturation: number; luminance: number };
+      blue?: { hue: number; saturation: number; luminance: number };
+      purple?: { hue: number; saturation: number; luminance: number };
+      magenta?: { hue: number; saturation: number; luminance: number };
+    };
   };
 
   // Lens Corrections
@@ -231,6 +280,12 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           return description.getAttribute(`crs:${name}`) === "True";
         };
 
+        // Helper function to convert XMP value to database format (multiply by 100)
+        const convertToDatabaseValue = (value: string): number => {
+          const num = parseFloat(value);
+          return isNaN(num) ? 0 : Math.round(num * 100);
+        };
+
         // Camera & Profile Metadata
         settings.version = getAttr("Version");
         settings.processVersion = getAttr("ProcessVersion");
@@ -241,19 +296,19 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         settings.whiteBalance = getAttr("WhiteBalance");
 
         // Basic Adjustments
-        settings.exposure = parseFloat(getAttr("Exposure2012"));
-        settings.contrast = parseFloat(getAttr("Contrast2012"));
-        settings.highlights = parseFloat(getAttr("Highlights2012"));
-        settings.shadows = parseFloat(getAttr("Shadows2012"));
-        settings.whites = parseFloat(getAttr("Whites2012"));
-        settings.blacks = parseFloat(getAttr("Blacks2012"));
-        settings.clarity = parseFloat(getAttr("Clarity2012"));
-        settings.dehaze = parseFloat(getAttr("Dehaze"));
-        settings.texture = parseFloat(getAttr("Texture"));
-        settings.vibrance = parseFloat(getAttr("Vibrance"));
-        settings.saturation = parseFloat(getAttr("Saturation"));
-        settings.temp = parseFloat(getAttr("Temperature"));
-        settings.tint = parseFloat(getAttr("Tint"));
+        settings.exposure = convertToDatabaseValue(getAttr("Exposure2012"));
+        settings.contrast = convertToDatabaseValue(getAttr("Contrast2012"));
+        settings.highlights = convertToDatabaseValue(getAttr("Highlights2012"));
+        settings.shadows = convertToDatabaseValue(getAttr("Shadows2012"));
+        settings.whites = convertToDatabaseValue(getAttr("Whites2012"));
+        settings.blacks = convertToDatabaseValue(getAttr("Blacks2012"));
+        settings.clarity = convertToDatabaseValue(getAttr("Clarity2012"));
+        settings.dehaze = convertToDatabaseValue(getAttr("Dehaze"));
+        settings.texture = convertToDatabaseValue(getAttr("Texture"));
+        settings.vibrance = convertToDatabaseValue(getAttr("Vibrance"));
+        settings.saturation = convertToDatabaseValue(getAttr("Saturation"));
+        settings.temp = convertToDatabaseValue(getAttr("Temperature"));
+        settings.tint = convertToDatabaseValue(getAttr("Tint"));
 
         // Tone Curve
         settings.toneCurveName = getAttr("ToneCurveName2012");
@@ -269,88 +324,182 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         // Color Adjustments – HSL/Color
         settings.colorAdjustments = {
           red: {
-            hue: parseFloat(getAttr("HueAdjustmentRed")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentRed")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentRed")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentRed")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentRed")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentRed")
+            ),
           },
           orange: {
-            hue: parseFloat(getAttr("HueAdjustmentOrange")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentOrange")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentOrange")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentOrange")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentOrange")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentOrange")
+            ),
           },
           yellow: {
-            hue: parseFloat(getAttr("HueAdjustmentYellow")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentYellow")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentYellow")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentYellow")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentYellow")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentYellow")
+            ),
           },
           green: {
-            hue: parseFloat(getAttr("HueAdjustmentGreen")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentGreen")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentGreen")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentGreen")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentGreen")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentGreen")
+            ),
           },
           aqua: {
-            hue: parseFloat(getAttr("HueAdjustmentAqua")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentAqua")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentAqua")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentAqua")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentAqua")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentAqua")
+            ),
           },
           blue: {
-            hue: parseFloat(getAttr("HueAdjustmentBlue")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentBlue")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentBlue")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentBlue")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentBlue")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentBlue")
+            ),
           },
           purple: {
-            hue: parseFloat(getAttr("HueAdjustmentPurple")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentPurple")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentPurple")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentPurple")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentPurple")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentPurple")
+            ),
           },
           magenta: {
-            hue: parseFloat(getAttr("HueAdjustmentMagenta")),
-            saturation: parseFloat(getAttr("SaturationAdjustmentMagenta")),
-            luminance: parseFloat(getAttr("LuminanceAdjustmentMagenta")),
+            hue: convertToDatabaseValue(getAttr("HueAdjustmentMagenta")),
+            saturation: convertToDatabaseValue(
+              getAttr("SaturationAdjustmentMagenta")
+            ),
+            luminance: convertToDatabaseValue(
+              getAttr("LuminanceAdjustmentMagenta")
+            ),
           },
         };
 
         // Split Toning (legacy)
         settings.splitToning = {
-          shadowHue: parseFloat(getAttr("SplitToningShadowHue")),
-          shadowSaturation: parseFloat(getAttr("SplitToningShadowSaturation")),
-          highlightHue: parseFloat(getAttr("SplitToningHighlightHue")),
-          highlightSaturation: parseFloat(
+          shadowHue: convertToDatabaseValue(getAttr("SplitToningShadowHue")),
+          shadowSaturation: convertToDatabaseValue(
+            getAttr("SplitToningShadowSaturation")
+          ),
+          highlightHue: convertToDatabaseValue(
+            getAttr("SplitToningHighlightHue")
+          ),
+          highlightSaturation: convertToDatabaseValue(
             getAttr("SplitToningHighlightSaturation")
           ),
-          balance: parseFloat(getAttr("SplitToningBalance")),
+          balance: convertToDatabaseValue(getAttr("SplitToningBalance")),
         };
 
         // Color Grading (new format)
         settings.colorGrading = {
-          shadowHue: parseFloat(getAttr("ColorGradeShadowHue")),
-          shadowSat: parseFloat(getAttr("ColorGradeShadowSat")),
-          midtoneHue: parseFloat(getAttr("ColorGradeMidtoneHue")),
-          midtoneSat: parseFloat(getAttr("ColorGradeMidtoneSat")),
-          highlightHue: parseFloat(getAttr("ColorGradeHighlightHue")),
-          highlightSat: parseFloat(getAttr("ColorGradeHighlightSat")),
-          blending: parseFloat(getAttr("ColorGradeBlending")),
-          globalHue: parseFloat(getAttr("ColorGradeGlobalHue")),
-          globalSat: parseFloat(getAttr("ColorGradeGlobalSat")),
+          shadowHue: convertToDatabaseValue(getAttr("ColorGradeShadowHue")),
+          shadowSat: convertToDatabaseValue(getAttr("ColorGradeShadowSat")),
+          shadowLuminance: convertToDatabaseValue(
+            getAttr("ColorGradeShadowLuminance") || "0"
+          ),
+          midtoneHue: convertToDatabaseValue(getAttr("ColorGradeMidtoneHue")),
+          midtoneSat: convertToDatabaseValue(getAttr("ColorGradeMidtoneSat")),
+          midtoneLuminance: convertToDatabaseValue(
+            getAttr("ColorGradeMidtoneLuminance") || "0"
+          ),
+          highlightHue: convertToDatabaseValue(
+            getAttr("ColorGradeHighlightHue")
+          ),
+          highlightSat: convertToDatabaseValue(
+            getAttr("ColorGradeHighlightSat")
+          ),
+          highlightLuminance: convertToDatabaseValue(
+            getAttr("ColorGradeHighlightLuminance") || "0"
+          ),
+          blending: convertToDatabaseValue(getAttr("ColorGradeBlending")),
+          balance: convertToDatabaseValue(getAttr("ColorGradeBalance") || "0"),
+          globalHue: convertToDatabaseValue(getAttr("ColorGradeGlobalHue")),
+          globalSat: convertToDatabaseValue(getAttr("ColorGradeGlobalSat")),
           perceptual: getBoolAttr("ColorGradePerceptual"),
         };
 
         // Detail (Sharpening & Noise)
         settings.detail = {
-          sharpness: parseFloat(getAttr("Sharpness")),
-          sharpenRadius: parseFloat(getAttr("SharpenRadius")),
-          sharpenDetail: parseFloat(getAttr("SharpenDetail")),
-          sharpenEdgeMasking: parseFloat(getAttr("SharpenEdgeMasking")),
-          luminanceSmoothing: parseFloat(getAttr("LuminanceSmoothing")),
-          luminanceDetail: parseFloat(getAttr("LuminanceDetail")),
-          luminanceContrast: parseFloat(getAttr("LuminanceContrast")),
-          colorNoiseReduction: parseFloat(getAttr("ColorNoiseReduction")),
-          colorNoiseReductionDetail: parseFloat(
+          sharpness: convertToDatabaseValue(getAttr("Sharpness")),
+          sharpenRadius: convertToDatabaseValue(getAttr("SharpenRadius")),
+          sharpenDetail: convertToDatabaseValue(getAttr("SharpenDetail")),
+          sharpenEdgeMasking: convertToDatabaseValue(
+            getAttr("SharpenEdgeMasking")
+          ),
+          luminanceSmoothing: convertToDatabaseValue(
+            getAttr("LuminanceSmoothing")
+          ),
+          luminanceDetail: convertToDatabaseValue(getAttr("LuminanceDetail")),
+          luminanceContrast: convertToDatabaseValue(
+            getAttr("LuminanceContrast")
+          ),
+          colorNoiseReduction: convertToDatabaseValue(
+            getAttr("ColorNoiseReduction")
+          ),
+          colorNoiseReductionDetail: convertToDatabaseValue(
             getAttr("ColorNoiseReductionDetail")
           ),
-          colorNoiseReductionSmoothness: parseFloat(
+          colorNoiseReductionSmoothness: convertToDatabaseValue(
             getAttr("ColorNoiseReductionSmoothness")
           ),
+        };
+
+        // Create settings object that matches PresetDetails structure
+        settings.settings = {
+          exposure: settings.exposure,
+          contrast: settings.contrast,
+          highlights: settings.highlights,
+          shadows: settings.shadows,
+          whites: settings.whites,
+          blacks: settings.blacks,
+          clarity: settings.clarity,
+          dehaze: settings.dehaze,
+          texture: settings.texture,
+          vibrance: settings.vibrance,
+          saturation: settings.saturation,
+          temp: settings.temp,
+          tint: settings.tint,
+          sharpening: settings.detail?.sharpness,
+          sharpenRadius: settings.detail?.sharpenRadius,
+          sharpenDetail: settings.detail?.sharpenDetail,
+          sharpenEdgeMasking: settings.detail?.sharpenEdgeMasking,
+          luminanceSmoothing: settings.detail?.luminanceSmoothing,
+          luminanceDetail: settings.detail?.luminanceDetail,
+          luminanceContrast: settings.detail?.luminanceContrast,
+          noiseReduction: {
+            luminance: settings.detail?.luminanceSmoothing,
+            detail: settings.detail?.luminanceDetail,
+            color: settings.detail?.colorNoiseReduction,
+            smoothness: settings.detail?.colorNoiseReductionSmoothness,
+          },
+          grain: {
+            amount: settings.effects?.grainAmount,
+            size: settings.effects?.grainSize,
+            roughness: settings.effects?.grainFrequency,
+          },
+          colorAdjustments: settings.colorAdjustments,
         };
 
         // Lens Corrections
@@ -359,7 +508,7 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
             "EnableLensProfileCorrections"
           ),
           lensProfileName: getAttr("LensProfileName"),
-          lensManualDistortionAmount: parseFloat(
+          lensManualDistortionAmount: convertToDatabaseValue(
             getAttr("LensManualDistortionAmount")
           ),
           perspectiveUpright: getAttr("PerspectiveUpright"),
@@ -369,59 +518,69 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         // Optics – Chromatic Aberration & Vignette
         settings.optics = {
           removeChromaticAberration: getBoolAttr("RemoveChromaticAberration"),
-          vignetteAmount: parseFloat(getAttr("VignetteAmount")),
-          vignetteMidpoint: parseFloat(getAttr("VignetteMidpoint")),
+          vignetteAmount: convertToDatabaseValue(getAttr("VignetteAmount")),
+          vignetteMidpoint: convertToDatabaseValue(getAttr("VignetteMidpoint")),
         };
 
         // Transform (Geometry)
         settings.transform = {
-          perspectiveVertical: parseFloat(getAttr("PerspectiveVertical")),
-          perspectiveHorizontal: parseFloat(getAttr("PerspectiveHorizontal")),
-          perspectiveRotate: parseFloat(getAttr("PerspectiveRotate")),
-          perspectiveScale: parseFloat(getAttr("PerspectiveScale")),
-          perspectiveAspect: parseFloat(getAttr("PerspectiveAspect")),
+          perspectiveVertical: convertToDatabaseValue(
+            getAttr("PerspectiveVertical")
+          ),
+          perspectiveHorizontal: convertToDatabaseValue(
+            getAttr("PerspectiveHorizontal")
+          ),
+          perspectiveRotate: convertToDatabaseValue(
+            getAttr("PerspectiveRotate")
+          ),
+          perspectiveScale: convertToDatabaseValue(getAttr("PerspectiveScale")),
+          perspectiveAspect: convertToDatabaseValue(
+            getAttr("PerspectiveAspect")
+          ),
           autoPerspective: getBoolAttr("AutoPerspective"),
         };
 
         // Effects
         settings.effects = {
-          postCropVignetteAmount: parseFloat(getAttr("PostCropVignetteAmount")),
-          postCropVignetteMidpoint: parseFloat(
+          postCropVignetteAmount: convertToDatabaseValue(
+            getAttr("PostCropVignetteAmount")
+          ),
+          postCropVignetteMidpoint: convertToDatabaseValue(
             getAttr("PostCropVignetteMidpoint")
           ),
-          postCropVignetteFeather: parseFloat(
+          postCropVignetteFeather: convertToDatabaseValue(
             getAttr("PostCropVignetteFeather")
           ),
-          postCropVignetteRoundness: parseFloat(
+          postCropVignetteRoundness: convertToDatabaseValue(
             getAttr("PostCropVignetteRoundness")
           ),
           postCropVignetteStyle: getAttr("PostCropVignetteStyle"),
-          grainAmount: parseFloat(getAttr("GrainAmount")),
-          grainSize: parseFloat(getAttr("GrainSize")),
-          grainFrequency: parseFloat(getAttr("GrainFrequency")),
+          grainAmount: convertToDatabaseValue(getAttr("GrainAmount")),
+          grainSize: convertToDatabaseValue(getAttr("GrainSize")),
+          grainFrequency: convertToDatabaseValue(getAttr("GrainFrequency")),
         };
 
         // Calibration
         settings.calibration = {
-          cameraCalibrationBluePrimaryHue: parseFloat(
+          cameraCalibrationBluePrimaryHue: convertToDatabaseValue(
             getAttr("CameraCalibrationBluePrimaryHue")
           ),
-          cameraCalibrationBluePrimarySaturation: parseFloat(
+          cameraCalibrationBluePrimarySaturation: convertToDatabaseValue(
             getAttr("CameraCalibrationBluePrimarySaturation")
           ),
-          cameraCalibrationGreenPrimaryHue: parseFloat(
+          cameraCalibrationGreenPrimaryHue: convertToDatabaseValue(
             getAttr("CameraCalibrationGreenPrimaryHue")
           ),
-          cameraCalibrationGreenPrimarySaturation: parseFloat(
+          cameraCalibrationGreenPrimarySaturation: convertToDatabaseValue(
             getAttr("CameraCalibrationGreenPrimarySaturation")
           ),
-          cameraCalibrationRedPrimaryHue: parseFloat(
+          cameraCalibrationRedPrimaryHue: convertToDatabaseValue(
             getAttr("CameraCalibrationRedPrimaryHue")
           ),
-          cameraCalibrationRedPrimarySaturation: parseFloat(
+          cameraCalibrationRedPrimarySaturation: convertToDatabaseValue(
             getAttr("CameraCalibrationRedPrimarySaturation")
           ),
-          cameraCalibrationShadowTint: parseFloat(
+          cameraCalibrationShadowTint: convertToDatabaseValue(
             getAttr("CameraCalibrationShadowTint")
           ),
           cameraCalibrationVersion: getAttr("CameraCalibrationVersion"),
@@ -429,18 +588,18 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
 
         // Cropping & Orientation
         settings.crop = {
-          cropTop: parseFloat(getAttr("CropTop")),
-          cropLeft: parseFloat(getAttr("CropLeft")),
-          cropBottom: parseFloat(getAttr("CropBottom")),
-          cropRight: parseFloat(getAttr("CropRight")),
-          cropAngle: parseFloat(getAttr("CropAngle")),
+          cropTop: convertToDatabaseValue(getAttr("CropTop")),
+          cropLeft: convertToDatabaseValue(getAttr("CropLeft")),
+          cropBottom: convertToDatabaseValue(getAttr("CropBottom")),
+          cropRight: convertToDatabaseValue(getAttr("CropRight")),
+          cropAngle: convertToDatabaseValue(getAttr("CropAngle")),
           cropConstrainToWarp: getBoolAttr("CropConstrainToWarp"),
         };
         settings.orientation = getAttr("Orientation");
 
         // Metadata
         settings.metadata = {
-          rating: parseFloat(getAttr("Rating")),
+          rating: convertToDatabaseValue(getAttr("Rating")),
           label: getAttr("Label"),
           title: getAttr("Title"),
           creator: getAttr("Creator"),

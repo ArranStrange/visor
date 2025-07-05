@@ -19,118 +19,230 @@ const formatToneCurvePoints = (arr) =>
 const cleanSettings = (settings) => {
   if (!settings) return {};
   console.log("uploadPreset called");
+
+  // Remove colorGrading from settings if it exists (it should be sent as separate field)
+  const { colorGrading, ...settingsWithoutColorGrading } = settings;
+
   return {
-    ...settings,
-    grain: settings.grain
+    // Basic adjustments
+    exposure: Number(settingsWithoutColorGrading.exposure) || 0,
+    contrast: Number(settingsWithoutColorGrading.contrast) || 0,
+    highlights: Number(settingsWithoutColorGrading.highlights) || 0,
+    shadows: Number(settingsWithoutColorGrading.shadows) || 0,
+    whites: Number(settingsWithoutColorGrading.whites) || 0,
+    blacks: Number(settingsWithoutColorGrading.blacks) || 0,
+    texture: Number(settingsWithoutColorGrading.texture) || 0,
+    dehaze: Number(settingsWithoutColorGrading.dehaze) || 0,
+    clarity: Number(settingsWithoutColorGrading.clarity) || 0,
+    vibrance: Number(settingsWithoutColorGrading.vibrance) || 0,
+    saturation: Number(settingsWithoutColorGrading.saturation) || 0,
+    temp: Number(settingsWithoutColorGrading.temp) || 0,
+    tint: Number(settingsWithoutColorGrading.tint) || 0,
+
+    // Detail settings
+    sharpening: Number(settingsWithoutColorGrading.sharpening) || 0,
+    sharpenRadius: Number(settingsWithoutColorGrading.sharpenRadius) || 0,
+    sharpenDetail: Number(settingsWithoutColorGrading.sharpenDetail) || 0,
+    sharpenEdgeMasking:
+      Number(settingsWithoutColorGrading.sharpenEdgeMasking) || 0,
+    luminanceSmoothing:
+      Number(settingsWithoutColorGrading.luminanceSmoothing) || 0,
+    luminanceDetail: Number(settingsWithoutColorGrading.luminanceDetail) || 0,
+    luminanceContrast:
+      Number(settingsWithoutColorGrading.luminanceContrast) || 0,
+
+    grain: settingsWithoutColorGrading.grain
       ? {
-          amount: Number(settings.grain.amount) || 0,
-          size: Number(settings.grain.size) || 0,
-          frequency: Number(settings.grain.frequency) || 0,
-          roughness: Number(settings.grain.roughness) || 0,
+          amount: Number(settingsWithoutColorGrading.grain.amount) || 0,
+          size: Number(settingsWithoutColorGrading.grain.size) || 0,
+          frequency: Number(settingsWithoutColorGrading.grain.frequency) || 0,
+          roughness: Number(settingsWithoutColorGrading.grain.roughness) || 0,
         }
       : undefined,
-    vignette: settings.vignette
+    vignette: settingsWithoutColorGrading.vignette
       ? {
-          amount: Number(settings.vignette.amount) || 0,
-          midpoint: Number(settings.vignette.midpoint) || 0,
-          feather: Number(settings.vignette.feather) || 0,
-          roundness: Number(settings.vignette.roundness) || 0,
-          style: settings.vignette.style || "Highlight Priority",
+          amount: Number(settingsWithoutColorGrading.vignette.amount) || 0,
+          midpoint: Number(settingsWithoutColorGrading.vignette.midpoint) || 0,
+          feather: Number(settingsWithoutColorGrading.vignette.feather) || 0,
+          roundness:
+            Number(settingsWithoutColorGrading.vignette.roundness) || 0,
+          style:
+            settingsWithoutColorGrading.vignette.style || "Highlight Priority",
         }
       : undefined,
-    colorAdjustments: settings.colorAdjustments
+    colorAdjustments: settingsWithoutColorGrading.colorAdjustments
       ? {
-          ...settings.colorAdjustments,
-          red: settings.colorAdjustments.red
+          ...settingsWithoutColorGrading.colorAdjustments,
+          red: settingsWithoutColorGrading.colorAdjustments.red
             ? {
-                hue: Number(settings.colorAdjustments.red.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.red.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.red.saturation) || 0,
-                luminance: Number(settings.colorAdjustments.red.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.red.saturation
+                  ) || 0,
+                luminance:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.red.luminance
+                  ) || 0,
               }
             : undefined,
-          orange: settings.colorAdjustments.orange
+          orange: settingsWithoutColorGrading.colorAdjustments.orange
             ? {
-                hue: Number(settings.colorAdjustments.orange.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.orange.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.orange.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.orange
+                      .saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.orange.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.orange
+                      .luminance
+                  ) || 0,
               }
             : undefined,
-          yellow: settings.colorAdjustments.yellow
+          yellow: settingsWithoutColorGrading.colorAdjustments.yellow
             ? {
-                hue: Number(settings.colorAdjustments.yellow.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.yellow.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.yellow.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.yellow
+                      .saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.yellow.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.yellow
+                      .luminance
+                  ) || 0,
               }
             : undefined,
-          green: settings.colorAdjustments.green
+          green: settingsWithoutColorGrading.colorAdjustments.green
             ? {
-                hue: Number(settings.colorAdjustments.green.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.green.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.green.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.green
+                      .saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.green.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.green.luminance
+                  ) || 0,
               }
             : undefined,
-          aqua: settings.colorAdjustments.aqua
+          aqua: settingsWithoutColorGrading.colorAdjustments.aqua
             ? {
-                hue: Number(settings.colorAdjustments.aqua.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.aqua.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.aqua.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.aqua.saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.aqua.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.aqua.luminance
+                  ) || 0,
               }
             : undefined,
-          blue: settings.colorAdjustments.blue
+          blue: settingsWithoutColorGrading.colorAdjustments.blue
             ? {
-                hue: Number(settings.colorAdjustments.blue.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.blue.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.blue.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.blue.saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.blue.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.blue.luminance
+                  ) || 0,
               }
             : undefined,
-          purple: settings.colorAdjustments.purple
+          purple: settingsWithoutColorGrading.colorAdjustments.purple
             ? {
-                hue: Number(settings.colorAdjustments.purple.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.purple.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.purple.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.purple
+                      .saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.purple.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.purple
+                      .luminance
+                  ) || 0,
               }
             : undefined,
-          magenta: settings.colorAdjustments.magenta
+          magenta: settingsWithoutColorGrading.colorAdjustments.magenta
             ? {
-                hue: Number(settings.colorAdjustments.magenta.hue) || 0,
+                hue:
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.magenta.hue
+                  ) || 0,
                 saturation:
-                  Number(settings.colorAdjustments.magenta.saturation) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.magenta
+                      .saturation
+                  ) || 0,
                 luminance:
-                  Number(settings.colorAdjustments.magenta.luminance) || 0,
+                  Number(
+                    settingsWithoutColorGrading.colorAdjustments.magenta
+                      .luminance
+                  ) || 0,
               }
             : undefined,
         }
       : undefined,
-    splitToning: settings.splitToning
+    splitToning: settingsWithoutColorGrading.splitToning
       ? {
-          shadowHue: Number(settings.splitToning.shadowHue) || 0,
-          shadowSaturation: Number(settings.splitToning.shadowSaturation) || 0,
-          highlightHue: Number(settings.splitToning.highlightHue) || 0,
+          shadowHue:
+            Number(settingsWithoutColorGrading.splitToning.shadowHue) || 0,
+          shadowSaturation:
+            Number(settingsWithoutColorGrading.splitToning.shadowSaturation) ||
+            0,
+          highlightHue:
+            Number(settingsWithoutColorGrading.splitToning.highlightHue) || 0,
           highlightSaturation:
-            Number(settings.splitToning.highlightSaturation) || 0,
-          balance: Number(settings.splitToning.balance) || 0,
+            Number(
+              settingsWithoutColorGrading.splitToning.highlightSaturation
+            ) || 0,
+          balance: Number(settingsWithoutColorGrading.splitToning.balance) || 0,
         }
       : undefined,
-    noiseReduction: settings.noiseReduction
+    noiseReduction: settingsWithoutColorGrading.noiseReduction
       ? {
-          luminance: Number(settings.noiseReduction.luminance) || 0,
-          detail: Number(settings.noiseReduction.detail) || 0,
-          color: Number(settings.noiseReduction.color) || 0,
-          colorDetail: Number(settings.noiseReduction.colorDetail) || 0,
-          colorSmoothness: Number(settings.noiseReduction.colorSmoothness) || 0,
+          luminance:
+            Number(settingsWithoutColorGrading.noiseReduction.luminance) || 0,
+          detail:
+            Number(settingsWithoutColorGrading.noiseReduction.detail) || 0,
+          color: Number(settingsWithoutColorGrading.noiseReduction.color) || 0,
+          colorDetail:
+            Number(settingsWithoutColorGrading.noiseReduction.colorDetail) || 0,
+          colorSmoothness:
+            Number(
+              settingsWithoutColorGrading.noiseReduction.colorSmoothness
+            ) || 0,
+          smoothness:
+            Number(settingsWithoutColorGrading.noiseReduction.smoothness) || 0,
         }
       : undefined,
   };
@@ -162,6 +274,10 @@ const cleanComprehensiveSettings = (data) => {
     cameraProfileDigest: data.cameraProfileDigest || undefined,
     profileName: data.profileName || undefined,
     lookTableName: data.lookTableName || undefined,
+    version: data.version || undefined,
+    processVersion: data.processVersion || undefined,
+    cameraProfile: data.cameraProfile || undefined,
+    whiteBalance: data.whiteBalance || undefined,
 
     // Color Grading
     colorGrading: data.colorGrading
@@ -176,6 +292,7 @@ const cleanComprehensiveSettings = (data) => {
           highlightSat: Number(data.colorGrading.highlightSat) || 0,
           highlightLuminance: Number(data.colorGrading.highlightLuminance) || 0,
           blending: Number(data.colorGrading.blending) || 0,
+          balance: Number(data.colorGrading.balance) || 0,
           globalHue: Number(data.colorGrading.globalHue) || 0,
           globalSat: Number(data.colorGrading.globalSat) || 0,
           perceptual: Boolean(data.colorGrading.perceptual),
@@ -373,35 +490,7 @@ const presetResolvers = {
         const presetData = {
           ...input,
           creator: user.id,
-          settings: {
-            exposure: parseFloat(settings.exposure) || 0,
-            contrast: parseFloat(settings.contrast) || 0,
-            highlights: parseFloat(settings.highlights) || 0,
-            shadows: parseFloat(settings.shadows) || 0,
-            whites: parseFloat(settings.whites) || 0,
-            blacks: parseFloat(settings.blacks) || 0,
-            temp: parseFloat(settings.temp) || 0,
-            tint: parseFloat(settings.tint) || 0,
-            vibrance: parseFloat(settings.vibrance) || 0,
-            saturation: parseFloat(settings.saturation) || 0,
-            clarity: parseFloat(settings.clarity) || 0,
-            dehaze: parseFloat(settings.dehaze) || 0,
-            grain: settings.grain
-              ? {
-                  amount: parseFloat(settings.grain.amount) || 0,
-                  size: parseFloat(settings.grain.size) || 0,
-                  roughness: parseFloat(settings.grain.roughness) || 0,
-                }
-              : { amount: 0, size: 0, roughness: 0 },
-            sharpening: parseFloat(settings.sharpening) || 0,
-            noiseReduction: settings.noiseReduction
-              ? {
-                  luminance: parseFloat(settings.noiseReduction.luminance) || 0,
-                  detail: parseFloat(settings.noiseReduction.detail) || 0,
-                  color: parseFloat(settings.noiseReduction.color) || 0,
-                }
-              : { luminance: 0, detail: 0, color: 0 },
-          },
+          settings: cleanSettings(settings),
 
           toneCurve: input.toneCurve
             ? {
@@ -413,7 +502,7 @@ const presetResolvers = {
             : undefined,
         };
         console.log("Received toneCurve input:", input.toneCurve);
-        console.log("Processed toneCurve:", toneCurve);
+        console.log("Processed toneCurve:", presetData.toneCurve);
         const preset = await Preset.create(presetData);
         return preset;
         // Note: uploadPreset is the preferred mutation for file uploads and full preset creation from the frontend.
@@ -455,7 +544,11 @@ const presetResolvers = {
         cameraProfileDigest,
         profileName,
         lookTableName,
-        colorGrading,
+        version,
+        processVersion,
+        cameraProfile,
+        whiteBalance,
+        colorGrading: colorGradingParam,
         lensCorrections,
         optics,
         transform,
@@ -511,12 +604,21 @@ const presetResolvers = {
           JSON.stringify(settings, null, 2)
         );
 
+        // Extract colorGrading from settings if it exists, otherwise use the separate parameter
+        const colorGradingFromSettings =
+          settings && settings.colorGrading ? settings.colorGrading : null;
+        const finalColorGrading = colorGradingFromSettings || colorGradingParam;
+
         // Clean comprehensive settings
         const comprehensiveSettings = cleanComprehensiveSettings({
           cameraProfileDigest,
           profileName,
           lookTableName,
-          colorGrading,
+          version,
+          processVersion,
+          cameraProfile,
+          whiteBalance,
+          colorGrading: finalColorGrading,
           lensCorrections,
           optics,
           transform,
