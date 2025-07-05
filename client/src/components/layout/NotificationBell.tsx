@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import {
   IconButton,
   Badge,
-  Menu,
-  MenuItem,
   Typography,
   Box,
   Divider,
@@ -11,6 +9,10 @@ import {
   CircularProgress,
   Alert,
   Avatar,
+  Drawer,
+  Slide,
+  Fade,
+  Backdrop,
 } from "@mui/material";
 import {
   Notifications as NotificationsIcon,
@@ -19,6 +21,7 @@ import {
   Reply as ReplyIcon,
   ThumbUp as LikeIcon,
   AlternateEmail as MentionIcon,
+  Close as CloseIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
@@ -29,14 +32,14 @@ const NotificationBell: React.FC = () => {
   const navigate = useNavigate();
   const { unreadCount, notifications, loading, markAsRead, markAllAsRead } =
     useNotifications();
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleOpen = () => {
+    setIsOpen(true);
   };
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setIsOpen(false);
   };
 
   const handleNotificationClick = async (notification: Notification) => {
@@ -59,7 +62,6 @@ const NotificationBell: React.FC = () => {
 
   const handleMarkAllAsRead = async () => {
     await markAllAsRead();
-    handleClose();
   };
 
   const getNotificationIcon = (type: NotificationType) => {
@@ -99,7 +101,7 @@ const NotificationBell: React.FC = () => {
   return (
     <>
       <IconButton
-        onClick={handleClick}
+        onClick={handleOpen}
         color="inherit"
         sx={{ position: "relative" }}
       >
@@ -113,45 +115,31 @@ const NotificationBell: React.FC = () => {
         </Badge>
       </IconButton>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
+      <Drawer
+        anchor="right"
+        open={isOpen}
         onClose={handleClose}
-        PaperProps={{
-          elevation: 8,
-          sx: {
+        sx={{
+          "& .MuiDrawer-paper": {
             width: "33.333%",
             minWidth: 350,
             maxWidth: 450,
-            height: "calc(100vh - 32px)",
-            maxHeight: "calc(100vh - 32px)",
-            overflow: "hidden",
+            height: "100vh",
+            boxShadow: "-4px 0 20px rgba(0, 0, 0, 0.15)",
+            border: "none",
             borderRadius: 0,
-            borderLeft: "1px solid",
-            borderColor: "divider",
-            position: "fixed",
-            top: 16,
-            right: 0,
-            transform: "none !important",
           },
         }}
-        transformOrigin={{ horizontal: "right", vertical: "top" }}
-        anchorOrigin={{ horizontal: "right", vertical: "top" }}
-        sx={{
-          "& .MuiPaper-root": {
-            left: "auto !important",
-            right: "0 !important",
-            top: "0 !important",
-            height: "100vh !important",
-            width: "33.333% !important",
-            minWidth: "350px !important",
-            maxWidth: "450px !important",
+        transitionDuration={300}
+        BackdropProps={{
+          sx: {
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
           },
         }}
       >
         <Box
           sx={{
-            height: "calc(100vh - 32px)",
+            height: "100vh",
             display: "flex",
             flexDirection: "column",
             bgcolor: "background.paper",
@@ -177,15 +165,20 @@ const NotificationBell: React.FC = () => {
               <Typography variant="h5" fontWeight="bold">
                 Notifications
               </Typography>
-              {unreadCount > 0 && (
-                <Button
-                  size="small"
-                  onClick={handleMarkAllAsRead}
-                  disabled={loading}
-                >
-                  Mark all read
-                </Button>
-              )}
+              <Box display="flex" alignItems="center" gap={1}>
+                {unreadCount > 0 && (
+                  <Button
+                    size="small"
+                    onClick={handleMarkAllAsRead}
+                    disabled={loading}
+                  >
+                    Mark all read
+                  </Button>
+                )}
+                <IconButton onClick={handleClose} size="small">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
             </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
               {unreadCount} unread • {notifications.length} total
@@ -215,27 +208,31 @@ const NotificationBell: React.FC = () => {
               </Box>
             ) : (
               recentNotifications.map((notification) => (
-                <MenuItem
+                <Box
                   key={notification.id}
                   onClick={() => handleNotificationClick(notification)}
                   sx={{
                     display: "flex",
                     alignItems: "flex-start",
-                    gap: 1,
-                    py: 1.5,
+                    gap: 2,
+                    py: 2,
                     px: 2,
+                    cursor: "pointer",
                     backgroundColor: notification.isRead
                       ? "transparent"
                       : "action.hover",
+                    borderRadius: 1,
+                    mb: 1,
                     "&:hover": {
                       backgroundColor: "action.selected",
                     },
+                    transition: "background-color 0.2s ease",
                   }}
                 >
                   <Avatar
                     sx={{
-                      width: 32,
-                      height: 32,
+                      width: 40,
+                      height: 40,
                       bgcolor: getNotificationColor(notification.type),
                       color: "white",
                     }}
@@ -251,6 +248,7 @@ const NotificationBell: React.FC = () => {
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
+                        mb: 0.5,
                       }}
                     >
                       {notification.title}
@@ -263,6 +261,7 @@ const NotificationBell: React.FC = () => {
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                         display: "block",
+                        mb: 0.5,
                       }}
                     >
                       {notification.message}
@@ -281,7 +280,7 @@ const NotificationBell: React.FC = () => {
                       })()}
                     </Typography>
                   </Box>
-                </MenuItem>
+                </Box>
               ))
             )}
           </Box>
@@ -309,7 +308,7 @@ const NotificationBell: React.FC = () => {
             </Box>
           )}
         </Box>
-      </Menu>
+      </Drawer>
     </>
   );
 };
