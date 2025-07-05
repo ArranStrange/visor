@@ -101,7 +101,7 @@ export interface PresetSettings {
   vignette: VignetteSettings;
   colorAdjustments: ColorAdjustments;
   splitToning: SplitToningSettings;
-  colorGrading: ColorGradingSettings;
+  colorGrading?: ColorGradingSettings;
 
   // Detail
   sharpening: number;

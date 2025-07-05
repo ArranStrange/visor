@@ -33,6 +33,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
 import XmpParser from "../components/XmpParser";
+import XmpSettingsDisplay from "../components/XmpSettingsDisplay";
 import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 import ToneCurve from "../components/ToneCurve";
@@ -550,6 +551,7 @@ const UploadPreset: React.FC = () => {
       highlightSaturation: Number(parsed.splitToning?.highlightSaturation) || 0,
       balance: Number(parsed.splitToning?.balance) || 0,
     },
+
     // Detail - map texture to sharpening
     sharpening: Number(parsed.texture) || 0,
     noiseReduction: {
@@ -631,11 +633,15 @@ const UploadPreset: React.FC = () => {
       console.log("Settings being sent:", JSON.stringify(settings, null, 2));
       console.log("Tone curve being sent:", JSON.stringify(toneCurve, null, 2));
 
+      // Extract colorGrading from settings to send as separate field
+      const { colorGrading, ...settingsWithoutColorGrading } = settings;
+
       const variables = {
         title,
         description,
-        settings,
+        settings: settingsWithoutColorGrading,
         toneCurve,
+        colorGrading,
         notes,
         tags: tags.map((tag) => tag.toLowerCase()),
         beforeImage: uploadedBeforeImage,
@@ -671,86 +677,6 @@ const UploadPreset: React.FC = () => {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const formatSettingValue = (value: number) => {
-    return value.toFixed(1);
-  };
-
-  const parseSettingValue = (value: string) => {
-    const num = parseFloat(value);
-    return isNaN(num) ? 0 : num;
-  };
-
-  // Helper function to safely get setting values
-  const getSettingValue = (setting: string): number | undefined => {
-    switch (setting) {
-      case "exposure":
-        return parsedSettings?.exposure;
-      case "contrast":
-        return parsedSettings?.contrast;
-      case "highlights":
-        return parsedSettings?.highlights;
-      case "shadows":
-        return parsedSettings?.shadows;
-      case "whites":
-        return parsedSettings?.whites;
-      case "blacks":
-        return parsedSettings?.blacks;
-      case "temp":
-        return parsedSettings?.temp;
-      case "tint":
-        return parsedSettings?.tint;
-      case "vibrance":
-        return parsedSettings?.vibrance;
-      case "saturation":
-        return parsedSettings?.saturation;
-      case "clarity":
-        return parsedSettings?.clarity;
-      case "dehaze":
-        return parsedSettings?.dehaze;
-      case "texture":
-        return parsedSettings?.texture;
-      default:
-        return undefined;
-    }
-  };
-
-  const renderAccordionSection = (
-    title: string,
-    settings: string[],
-    customContent?: React.ReactNode
-  ) => {
-    if (!parsedSettings) return null;
-
-    const hasSettings = settings.some(
-      (setting) => getSettingValue(setting) !== undefined
-    );
-    const hasCustomContent = !!customContent;
-
-    if (!hasSettings && !hasCustomContent) return null;
-
-    return (
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography>{title}</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          {settings.map((setting) => {
-            const value = getSettingValue(setting);
-            if (value === undefined) return null;
-            return (
-              <SettingSliderDisplay
-                key={setting}
-                label={setting.charAt(0).toUpperCase() + setting.slice(1)}
-                value={formatSettingValue(value)}
-              />
-            );
-          })}
-          {customContent}
-        </AccordionDetails>
-      </Accordion>
-    );
   };
 
   return (
@@ -796,248 +722,18 @@ const UploadPreset: React.FC = () => {
               <XmpParser onSettingsParsed={handleSettingsParsed} />
             </Box>
 
+            {/* Display Parsed Settings */}
             {parsedSettings && (
-              <>
-                {renderAccordionSection("Light", [
-                  "exposure",
-                  "contrast",
-                  "highlights",
-                  "shadows",
-                  "whites",
-                  "blacks",
-                ])}
-
-                {renderAccordionSection("Color", [
-                  "temp",
-                  "tint",
-                  "vibrance",
-                  "saturation",
-                ])}
-
-                {renderAccordionSection("Effects", ["clarity", "dehaze"])}
-
-                {renderAccordionSection(
-                  "Grain",
-                  [],
-                  <Box>
-                    {parsedSettings.effects && (
-                      <>
-                        <SettingSliderDisplay
-                          label="Amount"
-                          value={formatSettingValue(
-                            parsedSettings.effects.grainAmount
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Size"
-                          value={formatSettingValue(
-                            parsedSettings.effects.grainSize
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Frequency"
-                          value={formatSettingValue(
-                            parsedSettings.effects.grainFrequency
-                          )}
-                        />
-                      </>
-                    )}
-                  </Box>
-                )}
-
-                {renderAccordionSection(
-                  "Color Adjustments",
-                  [],
-                  <Box>
-                    {parsedSettings.colorAdjustments && (
-                      <>
-                        {parsedSettings.colorAdjustments.red && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              color="text.secondary"
-                            >
-                              Red
-                            </Typography>
-                            <SettingSliderDisplay
-                              label="Hue"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.red.hue
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Saturation"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.red.saturation
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Luminance"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.red.luminance
-                              )}
-                            />
-                          </Box>
-                        )}
-                        {parsedSettings.colorAdjustments.orange && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              color="text.secondary"
-                            >
-                              Orange
-                            </Typography>
-                            <SettingSliderDisplay
-                              label="Saturation"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.orange
-                                  .saturation
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Luminance"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.orange.luminance
-                              )}
-                            />
-                          </Box>
-                        )}
-                        {parsedSettings.colorAdjustments.yellow && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              color="text.secondary"
-                            >
-                              Yellow
-                            </Typography>
-                            <SettingSliderDisplay
-                              label="Hue"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.yellow.hue
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Saturation"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.yellow
-                                  .saturation
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Luminance"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.yellow.luminance
-                              )}
-                            />
-                          </Box>
-                        )}
-                        {parsedSettings.colorAdjustments.green && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              color="text.secondary"
-                            >
-                              Green
-                            </Typography>
-                            <SettingSliderDisplay
-                              label="Hue"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.green.hue
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Saturation"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.green.saturation
-                              )}
-                            />
-                          </Box>
-                        )}
-                        {parsedSettings.colorAdjustments.blue && (
-                          <Box sx={{ mb: 2 }}>
-                            <Typography
-                              variant="subtitle2"
-                              color="text.secondary"
-                            >
-                              Blue
-                            </Typography>
-                            <SettingSliderDisplay
-                              label="Hue"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.blue.hue
-                              )}
-                            />
-                            <SettingSliderDisplay
-                              label="Saturation"
-                              value={formatSettingValue(
-                                parsedSettings.colorAdjustments.blue.saturation
-                              )}
-                            />
-                          </Box>
-                        )}
-                      </>
-                    )}
-                  </Box>
-                )}
-
-                {renderAccordionSection(
-                  "Split Toning",
-                  [],
-                  <Box>
-                    {parsedSettings.splitToning && (
-                      <>
-                        <SettingSliderDisplay
-                          label="Shadow Hue"
-                          value={formatSettingValue(
-                            parsedSettings.splitToning.shadowHue
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Shadow Saturation"
-                          value={formatSettingValue(
-                            parsedSettings.splitToning.shadowSaturation
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Highlight Hue"
-                          value={formatSettingValue(
-                            parsedSettings.splitToning.highlightHue
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Highlight Saturation"
-                          value={formatSettingValue(
-                            parsedSettings.splitToning.highlightSaturation
-                          )}
-                        />
-                        <SettingSliderDisplay
-                          label="Balance"
-                          value={formatSettingValue(
-                            parsedSettings.splitToning.balance
-                          )}
-                        />
-                      </>
-                    )}
-                  </Box>
-                )}
-
-                {renderAccordionSection(
-                  "Vignette",
-                  [],
-                  <Box>
-                    {parsedSettings.effects && (
-                      <SettingSliderDisplay
-                        label="Amount"
-                        value={formatSettingValue(
-                          parsedSettings.effects.postCropVignetteAmount
-                        )}
-                      />
-                    )}
-                  </Box>
-                )}
-
-                {renderAccordionSection("Detail", ["texture"])}
-              </>
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Parsed Settings Preview
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Preview of the settings that will be applied from the XMP
+                  file:
+                </Typography>
+                <XmpSettingsDisplay settings={parsedSettings} />
+              </Box>
             )}
 
             <Box>

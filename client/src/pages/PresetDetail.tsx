@@ -49,6 +49,7 @@ import SettingSliderDisplay from "../components/SettingSliderDisplay";
 import BeforeAfterSlider from "../components/BeforeAfterSlider";
 import AddToListButton from "../components/AddToListButton";
 import XmpParser from "../components/XmpParser";
+import XmpSettingsDisplay from "../components/XmpSettingsDisplay";
 import DiscussionThread from "../components/discussions/DiscussionThread";
 import ColorGradingWheels from "../components/ColorGradingWheels";
 import { useParams, useNavigate } from "react-router-dom";
@@ -605,7 +606,18 @@ const PresetDetails: React.FC = () => {
               </IconButton>
             )}
         </Box>
-        <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
+        <Box
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 1,
+            mb: 2,
+            mt: 2,
+            "& > *": {
+              marginBottom: 1,
+            },
+          }}
+        >
           {preset.tags.map((tag: { id: string; displayName: string }) => (
             <Chip
               key={tag.id}
@@ -614,7 +626,7 @@ const PresetDetails: React.FC = () => {
               sx={{ color: "text.secondary", borderColor: "divider" }}
             />
           ))}
-        </Stack>
+        </Box>
       </Box>
 
       {/* Dropdown Menu */}
@@ -2644,6 +2656,20 @@ const PresetDetails: React.FC = () => {
                 </Alert>
               )}
             </Box>
+
+            {/* Display Parsed Settings */}
+            {parsedSettings && (
+              <Box sx={{ mt: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Parsed Settings Preview
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Preview of the settings that will be applied from the XMP
+                  file:
+                </Typography>
+                <XmpSettingsDisplay settings={parsedSettings} />
+              </Box>
+            )}
 
             <Box>
               <Typography variant="h6" gutterBottom>
