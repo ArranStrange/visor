@@ -46,6 +46,7 @@ const ContentTypeToggle: React.FC = () => {
 
   return (
     <Box
+      data-cy="content-type-toggle"
       position="relative"
       display="flex"
       justifyContent="center"
@@ -68,6 +69,7 @@ const ContentTypeToggle: React.FC = () => {
         {options.map(({ value, icon, title }) => (
           <Tooltip key={value} title={title} arrow>
             <ToggleButton
+              data-cy={`filter-${value}`}
               value={value}
               sx={{
                 border: "none",

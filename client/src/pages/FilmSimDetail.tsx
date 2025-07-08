@@ -309,12 +309,14 @@ const FilmSimDetails: React.FC = () => {
         <Box mb={2}>
           <Stack direction="row" alignItems="center" spacing={1}>
             <Avatar
+              data-cy="creator-avatar"
               src={filmSim.creator.avatar}
               alt={filmSim.creator.username}
               sx={{ cursor: "pointer" }}
               onClick={() => navigate(`/profile/${filmSim.creator.id}`)}
             />
             <Typography
+              data-cy="creator-username"
               variant="subtitle2"
               color="text.secondary"
               sx={{ cursor: "pointer" }}
@@ -372,13 +374,13 @@ const FilmSimDetails: React.FC = () => {
               },
             }}
           >
-            <MenuItem onClick={handleEdit}>
+            <MenuItem data-cy="edit-film-sim" onClick={handleEdit}>
               <ListItemIcon>
                 <EditIcon fontSize="small" />
               </ListItemIcon>
               <ListItemText primary="Edit" />
             </MenuItem>
-            <MenuItem onClick={handleDelete}>
+            <MenuItem data-cy="delete-film-sim" onClick={handleDelete}>
               <ListItemIcon>
                 <DeleteIcon fontSize="small" color="error" />
               </ListItemIcon>
@@ -392,6 +394,7 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Tags and camera compatibility */}
       <Box
+        data-cy="film-sim-tags"
         sx={{
           display: "flex",
           flexWrap: "wrap",
@@ -705,6 +708,7 @@ const FilmSimDetails: React.FC = () => {
         <Typography variant="h6">Sample Images</Typography>
         {currentUser && (
           <Button
+            data-cy="add-photo-button"
             variant="outlined"
             startIcon={<AddIcon />}
             onClick={() => setAddPhotoDialogOpen(true)}
@@ -768,6 +772,7 @@ const FilmSimDetails: React.FC = () => {
         }}
       >
         <IconButton
+          data-cy="close-fullscreen"
           onClick={() => setFullscreenImage(null)}
           sx={{
             position: "absolute",
@@ -817,6 +822,7 @@ const FilmSimDetails: React.FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Box
+              data-cy="creator-notes"
               sx={{
                 display: "flex",
                 flexDirection: "column",
@@ -903,6 +909,7 @@ const FilmSimDetails: React.FC = () => {
           </AccordionSummary>
           <AccordionDetails>
             <Box
+              data-cy="recommended-presets-grid"
               sx={{
                 display: "grid",
                 gridTemplateColumns: {
@@ -927,6 +934,7 @@ const FilmSimDetails: React.FC = () => {
                   }) => (
                     <Box
                       key={preset.id}
+                      data-cy="recommended-preset-card"
                       sx={{
                         p: 2,
                         borderRadius: 2,
@@ -1022,6 +1030,7 @@ const FilmSimDetails: React.FC = () => {
       {/* Discussion Thread */}
       <Divider sx={{ my: 4 }} />
       <DiscussionThread
+        data-cy="discussion-thread"
         itemId={filmSim.id}
         itemType="filmsim"
         itemTitle={filmSim.name}
@@ -1034,6 +1043,7 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Edit Dialog */}
       <Dialog
+        data-cy="edit-dialog"
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         maxWidth="lg"
@@ -1056,6 +1066,7 @@ const FilmSimDetails: React.FC = () => {
           <Box component="form" sx={{ mt: 2 }}>
             <Stack spacing={3}>
               <TextField
+                data-cy="edit-name-input"
                 label="Name"
                 defaultValue={filmSim.name}
                 fullWidth
@@ -1063,6 +1074,7 @@ const FilmSimDetails: React.FC = () => {
               />
 
               <TextField
+                data-cy="edit-description-input"
                 label="Description"
                 multiline
                 minRows={3}
@@ -1188,7 +1200,12 @@ const FilmSimDetails: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2, pb: window.innerWidth < 768 ? 4 : 2 }}>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+          <Button
+            data-cy="cancel-edit"
+            onClick={() => setEditDialogOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             variant="contained"
             onClick={() => {
@@ -1203,6 +1220,7 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Delete Confirmation Dialog */}
       <Dialog
+        data-cy="delete-dialog"
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
         aria-labelledby="delete-dialog-title"
@@ -1219,7 +1237,12 @@ const FilmSimDetails: React.FC = () => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            data-cy="cancel-delete"
+            onClick={() => setDeleteDialogOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handleDeleteFilmSim}
             color="error"
@@ -1233,6 +1256,7 @@ const FilmSimDetails: React.FC = () => {
 
       {/* Add Photo Dialog */}
       <Dialog
+        data-cy="add-photo-dialog"
         open={addPhotoDialogOpen}
         onClose={() => setAddPhotoDialogOpen(false)}
         maxWidth="sm"
@@ -1258,6 +1282,7 @@ const FilmSimDetails: React.FC = () => {
               >
                 {photoFile ? photoFile.name : "Choose Photo"}
                 <input
+                  data-cy="photo-file-input"
                   type="file"
                   accept="image/*"
                   onChange={handlePhotoFileChange}
@@ -1282,6 +1307,7 @@ const FilmSimDetails: React.FC = () => {
             )}
 
             <TextField
+              data-cy="photo-caption-input"
               label="Caption (optional)"
               value={photoCaption}
               onChange={(e) => setPhotoCaption(e.target.value)}
@@ -1292,7 +1318,12 @@ const FilmSimDetails: React.FC = () => {
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setAddPhotoDialogOpen(false)}>Cancel</Button>
+          <Button
+            data-cy="cancel-add-photo"
+            onClick={() => setAddPhotoDialogOpen(false)}
+          >
+            Cancel
+          </Button>
           <Button
             onClick={handlePhotoUpload}
             variant="contained"

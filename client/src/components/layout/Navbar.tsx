@@ -22,6 +22,7 @@ import ForumIcon from "@mui/icons-material/Forum";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import MenuIcon from "@mui/icons-material/Menu";
 import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
 import NotificationBell from "./NotificationBell";
@@ -33,6 +34,7 @@ const NavBar: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -45,6 +47,10 @@ const NavBar: React.FC = () => {
   const handleLogout = () => {
     logout();
     handleMenuClose();
+  };
+
+  const handleMobileMenuToggle = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
   };
 
   const menuItems = [
@@ -92,6 +98,7 @@ const NavBar: React.FC = () => {
       <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
         {/* Logo */}
         <Box
+          data-cy="nav-home"
           sx={{
             display: "flex",
             alignItems: "center",
@@ -105,15 +112,34 @@ const NavBar: React.FC = () => {
 
         {/* Actions */}
         <Box
+          data-cy="nav-actions"
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
-          <IconButton onClick={() => navigate("/search")} color="inherit">
+          <IconButton
+            data-cy="nav-search"
+            onClick={() => navigate("/search")}
+            color="inherit"
+          >
             <SearchIcon />
+          </IconButton>
+
+          {/* Mobile menu button */}
+          <IconButton
+            data-cy="mobile-menu-button"
+            onClick={handleMobileMenuToggle}
+            color="inherit"
+            sx={{ display: { xs: "flex", sm: "none" } }}
+          >
+            <MenuIcon />
           </IconButton>
           {isAuthenticated && (
             <>
               <NotificationBell />
-              <IconButton onClick={() => navigate("/upload")} color="inherit">
+              <IconButton
+                data-cy="nav-upload"
+                onClick={() => navigate("/upload")}
+                color="inherit"
+              >
                 <UploadIcon />
               </IconButton>
             </>
@@ -221,6 +247,76 @@ const NavBar: React.FC = () => {
             </>
           )}
         </Box>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <Box
+            data-cy="mobile-menu"
+            sx={{
+              position: "absolute",
+              top: "100%",
+              left: 0,
+              right: 0,
+              backgroundColor: "background.paper",
+              borderTop: 1,
+              borderColor: "divider",
+              zIndex: 1000,
+            }}
+          >
+            <Box
+              sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}
+            >
+              <Button
+                data-cy="mobile-nav-search"
+                fullWidth
+                startIcon={<SearchIcon />}
+                onClick={() => {
+                  navigate("/search");
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Search
+              </Button>
+              {isAuthenticated && (
+                <>
+                  <Button
+                    data-cy="mobile-nav-upload"
+                    fullWidth
+                    startIcon={<UploadIcon />}
+                    onClick={() => {
+                      navigate("/upload");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Upload
+                  </Button>
+                  <Button
+                    data-cy="mobile-nav-discussions"
+                    fullWidth
+                    startIcon={<ForumIcon />}
+                    onClick={() => {
+                      navigate("/discussions");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Discussions
+                  </Button>
+                  <Button
+                    data-cy="mobile-nav-lists"
+                    fullWidth
+                    startIcon={<ListIcon />}
+                    onClick={() => {
+                      navigate("/lists");
+                      setMobileMenuOpen(false);
+                    }}
+                  >
+                    Lists
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );

@@ -79,8 +79,9 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
+    <Container data-cy="login-page" maxWidth="xs" sx={{ mt: 10 }}>
       <Typography
+        data-cy="login-title"
         variant="h4"
         fontWeight="bold"
         gutterBottom
@@ -89,11 +90,17 @@ const Login: React.FC = () => {
         Sign In to VISOR
       </Typography>
 
-      <Box component="form" onSubmit={handleLogin} noValidate>
+      <Box
+        data-cy="login-form"
+        component="form"
+        onSubmit={handleLogin}
+        noValidate
+      >
         <Stack spacing={3} mt={4}>
           {error && <Alert severity="error">{error}</Alert>}
 
           <TextField
+            data-cy="email-input"
             label="Email"
             name="email"
             type="email"
@@ -105,6 +112,7 @@ const Login: React.FC = () => {
           />
 
           <TextField
+            data-cy="password-input"
             label="Password"
             name="password"
             type="password"
@@ -116,6 +124,7 @@ const Login: React.FC = () => {
           />
 
           <Button
+            data-cy="login-button"
             type="submit"
             variant="contained"
             size="large"

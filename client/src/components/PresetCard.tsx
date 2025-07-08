@@ -108,6 +108,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
 
   return (
     <Card
+      data-cy="preset-card"
       sx={{
         position: "relative",
         aspectRatio: "4/5", // Shorter than 3/4 to create staggered effect
@@ -142,6 +143,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
       onClick={handleCardClick}
     >
       <FastImage
+        data-cy="preset-image"
         src={imageUrl}
         alt={title}
         aspectRatio="4:5"

@@ -140,6 +140,7 @@ const PostComposer: React.FC<PostComposerProps> = ({
 
         {/* Content input */}
         <TextField
+          data-cy="comment-input"
           fullWidth
           multiline
           rows={3}
@@ -300,6 +301,7 @@ const PostComposer: React.FC<PostComposerProps> = ({
 
           {/* Submit button */}
           <Button
+            data-cy="submit-comment"
             variant="contained"
             startIcon={<SendIcon />}
             onClick={handleSubmit}

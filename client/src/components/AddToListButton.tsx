@@ -147,6 +147,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
   return (
     <>
       <IconButton
+        data-cy="add-to-list-button"
         onClick={handleClick}
         sx={{
           position: "absolute",
@@ -162,6 +163,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
       </IconButton>
 
       <Dialog
+        data-cy="list-selection-dialog"
         open={open}
         onClose={() => setOpen(false)}
         maxWidth="sm"

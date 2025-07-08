@@ -9,6 +9,7 @@ const HomePage: React.FC = () => {
 
   return (
     <Container
+      data-cy="home-page"
       maxWidth="xl"
       sx={{
         mt: 2,

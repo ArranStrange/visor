@@ -123,6 +123,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
 
   return (
     <Card
+      data-cy="filmsim-card"
       sx={{
         position: "relative",
         aspectRatio: "2/3",
@@ -155,6 +156,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       onClick={handleClick}
     >
       <FastImage
+        data-cy="filmsim-image"
         src={thumbnail || "/placeholder-image.jpg"}
         alt={name}
         aspectRatio="2:3"
