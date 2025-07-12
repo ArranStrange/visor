@@ -112,6 +112,12 @@ cypress/                # End-to-end tests
 ├── e2e/               # Test files
 ├── fixtures/          # Test data
 └── support/           # Custom commands and configuration
+
+docs/                   # Comprehensive documentation
+├── README.md          # Documentation overview
+├── Home.md            # Home page documentation
+├── Login.md           # Login page documentation
+└── ...                # All page documentation files
 ```
 
 ## 🧪 Testing
@@ -185,6 +191,14 @@ VISOR includes several performance optimizations:
 - **Caching**: Apollo Client cache for GraphQL queries
 - **Bundle Optimization**: Code splitting and tree shaking
 
+## 📚 Documentation
+
+Comprehensive documentation is available in the `docs/` directory:
+
+- **[Documentation Overview](./docs/README.md)** - Complete guide to all documentation
+- **[Page Documentation](./docs/)** - Detailed documentation for each application page
+- **[Performance Guidelines](./docs/PERFORMANCE_OPTIMIZATIONS.md)** - Performance optimization strategies
+
 ## 🤝 Contributing
 
 1. Fork the repository
@@ -205,5 +219,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **Cloudinary** - For image optimization services
 
 ---
-
-**VISOR** - Where photographers share their vision. 📸✨
