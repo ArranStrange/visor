@@ -31,9 +31,9 @@ const Upload: React.FC = () => {
   ] as const;
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
+    <Container data-cy="upload-page" maxWidth="lg" sx={{ py: 4 }}>
+      <Paper data-cy="upload-form" sx={{ p: 4 }}>
+        <Typography data-cy="upload-title" variant="h4" gutterBottom>
           Upload
         </Typography>
         <Typography variant="body1" color="text.secondary" paragraph>
@@ -42,6 +42,7 @@ const Upload: React.FC = () => {
 
         <Box display="flex" justifyContent="center" mt={4}>
           <ToggleButtonGroup
+            data-cy="upload-type-toggle"
             exclusive
             sx={{
               backgroundColor: "background.default",
@@ -54,6 +55,7 @@ const Upload: React.FC = () => {
             {options.map(({ value, icon, title, path }) => (
               <Tooltip key={value} title={title} arrow>
                 <ToggleButton
+                  data-cy={`upload-${value}-tab`}
                   value={value}
                   onClick={() => navigate(path)}
                   sx={{

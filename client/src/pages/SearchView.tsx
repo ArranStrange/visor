@@ -230,6 +230,7 @@ const SearchView: React.FC = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
       <InputBase
+        data-cy="search-input"
         placeholder="Search presets, film sims, tags…"
         value={keyword}
         onChange={(e) => setKeyword(e.target.value)}

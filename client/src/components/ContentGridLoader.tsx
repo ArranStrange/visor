@@ -181,6 +181,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   return (
     <Box
+      data-cy="content-grid"
       ref={containerRef}
       sx={{
         width: "100%",

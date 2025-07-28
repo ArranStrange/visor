@@ -39,24 +39,43 @@ const ContentTypeToggle: React.FC = () => {
   };
 
   const options = [
-    { title: "All", value: "all", icon: <DashboardCustomizeIcon /> },
-    { title: "Presets", value: "presets", icon: <TuneIcon /> },
-    { title: "Film Sims", value: "films", icon: <CameraRollIcon /> },
+    {
+      title: "All",
+      value: "all",
+      icon: <DashboardCustomizeIcon />,
+      description: "Show all content types",
+    },
+    {
+      title: "Presets",
+      value: "presets",
+      icon: <TuneIcon />,
+      description: "Show only Lightroom presets",
+    },
+    {
+      title: "Film Sims",
+      value: "films",
+      icon: <CameraRollIcon />,
+      description: "Show only film simulations",
+    },
   ] as const;
 
   return (
     <Box
+      data-cy="content-type-toggle"
       position="relative"
       display="flex"
       justifyContent="center"
       alignItems="center"
       mt={2}
       mb={2}
+      role="group"
+      aria-label="Content type filter"
     >
       <ToggleButtonGroup
         value={contentType}
         exclusive
         onChange={handleChange}
+        aria-label="Filter content by type"
         sx={{
           backgroundColor: "background.default",
           borderRadius: "999px",
@@ -65,10 +84,13 @@ const ContentTypeToggle: React.FC = () => {
           gap: 0.5,
         }}
       >
-        {options.map(({ value, icon, title }) => (
+        {options.map(({ value, icon, title, description }) => (
           <Tooltip key={value} title={title} arrow>
             <ToggleButton
+              data-cy={`filter-${value}`}
               value={value}
+              aria-label={`${title}: ${description}`}
+              aria-pressed={contentType === value}
               sx={{
                 border: "none",
                 borderRadius: "999px",
@@ -91,6 +113,11 @@ const ContentTypeToggle: React.FC = () => {
                       ? theme.palette.primary.dark
                       : theme.palette.action.hover,
                 },
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "primary.main",
+                  outlineOffset: "2px",
+                },
               }}
             >
               {icon}
@@ -101,9 +128,14 @@ const ContentTypeToggle: React.FC = () => {
 
       <Tooltip
         title={randomizeOrder ? "Disable Random Order" : "Enable Random Order"}
+        arrow
       >
         <IconButton
           onClick={handleShuffleClick}
+          aria-label={
+            randomizeOrder ? "Disable random order" : "Enable random order"
+          }
+          aria-pressed={randomizeOrder}
           sx={{
             position: "absolute",
             right: 0,
@@ -111,6 +143,12 @@ const ContentTypeToggle: React.FC = () => {
             color: randomizeOrder ? "#ff9800" : "grey.600",
             opacity: 0.7,
             "&:hover": {
+              opacity: 1,
+            },
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "primary.main",
+              outlineOffset: "2px",
               opacity: 1,
             },
           }}

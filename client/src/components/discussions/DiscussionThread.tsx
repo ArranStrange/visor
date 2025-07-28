@@ -1251,11 +1251,13 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           {user && (
             <Card sx={{ mb: 2 }}>
               <CardContent>
-                <PostComposer
-                  onSubmit={handleCreatePost}
-                  placeholder="Add to the discussion..."
-                  buttonText={creatingPost ? "Posting..." : "Post"}
-                />
+                <Box data-cy="comment-form">
+                  <PostComposer
+                    onSubmit={handleCreatePost}
+                    placeholder="Add to the discussion..."
+                    buttonText={creatingPost ? "Posting..." : "Post"}
+                  />
+                </Box>
               </CardContent>
             </Card>
           )}
@@ -1300,11 +1302,13 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           {user && (
             <Card sx={{ mb: 2 }}>
               <CardContent>
-                <PostComposer
-                  onSubmit={handleCreatePost}
-                  placeholder="Add to the discussion..."
-                  buttonText={creatingPost ? "Posting..." : "Post"}
-                />
+                <Box data-cy="comment-form">
+                  <PostComposer
+                    onSubmit={handleCreatePost}
+                    placeholder="Add to the discussion..."
+                    buttonText={creatingPost ? "Posting..." : "Post"}
+                  />
+                </Box>
               </CardContent>
             </Card>
           )}

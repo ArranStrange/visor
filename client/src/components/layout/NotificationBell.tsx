@@ -103,6 +103,12 @@ const NotificationBell: React.FC = () => {
       <IconButton
         onClick={handleOpen}
         color="inherit"
+        aria-label={`Notifications${
+          unreadCount > 0 ? `, ${unreadCount} unread` : ""
+        }`}
+        aria-expanded={isOpen}
+        aria-controls="notifications-drawer"
+        aria-haspopup="true"
         sx={{ position: "relative" }}
       >
         <Badge
@@ -110,12 +116,18 @@ const NotificationBell: React.FC = () => {
           color="error"
           max={99}
           invisible={unreadCount === 0}
+          aria-label={
+            unreadCount > 0
+              ? `${unreadCount} unread notifications`
+              : "No unread notifications"
+          }
         >
           <NotificationsIcon />
         </Badge>
       </IconButton>
 
       <Drawer
+        id="notifications-drawer"
         anchor="right"
         open={isOpen}
         onClose={handleClose}
@@ -136,6 +148,9 @@ const NotificationBell: React.FC = () => {
             backgroundColor: "rgba(0, 0, 0, 0.3)",
           },
         }}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Notifications panel"
       >
         <Box
           sx={{
@@ -156,13 +171,14 @@ const NotificationBell: React.FC = () => {
               top: 0,
               zIndex: 1,
             }}
+            component="header"
           >
             <Box
               display="flex"
               justifyContent="space-between"
               alignItems="center"
             >
-              <Typography variant="h5" fontWeight="bold">
+              <Typography variant="h5" component="h2" fontWeight="bold">
                 Notifications
               </Typography>
               <Box display="flex" alignItems="center" gap={1}>
@@ -171,16 +187,26 @@ const NotificationBell: React.FC = () => {
                     size="small"
                     onClick={handleMarkAllAsRead}
                     disabled={loading}
+                    aria-label="Mark all notifications as read"
                   >
                     Mark all read
                   </Button>
                 )}
-                <IconButton onClick={handleClose} size="small">
+                <IconButton
+                  onClick={handleClose}
+                  size="small"
+                  aria-label="Close notifications panel"
+                >
                   <CloseIcon />
                 </IconButton>
               </Box>
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ mt: 1 }}
+              aria-live="polite"
+            >
               {unreadCount} unread • {notifications.length} total
             </Typography>
           </Box>
@@ -192,96 +218,123 @@ const NotificationBell: React.FC = () => {
               overflow: "auto",
               p: 2,
             }}
+            component="main"
+            role="region"
+            aria-label="Notifications list"
           >
             {loading ? (
               <Box display="flex" justifyContent="center" py={2}>
-                <CircularProgress size={24} />
+                <CircularProgress
+                  size={24}
+                  aria-label="Loading notifications"
+                />
               </Box>
             ) : recentNotifications.length === 0 ? (
               <Box textAlign="center" py={3}>
                 <NotificationsIcon
                   sx={{ fontSize: 48, color: "text.secondary", mb: 1 }}
+                  aria-hidden="true"
                 />
                 <Typography variant="body2" color="text.secondary">
                   No notifications yet
                 </Typography>
               </Box>
             ) : (
-              recentNotifications.map((notification) => (
-                <Box
-                  key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
-                  sx={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: 2,
-                    py: 2,
-                    px: 2,
-                    cursor: "pointer",
-                    backgroundColor: notification.isRead
-                      ? "transparent"
-                      : "action.hover",
-                    borderRadius: 1,
-                    mb: 1,
-                    "&:hover": {
-                      backgroundColor: "action.selected",
-                    },
-                    transition: "background-color 0.2s ease",
-                  }}
-                >
-                  <Avatar
+              <Box component="ul" sx={{ listStyle: "none", p: 0, m: 0 }}>
+                {recentNotifications.map((notification) => (
+                  <Box
+                    key={notification.id}
+                    component="li"
+                    onClick={() => handleNotificationClick(notification)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleNotificationClick(notification);
+                      }
+                    }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`${notification.title}. ${notification.message}`}
                     sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: getNotificationColor(notification.type),
-                      color: "white",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 2,
+                      py: 2,
+                      px: 2,
+                      cursor: "pointer",
+                      backgroundColor: notification.isRead
+                        ? "transparent"
+                        : "action.hover",
+                      borderRadius: 1,
+                      mb: 1,
+                      "&:hover": {
+                        backgroundColor: "action.selected",
+                      },
+                      "&:focus-visible": {
+                        outline: "2px solid",
+                        outlineColor: "primary.main",
+                        outlineOffset: "2px",
+                      },
+                      transition: "background-color 0.2s ease",
                     }}
                   >
-                    {getNotificationIcon(notification.type)}
-                  </Avatar>
+                    <Avatar
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        bgcolor: getNotificationColor(notification.type),
+                        color: "white",
+                      }}
+                      aria-hidden="true"
+                    >
+                      {getNotificationIcon(notification.type)}
+                    </Avatar>
 
-                  <Box flex={1} minWidth={0}>
-                    <Typography
-                      variant="body2"
-                      fontWeight={notification.isRead ? "normal" : "bold"}
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        mb: 0.5,
-                      }}
-                    >
-                      {notification.title}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                        display: "block",
-                        mb: 0.5,
-                      }}
-                    >
-                      {notification.message}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {(() => {
-                        try {
-                          const date = new Date(notification.createdAt);
-                          if (isNaN(date.getTime())) {
+                    <Box flex={1} minWidth={0}>
+                      <Typography
+                        variant="body2"
+                        fontWeight={notification.isRead ? "normal" : "bold"}
+                        sx={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          mb: 0.5,
+                        }}
+                      >
+                        {notification.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          display: "block",
+                          mb: 0.5,
+                        }}
+                      >
+                        {notification.message}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {(() => {
+                          try {
+                            const date = new Date(notification.createdAt);
+                            if (isNaN(date.getTime())) {
+                              return "Recently";
+                            }
+                            return formatDistanceToNow(date, {
+                              addSuffix: true,
+                            });
+                          } catch (error) {
                             return "Recently";
                           }
-                          return formatDistanceToNow(date, { addSuffix: true });
-                        } catch (error) {
-                          return "Recently";
-                        }
-                      })()}
-                    </Typography>
+                        })()}
+                      </Typography>
+                    </Box>
                   </Box>
-                </Box>
-              ))
+                ))}
+              </Box>
             )}
           </Box>
 
@@ -294,6 +347,7 @@ const NotificationBell: React.FC = () => {
                 borderColor: "divider",
                 bgcolor: "background.paper",
               }}
+              component="footer"
             >
               <Button
                 fullWidth
@@ -302,6 +356,7 @@ const NotificationBell: React.FC = () => {
                   handleClose();
                 }}
                 size="small"
+                aria-label="View all notifications page"
               >
                 View all notifications
               </Button>

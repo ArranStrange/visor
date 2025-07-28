@@ -79,9 +79,11 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
+    <Container data-cy="login-page" maxWidth="xs" sx={{ mt: 10 }}>
       <Typography
+        data-cy="login-title"
         variant="h4"
+        component="h1"
         fontWeight="bold"
         gutterBottom
         textAlign="center"
@@ -89,11 +91,23 @@ const Login: React.FC = () => {
         Sign In to VISOR
       </Typography>
 
-      <Box component="form" onSubmit={handleLogin} noValidate>
+      <Box
+        data-cy="login-form"
+        component="form"
+        onSubmit={handleLogin}
+        noValidate
+        role="form"
+        aria-label="Sign in form"
+      >
         <Stack spacing={3} mt={4}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert severity="error" role="alert" aria-live="polite">
+              {error}
+            </Alert>
+          )}
 
           <TextField
+            data-cy="email-input"
             label="Email"
             name="email"
             type="email"
@@ -102,9 +116,16 @@ const Login: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            aria-required="true"
+            aria-describedby={error ? "login-error" : undefined}
+            inputProps={{
+              "aria-label": "Email address",
+              autoComplete: "email",
+            }}
           />
 
           <TextField
+            data-cy="password-input"
             label="Password"
             name="password"
             type="password"
@@ -113,21 +134,34 @@ const Login: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            aria-required="true"
+            aria-describedby={error ? "login-error" : undefined}
+            inputProps={{
+              "aria-label": "Password",
+              autoComplete: "current-password",
+            }}
           />
 
           <Button
+            data-cy="login-button"
             type="submit"
             variant="contained"
             size="large"
             disabled={loading}
+            aria-label={loading ? "Signing in..." : "Sign in"}
           >
-            {loading ? <CircularProgress size={24} /> : "Login"}
+            {loading ? (
+              <CircularProgress size={24} aria-label="Loading" />
+            ) : (
+              "Login"
+            )}
           </Button>
 
           <Button
             onClick={handleGuestLogin}
             variant="outlined"
             disabled={loading}
+            aria-label="Continue as guest user"
           >
             Continue as Guest
           </Button>
@@ -136,6 +170,7 @@ const Login: React.FC = () => {
             variant="text"
             onClick={() => navigate("/register")}
             disabled={loading}
+            aria-label="Navigate to registration page"
           >
             Don't have an account? Register
           </Button>
