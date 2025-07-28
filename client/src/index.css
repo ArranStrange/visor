@@ -43,3 +43,119 @@ a {
 a:hover {
   color: #90caf9; /* light blue highlight */
 }
+
+/* Accessibility improvements */
+:focus-visible {
+  outline: 2px solid #90caf9 !important;
+  outline-offset: 2px !important;
+}
+
+/* Screen reader only class */
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #000;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 10000;
+  border-radius: 4px;
+}
+
+.skip-link:focus {
+  top: 6px;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --focus-outline: 3px solid #ffffff;
+  }
+
+  :focus-visible {
+    outline: var(--focus-outline) !important;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Better focus styles for interactive elements */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #90caf9 !important;
+  outline-offset: 2px !important;
+}
+
+/* Ensure sufficient color contrast for text */
+.text-primary {
+  color: #f5f5f5 !important;
+}
+
+.text-secondary {
+  color: #cccccc !important;
+}
+
+/* Improve button contrast with reduced height */
+button {
+  min-height: 36px; /* Reduced from 44px */
+  min-width: 36px; /* Reduced from 44px */
+  padding: 6px 16px; /* Reduced padding */
+  font-size: 0.875rem; /* Slightly smaller text */
+}
+
+/* Ensure form elements are properly sized but more compact */
+input,
+select,
+textarea {
+  min-height: 36px; /* Reduced from 40px */
+  padding: 6px 12px; /* Reduced padding */
+  font-size: 0.875rem; /* Slightly smaller text */
+}
+
+/* Improve link contrast */
+a:not([class]) {
+  color: #90caf9;
+  text-decoration: underline;
+}
+
+a:not([class]):hover {
+  color: #64b5f6;
+  text-decoration: none;
+}

@@ -39,41 +39,55 @@ function App() {
             <NotificationProvider>
               <ContentTypeProvider>
                 <div data-cy="app-container">
-                  <NavBar />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/search" element={<SearchView />} />
-                    <Route
-                      path="/preset/:slug"
-                      element={<PresetDetailPage />}
-                    />
-                    <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route
-                      path="/profile/:userId"
-                      element={<PublicProfile />}
-                    />
-                    <Route path="/upload" element={<UploadPage />} />
-                    <Route path="/upload/preset" element={<UploadPreset />} />
-                    <Route path="/upload/filmsim" element={<UploadFilmSim />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/lists" element={<Lists />} />
-                    <Route path="/list/:id" element={<ListDetail />} />
-                    <Route path="/create-list" element={<CreateList />} />
-                    <Route path="/discussions" element={<Discussions />} />
-                    <Route
-                      path="/discussions/new"
-                      element={<CreateDiscussion />}
-                    />
-                    <Route
-                      path="/discussions/:discussionId"
-                      element={<DiscussionDetail />}
-                    />
-                    <Route path="/notifications" element={<Notifications />} />
+                  {/* Skip to main content link for accessibility */}
+                  <a href="#main-content" className="skip-link">
+                    Skip to main content
+                  </a>
 
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <NavBar />
+
+                  <main id="main-content" role="main">
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/search" element={<SearchView />} />
+                      <Route
+                        path="/preset/:slug"
+                        element={<PresetDetailPage />}
+                      />
+                      <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route
+                        path="/profile/:userId"
+                        element={<PublicProfile />}
+                      />
+                      <Route path="/upload" element={<UploadPage />} />
+                      <Route path="/upload/preset" element={<UploadPreset />} />
+                      <Route
+                        path="/upload/filmsim"
+                        element={<UploadFilmSim />}
+                      />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/lists" element={<Lists />} />
+                      <Route path="/list/:id" element={<ListDetail />} />
+                      <Route path="/create-list" element={<CreateList />} />
+                      <Route path="/discussions" element={<Discussions />} />
+                      <Route
+                        path="/discussions/new"
+                        element={<CreateDiscussion />}
+                      />
+                      <Route
+                        path="/discussions/:discussionId"
+                        element={<DiscussionDetail />}
+                      />
+                      <Route
+                        path="/notifications"
+                        element={<Notifications />}
+                      />
+
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </main>
                 </div>
               </ContentTypeProvider>
             </NotificationProvider>

@@ -149,6 +149,8 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
       <IconButton
         data-cy="add-to-list-button"
         onClick={handleClick}
+        aria-label={`Add ${itemName} to list`}
+        title={`Add ${itemName} to list`}
         sx={{
           position: "absolute",
           top: 16,
@@ -156,6 +158,11 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
           backgroundColor: "background.paper",
           "&:hover": {
             backgroundColor: "action.hover",
+          },
+          "&:focus-visible": {
+            outline: "2px solid",
+            outlineColor: "primary.main",
+            outlineOffset: "2px",
           },
         }}
       >
@@ -168,22 +175,40 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
         onClose={() => setOpen(false)}
         maxWidth="sm"
         fullWidth
+        aria-labelledby="dialog-title"
+        aria-describedby="dialog-description"
+        role="dialog"
+        aria-modal="true"
       >
-        <DialogTitle>Add {itemName} to List</DialogTitle>
+        <DialogTitle id="dialog-title">Add {itemName} to List</DialogTitle>
         <DialogContent>
+          <div id="dialog-description" className="sr-only">
+            Select a list to add {itemName} to, or create a new list
+          </div>
+
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              role="alert"
+              aria-live="polite"
+            >
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert
+              severity="success"
+              sx={{ mb: 2 }}
+              role="alert"
+              aria-live="polite"
+            >
               {success}
             </Alert>
           )}
           {loading ? (
             <Box display="flex" justifyContent="center" p={3}>
-              <CircularProgress />
+              <CircularProgress aria-label="Loading lists" />
             </Box>
           ) : lists.length === 0 ? (
             <Box textAlign="center" py={3}>
@@ -193,16 +218,22 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
               <Button
                 variant="contained"
                 onClick={handleCreateList}
+                aria-label="Create your first list"
                 sx={{ mt: 1 }}
               >
                 Create Your First List
               </Button>
             </Box>
           ) : (
-            <List>
+            <List role="listbox" aria-label="Available lists">
               {lists.map((list: any) => (
                 <ListItem key={list.id} disablePadding>
-                  <ListItemButton onClick={() => handleAddToList(list.id)}>
+                  <ListItemButton
+                    onClick={() => handleAddToList(list.id)}
+                    role="option"
+                    aria-label={`Add to ${list.name} list`}
+                    aria-describedby={`list-description-${list.id}`}
+                  >
                     <ListItemText
                       primary={list.name}
                       secondary={
@@ -221,6 +252,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
                             variant="caption"
                             color="text.secondary"
                             component="span"
+                            id={`list-description-${list.id}`}
                           >
                             {list.presets?.length || 0} presets •{" "}
                             {list.filmSims?.length || 0} film sims
@@ -236,8 +268,17 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleCreateList} color="primary">
+          <Button
+            onClick={() => setOpen(false)}
+            aria-label="Cancel adding to list"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleCreateList}
+            color="primary"
+            aria-label="Create a new list"
+          >
             Create New List
           </Button>
         </DialogActions>

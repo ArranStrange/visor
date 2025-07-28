@@ -92,6 +92,7 @@ const Register: React.FC = () => {
     <Container maxWidth="xs" sx={{ mt: 10 }}>
       <Typography
         variant="h4"
+        component="h1"
         fontWeight="bold"
         gutterBottom
         textAlign="center"
@@ -99,9 +100,19 @@ const Register: React.FC = () => {
         Create Your VISOR Account
       </Typography>
 
-      <Box component="form" onSubmit={handleRegister} noValidate>
+      <Box
+        component="form"
+        onSubmit={handleRegister}
+        noValidate
+        role="form"
+        aria-label="Registration form"
+      >
         <Stack spacing={3} mt={4}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert severity="error" role="alert" aria-live="polite">
+              {error}
+            </Alert>
+          )}
 
           <TextField
             label="Username"
@@ -111,13 +122,24 @@ const Register: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
-            inputProps={{ minLength: 3 }}
+            aria-required="true"
+            aria-describedby={
+              form.username.length > 0 && form.username.length < 3
+                ? "username-error"
+                : undefined
+            }
+            inputProps={{
+              minLength: 3,
+              "aria-label": "Username (minimum 3 characters)",
+              autoComplete: "username",
+            }}
             error={form.username.length > 0 && form.username.length < 3}
             helperText={
               form.username.length > 0 && form.username.length < 3
                 ? "Username must be at least 3 characters"
                 : ""
             }
+            id="username-error"
           />
 
           <TextField
@@ -129,6 +151,11 @@ const Register: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            aria-required="true"
+            inputProps={{
+              "aria-label": "Email address",
+              autoComplete: "email",
+            }}
           />
 
           <Box>
@@ -142,11 +169,22 @@ const Register: React.FC = () => {
               required
               disabled={loading}
               error={!!passwordError}
+              aria-required="true"
+              aria-describedby={
+                passwordError ? "password-error" : "password-help"
+              }
+              inputProps={{
+                "aria-label":
+                  "Password (minimum 6 characters with uppercase letter)",
+                autoComplete: "new-password",
+              }}
             />
             {passwordError && (
-              <FormHelperText error>{passwordError}</FormHelperText>
+              <FormHelperText error id="password-error">
+                {passwordError}
+              </FormHelperText>
             )}
-            <FormHelperText>
+            <FormHelperText id="password-help">
               Password must be at least 6 characters and contain an uppercase
               letter
             </FormHelperText>
@@ -165,12 +203,24 @@ const Register: React.FC = () => {
               form.confirmPassword.length > 0 &&
               form.password !== form.confirmPassword
             }
+            aria-required="true"
+            aria-describedby={
+              form.confirmPassword.length > 0 &&
+              form.password !== form.confirmPassword
+                ? "confirm-password-error"
+                : undefined
+            }
+            inputProps={{
+              "aria-label": "Confirm password",
+              autoComplete: "new-password",
+            }}
             helperText={
               form.confirmPassword.length > 0 &&
               form.password !== form.confirmPassword
                 ? "Passwords do not match"
                 : ""
             }
+            id="confirm-password-error"
           />
 
           <Button
@@ -178,14 +228,20 @@ const Register: React.FC = () => {
             variant="contained"
             size="large"
             disabled={loading}
+            aria-label={loading ? "Creating account..." : "Create account"}
           >
-            {loading ? <CircularProgress size={24} /> : "Register"}
+            {loading ? (
+              <CircularProgress size={24} aria-label="Loading" />
+            ) : (
+              "Register"
+            )}
           </Button>
 
           <Button
             variant="text"
             onClick={() => navigate("/login")}
             disabled={loading}
+            aria-label="Navigate to sign in page"
           >
             Already have an account? Sign In
           </Button>

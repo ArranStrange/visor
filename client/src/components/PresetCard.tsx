@@ -96,6 +96,13 @@ const PresetCard: React.FC<PresetCardProps> = ({
     }
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleCardClick();
+    }
+  };
+
   // Hide options when clicking outside (desktop only)
   React.useEffect(() => {
     if (!isMobile && showOptions) {
@@ -106,9 +113,18 @@ const PresetCard: React.FC<PresetCardProps> = ({
     }
   }, [showOptions, isMobile]);
 
+  const cardDescription = `Lightroom preset: ${title}${
+    creator ? ` by ${creator.username}` : ""
+  }. ${
+    tags.length > 0
+      ? `Tags: ${tags.map((tag) => tag.displayName).join(", ")}`
+      : ""
+  }`;
+
   return (
     <Card
       data-cy="preset-card"
+      component="article"
       sx={{
         position: "relative",
         aspectRatio: "4/5", // Shorter than 3/4 to create staggered effect
@@ -139,13 +155,27 @@ const PresetCard: React.FC<PresetCardProps> = ({
             opacity: showOptions ? 1 : 0,
           },
         },
+        "&:focus-visible": {
+          outline: "2px solid",
+          outlineColor: "primary.main",
+          outlineOffset: "2px",
+        },
       }}
       onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="button"
+      aria-label={`View ${title} preset details`}
+      aria-describedby={`preset-description-${id || slug}`}
     >
+      <div id={`preset-description-${id || slug}`} className="sr-only">
+        {cardDescription}
+      </div>
+
       <FastImage
         data-cy="preset-image"
         src={imageUrl}
-        alt={title}
+        alt={`Preview of ${title} preset`}
         aspectRatio="4:5"
         style={{
           height: "100%",
@@ -170,6 +200,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
           onClick={handleAddToList}
           onMouseDown={(e) => e.stopPropagation()}
           onMouseUp={(e) => e.stopPropagation()}
+          aria-label={`Add ${title} to list`}
           sx={{
             backgroundColor: "rgba(0, 0, 0, 0.7)",
             color: "white",
@@ -177,6 +208,11 @@ const PresetCard: React.FC<PresetCardProps> = ({
             height: 32,
             "&:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.9)",
+            },
+            "&:focus-visible": {
+              outline: "2px solid",
+              outlineColor: "white",
+              outlineOffset: "2px",
             },
           }}
         >
@@ -203,10 +239,21 @@ const PresetCard: React.FC<PresetCardProps> = ({
               navigate(`/profile/${creator.id}`);
             }
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.stopPropagation();
+              if (creator.id) {
+                navigate(`/profile/${creator.id}`);
+              }
+            }
+          }}
+          tabIndex={0}
+          role="button"
+          aria-label={`View ${creator.username}'s profile`}
         >
           <Avatar
             src={creator.avatar}
-            alt={creator.username}
+            alt={`${creator.username}'s avatar`}
             sx={{
               width: 32,
               height: 32,
@@ -239,6 +286,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
         <Typography
           variant="h5"
           fontWeight="bold"
+          component="h3"
           sx={{
             color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
             textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
@@ -276,6 +324,8 @@ const PresetCard: React.FC<PresetCardProps> = ({
           gap: 0.5,
           justifyContent: "flex-start",
         }}
+        role="group"
+        aria-label="Preset tags"
       >
         {tags
           .slice(0, 3)
@@ -285,6 +335,21 @@ const PresetCard: React.FC<PresetCardProps> = ({
               key={index}
               label={tag.displayName}
               size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.stopPropagation();
+                  navigate(
+                    `/search?tag=${encodeURIComponent(tag.displayName)}`
+                  );
+                }
+              }}
+              tabIndex={0}
+              role="button"
+              aria-label={`Search for ${tag.displayName} presets`}
               sx={{
                 color: "white",
                 backgroundColor: "black",
@@ -296,10 +361,11 @@ const PresetCard: React.FC<PresetCardProps> = ({
                 "&:hover": {
                   backgroundColor: "rgba(255, 255, 255, 0.2)",
                 },
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`);
+                "&:focus-visible": {
+                  outline: "2px solid",
+                  outlineColor: "white",
+                  outlineOffset: "2px",
+                },
               }}
             />
           ))}

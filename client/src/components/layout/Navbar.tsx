@@ -53,6 +53,13 @@ const NavBar: React.FC = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
 
+  const handleKeyDown = (event: React.KeyboardEvent, action: () => void) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      action();
+    }
+  };
+
   const menuItems = [
     {
       text: "Profile",
@@ -94,18 +101,31 @@ const NavBar: React.FC = () => {
       position="sticky"
       elevation={2}
       sx={{ backgroundColor: "background.paper" }}
+      role="banner"
+      aria-label="Main navigation"
     >
       <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
         {/* Logo */}
         <Box
           data-cy="nav-home"
+          component="a"
+          href="/"
           sx={{
             display: "flex",
             alignItems: "center",
             gap: 1,
             cursor: "pointer",
+            textDecoration: "none",
+            color: "inherit",
           }}
-          onClick={() => navigate("/")}
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("/");
+          }}
+          onKeyDown={(e) => handleKeyDown(e, () => navigate("/"))}
+          tabIndex={0}
+          role="button"
+          aria-label="Go to home page"
         >
           <img src={Logo} alt="VISOR logo" style={{ height: 28 }} />
         </Box>
@@ -113,25 +133,38 @@ const NavBar: React.FC = () => {
         {/* Actions */}
         <Box
           data-cy="nav-actions"
+          component="nav"
+          aria-label="Navigation actions"
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
+          {/* Search icon - visible on all screen sizes */}
           <IconButton
             data-cy="nav-search"
             onClick={() => navigate("/search")}
             color="inherit"
+            aria-label="Search presets and film simulations"
+            title="Search"
           >
             <SearchIcon />
           </IconButton>
 
-          {/* Mobile menu button */}
-          <IconButton
-            data-cy="mobile-menu-button"
-            onClick={handleMobileMenuToggle}
-            color="inherit"
-            sx={{ display: { xs: "flex", sm: "none" } }}
-          >
-            <MenuIcon />
-          </IconButton>
+          {/* Mobile menu button - only show when authenticated */}
+          {isAuthenticated && (
+            <IconButton
+              data-cy="mobile-menu-button"
+              onClick={handleMobileMenuToggle}
+              color="inherit"
+              aria-label={
+                mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"
+              }
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
+              sx={{ display: { xs: "flex", sm: "none" } }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+
           {isAuthenticated && (
             <>
               <NotificationBell />
@@ -139,6 +172,8 @@ const NavBar: React.FC = () => {
                 data-cy="nav-upload"
                 onClick={() => navigate("/upload")}
                 color="inherit"
+                aria-label="Upload new content"
+                title="Upload"
               >
                 <UploadIcon />
               </IconButton>
@@ -150,11 +185,15 @@ const NavBar: React.FC = () => {
               <IconButton
                 onClick={handleMenuOpen}
                 color="inherit"
+                aria-label={`User menu for ${user.username}`}
+                aria-expanded={Boolean(anchorEl)}
+                aria-controls="user-menu"
+                aria-haspopup="true"
                 sx={{ ml: 1 }}
               >
                 <Avatar
                   src={user.avatar}
-                  alt={user.username}
+                  alt={`${user.username}'s avatar`}
                   sx={{
                     width: 32,
                     height: 32,
@@ -175,6 +214,7 @@ const NavBar: React.FC = () => {
                 </Avatar>
               </IconButton>
               <Menu
+                id="user-menu"
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
                 onClose={handleMenuClose}
@@ -198,8 +238,10 @@ const NavBar: React.FC = () => {
                 }}
                 transformOrigin={{ horizontal: "right", vertical: "top" }}
                 anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+                role="menu"
+                aria-label="User account menu"
               >
-                <Box sx={{ px: 2, py: 1.5 }}>
+                <Box sx={{ px: 2, py: 1.5 }} role="presentation">
                   <Typography variant="subtitle1" fontWeight="bold">
                     {user.username}
                   </Typography>
@@ -210,14 +252,22 @@ const NavBar: React.FC = () => {
                 <Divider />
                 {menuItems.map((item, index) => (
                   <React.Fragment key={item.text}>
-                    <MenuItem onClick={item.onClick}>
+                    <MenuItem
+                      onClick={item.onClick}
+                      role="menuitem"
+                      aria-label={item.text}
+                    >
                       {item.icon}
                       {item.text}
                     </MenuItem>
                     {item.divider && <Divider />}
                   </React.Fragment>
                 ))}
-                <MenuItem onClick={handleLogout}>
+                <MenuItem
+                  onClick={handleLogout}
+                  role="menuitem"
+                  aria-label="Log out"
+                >
                   <LogoutIcon />
                   Log Out
                 </MenuItem>
@@ -228,6 +278,8 @@ const NavBar: React.FC = () => {
               <IconButton
                 onClick={() => navigate("/login")}
                 color="inherit"
+                aria-label="Sign in"
+                title="Sign in"
                 sx={{ display: { xs: "flex", sm: "none" } }}
               >
                 <LoginIcon />
@@ -237,6 +289,7 @@ const NavBar: React.FC = () => {
                 color="primary"
                 size="small"
                 onClick={() => navigate("/login")}
+                aria-label="Sign in to your account"
                 sx={{
                   display: { xs: "none", sm: "inline-flex" },
                   borderRadius: 2,
@@ -248,10 +301,13 @@ const NavBar: React.FC = () => {
           )}
         </Box>
 
-        {/* Mobile Menu */}
-        {mobileMenuOpen && (
+        {/* Mobile Menu - only show when authenticated */}
+        {isAuthenticated && mobileMenuOpen && (
           <Box
+            id="mobile-menu"
             data-cy="mobile-menu"
+            component="nav"
+            aria-label="Mobile navigation menu"
             sx={{
               position: "absolute",
               top: "100%",
@@ -265,55 +321,48 @@ const NavBar: React.FC = () => {
           >
             <Box
               sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1 }}
+              role="menu"
             >
+              {/* Search removed from mobile dropdown since it's in the main nav */}
               <Button
-                data-cy="mobile-nav-search"
+                data-cy="mobile-nav-upload"
                 fullWidth
-                startIcon={<SearchIcon />}
+                startIcon={<UploadIcon />}
                 onClick={() => {
-                  navigate("/search");
+                  navigate("/upload");
                   setMobileMenuOpen(false);
                 }}
+                role="menuitem"
+                aria-label="Upload new content"
               >
-                Search
+                Upload
               </Button>
-              {isAuthenticated && (
-                <>
-                  <Button
-                    data-cy="mobile-nav-upload"
-                    fullWidth
-                    startIcon={<UploadIcon />}
-                    onClick={() => {
-                      navigate("/upload");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Upload
-                  </Button>
-                  <Button
-                    data-cy="mobile-nav-discussions"
-                    fullWidth
-                    startIcon={<ForumIcon />}
-                    onClick={() => {
-                      navigate("/discussions");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Discussions
-                  </Button>
-                  <Button
-                    data-cy="mobile-nav-lists"
-                    fullWidth
-                    startIcon={<ListIcon />}
-                    onClick={() => {
-                      navigate("/lists");
-                      setMobileMenuOpen(false);
-                    }}
-                  >
-                    Lists
-                  </Button>
-                </>
-              )}
+              <Button
+                data-cy="mobile-nav-discussions"
+                fullWidth
+                startIcon={<ForumIcon />}
+                onClick={() => {
+                  navigate("/discussions");
+                  setMobileMenuOpen(false);
+                }}
+                role="menuitem"
+                aria-label="View discussions"
+              >
+                Discussions
+              </Button>
+              <Button
+                data-cy="mobile-nav-lists"
+                fullWidth
+                startIcon={<ListIcon />}
+                onClick={() => {
+                  navigate("/lists");
+                  setMobileMenuOpen(false);
+                }}
+                role="menuitem"
+                aria-label="View your lists"
+              >
+                Lists
+              </Button>
             </Box>
           </Box>
         )}
