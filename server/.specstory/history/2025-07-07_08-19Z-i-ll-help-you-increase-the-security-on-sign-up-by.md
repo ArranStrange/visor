@@ -3274,7 +3274,7 @@ _**User**_
 
 here is the API key for sendgrid.
 
-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
+YOUR_SENDGRID_API_KEY_HERE
 
 ---
 
@@ -3375,7 +3375,7 @@ arranstrange@MacBookPro server % echo "# SendGrid Configuration" >> .env
 ---
 
 ```bash
-echo "SENDGRID_API_KEY=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" >> .env
+echo "SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE" >> .env
 ```
 
 ```
@@ -3438,7 +3438,7 @@ VITE_CLOUDINARY_API_SECRET=rGpE1dn8ur_58Prb856wJU2ueIY
 
 RECAPTCHA_SECRET_KEY=6Ld1hZIrAAAAAE07Cflls4vWY0qzNNy635slSj-i
 # SendGrid Configuration
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 FROM_EMAIL=noreply@visor.com
 APP_URL=http://localhost:3000
 NODE_ENV=development
@@ -3868,7 +3868,7 @@ VITE_CLOUDINARY_API_SECRET=rGpE1dn8ur_58Prb856wJU2ueIY
 
 RECAPTCHA_SECRET_KEY=6Ld1hZIrAAAAAE07Cflls4vWY0qzNNy635slSj-i
 # SendGrid Configuration
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 APP_URL=http://localhost:3000
 NODE_ENV=development
 arranstrange@MacBookPro server %
@@ -5704,7 +5704,7 @@ grep "SENDGRID" .env
 
 ```
 arranstrange@MacBookPro server % grep "SENDGRID" .env
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 arranstrange@MacBookPro server %
 ```
 
@@ -8058,14 +8058,14 @@ grep -r "SG.nhhS7CXVTeG7GXz4D-uf1w" . --exclude-dir=node_modules --exclude-dir=.
 ./.specstory/history/2025-07-07_08-19Z-i-ll-help-you-increase-the-security-on-sign-up-by.md:SG.nhhS7CXVTeG7G
 Xz4D-uf1w.NredKnGnZqYNhNBzb8lSe3usnImzVtY_wLY1XsLcLUE
 ./.specstory/history/2025-07-07_08-19Z-i-ll-help-you-increase-the-security-on-sign-up-by.md:echo "SENDGRID_A
-PI_KEY=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" >> .env
+PI_KEY=YOUR_SENDGRID_API_KEY_HERE" >> .env
 ./.specstory/history/2025-07-07_08-19Z-i-ll-help-you-increase-the-security-on-sign-up-by.md:SENDGRID_API_KEY
-=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
+=YOUR_SENDGRID_API_KEY_HERE
 ./.specstory/history/2025-07-07_08-19Z-i-ll-help-you-increase-the-security-on-sign-up-by.md:SENDGRID_API_KEY
-=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
+=YOUR_SENDGRID_API_KEY_HERE
 ./.specstory/history/2025-07-07_08-19Z-i-ll-help-you-increase-the-security-on-sign-up-by.md:SENDGRID_API_KEY
-=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
-./.env:SENDGRID_API_KEY=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
+=YOUR_SENDGRID_API_KEY_HERE
+./.env:SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 
 ```
 
@@ -8486,7 +8486,7 @@ You need to add these environment variables to your **Render deployment**:
 4. **Add these variables:**
 
 ```
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 FROM_EMAIL=arranstrangewebdesign@gmail.com
 APP_URL=https://your-frontend-domain.com
 RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
@@ -8944,7 +8944,7 @@ While we wait for the push, let me give you the **immediate solution** to fix th
 4. **Add these variables:**
 
 ```
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 FROM_EMAIL=arranstrangewebdesign@gmail.com
 APP_URL=https://your-frontend-domain.com
 RECAPTCHA_SECRET_KEY=6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
@@ -9331,7 +9331,7 @@ While we wait for the push, you can also manually add these environment variable
 4. **Add these variables:**
 
 ```
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 FROM_EMAIL=arranstrangewebdesign@gmail.com
 APP_URL=https://your-frontend-domain.com
 NODE_ENV=production
@@ -10063,7 +10063,7 @@ Since your local server is working, you can test the registration flow locally:
 While waiting for deployment, you can manually add these to your **Render deployment**:
 
 ```
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 FROM_EMAIL=arranstrangewebdesign@gmail.com
 APP_URL=https://your-frontend-domain.com
 NODE_ENV=production
@@ -10112,7 +10112,7 @@ Found the issue! The `SENDGRID_API_KEY` is set to a placeholder value. Let me fi
 ---
 
 ```bash
-sed -i '' 's/SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE/SENDGRID_API_KEY=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/g' .env
+sed -i '' 's/SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE/SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE/g' .env
 ```
 
 ```
@@ -10129,7 +10129,7 @@ grep SENDGRID_API_KEY .env
 
 ```
 arranstrange@MacBookPro server % grep SENDGRID_API_KEY .env
-SENDGRID_API_KEY=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
+SENDGRID_API_KEY=YOUR_SENDGRID_API_KEY_HERE
 arranstrange@MacBookPro server %
 ```
 
@@ -10302,7 +10302,7 @@ arranstrange@MacBookPro server %
 
 ### **What was fixed:**
 - **SendGrid API key** was set to a placeholder value (`YOUR_SENDGRID_API_KEY_HERE`)
-- **Updated to actual API key**: `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`
+- **Updated to actual API key**: `YOUR_SENDGRID_API_KEY_HERE`
 - **Email service test confirmed** verification emails can be sent successfully
 
 ### **Current Status:**
@@ -10950,6 +10950,53 @@ git push origin main
 ```
 
 **The registration flow is now completely free of reCAPTCHA and should work perfectly!** 🚀
+
+---
+
+_**User**_
+
+write me a commit message
+
+---
+
+_**Assistant**_
+
+Based on the changes we made to completely remove reCAPTCHA from the backend, here's a comprehensive commit message:
+
+```
+feat: completely remove reCAPTCHA from backend
+
+🔧 Remove reCAPTCHA from backend completely
+- Remove recaptchaToken parameter from GraphQL schema
+- Remove recaptchaToken parameter from register resolver
+- Backend now matches frontend (no reCAPTCHA requirements)
+- Registration works with just username, email, and password
+
+✅ reCAPTCHA completely removed from both frontend and backend
+✅ Registration flow works without any reCAPTCHA validation
+✅ Email verification still functional
+✅ GraphQL mutation tested and working
+```
+
+Or if you prefer a shorter version:
+
+```
+feat: remove reCAPTCHA from backend registration
+
+- Remove recaptchaToken from GraphQL schema and resolver
+- Registration now works with username, email, password only
+- Backend matches frontend reCAPTCHA removal
+- Email verification still functional
+```
+
+Or a concise version:
+
+```
+feat: remove reCAPTCHA from backend
+
+Remove recaptchaToken parameter from GraphQL schema and register resolver.
+Registration now works without reCAPTCHA validation.
+```
 
 ---
 
