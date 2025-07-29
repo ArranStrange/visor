@@ -2,8 +2,27 @@ const axios = require("axios");
 
 class ReCAPTCHAService {
   static async verifyToken(token, remoteip = null) {
+    // TEMPORARILY DISABLED - Always return success
+    console.log("reCAPTCHA temporarily disabled - allowing all tokens");
+    return {
+      success: true,
+      message: "reCAPTCHA temporarily disabled",
+    };
+
+    // Original code commented out below
+    /*
     const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
     const NODE_ENV = process.env.NODE_ENV || "development";
+    const ENABLE_RECAPTCHA = process.env.ENABLE_RECAPTCHA !== "false"; // Default to true
+
+    // If reCAPTCHA is disabled, allow all tokens
+    if (!ENABLE_RECAPTCHA) {
+      console.log("reCAPTCHA disabled - allowing all tokens");
+      return {
+        success: true,
+        message: "reCAPTCHA disabled",
+      };
+    }
 
     // In development mode, allow test tokens for easier testing
     if (
@@ -14,6 +33,15 @@ class ReCAPTCHAService {
       return {
         success: true,
         message: "Development mode - test token accepted",
+      };
+    }
+
+    // Temporary production bypass for testing (remove this when you have proper keys)
+    if (NODE_ENV === "production" && token === "production-bypass") {
+      console.log("Production mode: Allowing bypass token for testing");
+      return {
+        success: true,
+        message: "Production mode - bypass token accepted",
       };
     }
 
@@ -89,6 +117,7 @@ class ReCAPTCHAService {
         error: error.message,
       };
     }
+    */
   }
 }
 

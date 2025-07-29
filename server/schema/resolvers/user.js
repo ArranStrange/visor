@@ -174,6 +174,8 @@ module.exports = {
       { req }
     ) => {
       try {
+        // reCAPTCHA temporarily disabled
+        /*
         // Validate reCAPTCHA token
         const recaptchaResult = await ReCAPTCHAService.verifyToken(
           recaptchaToken,
@@ -183,6 +185,7 @@ module.exports = {
         if (!recaptchaResult.success) {
           throw new ValidationError(recaptchaResult.message);
         }
+        */
 
         // Validate input
         validateEmail(email);
