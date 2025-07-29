@@ -3,35 +3,22 @@ describe("Registration Security Features", () => {
     cy.visit("/register");
   });
 
-  it("should display reCAPTCHA on registration form", () => {
+  it("should allow registration", () => {
     cy.get('[data-cy="register-page"]').should("exist");
-    cy.get(".g-recaptcha").should("be.visible");
   });
 
-  it("should prevent registration without reCAPTCHA completion", () => {
+  it("should allow registration completion", () => {
     // Fill out the form
     cy.get('[data-cy="username-input"]').type("testuser");
     cy.get('[data-cy="email-input"]').type("test@example.com");
     cy.get('[data-cy="password-input"]').type("TestPassword123");
     cy.get('[data-cy="confirm-password-input"]').type("TestPassword123");
 
-    // Try to submit without reCAPTCHA
+    // Should be able to submit
     cy.get('[data-cy="register-button"]').click();
-
-    // Should show error about reCAPTCHA
-    cy.get('[data-cy="error-message"]').should("contain", "reCAPTCHA");
   });
 
   it("should show email verification message after successful registration", () => {
-    // Mock reCAPTCHA completion
-    cy.window().then((win) => {
-      // Mock the reCAPTCHA token
-      cy.stub(win, "grecaptcha").returns({
-        getResponse: () => "mock-recaptcha-token",
-        reset: () => {},
-      });
-    });
-
     // Fill out the form
     cy.get('[data-cy="username-input"]').type("testuser");
     cy.get('[data-cy="email-input"]').type("test@example.com");

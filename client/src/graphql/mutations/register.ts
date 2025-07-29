@@ -5,14 +5,8 @@ export const REGISTER_USER = gql`
     $username: String!
     $email: String!
     $password: String!
-    $recaptchaToken: String!
   ) {
-    register(
-      username: $username
-      email: $email
-      password: $password
-      recaptchaToken: $recaptchaToken
-    ) {
+    register(username: $username, email: $email, password: $password) {
       success
       message
       requiresVerification

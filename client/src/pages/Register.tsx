@@ -15,7 +15,6 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../graphql/mutations/register";
 import { Email } from "@mui/icons-material";
-import ReCAPTCHAComponent from "../components/ReCAPTCHA";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -28,7 +27,6 @@ const Register: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
 
   const [register, { loading }] = useMutation(REGISTER_USER, {
     onCompleted: (data) => {
@@ -88,19 +86,12 @@ const Register: React.FC = () => {
       return;
     }
 
-    // Check if reCAPTCHA is required and completed
-    if (recaptchaToken === null) {
-      setError("Please complete the reCAPTCHA verification");
-      return;
-    }
-
     try {
       await register({
         variables: {
           username: form.username,
           email: form.email,
           password: form.password,
-          recaptchaToken: recaptchaToken,
         },
       });
     } catch (err) {
