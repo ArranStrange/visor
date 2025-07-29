@@ -10335,3 +10335,65 @@ git push origin main
 
 ---
 
+_**User**_
+
+index-COtj6g8q.js:1649 [GraphQL error]: Message: reCAPTCHA verification failed, Location: [object Object], Path: register
+overrideMethod @ hook.js:608
+console.error @ index-COtj6g8q.js:1649
+(anonymous) @ index-COtj6g8q.js:1
+(anonymous) @ index-COtj6g8q.js:1
+next @ index-COtj6g8q.js:1
+Ji @ vendor-apollo-DU8KTY3Z.js:50
+Gt @ vendor-apollo-DU8KTY3Z.js:50
+e.next @ vendor-apollo-DU8KTY3Z.js:50
+Ji @ vendor-apollo-DU8KTY3Z.js:50
+Gt @ vendor-apollo-DU8KTY3Z.js:50
+e.next @ vendor-apollo-DU8KTY3Z.js:50
+Promise.then
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:55
+Promise.then
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:55
+t @ vendor-apollo-DU8KTY3Z.js:50
+e.subscribe @ vendor-apollo-DU8KTY3Z.js:50
+(anonymous) @ index-COtj6g8q.js:1
+Promise.then
+(anonymous) @ index-COtj6g8q.js:1
+t @ vendor-apollo-DU8KTY3Z.js:50
+e.subscribe @ vendor-apollo-DU8KTY3Z.js:50
+(anonymous) @ index-COtj6g8q.js:1
+t @ vendor-apollo-DU8KTY3Z.js:50
+e.subscribe @ vendor-apollo-DU8KTY3Z.js:50
+complete @ vendor-apollo-DU8KTY3Z.js:50
+e.start @ vendor-apollo-DU8KTY3Z.js:50
+e @ vendor-apollo-DU8KTY3Z.js:50
+t.getObservableFromLink @ vendor-apollo-DU8KTY3Z.js:55
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:55
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:55
+u @ vendor-apollo-DU8KTY3Z.js:1
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:1
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:1
+ue @ vendor-apollo-DU8KTY3Z.js:1
+t.mutate @ vendor-apollo-DU8KTY3Z.js:55
+t.mutate @ vendor-apollo-DU8KTY3Z.js:55
+(anonymous) @ vendor-apollo-DU8KTY3Z.js:57
+T @ index-COtj6g8q.js:261
+zc @ vendor-react-DxtZfqjD.js:29
+Dc @ vendor-react-DxtZfqjD.js:29
+Oc @ vendor-react-DxtZfqjD.js:29
+fa @ vendor-react-DxtZfqjD.js:29
+da @ vendor-react-DxtZfqjD.js:29
+(anonymous) @ vendor-react-DxtZfqjD.js:29
+Do @ vendor-react-DxtZfqjD.js:32
+gi @ vendor-react-DxtZfqjD.js:29
+Tu @ vendor-react-DxtZfqjD.js:29
+pu @ vendor-react-DxtZfqjD.js:29
+Gc @ vendor-react-DxtZfqjD.js:29
+register:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+register:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+register:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+
+
+I want to disable Recaptur for now
+
+---
+
