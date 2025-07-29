@@ -11,10 +11,13 @@
   },
   "dependencies": {
     "@graphql-tools/merge": "^9.0.24",
+    "@sendgrid/mail": "^8.1.5",
     "apollo-server-express": "^3.12.1",
+    "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.6.1",
     "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "graphql": "^16.8.1",

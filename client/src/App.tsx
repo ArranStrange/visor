@@ -29,6 +29,7 @@ import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateDiscussion from "./pages/CreateDiscussion";
 import Notifications from "./pages/Notifications";
 import BuyMeACoffeeDemo from "./pages/BuyMeACoffeeDemo";
+import EmailVerification from "./pages/EmailVerification";
 
 function App() {
   return (
@@ -52,6 +53,7 @@ function App() {
                   <Route path="/upload/filmsim" element={<UploadFilmSim />} />
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
+                  <Route path="/verify-email" element={<EmailVerification />} />
                   <Route path="/lists" element={<Lists />} />
                   <Route path="/list/:id" element={<ListDetail />} />
                   <Route path="/create-list" element={<CreateList />} />

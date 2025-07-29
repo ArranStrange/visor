@@ -7,6 +7,7 @@ module.exports = gql`
     avatar: String
     bio: String
     email: String!
+    emailVerified: Boolean!
     instagram: String
     cameras: [String]
     presets: [Preset!]!
@@ -18,6 +19,24 @@ module.exports = gql`
     user: User!
   }
 
+  type RegisterResponse {
+    success: Boolean!
+    message: String!
+    requiresVerification: Boolean!
+    user: User
+  }
+
+  type VerifyEmailResponse {
+    success: Boolean!
+    message: String!
+    user: User
+  }
+
+  type ResendVerificationResponse {
+    success: Boolean!
+    message: String!
+  }
+
   extend type Query {
     getUser(id: ID!): User
     getCurrentUser: User
@@ -26,7 +45,14 @@ module.exports = gql`
 
   extend type Mutation {
     login(email: String!, password: String!): AuthPayload!
-    register(username: String!, email: String!, password: String!): AuthPayload!
+    register(
+      username: String!
+      email: String!
+      password: String!
+      recaptchaToken: String!
+    ): RegisterResponse!
+    verifyEmail(token: String!): VerifyEmailResponse!
+    resendVerificationEmail(email: String!): ResendVerificationResponse!
     updateProfile(input: JSON!): User
     uploadAvatar(file: Upload!): String
   }

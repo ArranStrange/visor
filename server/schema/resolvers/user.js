@@ -11,6 +11,8 @@ const path = require("path");
 const fs = require("fs");
 const Preset = require("../../models/Preset");
 const FilmSim = require("../../models/FilmSim");
+const EmailService = require("../../utils/emailService");
+const ReCAPTCHAService = require("../../utils/recaptchaService");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -32,21 +34,13 @@ const validateEmail = (email) => {
 };
 
 const validatePassword = (password) => {
-  if (password.length < 8) {
-    throw new ValidationError("Password must be at least 8 characters long");
+  if (password.length < 6) {
+    throw new ValidationError("Password must be at least 6 characters long");
   }
   if (!/[A-Z]/.test(password)) {
     throw new ValidationError(
       "Password must contain at least one uppercase letter"
     );
-  }
-  if (!/[a-z]/.test(password)) {
-    throw new ValidationError(
-      "Password must contain at least one lowercase letter"
-    );
-  }
-  if (!/[0-9]/.test(password)) {
-    throw new ValidationError("Password must contain at least one number");
   }
 };
 
@@ -99,90 +93,97 @@ module.exports = {
       }
 
       try {
-        const foundUser = await User.findById(user._id).populate({
-          path: "customLists",
-          populate: [
-            { path: "presets", select: "id title slug thumbnail" },
-            { path: "filmSims", select: "id name slug thumbnail" },
-          ],
-        });
-
-        if (!foundUser) {
-          throw new Error("User not found");
+        const currentUser = await User.findById(user.id || user._id);
+        if (!currentUser) {
+          throw new AuthenticationError("User not found");
         }
 
-        // Convert user to plain object and ensure all IDs are strings
-        const userObj = foundUser.toObject();
-
+        // Return user with proper ID format
+        const userObj = currentUser.toObject();
         return {
           ...userObj,
           id: userObj._id.toString(),
-          customLists:
-            userObj.customLists?.map((list) => ({
-              ...list,
-              id: list._id.toString(),
-              presets:
-                list.presets?.map((preset) => ({
-                  ...preset,
-                  id: preset._id.toString(),
-                })) || [],
-              filmSims:
-                list.filmSims?.map((filmSim) => ({
-                  ...filmSim,
-                  id: filmSim._id.toString(),
-                })) || [],
-            })) || [],
         };
       } catch (error) {
-        console.error("Error in getCurrentUser:", error);
-        throw new Error("Error fetching user profile");
+        console.error("Error getting current user:", error);
+        throw new AuthenticationError("Failed to get current user");
       }
     },
-    searchUsers: async (_, { query }) =>
-      await User.find({ username: new RegExp(query, "i") }),
+
+    searchUsers: async (_, { query }) => {
+      try {
+        const users = await User.find({
+          $or: [
+            { username: { $regex: query, $options: "i" } },
+            { email: { $regex: query, $options: "i" } },
+          ],
+        }).limit(10);
+
+        return users.map((user) => ({
+          ...user.toObject(),
+          id: user._id.toString(),
+        }));
+      } catch (error) {
+        console.error("Error searching users:", error);
+        throw new Error("Failed to search users");
+      }
+    },
   },
 
   Mutation: {
     login: async (_, { email, password }) => {
       try {
-        // Validate input
-        if (!email || !password) {
-          throw new UserInputError("Email and password are required");
-        }
-
-        // Find user
+        // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
           throw new AuthenticationError("Invalid email or password");
         }
 
-        // Verify password using the model's method
-        const isValid = await user.comparePassword(password);
-        if (!isValid) {
+        // Check password
+        const isValidPassword = await user.comparePassword(password);
+        if (!isValidPassword) {
           throw new AuthenticationError("Invalid email or password");
         }
 
-        console.log("Login successful for user:", user);
-        const token = generateToken(user);
-        console.log("Generated token:", token);
+        // Check if email is verified
+        if (!user.emailVerified) {
+          throw new AuthenticationError(
+            "Please verify your email address before logging in"
+          );
+        }
 
+        // Generate token and return
         return {
-          token,
+          token: generateToken(user),
           user: {
-            id: user._id,
-            username: user.username,
-            email: user.email,
-            avatar: user.avatar,
+            ...user.toObject(),
+            id: user._id.toString(),
           },
         };
       } catch (error) {
-        console.error("Login error:", error);
-        throw error;
+        if (error instanceof AuthenticationError) {
+          throw error;
+        }
+        throw new Error("An error occurred during login");
       }
     },
 
-    register: async (_, { username, email, password }) => {
+    register: async (
+      _,
+      { username, email, password, recaptchaToken },
+      { req }
+    ) => {
       try {
+        // Validate reCAPTCHA token
+        const recaptchaResult = await ReCAPTCHAService.verifyToken(
+          recaptchaToken,
+          req?.ip || null
+        );
+
+        if (!recaptchaResult.success) {
+          throw new ValidationError(recaptchaResult.message);
+        }
+
         // Validate input
         validateEmail(email);
         validatePassword(password);
@@ -201,17 +202,43 @@ module.exports = {
           }
         }
 
-        // Create user
-        const user = await User.create({
+        // Create user with email verification
+        const user = new User({
           username,
           email,
           password,
+          emailVerified: false,
         });
 
-        // Generate token and return
+        // Generate verification token
+        const verificationToken = user.generateVerificationToken();
+        await user.save();
+
+        // Send verification email
+        const emailResult = await EmailService.sendVerificationEmail(
+          email,
+          username,
+          verificationToken
+        );
+
+        if (!emailResult.success) {
+          console.error(
+            "Failed to send verification email:",
+            emailResult.message
+          );
+        }
+
+        // Return success response without token (user needs to verify email first)
         return {
-          token: generateToken(user),
-          user,
+          success: true,
+          message: emailResult.success
+            ? "Registration successful! Please check your email to verify your account."
+            : "Registration successful! Please check your email to verify your account. (Email delivery may be delayed)",
+          requiresVerification: true,
+          user: {
+            ...user.toObject(),
+            id: user._id.toString(),
+          },
         };
       } catch (error) {
         if (
@@ -220,7 +247,100 @@ module.exports = {
         ) {
           throw error;
         }
+        console.error("Registration error:", error);
+        console.error("Error stack:", error.stack);
         throw new Error("An error occurred during registration");
+      }
+    },
+
+    verifyEmail: async (_, { token }) => {
+      try {
+        // Find user by verification token
+        const user = await User.findOne({
+          verificationToken: token,
+          tokenExpiry: { $gt: new Date() },
+        });
+
+        if (!user) {
+          return {
+            success: false,
+            message: "Invalid or expired verification token",
+            user: null,
+          };
+        }
+
+        // Mark email as verified and clear token
+        user.emailVerified = true;
+        user.verificationToken = undefined;
+        user.tokenExpiry = undefined;
+        await user.save();
+
+        // Send welcome email
+        EmailService.sendWelcomeEmail(user.email, user.username).catch(
+          (error) => console.error("Failed to send welcome email:", error)
+        );
+
+        return {
+          success: true,
+          message:
+            "Email verified successfully! You can now log in to your account.",
+          user: {
+            ...user.toObject(),
+            id: user._id.toString(),
+          },
+        };
+      } catch (error) {
+        console.error("Email verification error:", error);
+        return {
+          success: false,
+          message: "An error occurred during email verification",
+          user: null,
+        };
+      }
+    },
+
+    resendVerificationEmail: async (_, { email }) => {
+      try {
+        // Find user by email
+        const user = await User.findOne({ email });
+
+        if (!user) {
+          return {
+            success: false,
+            message: "No account found with this email address",
+          };
+        }
+
+        if (user.emailVerified) {
+          return {
+            success: false,
+            message: "Email is already verified",
+          };
+        }
+
+        // Generate new verification token
+        const verificationToken = user.generateVerificationToken();
+        await user.save();
+
+        // Send verification email
+        const emailResult = await EmailService.sendVerificationEmail(
+          email,
+          user.username,
+          verificationToken
+        );
+
+        return {
+          success: emailResult.success,
+          message: emailResult.success
+            ? "Verification email sent successfully!"
+            : "Failed to send verification email. Please try again later.",
+        };
+      } catch (error) {
+        console.error("Resend verification email error:", error);
+        return {
+          success: false,
+          message: "An error occurred while sending verification email",
+        };
       }
     },
 
@@ -277,7 +397,7 @@ module.exports = {
         // Handle file upload
         const avatarPath = await handleFileUpload(file, "avatars");
 
-        // Update user's avatar field
+        // Update user's avatar
         const updatedUser = await User.findByIdAndUpdate(
           user._id,
           { avatar: avatarPath },
@@ -288,7 +408,6 @@ module.exports = {
           throw new Error("User not found");
         }
 
-        // Return the avatar path
         return avatarPath;
       } catch (error) {
         console.error("Error uploading avatar:", error);

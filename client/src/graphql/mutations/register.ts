@@ -5,15 +5,49 @@ export const REGISTER_USER = gql`
     $username: String!
     $email: String!
     $password: String!
+    $recaptchaToken: String!
   ) {
-    register(username: $username, email: $email, password: $password) {
-      token
+    register(
+      username: $username
+      email: $email
+      password: $password
+      recaptchaToken: $recaptchaToken
+    ) {
+      success
+      message
+      requiresVerification
       user {
         id
         username
         email
         avatar
+        emailVerified
       }
+    }
+  }
+`;
+
+export const VERIFY_EMAIL = gql`
+  mutation VerifyEmail($token: String!) {
+    verifyEmail(token: $token) {
+      success
+      message
+      user {
+        id
+        username
+        email
+        avatar
+        emailVerified
+      }
+    }
+  }
+`;
+
+export const RESEND_VERIFICATION_EMAIL = gql`
+  mutation ResendVerificationEmail($email: String!) {
+    resendVerificationEmail(email: $email) {
+      success
+      message
     }
   }
 `;

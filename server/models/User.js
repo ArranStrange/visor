@@ -10,6 +10,11 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
+    // Email verification fields
+    emailVerified: { type: Boolean, default: false },
+    verificationToken: String,
+    tokenExpiry: Date,
+
     // Uploads by the user
     uploadedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
     uploadedFilmSims: [{ type: Schema.Types.ObjectId, ref: "FilmSim" }],
@@ -38,6 +43,19 @@ userSchema.pre("save", async function (next) {
 // Method to check password
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to generate verification token
+userSchema.methods.generateVerificationToken = function () {
+  const crypto = require("crypto");
+  this.verificationToken = crypto.randomBytes(32).toString("hex");
+  this.tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+  return this.verificationToken;
+};
+
+// Method to verify token
+userSchema.methods.verifyToken = function (token) {
+  return this.verificationToken === token && this.tokenExpiry > new Date();
 };
 
 module.exports = mongoose.model("User", userSchema);

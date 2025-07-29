@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   Container,
   Box,
@@ -9,13 +9,18 @@ import {
   Alert,
   CircularProgress,
   FormHelperText,
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
+import ReCAPTCHA from "react-google-recaptcha";
 import { REGISTER_USER } from "../graphql/mutations/register";
+import { Security, Email } from "@mui/icons-material";
+import { ENV_CONFIG } from "../config/environment";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -24,18 +29,34 @@ const Register: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const [register, { loading }] = useMutation(REGISTER_USER, {
     onCompleted: (data) => {
-      // Store the token in localStorage
-      localStorage.setItem("token", data.register.token);
-      // Store user data if needed
-      localStorage.setItem("user", JSON.stringify(data.register.user));
-      // Navigate to home page
-      navigate("/");
+      if (data.register.success) {
+        if (data.register.requiresVerification) {
+          setRegistrationSuccess(true);
+          setError(null);
+        } else {
+          // Store the token in localStorage if no verification required
+          localStorage.setItem("token", data.register.token);
+          localStorage.setItem("user", JSON.stringify(data.register.user));
+          navigate("/");
+        }
+      } else {
+        setError(
+          data.register.message || "Registration failed. Please try again."
+        );
+      }
     },
     onError: (error) => {
       setError(error.message || "Registration failed. Please try again.");
+      // Reset reCAPTCHA on error
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
+      }
+      setRecaptchaToken(null);
     },
   });
 
@@ -61,6 +82,10 @@ const Register: React.FC = () => {
     }
   };
 
+  const handleRecaptchaChange = (token: string | null) => {
+    setRecaptchaToken(token);
+  };
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -74,12 +99,18 @@ const Register: React.FC = () => {
       return;
     }
 
+    if (!recaptchaToken) {
+      setError("Please complete the reCAPTCHA verification");
+      return;
+    }
+
     try {
       await register({
         variables: {
           username: form.username,
           email: form.email,
           password: form.password,
+          recaptchaToken: recaptchaToken,
         },
       });
     } catch (err) {
@@ -88,8 +119,66 @@ const Register: React.FC = () => {
     }
   };
 
+  if (registrationSuccess) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 10 }}>
+        <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
+          <Email sx={{ fontSize: 64, color: "primary.main", mb: 3 }} />
+
+          <Typography
+            variant="h4"
+            component="h1"
+            gutterBottom
+            fontWeight="bold"
+          >
+            Check Your Email
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+            data-cy="email-verification-message"
+          >
+            We've sent a verification email to <strong>{form.email}</strong>.
+            Please click the link in the email to verify your account.
+          </Typography>
+
+          <Alert severity="info" sx={{ mb: 3 }}>
+            If you don't see the email, check your spam folder.
+          </Alert>
+
+          <Stack spacing={2}>
+            <Button variant="contained" onClick={() => navigate("/login")}>
+              Go to Login
+            </Button>
+
+            <Button
+              variant="outlined"
+              onClick={() => {
+                setRegistrationSuccess(false);
+                setForm({
+                  username: "",
+                  email: "",
+                  password: "",
+                  confirmPassword: "",
+                });
+                setRecaptchaToken(null);
+                if (recaptchaRef.current) {
+                  recaptchaRef.current.reset();
+                }
+              }}
+            >
+              Register Another Account
+            </Button>
+          </Stack>
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
+    <Container maxWidth="xs" sx={{ mt: 10 }} data-cy="register-page">
       <Typography
         variant="h4"
         fontWeight="bold"
@@ -101,7 +190,11 @@ const Register: React.FC = () => {
 
       <Box component="form" onSubmit={handleRegister} noValidate>
         <Stack spacing={3} mt={4}>
-          {error && <Alert severity="error">{error}</Alert>}
+          {error && (
+            <Alert severity="error" data-cy="error-message">
+              {error}
+            </Alert>
+          )}
 
           <TextField
             label="Username"
@@ -118,6 +211,7 @@ const Register: React.FC = () => {
                 ? "Username must be at least 3 characters"
                 : ""
             }
+            data-cy="username-input"
           />
 
           <TextField
@@ -129,6 +223,7 @@ const Register: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            data-cy="email-input"
           />
 
           <Box>
@@ -142,9 +237,12 @@ const Register: React.FC = () => {
               required
               disabled={loading}
               error={!!passwordError}
+              data-cy="password-input"
             />
             {passwordError && (
-              <FormHelperText error>{passwordError}</FormHelperText>
+              <FormHelperText error data-cy="password-error">
+                {passwordError}
+              </FormHelperText>
             )}
             <FormHelperText>
               Password must be at least 6 characters and contain an uppercase
@@ -171,15 +269,27 @@ const Register: React.FC = () => {
                 ? "Passwords do not match"
                 : ""
             }
+            data-cy="confirm-password-input"
           />
+
+          <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={ENV_CONFIG.RECAPTCHA_SITE_KEY}
+              onChange={handleRecaptchaChange}
+              theme="light"
+            />
+          </Box>
 
           <Button
             type="submit"
             variant="contained"
             size="large"
-            disabled={loading}
+            disabled={loading || !recaptchaToken}
+            startIcon={loading ? <CircularProgress size={20} /> : <Security />}
+            data-cy="register-button"
           >
-            {loading ? <CircularProgress size={24} /> : "Register"}
+            {loading ? "Creating Account..." : "Create Account"}
           </Button>
 
           <Button
