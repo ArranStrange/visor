@@ -49,7 +49,6 @@ module.exports = gql`
       username: String!
       email: String!
       password: String!
-      recaptchaToken: String!
     ): RegisterResponse!
     verifyEmail(token: String!): VerifyEmailResponse!
     resendVerificationEmail(email: String!): ResendVerificationResponse!

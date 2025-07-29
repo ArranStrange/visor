@@ -168,11 +168,7 @@ module.exports = {
       }
     },
 
-    register: async (
-      _,
-      { username, email, password, recaptchaToken },
-      { req }
-    ) => {
+    register: async (_, { username, email, password }, { req }) => {
       try {
         // reCAPTCHA temporarily disabled
         /*
