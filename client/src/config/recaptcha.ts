@@ -11,6 +11,9 @@ export const RECAPTCHA_CONFIG = {
   // SECRET_KEY: "YOUR_PRODUCTION_SECRET_KEY",
 };
 
+// Production bypass token for testing (remove when you have proper keys)
+export const PRODUCTION_BYPASS_TOKEN = "production-bypass";
+
 // Instructions for setting up reCAPTCHA:
 // 1. Go to https://www.google.com/recaptcha/admin
 // 2. Create a new site

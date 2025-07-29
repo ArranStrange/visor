@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
@@ -13,14 +13,11 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import ReCAPTCHA from "react-google-recaptcha";
 import { REGISTER_USER } from "../graphql/mutations/register";
-import { Security, Email } from "@mui/icons-material";
-import { ENV_CONFIG } from "../config/environment";
+import { Email } from "@mui/icons-material";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -29,7 +26,6 @@ const Register: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const [register, { loading }] = useMutation(REGISTER_USER, {
@@ -52,11 +48,6 @@ const Register: React.FC = () => {
     },
     onError: (error) => {
       setError(error.message || "Registration failed. Please try again.");
-      // Reset reCAPTCHA on error
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-      }
-      setRecaptchaToken(null);
     },
   });
 
@@ -82,10 +73,6 @@ const Register: React.FC = () => {
     }
   };
 
-  const handleRecaptchaChange = (token: string | null) => {
-    setRecaptchaToken(token);
-  };
-
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -99,18 +86,13 @@ const Register: React.FC = () => {
       return;
     }
 
-    if (!recaptchaToken) {
-      setError("Please complete the reCAPTCHA verification");
-      return;
-    }
-
     try {
       await register({
         variables: {
           username: form.username,
           email: form.email,
           password: form.password,
-          recaptchaToken: recaptchaToken,
+          recaptchaToken: "recaptcha-disabled",
         },
       });
     } catch (err) {
@@ -163,10 +145,6 @@ const Register: React.FC = () => {
                   password: "",
                   confirmPassword: "",
                 });
-                setRecaptchaToken(null);
-                if (recaptchaRef.current) {
-                  recaptchaRef.current.reset();
-                }
               }}
             >
               Register Another Account
@@ -272,24 +250,14 @@ const Register: React.FC = () => {
             data-cy="confirm-password-input"
           />
 
-          <Box sx={{ display: "flex", justifyContent: "center", my: 2 }}>
-            <ReCAPTCHA
-              ref={recaptchaRef}
-              sitekey={ENV_CONFIG.RECAPTCHA_SITE_KEY}
-              onChange={handleRecaptchaChange}
-              theme="light"
-            />
-          </Box>
-
           <Button
             type="submit"
             variant="contained"
             size="large"
-            disabled={loading || !recaptchaToken}
-            startIcon={loading ? <CircularProgress size={20} /> : <Security />}
+            disabled={loading}
             data-cy="register-button"
           >
-            {loading ? "Creating Account..." : "Create Account"}
+            {loading ? <CircularProgress size={24} /> : "Create Account"}
           </Button>
 
           <Button
