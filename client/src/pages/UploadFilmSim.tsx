@@ -7,7 +7,6 @@ import {
   Stack,
   Box,
   Chip,
-  InputLabel,
   OutlinedInput,
   FormControl,
   Paper,
@@ -26,8 +25,6 @@ import { useNavigate } from "react-router-dom";
 import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
 import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { v4 as uuidv4 } from "uuid";
-import slugify from "slugify";
 import { useAuth } from "../context/AuthContext";
 
 // Type declarations for environment variables
@@ -197,41 +194,8 @@ const UPLOAD_FILM_SIM = gql`
 `;
 
 // Constants for file validation
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-const DYNAMIC_RANGE_MAP = {
-  AUTO: 0,
-  DR100: 100,
-  DR200: 200,
-  DR400: 400,
-};
-
-const FILM_SIMULATION_MAP = {
-  PROVIA: 0,
-  VELVIA: 1,
-  ASTIA: 2,
-  CLASSIC_CHROME: 3,
-  CLASSIC_NEG: 4,
-  ETERNA: 5,
-  ETERNA_BLEACH: 6,
-  ACROS: 7,
-  MONOCHROME: 8,
-  SEPIA: 9,
-  NOSTALGIC_NEG: 10,
-};
-
-const WHITE_BALANCE_MAP = {
-  AUTO: 0,
-  DAYLIGHT: 1,
-  SHADE: 2,
-  FLUORESCENT_1: 3,
-  FLUORESCENT_2: 4,
-  FLUORESCENT_3: 5,
-  INCANDESCENT: 6,
-  UNDERWATER: 7,
-  CUSTOM: 8,
-};
 
 const UploadFilmSim: React.FC = () => {
   const [title, setTitle] = useState("");
@@ -258,8 +222,7 @@ const UploadFilmSim: React.FC = () => {
     colorChromeEffect: "OFF",
     colorChromeFxBlue: "OFF",
   });
-  const [uploadFilmSim, { loading: uploadLoading }] =
-    useMutation(UPLOAD_FILM_SIM);
+  const [uploadFilmSim] = useMutation(UPLOAD_FILM_SIM);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const [isUploading, setIsUploading] = useState(false);
@@ -287,20 +250,36 @@ const UploadFilmSim: React.FC = () => {
   };
 
   const validateFile = (file: File): boolean => {
+    console.log(
+      `Validating file: ${file.name}, type: ${file.type}, size: ${file.size}`
+    );
+
     if (file.size > MAX_FILE_SIZE) {
-      setFileError(
-        `File size must be less than ${MAX_FILE_SIZE / 1024 / 1024}MB`
-      );
+      const errorMsg = `File "${file.name}" is too large. Maximum size is ${
+        MAX_FILE_SIZE / 1024 / 1024
+      }MB`;
+      console.log(errorMsg);
+      setFileError(errorMsg);
       return false;
     }
     if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-      setFileError("File must be a JPEG, PNG, or WebP image");
+      const errorMsg = `File "${file.name}" is not a supported image type. Please use JPEG, PNG, or WebP`;
+      console.log(errorMsg);
+      setFileError(errorMsg);
       return false;
     }
+    console.log(`File "${file.name}" passed validation`);
     return true;
   };
 
   const uploadToCloudinary = async (file: File): Promise<SampleImageInput> => {
+    console.log("Starting Cloudinary upload for file:", file.name);
+    console.log("Cloudinary config:", {
+      cloudName: cloudinaryConfig.cloudName,
+      hasApiKey: !!cloudinaryConfig.apiKey,
+      hasApiSecret: !!cloudinaryConfig.apiSecret,
+    });
+
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", "FilmSimSamples");
@@ -308,6 +287,10 @@ const UploadFilmSim: React.FC = () => {
 
     try {
       console.log("Uploading to Cloudinary...");
+      console.log(
+        "Upload URL:",
+        `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`
+      );
 
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
@@ -316,6 +299,9 @@ const UploadFilmSim: React.FC = () => {
           body: formData,
         }
       );
+
+      console.log("Cloudinary response status:", response.status);
+      console.log("Cloudinary response ok:", response.ok);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -336,6 +322,13 @@ const UploadFilmSim: React.FC = () => {
         throw new Error("No public_id received from Cloudinary");
       }
 
+      console.log(
+        "Upload successful, publicId:",
+        publicId,
+        "url:",
+        data.secure_url
+      );
+
       return {
         publicId,
         url: data.secure_url,
@@ -350,31 +343,67 @@ const UploadFilmSim: React.FC = () => {
     setFileError(null);
     const files = Array.from(e.target.files || []);
 
+    console.log("Files selected:", files);
+
+    if (files.length === 0) {
+      console.log("No files selected");
+      return;
+    }
+
     // Validate all files
-    const validFiles = files.filter((file) => validateFile(file));
+    const validFiles = files.filter((file) => {
+      const isValid = validateFile(file);
+      console.log(`File ${file.name} validation:`, isValid);
+      return isValid;
+    });
 
-    if (validFiles.length > 0) {
-      setSampleImages((prev) => [...prev, ...validFiles]);
+    console.log("Valid files:", validFiles);
 
-      // Upload each file to Cloudinary
-      try {
-        setIsUploading(true);
-        const uploadPromises = validFiles.map(async (file) => {
-          console.log("Uploading file to Cloudinary:", file);
-          const result = await uploadToCloudinary(file);
-          console.log("Uploaded file result:", result);
-          return result;
-        });
+    if (validFiles.length === 0) {
+      console.log("No valid files after validation");
+      return;
+    }
 
-        const uploadedImages = await Promise.all(uploadPromises);
-        console.log("All images uploaded:", uploadedImages);
-        setUploadedImageUrls(uploadedImages);
-      } catch (error) {
-        setFileError("Failed to upload images to Cloudinary");
-        console.error("Error uploading images:", error);
-      } finally {
-        setIsUploading(false);
-      }
+    // Upload each file to Cloudinary
+    try {
+      setIsUploading(true);
+      console.log("Starting upload process...");
+
+      const uploadPromises = validFiles.map(async (file) => {
+        console.log(
+          "Uploading file to Cloudinary:",
+          file.name,
+          file.type,
+          file.size
+        );
+        const result = await uploadToCloudinary(file);
+        console.log("Uploaded file result:", result);
+        return result;
+      });
+
+      const uploadedImages = await Promise.all(uploadPromises);
+      console.log("All images uploaded successfully:", uploadedImages);
+
+      // Append new images to existing ones instead of overwriting
+      setUploadedImageUrls((prev) => {
+        const newUrls = [...prev, ...uploadedImages];
+        console.log("Updated uploadedImageUrls:", newUrls);
+        return newUrls;
+      });
+      setSampleImages((prev) => {
+        const newImages = [...prev, ...validFiles];
+        console.log("Updated sampleImages:", newImages);
+        return newImages;
+      });
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      setFileError(
+        `Failed to upload images to Cloudinary: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
+    } finally {
+      setIsUploading(false);
     }
 
     // Reset the input
@@ -407,11 +436,12 @@ const UploadFilmSim: React.FC = () => {
         setError("Please add at least one tag");
         return;
       }
+      if (uploadedImageUrls.length === 0) {
+        setError("Please add at least one sample image");
+        return;
+      }
 
       setIsUploading(true);
-
-      // Generate slug from title
-      const slug = slugify(title, { lower: true, strict: true });
 
       // Format settings to match the backend schema
       const formattedSettings = {
@@ -427,7 +457,7 @@ const UploadFilmSim: React.FC = () => {
         highlight: Math.round(filmSettings.highlight) || 0,
         shadow: Math.round(filmSettings.shadow) || 0,
         noiseReduction: Math.round(filmSettings.noiseReduction) || 0,
-        grainEffect: Math.round(filmSettings.grainEffect) || 0,
+        grainEffect: filmSettings.grainEffect,
         clarity: Math.round(filmSettings.clarity) || 0,
         colorChromeEffect: filmSettings.colorChromeEffect,
         colorChromeFxBlue: filmSettings.colorChromeFxBlue,
@@ -481,7 +511,7 @@ const UploadFilmSim: React.FC = () => {
 
   const renderSettingWithTooltip = (
     label: string,
-    tooltip: string,
+    _tooltip: string,
     value: string | number,
     options: { value: string | number; label: string }[],
     settingKey: keyof FilmSimSettings
@@ -707,15 +737,19 @@ const UploadFilmSim: React.FC = () => {
 
             <Box>
               <Typography variant="subtitle1" gutterBottom>
-                Sample Images
+                Sample Images *
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                At least one sample image is required (max 25MB, JPEG/PNG/WebP)
               </Typography>
               <Button
                 component="label"
                 variant="outlined"
                 sx={{ mt: 1 }}
-                disabled={!user}
+                disabled={!user || isUploading}
+                startIcon={isUploading ? <CircularProgress size={20} /> : null}
               >
-                Add Images
+                {isUploading ? "Uploading..." : "Add Images"}
                 <input
                   type="file"
                   accept={ALLOWED_IMAGE_TYPES.join(",")}
@@ -724,6 +758,11 @@ const UploadFilmSim: React.FC = () => {
                   style={{ display: "none" }}
                 />
               </Button>
+              {isUploading && (
+                <Typography variant="body2" color="primary" sx={{ mt: 1 }}>
+                  Uploading images to Cloudinary...
+                </Typography>
+              )}
               {sampleImages.length > 0 && (
                 <Box sx={{ mt: 2 }}>
                   <Grid2 container spacing={2}>
@@ -799,7 +838,9 @@ const UploadFilmSim: React.FC = () => {
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={isUploading || !user}
+                disabled={
+                  isUploading || !user || uploadedImageUrls.length === 0
+                }
                 startIcon={isUploading ? <CircularProgress size={20} /> : null}
               >
                 {isUploading ? "Uploading..." : "Upload"}
