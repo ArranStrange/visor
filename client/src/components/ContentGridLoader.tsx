@@ -98,7 +98,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       );
     }
 
-    // Add Buy Me a Coffee card at specific position
+
     const buyMeACoffeeCard = {
       type: "buymeacoffee" as const,
       data: {
@@ -107,12 +107,11 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       },
     };
 
-    // Always insert at position 0 (first card) to ensure it's on the top row
-    // This works regardless of mobile/desktop and ensures it stays in the first few positions even after shuffling
+
     if (results.length > 0) {
       results.splice(0, 0, buyMeACoffeeCard);
     } else {
-      // If no other items, add to the beginning
+
       results.unshift(buyMeACoffeeCard);
     }
 
@@ -123,20 +122,18 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       : results;
   }, [customData, contentType, presetData, filmSimData, searchQuery, isMobile]);
 
-  // Reset visible items when data changes
+
   React.useEffect(() => {
     setVisibleItems(ITEMS_PER_PAGE);
   }, [combined.length]);
 
-  // Load more items when intersection observer triggers
+
   const loadMore = useCallback(() => {
     setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, combined.length));
   }, [combined.length]);
-
-  // Check if we have more items to load
   const hasMore = visibleItems < combined.length;
 
-  // Check if we're on mobile
+
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.matchMedia("(hover: none)").matches);

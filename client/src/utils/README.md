@@ -147,14 +147,7 @@ The utilities are already integrated into:
 
 ## Testing
 
-Use the `CloudinaryDemo` component to test the optimization features:
-
-```typescript
-import CloudinaryDemo from "../components/CloudinaryDemo";
-
-// Add to your app for testing
-<CloudinaryDemo />;
-```
+You can test the optimization features by using the `OptimizedImage` component directly in your application.
 
 ## Migration Guide
 

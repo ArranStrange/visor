@@ -12,13 +12,13 @@ import { useContentType } from "../context/ContentTypeFilter";
 
 interface StaggeredGridProps {
   children: React.ReactNode[];
-  minWidth?: number; // min width of card in px (e.g., 250)
-  gap?: number; // gap between cards in px (e.g., 16)
-  randomizeOrder?: boolean; // whether to randomize the order of items
-  loading?: boolean; // whether to show loading skeletons (deprecated)
-  onLoadMore?: () => void; // callback to load more items
-  hasMore?: boolean; // whether there are more items to load
-  isLoading?: boolean; // whether more items are being loaded
+  minWidth?: number;
+  gap?: number;
+  randomizeOrder?: boolean;
+  loading?: boolean;
+  onLoadMore?: () => void;
+  hasMore?: boolean;
+  isLoading?: boolean;
 }
 
 const StaggeredGrid: React.FC<StaggeredGridProps> = ({
@@ -38,46 +38,39 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
 
   const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
     threshold: 0.1,
-    rootMargin: "200px", // Increased margin to load earlier
+    rootMargin: "200px",
   });
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(() => {
-    // Calculate initial column count based on window width
     if (typeof window !== "undefined") {
       const windowWidth = window.innerWidth;
       if (windowWidth < 700) return 2;
       if (windowWidth < 900) return 4;
       return 5;
     }
-    return 4; // fallback
+    return 4;
   });
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   const { shuffleCounter } = useContentType();
 
-  // Store the shuffled order in a ref to maintain consistency without causing re-renders
   const shuffledOrderRef = useRef<number[]>([]);
   const lastShuffleCounterRef = useRef<number>(shuffleCounter);
 
-  // Memoize the column count calculation
   const calculateColumnCount = useCallback(
     (containerWidth: number) => {
       if (containerWidth < 700) {
-        // Mobile screens: exactly 2 columns
         return 2;
       } else if (containerWidth < 900) {
-        // Tablet/Medium screens: 3 columns
         return 3;
       } else {
-        // Desktop/Large screens: exactly 4 columns
         return 4;
       }
     },
     [minWidth, gap]
   );
 
-  // Optimized resize handler with debouncing
   const updateColumns = useCallback(() => {
     if (!containerRef.current) return;
 
@@ -97,7 +90,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     }
   }, [calculateColumnCount, columnCount]);
 
-  // Calculate number of columns based on container width
   useEffect(() => {
     // Force immediate calculation on mount
     updateColumns();
@@ -105,7 +97,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     let timeoutId: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(timeoutId);
-      timeoutId = setTimeout(updateColumns, 100); // Debounce resize events
+      timeoutId = setTimeout(updateColumns, 100);
     };
 
     window.addEventListener("resize", handleResize);
@@ -114,7 +106,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       clearTimeout(timeoutId);
     };
   }, [updateColumns]);
-
   // Force column calculation on mount and when container ref is available
   useEffect(() => {
     if (containerRef.current) {
@@ -122,17 +113,14 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     }
   }, [updateColumns]);
 
-  // Force column recalculation when content changes (e.g., content type toggle)
   useEffect(() => {
     if (containerRef.current) {
-      // Small delay to ensure DOM has updated
       setTimeout(() => {
         updateColumns();
       }, 50);
     }
   }, [children.length, updateColumns]);
 
-  // Load more items when intersection observer triggers
   useEffect(() => {
     if (
       loadMoreInView &&
@@ -142,7 +130,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       onLoadMore
     ) {
       setIsLoadingMore(true);
-      // Use setTimeout to prevent immediate re-triggering
+
       setTimeout(() => {
         onLoadMore();
         setIsLoadingMore(false);
@@ -150,7 +138,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     }
   }, [loadMoreInView, hasMore, isLoading, isLoadingMore, onLoadMore]);
 
-  // Memoize column distribution to avoid recalculation on every render
   const columns = useMemo(() => {
     // console.log('StaggeredGrid: Recalculating columns', {
     //   childrenLength: children.length,
@@ -164,18 +151,12 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       return Array.from({ length: columnCount }, () => []);
     }
 
-    // Create array of indices
     let itemIndices = Array.from({ length: children.length }, (_, i) => i);
 
-    // Handle shuffle logic
     if (randomizeOrder) {
-      // Create shuffled order that maintains previous 10-card chunks
-      // console.log('Creating shuffled order with 10-card chunk preservation');
-
       const chunkSize = 10;
       const shuffled: number[] = [];
 
-      // Process items in chunks of 10
       for (
         let chunkStart = 0;
         chunkStart < children.length;
@@ -187,20 +168,16 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           (_, i) => chunkStart + i
         );
 
-        // Check if we have a stored order for this chunk
         const storedChunk = shuffledOrderRef.current.slice(
           chunkStart,
           chunkEnd
         );
 
         if (storedChunk.length === chunkIndices.length) {
-          // Use stored order for this chunk
           shuffled.push(...storedChunk);
         } else {
-          // Create new shuffled order for this chunk
           const shuffledChunk = [...chunkIndices];
 
-          // Fisher-Yates shuffle for this chunk
           for (let i = shuffledChunk.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [shuffledChunk[i], shuffledChunk[j]] = [
@@ -219,7 +196,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       // console.log('StaggeredGrid: New shuffled indices with chunk preservation', itemIndices);
     } else {
       // console.log('Shuffle disabled, using original order');
-      // Clear shuffled order when randomization is disabled
+
       shuffledOrderRef.current = [];
       lastShuffleCounterRef.current = shuffleCounter;
     }
@@ -229,7 +206,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       () => []
     );
 
-    // Distribute items across columns
     itemIndices.forEach((itemIndex, index) => {
       const columnIndex = index % columnCount;
       newColumns[columnIndex].push(itemIndex);
@@ -238,7 +214,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
     return newColumns;
   }, [children.length, columnCount, randomizeOrder, shuffleCounter]);
 
-  // Handle shuffled order updates separately to avoid dependency issues
   useEffect(() => {
     if (!randomizeOrder) {
       shuffledOrderRef.current = [];
@@ -259,12 +234,12 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
           display: "grid",
           gridTemplateColumns: `repeat(${columnCount}, 1fr)`,
           gap: `${gap}px`,
-          alignItems: "start", // Ensure columns start from the top
-          minHeight: "100vh", // Prevent layout shift
-          contain: "layout", // CSS containment for better performance
-          width: "100%", // Ensure container takes full available width
-          maxWidth: "100vw", // Prevent overflow on mobile
-          overflow: "hidden", // Prevent horizontal scroll
+          alignItems: "start",
+          minHeight: "100vh",
+          contain: "layout",
+          width: "100%",
+          maxWidth: "100vw",
+          overflow: "hidden",
         }}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {...({} as any)}
@@ -277,7 +252,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                 display: "flex",
                 flexDirection: "column",
                 gap: `${gap}px`,
-                alignItems: "stretch", // Ensure cards stretch to fill width
+                alignItems: "stretch",
               }}
             >
               {column.map((itemIndex) => (
@@ -290,15 +265,15 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
                           opacity: 1,
                           y: 0,
                           transition: {
-                            delay: 0.01 * itemIndex, // Faster delay
-                            duration: 0.3, // Shorter duration
-                            ease: "easeOut", // Simpler easing
+                            delay: 0.01 * itemIndex,
+                            duration: 0.3,
+                            ease: "easeOut",
                           },
                         }
                       : {}
                   }
                   exit={{ opacity: 0, y: -10 }}
-                  style={{ width: "100%" }} // Ensure motion.div takes full width
+                  style={{ width: "100%" }}
                 >
                   {children[itemIndex]}
                 </motion.div>
@@ -308,7 +283,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
         </AnimatePresence>
       </Box>
 
-      {/* Load More Trigger */}
       {hasMore && (
         <Box
           ref={loadMoreRef}
@@ -318,9 +292,9 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
             alignItems: "center",
             py: 4,
             mt: 2,
-            minHeight: 60, // Prevent layout shift
-            position: "relative", // Ensure stable positioning
-            contain: "layout", // CSS containment
+            minHeight: 60,
+            position: "relative",
+            contain: "layout",
           }}
         >
           {isLoading && (

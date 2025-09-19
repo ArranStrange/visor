@@ -41,7 +41,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     setSliderPosition(Math.min(Math.max(percentage, 0), 100));
   };
 
-  // Touch event handlers for mobile
   const handleTouchStart = (e: React.TouchEvent) => {
     e.preventDefault();
     isDragging.current = true;
@@ -94,7 +93,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
     >
-      {/* After Image (full width, background) */}
       <Box
         component="img"
         src={afterImage || PLACEHOLDER_AFTER_IMAGE}
@@ -109,7 +107,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         }}
       />
 
-      {/* Before Image (clipped, on top) */}
       <Box
         component="img"
         src={beforeImage || PLACEHOLDER_BEFORE_IMAGE}
@@ -125,7 +122,6 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         }}
       />
 
-      {/* Slider Line */}
       <Box
         sx={{
           position: "absolute",

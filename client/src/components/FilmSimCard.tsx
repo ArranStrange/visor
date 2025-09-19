@@ -60,23 +60,20 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const [showOptions, setShowOptions] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
 
-  // Get dynamic off-white color based on image (lightweight version)
   const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
   const [showColor, setShowColor] = React.useState(false);
 
-  // Show color with a short delay after analysis completes
   React.useEffect(() => {
     if (!isAnalyzing && offWhiteColor) {
       const timer = setTimeout(() => {
         setShowColor(true);
-      }, 100); // Much shorter delay than before
+      }, 100);
       return () => clearTimeout(timer);
     } else {
       setShowColor(false);
     }
   }, [isAnalyzing, offWhiteColor]);
 
-  // Check if we're on mobile
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.matchMedia("(hover: none)").matches);
@@ -89,14 +86,12 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   const handleClick = () => {
     if (!addToListOpen) {
       if (isMobile) {
-        // On mobile: first click shows options, second click navigates
         if (!showOptions) {
           setShowOptions(true);
         } else {
           navigate(`/filmsim/${slug}`);
         }
       } else {
-        // On desktop: direct navigation
         navigate(`/filmsim/${slug}`);
       }
     }
@@ -111,7 +106,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
     setAddToListOpen(false);
   };
 
-  // Hide options when clicking outside (desktop only)
   React.useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
@@ -139,7 +133,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         "&:hover .add-to-list-button": {
           opacity: 1,
         },
-        // Mobile: show options when showOptions is true
+
         "@media (hover: none)": {
           "& .tags-container": {
             opacity: showOptions ? 1 : 0,
@@ -169,7 +163,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         }}
       />
 
-      {/* Add to List Button */}
       <Box
         className="add-to-list-button"
         sx={{
@@ -199,7 +192,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         </IconButton>
       </Box>
 
-      {/* Creator Avatar */}
       {creator && (
         <Box
           sx={{

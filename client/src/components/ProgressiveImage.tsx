@@ -39,7 +39,7 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
               (entry.intersectionRatio > 0 || entry.isIntersecting)
             ) {
               setIsInView(true);
-              // Safely unobserve
+
               if (observerRef.current && entry.target) {
                 observerRef.current.unobserve(entry.target);
               }
@@ -48,7 +48,7 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         },
         {
           threshold: 0.01,
-          rootMargin: "100px", // Start loading 100px before entering viewport
+          rootMargin: "100px",
         }
       );
       observerRef.current.observe(imageRef.current);
@@ -56,13 +56,11 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
 
     return () => {
       didCancel = true;
-      // Safely cleanup observer
+
       if (observerRef.current && imageRef.current) {
         try {
           observerRef.current.unobserve(imageRef.current);
-        } catch (error) {
-          // Ignore errors during cleanup
-        }
+        } catch (error) {}
         observerRef.current.disconnect();
       }
     };
@@ -70,12 +68,10 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
 
   useEffect(() => {
     if (isInView && src) {
-      // Start with progressive (blurred) image
       const progressiveUrl = CloudinaryOptimizer.getProgressive(src);
       setCurrentSrc(progressiveUrl);
       setShowProgressive(true);
 
-      // Load the full quality image
       const fullImage = new Image();
       fullImage.onload = () => {
         const optimizedUrl = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
@@ -85,7 +81,6 @@ const ProgressiveImage: React.FC<ProgressiveImageProps> = ({
         onLoad?.();
       };
       fullImage.onerror = () => {
-        // Fallback to original image if Cloudinary fails
         setCurrentSrc(src);
         setShowProgressive(false);
         setIsLoaded(true);

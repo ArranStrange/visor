@@ -20,7 +20,6 @@ const FastImage: React.FC<FastImageProps> = ({
   onLoad,
   onError,
 }) => {
-  // Get optimized URL immediately
   const optimizedSrc = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
 
   return (
@@ -32,7 +31,6 @@ const FastImage: React.FC<FastImageProps> = ({
       loading="lazy"
       onLoad={onLoad}
       onError={(e) => {
-        // Fallback to original if Cloudinary fails
         if (e.currentTarget.src !== src) {
           e.currentTarget.src = src;
         } else {

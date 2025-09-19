@@ -6,7 +6,6 @@ import AddToListDialog from "./AddToListDialog";
 import { useImageColor } from "../hooks/useImageColor";
 import FastImage from "./FastImage";
 
-// Placeholder image for presets without thumbnails
 const placeholderImage = "/placeholder-image.jpg";
 
 interface PresetCardProps {
@@ -45,7 +44,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Determine the correct image URL
   let imageUrl = placeholderImage;
   if (afterImage) {
     if (typeof afterImage === "string") {
@@ -55,16 +53,14 @@ const PresetCard: React.FC<PresetCardProps> = ({
     }
   }
 
-  // Get dynamic off-white color based on image (lightweight version)
   const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
   const [showColor, setShowColor] = React.useState(false);
 
-  // Show color with a short delay after analysis completes
   React.useEffect(() => {
     if (!isAnalyzing && offWhiteColor) {
       const timer = setTimeout(() => {
         setShowColor(true);
-      }, 100); // Much shorter delay than before
+      }, 100);
       return () => clearTimeout(timer);
     } else {
       setShowColor(false);
@@ -83,20 +79,17 @@ const PresetCard: React.FC<PresetCardProps> = ({
   const handleCardClick = () => {
     if (!addToListOpen) {
       if (isMobile) {
-        // On mobile: first click shows options, second click navigates
         if (!showOptions) {
           setShowOptions(true);
         } else {
           navigate(`/preset/${slug}`);
         }
       } else {
-        // On desktop: direct navigation
         navigate(`/preset/${slug}`);
       }
     }
   };
 
-  // Hide options when clicking outside (desktop only)
   React.useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
@@ -110,10 +103,10 @@ const PresetCard: React.FC<PresetCardProps> = ({
     <Card
       sx={{
         position: "relative",
-        aspectRatio: "4/5", // Shorter than 3/4 to create staggered effect
+        aspectRatio: "4/5",
         borderRadius: 1,
         cursor: "pointer",
-        overflow: "hidden", // to contain the overlay and for border-radius on image
+        overflow: "hidden",
         "&:hover .tags-overlay": {
           opacity: 1,
         },
@@ -126,7 +119,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
         "&:hover .add-to-list-button": {
           opacity: 1,
         },
-        // Mobile: show options when showOptions is true
+
         "@media (hover: none)": {
           "& .tags-overlay": {
             opacity: showOptions ? 1 : 0,
@@ -152,7 +145,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
         }}
       />
 
-      {/* Add to List Button */}
       <Box
         className="add-to-list-button"
         sx={{
@@ -182,7 +174,6 @@ const PresetCard: React.FC<PresetCardProps> = ({
         </IconButton>
       </Box>
 
-      {/* Creator Avatar */}
       {creator && (
         <Box
           sx={{

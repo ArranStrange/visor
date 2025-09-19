@@ -9,7 +9,6 @@ import {
   styled,
 } from "@mui/material";
 
-// Helper to convert hue/sat to CSS color
 function hslColor(hue: number, sat: number, light: number = 0.5) {
   return `hsl(${hue}, ${sat}%, ${light * 100}%)`;
 }
@@ -44,7 +43,6 @@ function ColorWheel({
   selected: boolean;
   onClick: () => void;
 }) {
-  // Place thumb on wheel using polar coordinates
   const angle = ((hue ?? 0) - 90) * (Math.PI / 180);
   const radius = ((sat ?? 0) / 100) * (wheelSize / 2 - thumbSize / 2);
   const cx = wheelSize / 2 + radius * Math.cos(angle);
@@ -60,7 +58,6 @@ function ColorWheel({
       }}
       onClick={onClick}
     >
-      {/* True color wheel SVG */}
       <svg
         width={wheelSize}
         height={wheelSize}
@@ -75,7 +72,7 @@ function ColorWheel({
             <stop offset="100%" stopColor="#000" stopOpacity={0.15} />
           </radialGradient>
         </defs>
-        {/* Color wheel using conic gradients for hue, and radial for vignette */}
+
         <foreignObject x="0" y="0" width={wheelSize} height={wheelSize}>
           <Box
             sx={{
@@ -94,7 +91,7 @@ function ColorWheel({
           fill="url(#wheel-vignette)"
         />
       </svg>
-      {/* Thumb only if selected */}
+
       {selected && (
         <Box
           sx={{
@@ -115,7 +112,6 @@ function ColorWheel({
   );
 }
 
-// Custom CenteredSlider for center-out highlight
 const CenteredSlider = styled(Slider)(({ theme }) => ({
   color: "#fff",
   height: 4,
@@ -159,7 +155,6 @@ const ColorGradingWheels: React.FC<ColorGradingProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selected, setSelected] = useState<WheelType>("midtones");
 
-  // For future: could pass per-wheel blending/balance
   const getBlending = () => blending;
   const getBalance = () => balance;
   const getLuminance = () => {
@@ -257,9 +252,8 @@ const ColorGradingWheels: React.FC<ColorGradingProps> = ({
           />
         </Box>
       </Stack>
-      {/* Only show sliders for selected wheel */}
+
       <Box sx={{ mt: 2 }}>
-        {/* Luminance */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
             variant="body2"
@@ -294,7 +288,7 @@ const ColorGradingWheels: React.FC<ColorGradingProps> = ({
             {getLuminance()}
           </Typography>
         </Box>
-        {/* Blending */}
+
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
             variant="body2"
@@ -329,7 +323,7 @@ const ColorGradingWheels: React.FC<ColorGradingProps> = ({
             {getBlending()}
           </Typography>
         </Box>
-        {/* Balance */}
+
         <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
           <Typography
             variant="body2"

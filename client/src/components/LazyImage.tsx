@@ -44,7 +44,7 @@ const LazyImage: React.FC<LazyImageProps> = ({
         },
         {
           threshold: 0.01,
-          rootMargin: "50px", // Start loading 50px before entering viewport
+          rootMargin: "50px",
         }
       );
       observer.observe(imageRef.current);
@@ -60,7 +60,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
 
   useEffect(() => {
     if (isInView && src) {
-      // Get optimized image URL
       const optimizedUrl = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
       setImageSrc(optimizedUrl);
     }
@@ -72,7 +71,6 @@ const LazyImage: React.FC<LazyImageProps> = ({
   };
 
   const handleError = () => {
-    // Fallback to original image if Cloudinary optimization fails
     if (imageSrc !== src) {
       setImageSrc(src);
     } else {

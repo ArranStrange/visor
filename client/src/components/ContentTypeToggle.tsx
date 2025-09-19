@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 import { useContentType } from "../context/ContentTypeFilter";
 
-// Icons
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import TuneIcon from "@mui/icons-material/Tune";
 import CameraRollIcon from "@mui/icons-material/CameraRoll";
@@ -31,11 +30,8 @@ const ContentTypeToggle: React.FC = () => {
   };
 
   const handleShuffleClick = () => {
-    // console.log('Shuffle button clicked', { currentRandomizeOrder: randomizeOrder });
     setRandomizeOrder(!randomizeOrder);
-    // Always trigger shuffle when button is clicked
     triggerShuffle();
-    // console.log('triggerShuffle called');
   };
 
   const options = [

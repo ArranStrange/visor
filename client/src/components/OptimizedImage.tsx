@@ -32,11 +32,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     setIsLoading(true);
     setIsLoaded(false);
 
-    // Get optimized image URL
     const optimizedUrl = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
     setImageSrc(optimizedUrl);
 
-    // Preload the image
     const img = new Image();
     img.onload = () => {
       setIsLoaded(true);
@@ -44,7 +42,6 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       onLoad?.();
     };
     img.onerror = () => {
-      // Fallback to original image if Cloudinary fails
       setImageSrc(src);
       setIsLoaded(true);
       setIsLoading(false);

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Box, Typography, Paper } from "@mui/material";
 
 export interface ParsedSettings {
-  // Camera & Profile Metadata
   version?: string;
   processVersion?: string;
   cameraProfile?: string;
@@ -11,7 +10,6 @@ export interface ParsedSettings {
   lookTableName?: string;
   whiteBalance?: string;
 
-  // Basic Adjustments
   exposure?: number;
   contrast?: number;
   highlights?: number;
@@ -26,7 +24,6 @@ export interface ParsedSettings {
   temp?: number;
   tint?: number;
 
-  // Tone Curve
   toneCurveName?: string;
   toneCurve?: {
     rgb: Array<{ x: number; y: number }>;
@@ -35,7 +32,6 @@ export interface ParsedSettings {
     blue: Array<{ x: number; y: number }>;
   };
 
-  // Color Adjustments – HSL/Color
   colorAdjustments?: {
     red?: {
       hue: number;
@@ -79,7 +75,6 @@ export interface ParsedSettings {
     };
   };
 
-  // Color Grading (Split Toning)
   splitToning?: {
     shadowHue: number;
     shadowSaturation: number;
@@ -88,7 +83,6 @@ export interface ParsedSettings {
     balance: number;
   };
 
-  // Color Grading (new format)
   colorGrading?: {
     shadowHue: number;
     shadowSat: number;
@@ -106,7 +100,6 @@ export interface ParsedSettings {
     perceptual: boolean;
   };
 
-  // Detail (Sharpening & Noise)
   detail?: {
     sharpness: number;
     sharpenRadius: number;
@@ -120,7 +113,6 @@ export interface ParsedSettings {
     colorNoiseReductionSmoothness: number;
   };
 
-  // Settings (mapped to match PresetDetails structure)
   settings?: {
     exposure?: number;
     contrast?: number;
@@ -165,7 +157,6 @@ export interface ParsedSettings {
     };
   };
 
-  // Lens Corrections
   lensCorrections?: {
     enableLensProfileCorrections: boolean;
     lensProfileName: string;
@@ -174,14 +165,12 @@ export interface ParsedSettings {
     autoLateralCA: boolean;
   };
 
-  // Optics – Chromatic Aberration & Vignette
   optics?: {
     removeChromaticAberration: boolean;
     vignetteAmount: number;
     vignetteMidpoint: number;
   };
 
-  // Transform (Geometry)
   transform?: {
     perspectiveVertical: number;
     perspectiveHorizontal: number;
@@ -191,7 +180,6 @@ export interface ParsedSettings {
     autoPerspective: boolean;
   };
 
-  // Effects
   effects?: {
     postCropVignetteAmount: number;
     postCropVignetteMidpoint: number;
@@ -203,7 +191,6 @@ export interface ParsedSettings {
     grainFrequency: number;
   };
 
-  // Calibration
   calibration?: {
     cameraCalibrationBluePrimaryHue: number;
     cameraCalibrationBluePrimarySaturation: number;
@@ -215,7 +202,6 @@ export interface ParsedSettings {
     cameraCalibrationVersion: string;
   };
 
-  // Cropping & Orientation
   crop?: {
     cropTop: number;
     cropLeft: number;
@@ -226,7 +212,6 @@ export interface ParsedSettings {
   };
   orientation?: string;
 
-  // Metadata
   metadata?: {
     rating: number;
     label: string;
@@ -235,7 +220,6 @@ export interface ParsedSettings {
     dateCreated: string;
   };
 
-  // Other
   hasSettings?: boolean;
   rawFileName?: string;
   snapshot?: string;
@@ -262,7 +246,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(content, "text/xml");
 
-        // Get the description element
         const description = xmlDoc.getElementsByTagName("rdf:Description")[0];
         if (!description) {
           throw new Error("No settings found in XMP file");
@@ -270,23 +253,19 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
 
         const settings: ParsedSettings = {};
 
-        // Helper function to get attribute value
         const getAttr = (name: string): string => {
           return description.getAttribute(`crs:${name}`) || "0";
         };
 
-        // Helper function to get boolean attribute
         const getBoolAttr = (name: string): boolean => {
           return description.getAttribute(`crs:${name}`) === "True";
         };
 
-        // Helper function to convert XMP value to database format (multiply by 100)
         const convertToDatabaseValue = (value: string): number => {
           const num = parseFloat(value);
           return isNaN(num) ? 0 : Math.round(num * 100);
         };
 
-        // Camera & Profile Metadata
         settings.version = getAttr("Version");
         settings.processVersion = getAttr("ProcessVersion");
         settings.cameraProfile = getAttr("CameraProfile");
@@ -295,7 +274,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         settings.lookTableName = getAttr("LookTableName");
         settings.whiteBalance = getAttr("WhiteBalance");
 
-        // Basic Adjustments
         settings.exposure = convertToDatabaseValue(getAttr("Exposure2012"));
         settings.contrast = convertToDatabaseValue(getAttr("Contrast2012"));
         settings.highlights = convertToDatabaseValue(getAttr("Highlights2012"));
@@ -310,7 +288,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         settings.temp = convertToDatabaseValue(getAttr("Temperature"));
         settings.tint = convertToDatabaseValue(getAttr("Tint"));
 
-        // Tone Curve
         settings.toneCurveName = getAttr("ToneCurveName2012");
         if (settings.toneCurveName === "Custom") {
           settings.toneCurve = {
@@ -321,7 +298,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           };
         }
 
-        // Color Adjustments – HSL/Color
         settings.colorAdjustments = {
           red: {
             hue: convertToDatabaseValue(getAttr("HueAdjustmentRed")),
@@ -397,7 +373,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           },
         };
 
-        // Split Toning (legacy)
         settings.splitToning = {
           shadowHue: convertToDatabaseValue(getAttr("SplitToningShadowHue")),
           shadowSaturation: convertToDatabaseValue(
@@ -412,7 +387,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           balance: convertToDatabaseValue(getAttr("SplitToningBalance")),
         };
 
-        // Color Grading (new format)
         settings.colorGrading = {
           shadowHue: convertToDatabaseValue(getAttr("ColorGradeShadowHue")),
           shadowSat: convertToDatabaseValue(getAttr("ColorGradeShadowSat")),
@@ -440,7 +414,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           perceptual: getBoolAttr("ColorGradePerceptual"),
         };
 
-        // Detail (Sharpening & Noise)
         settings.detail = {
           sharpness: convertToDatabaseValue(getAttr("Sharpness")),
           sharpenRadius: convertToDatabaseValue(getAttr("SharpenRadius")),
@@ -466,7 +439,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           ),
         };
 
-        // Create settings object that matches PresetDetails structure
         settings.settings = {
           exposure: settings.exposure,
           contrast: settings.contrast,
@@ -502,7 +474,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           colorAdjustments: settings.colorAdjustments,
         };
 
-        // Lens Corrections
         settings.lensCorrections = {
           enableLensProfileCorrections: getBoolAttr(
             "EnableLensProfileCorrections"
@@ -515,14 +486,12 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           autoLateralCA: getBoolAttr("AutoLateralCA"),
         };
 
-        // Optics – Chromatic Aberration & Vignette
         settings.optics = {
           removeChromaticAberration: getBoolAttr("RemoveChromaticAberration"),
           vignetteAmount: convertToDatabaseValue(getAttr("VignetteAmount")),
           vignetteMidpoint: convertToDatabaseValue(getAttr("VignetteMidpoint")),
         };
 
-        // Transform (Geometry)
         settings.transform = {
           perspectiveVertical: convertToDatabaseValue(
             getAttr("PerspectiveVertical")
@@ -540,7 +509,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           autoPerspective: getBoolAttr("AutoPerspective"),
         };
 
-        // Effects
         settings.effects = {
           postCropVignetteAmount: convertToDatabaseValue(
             getAttr("PostCropVignetteAmount")
@@ -560,7 +528,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           grainFrequency: convertToDatabaseValue(getAttr("GrainFrequency")),
         };
 
-        // Calibration
         settings.calibration = {
           cameraCalibrationBluePrimaryHue: convertToDatabaseValue(
             getAttr("CameraCalibrationBluePrimaryHue")
@@ -586,7 +553,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           cameraCalibrationVersion: getAttr("CameraCalibrationVersion"),
         };
 
-        // Cropping & Orientation
         settings.crop = {
           cropTop: convertToDatabaseValue(getAttr("CropTop")),
           cropLeft: convertToDatabaseValue(getAttr("CropLeft")),
@@ -597,7 +563,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
         };
         settings.orientation = getAttr("Orientation");
 
-        // Metadata
         settings.metadata = {
           rating: convertToDatabaseValue(getAttr("Rating")),
           label: getAttr("Label"),
@@ -606,7 +571,6 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
           dateCreated: getAttr("DateCreated"),
         };
 
-        // Other
         settings.hasSettings = getBoolAttr("HasSettings");
         settings.rawFileName = getAttr("RawFileName");
         settings.snapshot = getAttr("Snapshot");

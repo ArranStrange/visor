@@ -90,7 +90,6 @@ const NavBar: React.FC = () => {
       sx={{ backgroundColor: "background.paper" }}
     >
       <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
-        {/* Logo */}
         <Box
           sx={{
             display: "flex",
@@ -103,7 +102,6 @@ const NavBar: React.FC = () => {
           <img src={Logo} alt="VISOR logo" style={{ height: 28 }} />
         </Box>
 
-        {/* Actions */}
         <Box
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
@@ -113,7 +111,11 @@ const NavBar: React.FC = () => {
           {isAuthenticated && (
             <>
               <NotificationBell />
-              <IconButton onClick={() => navigate("/upload")} color="inherit">
+              <IconButton
+                data-testid="upload-icon"
+                onClick={() => navigate("/upload")}
+                color="inherit"
+              >
                 <UploadIcon />
               </IconButton>
             </>
@@ -134,16 +136,6 @@ const NavBar: React.FC = () => {
                     height: 32,
                     bgcolor: user.avatar ? "transparent" : "primary.main",
                   }}
-                  onError={(e) => {
-                    // console.log("Avatar image failed to load:", user.avatar);
-                    // Don't hide the avatar, just log the error
-                  }}
-                  // onLoad={() => {
-                  //   console.log(
-                  //     "Avatar image loaded successfully:",
-                  //     user.avatar
-                  //   );
-                  // }}
                 >
                   {user.username?.[0]?.toUpperCase()}
                 </Avatar>

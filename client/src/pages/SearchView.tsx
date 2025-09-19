@@ -115,7 +115,8 @@ const SearchView: React.FC = () => {
               p.description,
               p.notes,
               p.creator?.username,
-              ...(p.tags?.map((tag: any) => tag.displayName) || []),
+              ...(p.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
+                []),
             ]
               .filter(Boolean) // Remove null/undefined values
               .join(" ")
@@ -174,7 +175,8 @@ const SearchView: React.FC = () => {
               f.description,
               f.notes,
               f.creator?.username,
-              ...(f.tags?.map((tag: any) => tag.displayName) || []),
+              ...(f.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
+                []),
             ]
               .filter(Boolean) // Remove null/undefined values
               .join(" ")

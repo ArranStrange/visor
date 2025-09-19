@@ -7,12 +7,9 @@ import DiscussionList from "../components/discussions/DiscussionList";
 const Discussions: React.FC = () => {
   const navigate = useNavigate();
 
-  console.log("Discussions page loaded");
-
   return (
     <Container maxWidth="lg">
       <Box py={4}>
-        {/* Header */}
         <Box
           display="flex"
           alignItems={{ xs: "stretch", sm: "center" }}
@@ -37,7 +34,6 @@ const Discussions: React.FC = () => {
           </Button>
         </Box>
 
-        {/* Discussion list */}
         <DiscussionList />
       </Box>
     </Container>

@@ -9,7 +9,6 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
   const [showOptions, setShowOptions] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(false);
 
-  // Check if we're on mobile
   React.useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.matchMedia("(hover: none)").matches);
@@ -21,19 +20,16 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
 
   const handleClick = () => {
     if (isMobile) {
-      // On mobile: first click shows options, second click opens link
       if (!showOptions) {
         setShowOptions(true);
       } else {
         window.open("https://buymeacoffee.com/arranstrange", "_blank");
       }
     } else {
-      // On desktop: direct link opening
       window.open("https://buymeacoffee.com/arranstrange", "_blank");
     }
   };
 
-  // Hide options when clicking outside (desktop only)
   React.useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
@@ -80,7 +76,6 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
         }}
       />
 
-      {/* Title Container - Centered like FilmSimCard */}
       <Box
         className="title-container"
         sx={{
@@ -121,7 +116,6 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
         </Typography>
       </Box>
 
-      {/* Tags Container - At bottom like FilmSimCard */}
       <Box
         className="tags-container"
         sx={{

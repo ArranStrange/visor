@@ -8,24 +8,20 @@ describe("Registration Security Features", () => {
   });
 
   it("should allow registration completion", () => {
-    // Fill out the form
     cy.get('[data-cy="username-input"]').type("testuser");
     cy.get('[data-cy="email-input"]').type("test@example.com");
     cy.get('[data-cy="password-input"]').type("TestPassword123");
     cy.get('[data-cy="confirm-password-input"]').type("TestPassword123");
 
-    // Should be able to submit
     cy.get('[data-cy="register-button"]').click();
   });
 
   it("should show email verification message after successful registration", () => {
-    // Fill out the form
     cy.get('[data-cy="username-input"]').type("testuser");
     cy.get('[data-cy="email-input"]').type("test@example.com");
     cy.get('[data-cy="password-input"]').type("TestPassword123");
     cy.get('[data-cy="confirm-password-input"]').type("TestPassword123");
 
-    // Mock successful registration response
     cy.intercept("POST", "/graphql", {
       statusCode: 200,
       body: {
@@ -45,13 +41,10 @@ describe("Registration Security Features", () => {
       },
     }).as("registerRequest");
 
-    // Submit form
     cy.get('[data-cy="register-button"]').click();
 
-    // Wait for request
     cy.wait("@registerRequest");
 
-    // Should show email verification message
     cy.get('[data-cy="email-verification-message"]').should(
       "contain",
       "Check Your Email"
@@ -63,10 +56,8 @@ describe("Registration Security Features", () => {
   });
 
   it("should handle email verification page", () => {
-    // Visit verification page with token
     cy.visit("/verify-email?token=test-token&email=test@example.com");
 
-    // Mock verification response
     cy.intercept("POST", "/graphql", {
       statusCode: 200,
       body: {
@@ -85,16 +76,13 @@ describe("Registration Security Features", () => {
       },
     }).as("verifyRequest");
 
-    // Should show verification in progress
     cy.get('[data-cy="verification-status"]').should(
       "contain",
       "Verifying your email"
     );
 
-    // Wait for verification
     cy.wait("@verifyRequest");
 
-    // Should show success message
     cy.get('[data-cy="verification-success"]').should(
       "contain",
       "Email verified successfully!"
@@ -102,32 +90,26 @@ describe("Registration Security Features", () => {
   });
 
   it("should handle expired verification links", () => {
-    // Visit verification page without token
     cy.visit("/verify-email");
 
-    // Should show expired/invalid message
     cy.get('[data-cy="verification-error"]').should(
       "contain",
       "Invalid verification link"
     );
 
-    // Should show resend option
     cy.get('[data-cy="resend-verification"]').should("be.visible");
   });
 
   it("should validate password requirements", () => {
-    // Test weak password
     cy.get('[data-cy="password-input"]').type("weak");
     cy.get('[data-cy="password-error"]').should(
       "contain",
       "at least 6 characters"
     );
 
-    // Test password without uppercase
     cy.get('[data-cy="password-input"]').clear().type("weakpassword");
     cy.get('[data-cy="password-error"]').should("contain", "uppercase letter");
 
-    // Test valid password
     cy.get('[data-cy="password-input"]').clear().type("StrongPassword123");
     cy.get('[data-cy="password-error"]').should("not.exist");
   });

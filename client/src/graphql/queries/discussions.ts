@@ -15,9 +15,7 @@ export const GET_DISCUSSION = gql`
           afterImage {
             url
           }
-          thumbnail {
-            url
-          }
+          thumbnail
         }
         filmSim {
           id
@@ -26,9 +24,7 @@ export const GET_DISCUSSION = gql`
           sampleImages {
             url
           }
-          thumbnail {
-            url
-          }
+          thumbnail
         }
       }
       tags
@@ -124,9 +120,7 @@ export const GET_DISCUSSION_BY_ITEM = gql`
           afterImage {
             url
           }
-          thumbnail {
-            url
-          }
+          thumbnail
         }
         filmSim {
           id
@@ -135,9 +129,7 @@ export const GET_DISCUSSION_BY_ITEM = gql`
           sampleImages {
             url
           }
-          thumbnail {
-            url
-          }
+          thumbnail
         }
       }
       tags

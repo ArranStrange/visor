@@ -56,6 +56,7 @@ const Upload: React.FC = () => {
                 <ToggleButton
                   value={value}
                   onClick={() => navigate(path)}
+                  data-cy={`upload-${value}-button`}
                   sx={{
                     border: "none",
                     borderRadius: "999px",

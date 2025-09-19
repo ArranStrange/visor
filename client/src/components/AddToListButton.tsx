@@ -89,7 +89,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     onCompleted: (data) => {
       console.log("Successfully added to list:", data);
       setSuccess("Added to list successfully!");
-      // Refetch the lists to get updated data
+
       refetch();
       setTimeout(() => {
         setOpen(false);
@@ -119,7 +119,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
         filmSimId: filmSimId || null,
       });
 
-      // Validate that we have at least one item to add
+
       if (!presetId && !filmSimId) {
         throw new Error("No item selected to add to list");
       }

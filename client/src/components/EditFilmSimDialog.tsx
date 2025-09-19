@@ -94,12 +94,11 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
           <Typography>{label}</Typography>
         </Box>
         <Select
-          value={value === null ? "null" : value.toString()}
-          onChange={(e: SelectChangeEvent<string>) => {
+          value={value === null ? "null" : value}
+          onChange={(e: SelectChangeEvent<string | number>) => {
             const newValue = options.find(
               (opt) =>
-                (opt.value === null ? "null" : opt.value.toString()) ===
-                e.target.value
+                (opt.value === null ? "null" : opt.value) === e.target.value
             )?.value;
             if (newValue !== undefined) {
               handleInputChange(`settings.${settingKey}`, newValue);
@@ -119,12 +118,10 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
     </Grid>
   );
 
-  // Don't render if filmSim is invalid
   if (!filmSim || !filmSim.id) {
     return null;
   }
 
-  // Form state
   const [formData, setFormData] = React.useState({
     name: filmSim.name || "",
     description: filmSim.description || "",
@@ -231,16 +228,16 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
           filmSimulation: formData.settings.filmSimulation,
           whiteBalance: formData.settings.whiteBalance,
           wbShift: {
-            r: Math.round(formData.settings.wbShift.r) || 0,
-            b: Math.round(formData.settings.wbShift.b) || 0,
+            r: formData.settings.wbShift.r || 0,
+            b: formData.settings.wbShift.b || 0,
           },
-          color: Math.round(formData.settings.color) || 0,
-          sharpness: Math.round(formData.settings.sharpness) || 0,
-          highlight: Math.round(formData.settings.highlight) || 0,
-          shadow: Math.round(formData.settings.shadow) || 0,
-          noiseReduction: Math.round(formData.settings.noiseReduction) || 0,
+          color: formData.settings.color || 0,
+          sharpness: formData.settings.sharpness || 0,
+          highlight: formData.settings.highlight || 0,
+          shadow: formData.settings.shadow || 0,
+          noiseReduction: formData.settings.noiseReduction || 0,
           grainEffect: formData.settings.grainEffect,
-          clarity: Math.round(formData.settings.clarity) || 0,
+          clarity: formData.settings.clarity || 0,
           colorChromeEffect: formData.settings.colorChromeEffect,
           colorChromeFxBlue: formData.settings.colorChromeFxBlue,
         },

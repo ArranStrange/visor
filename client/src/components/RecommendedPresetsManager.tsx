@@ -118,7 +118,8 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
             preset.title,
             preset.description,
             preset.creator?.username,
-            ...(preset.tags?.map((tag: any) => tag.displayName) || []),
+            ...(preset.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
+              []),
           ]
             .join(" ")
             .toLowerCase();

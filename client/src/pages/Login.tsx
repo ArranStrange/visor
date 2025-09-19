@@ -79,7 +79,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="xs" sx={{ mt: 10 }}>
+    <Container maxWidth="xs" sx={{ mt: 10 }} data-cy="login-page">
       <Typography
         variant="h4"
         fontWeight="bold"
@@ -102,6 +102,7 @@ const Login: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            data-cy="login-email-input"
           />
 
           <TextField
@@ -113,6 +114,7 @@ const Login: React.FC = () => {
             onChange={handleChange}
             required
             disabled={loading}
+            data-cy="login-password-input"
           />
 
           <Button
@@ -120,6 +122,7 @@ const Login: React.FC = () => {
             variant="contained"
             size="large"
             disabled={loading}
+            data-cy="login-submit-button"
           >
             {loading ? <CircularProgress size={24} /> : "Login"}
           </Button>

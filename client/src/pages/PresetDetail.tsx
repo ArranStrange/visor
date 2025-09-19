@@ -152,7 +152,7 @@ const PresetDetails: React.FC = () => {
       description: preset.description || "",
       notes: preset.notes || "",
       tags: preset.tags
-        .map((tag: { displayName: string }) => tag.displayName)
+        .map((tag: { displayName: string }) => tag?.displayName || "Unknown")
         .join(", "),
     });
     setParsedSettings(null);
@@ -628,7 +628,7 @@ const PresetDetails: React.FC = () => {
           {preset.tags.map((tag: { id: string; displayName: string }) => (
             <Chip
               key={tag.id}
-              label={tag.displayName}
+              label={tag?.displayName || "Unknown"}
               variant="outlined"
               sx={{ color: "text.secondary", borderColor: "divider" }}
             />

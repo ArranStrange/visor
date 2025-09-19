@@ -37,7 +37,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
     { key: "magenta", color: "#ff2d55" },
   ];
 
-  // Helper to get a muted color for each channel
   const colorMixerColor = (key: string) => {
     switch (key) {
       case "red":
@@ -61,7 +60,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
     }
   };
 
-  // Check if this is a color mixer section
   const isColorMixer = settings.some(
     (setting) =>
       setting.key === "hue" ||
@@ -71,7 +69,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
 
   return (
     <Box>
-      {/* Color Mixer Toggle Buttons */}
       {isColorMixer && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -107,9 +104,7 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
         </Box>
       )}
 
-      {/* Settings */}
       {settings.map((setting, index) => {
-        // Skip color mixer settings if we're not in color mixer mode
         if (
           isColorMixer &&
           !["hue", "saturation", "luminance"].includes(setting.key)
@@ -117,10 +112,9 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
           return null;
         }
 
-        // For color mixer, use the selected color
         const actualValue =
           isColorMixer && setting.key === "hue"
-            ? formatValue(0) // This would need to be connected to actual color mixer data
+            ? formatValue(0)
             : formatValue(setting.value);
 
         const actualSpectrum =
@@ -138,7 +132,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
 
         return (
           <Box key={`${setting.key}-${index}`}>
-            {/* Section Title */}
             {setting.sectionTitle && (
               <Typography
                 variant="subtitle2"
@@ -150,19 +143,17 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
               </Typography>
             )}
 
-            {/* Setting Row */}
             <Box
               sx={{
                 display: "flex",
                 alignItems: "center",
                 mb: 1,
-                minHeight: 32, // Ensure consistent row height
+                minHeight: 32,
               }}
             >
-              {/* Label - Responsive width with text wrapping */}
               <Box
                 sx={{
-                  width: { xs: 110, sm: 110, md: 180 }, // Responsive: 110px on xs/sm, 180px on md+
+                  width: { xs: 110, sm: 110, md: 180 },
                   mr: 2,
                   display: "flex",
                   alignItems: "center",
@@ -176,14 +167,14 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                     overflowWrap: "break-word",
                     whiteSpace: "normal",
                     lineHeight: 1.2,
-                    fontSize: { xs: "0.75rem", sm: "0.8rem", md: "0.875rem" }, // Smaller font on mobile
+                    fontSize: { xs: "0.75rem", sm: "0.8rem", md: "0.875rem" },
                   }}
                 >
                   {setting.label}
                 </Typography>
               </Box>
 
-              {/* Slider - Takes up all available space */}
+
               <Box
                 sx={{
                   flex: 1,
@@ -197,7 +188,7 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                 />
               </Box>
 
-              {/* Value - Fixed width */}
+
               <Box
                 sx={{
                   width: 60,
