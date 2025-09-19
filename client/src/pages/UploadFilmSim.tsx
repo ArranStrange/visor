@@ -39,20 +39,6 @@ import {
   COLOR_CHROME_FX_BLUE_OPTIONS,
 } from "../data/filmSimSettings";
 
-// Helper function to convert dynamic range number to string for upload mutation
-const convertDynamicRangeToString = (value: number | null): string => {
-  if (value === null) return "AUTO";
-  switch (value) {
-    case 100:
-      return "DR100";
-    case 200:
-      return "DR200";
-    case 400:
-      return "DR400";
-    default:
-      return "AUTO";
-  }
-};
 
 declare global {
   interface ImportMeta {
@@ -332,7 +318,7 @@ const UploadFilmSim: React.FC = () => {
       setIsUploading(true);
 
       const formattedSettings = {
-        dynamicRange: convertDynamicRangeToString(filmSettings.dynamicRange),
+        dynamicRange: filmSettings.dynamicRange,
         filmSimulation: filmSettings.filmSimulation,
         whiteBalance: filmSettings.whiteBalance,
         wbShift: {
@@ -399,7 +385,9 @@ const UploadFilmSim: React.FC = () => {
           value={value === null ? "null" : value.toString()}
           onChange={(e: SelectChangeEvent<string>) => {
             const newValue = options.find(
-              (opt) => (opt.value === null ? "null" : opt.value.toString()) === e.target.value
+              (opt) =>
+                (opt.value === null ? "null" : opt.value.toString()) ===
+                e.target.value
             )?.value;
             if (newValue !== undefined) {
               handleFilmSettingChange(settingKey, newValue);
