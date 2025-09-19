@@ -26,8 +26,34 @@ import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
 import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useAuth } from "../context/AuthContext";
+import {
+  DYNAMIC_RANGE_OPTIONS,
+  FILM_SIMULATION_OPTIONS,
+  WHITE_BALANCE_OPTIONS,
+  TONE_SLIDER_OPTIONS,
+  COLOR_OPTIONS,
+  NOISE_REDUCTION_OPTIONS,
+  GRAIN_EFFECT_OPTIONS,
+  CLARITY_OPTIONS,
+  COLOR_CHROME_EFFECT_OPTIONS,
+  COLOR_CHROME_FX_BLUE_OPTIONS,
+} from "../data/filmSimSettings";
 
-// Type declarations for environment variables
+// Helper function to convert dynamic range number to string for upload mutation
+const convertDynamicRangeToString = (value: number | null): string => {
+  if (value === null) return "AUTO";
+  switch (value) {
+    case 100:
+      return "DR100";
+    case 200:
+      return "DR200";
+    case 400:
+      return "DR400";
+    default:
+      return "AUTO";
+  }
+};
+
 declare global {
   interface ImportMeta {
     env: {
@@ -38,7 +64,6 @@ declare global {
   }
 }
 
-// Cloudinary configuration
 const cloudinaryConfig = {
   cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
   apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
@@ -46,7 +71,7 @@ const cloudinaryConfig = {
 };
 
 interface FilmSimSettings {
-  dynamicRange: string;
+  dynamicRange: number | null;
   filmSimulation: string;
   whiteBalance: string;
   wbShift: WhiteBalanceShift;
@@ -65,109 +90,6 @@ interface SampleImageInput {
   publicId: string;
   url: string;
 }
-
-const DYNAMIC_RANGE_OPTIONS = [
-  { value: "AUTO", label: "Auto" },
-  { value: "DR100", label: "DR100" },
-  { value: "DR200", label: "DR200 (min ISO 400)" },
-  { value: "DR400", label: "DR400 (min ISO 800)" },
-];
-
-const FILM_SIMULATION_OPTIONS = [
-  { value: "PROVIA", label: "Provia (Standard)" },
-  { value: "VELVIA", label: "Velvia (Vivid)" },
-  { value: "ASTIA", label: "Astia (Soft)" },
-  { value: "CLASSIC_CHROME", label: "Classic Chrome" },
-  { value: "CLASSIC_NEG", label: "Classic Neg" },
-  { value: "ETERNA", label: "Eterna" },
-  { value: "ETERNA_BLEACH", label: "Eterna Bleach Bypass" },
-  { value: "ACROS", label: "Acros" },
-  { value: "MONOCHROME", label: "Monochrome" },
-  { value: "SEPIA", label: "Sepia" },
-  { value: "NOSTALGIC_NEG", label: "Nostalgic Neg" },
-];
-
-const WHITE_BALANCE_OPTIONS = [
-  { value: "AUTO", label: "Auto" },
-  { value: "DAYLIGHT", label: "Daylight" },
-  { value: "SHADE", label: "Shade" },
-  { value: "FLUORESCENT_1", label: "Fluorescent Light 1 (Daylight)" },
-  { value: "FLUORESCENT_2", label: "Fluorescent Light 2 (Warm White)" },
-  { value: "FLUORESCENT_3", label: "Fluorescent Light 3 (Cool White)" },
-  { value: "INCANDESCENT", label: "Incandescent" },
-  { value: "UNDERWATER", label: "Underwater" },
-  { value: "CUSTOM", label: "Custom" },
-];
-
-const TONE_SLIDER_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const COLOR_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const NOISE_REDUCTION_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const GRAIN_EFFECT_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK_SMALL", label: "Weak / Small" },
-  { value: "WEAK_LARGE", label: "Weak / Large" },
-  { value: "STRONG_SMALL", label: "Strong / Small" },
-  { value: "STRONG_LARGE", label: "Strong / Large" },
-];
-
-const CLARITY_OPTIONS = [
-  { value: -5, label: "-5 (Softest)" },
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-  { value: 5, label: "+5 (Crispest)" },
-];
-
-const COLOR_CHROME_EFFECT_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK", label: "Weak" },
-  { value: "STRONG", label: "Strong" },
-];
-
-const COLOR_CHROME_FX_BLUE_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK", label: "Weak" },
-  { value: "STRONG", label: "Strong" },
-];
 
 const UPLOAD_FILM_SIM = gql`
   mutation UploadFilmSim(
@@ -193,8 +115,7 @@ const UPLOAD_FILM_SIM = gql`
   }
 `;
 
-// Constants for file validation
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024; // roughly 25MB FYI
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const UploadFilmSim: React.FC = () => {
@@ -208,7 +129,7 @@ const UploadFilmSim: React.FC = () => {
   >([]);
   const [notes, setNotes] = useState("");
   const [filmSettings, setFilmSettings] = useState<FilmSimSettings>({
-    dynamicRange: "AUTO",
+    dynamicRange: null,
     filmSimulation: "PROVIA",
     whiteBalance: "AUTO",
     wbShift: { r: 0, b: 0 },
@@ -241,7 +162,7 @@ const UploadFilmSim: React.FC = () => {
 
   const handleFilmSettingChange = (
     setting: keyof FilmSimSettings,
-    value: string | number | WhiteBalanceShift
+    value: string | number | null | WhiteBalanceShift
   ) => {
     setFilmSettings((prev) => ({
       ...prev,
@@ -255,9 +176,9 @@ const UploadFilmSim: React.FC = () => {
     );
 
     if (file.size > MAX_FILE_SIZE) {
-      const errorMsg = `File "${file.name}" is too large. Maximum size is ${
-        MAX_FILE_SIZE / 1024 / 1024
-      }MB`;
+      const fileSizeMB = (file.size / 1024 / 1024).toFixed(1);
+      const maxSizeMB = MAX_FILE_SIZE / 1024 / 1024;
+      const errorMsg = `File "${file.name}" is too large (${fileSizeMB}MB). Maximum size is ${maxSizeMB}MB. Please use a smaller file.`;
       console.log(errorMsg);
       setFileError(errorMsg);
       return false;
@@ -316,18 +237,10 @@ const UploadFilmSim: React.FC = () => {
       const data = await response.json();
       console.log("Cloudinary upload response:", data);
 
-      // Extract the public_id from the response
       const publicId = data.public_id;
       if (!publicId) {
         throw new Error("No public_id received from Cloudinary");
       }
-
-      console.log(
-        "Upload successful, publicId:",
-        publicId,
-        "url:",
-        data.secure_url
-      );
 
       return {
         publicId,
@@ -343,48 +256,30 @@ const UploadFilmSim: React.FC = () => {
     setFileError(null);
     const files = Array.from(e.target.files || []);
 
-    console.log("Files selected:", files);
-
     if (files.length === 0) {
       console.log("No files selected");
       return;
     }
 
-    // Validate all files
     const validFiles = files.filter((file) => {
       const isValid = validateFile(file);
-      console.log(`File ${file.name} validation:`, isValid);
       return isValid;
     });
-
-    console.log("Valid files:", validFiles);
-
     if (validFiles.length === 0) {
       console.log("No valid files after validation");
       return;
     }
 
-    // Upload each file to Cloudinary
     try {
       setIsUploading(true);
       console.log("Starting upload process...");
-
       const uploadPromises = validFiles.map(async (file) => {
-        console.log(
-          "Uploading file to Cloudinary:",
-          file.name,
-          file.type,
-          file.size
-        );
         const result = await uploadToCloudinary(file);
-        console.log("Uploaded file result:", result);
         return result;
       });
-
       const uploadedImages = await Promise.all(uploadPromises);
       console.log("All images uploaded successfully:", uploadedImages);
 
-      // Append new images to existing ones instead of overwriting
       setUploadedImageUrls((prev) => {
         const newUrls = [...prev, ...uploadedImages];
         console.log("Updated uploadedImageUrls:", newUrls);
@@ -392,11 +287,9 @@ const UploadFilmSim: React.FC = () => {
       });
       setSampleImages((prev) => {
         const newImages = [...prev, ...validFiles];
-        console.log("Updated sampleImages:", newImages);
         return newImages;
       });
     } catch (error) {
-      console.error("Error uploading images:", error);
       setFileError(
         `Failed to upload images to Cloudinary: ${
           error instanceof Error ? error.message : "Unknown error"
@@ -406,7 +299,6 @@ const UploadFilmSim: React.FC = () => {
       setIsUploading(false);
     }
 
-    // Reset the input
     e.target.value = "";
   };
 
@@ -419,15 +311,12 @@ const UploadFilmSim: React.FC = () => {
     e.preventDefault();
     setError(null);
     setFileError(null);
-
-    // Check if user is authenticated
     if (!user) {
       setError("You must be logged in to upload a film simulation");
       return;
     }
 
     try {
-      // Validate required fields
       if (!title.trim()) {
         setError("Name is required");
         return;
@@ -440,12 +329,10 @@ const UploadFilmSim: React.FC = () => {
         setError("Please add at least one sample image");
         return;
       }
-
       setIsUploading(true);
 
-      // Format settings to match the backend schema
       const formattedSettings = {
-        dynamicRange: filmSettings.dynamicRange,
+        dynamicRange: convertDynamicRangeToString(filmSettings.dynamicRange),
         filmSimulation: filmSettings.filmSimulation,
         whiteBalance: filmSettings.whiteBalance,
         wbShift: {
@@ -463,18 +350,11 @@ const UploadFilmSim: React.FC = () => {
         colorChromeFxBlue: filmSettings.colorChromeFxBlue,
       };
 
-      // Log the uploaded images to verify their structure
-      console.log("Uploaded images before submission:", uploadedImageUrls);
-
-      // Ensure each image has the required fields
       const formattedSampleImages = uploadedImageUrls.map((img) => ({
         publicId: img.publicId,
         url: img.url,
       }));
 
-      console.log("Formatted sample images:", formattedSampleImages);
-
-      // Prepare variables for the film sim mutation
       const variables = {
         name: title,
         description,
@@ -484,22 +364,16 @@ const UploadFilmSim: React.FC = () => {
         sampleImages: formattedSampleImages,
       };
 
-      console.log("Uploading with variables:", variables);
-
       const result = await uploadFilmSim({
         variables,
       });
 
-      console.log("Upload result:", result);
-
       if (result.errors) {
         throw new Error(result.errors[0].message);
       }
-
       if (!result.data?.uploadFilmSim) {
         throw new Error("Failed to upload film simulation");
       }
-
       navigate(`/filmsim/${result.data.uploadFilmSim.slug}`);
     } catch (err) {
       console.error("Error uploading:", err);
@@ -512,8 +386,8 @@ const UploadFilmSim: React.FC = () => {
   const renderSettingWithTooltip = (
     label: string,
     _tooltip: string,
-    value: string | number,
-    options: { value: string | number; label: string }[],
+    value: string | number | null,
+    options: { value: string | number | null; label: string }[],
     settingKey: keyof FilmSimSettings
   ) => (
     <Grid {...(undefined as any)} item xs={12} md={6}>
@@ -522,10 +396,10 @@ const UploadFilmSim: React.FC = () => {
           <Typography>{label}</Typography>
         </Box>
         <Select
-          value={value.toString()}
+          value={value === null ? "null" : value.toString()}
           onChange={(e: SelectChangeEvent<string>) => {
             const newValue = options.find(
-              (opt) => opt.value.toString() === e.target.value
+              (opt) => (opt.value === null ? "null" : opt.value.toString()) === e.target.value
             )?.value;
             if (newValue !== undefined) {
               handleFilmSettingChange(settingKey, newValue);
@@ -534,8 +408,8 @@ const UploadFilmSim: React.FC = () => {
         >
           {options.map((option) => (
             <MenuItem
-              key={option.value.toString()}
-              value={option.value.toString()}
+              key={option.value === null ? "null" : option.value.toString()}
+              value={option.value === null ? "null" : option.value.toString()}
             >
               {option.label}
             </MenuItem>
@@ -674,13 +548,17 @@ const UploadFilmSim: React.FC = () => {
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
         {fileError && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert
+            severity="error"
+            sx={{ mb: 2 }}
+            onClose={() => setFileError(null)}
+          >
             {fileError}
           </Alert>
         )}
@@ -693,6 +571,7 @@ const UploadFilmSim: React.FC = () => {
               onChange={(e) => setTitle(e.target.value)}
               required
               disabled={!user}
+              data-cy="film-sim-name-input"
             />
 
             <TextField
@@ -702,6 +581,7 @@ const UploadFilmSim: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               disabled={!user}
+              data-cy="film-sim-description-input"
             />
 
             {user && renderFilmSettings()}
@@ -717,6 +597,7 @@ const UploadFilmSim: React.FC = () => {
                   onKeyDown={handleTagKeyDown}
                   placeholder="Add tags (press Enter)"
                   disabled={!user}
+                  data-cy="film-sim-tags-input"
                   endAdornment={
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {tags.map((tag) => (
@@ -748,6 +629,7 @@ const UploadFilmSim: React.FC = () => {
                 sx={{ mt: 1 }}
                 disabled={!user || isUploading}
                 startIcon={isUploading ? <CircularProgress size={20} /> : null}
+                data-cy="film-sim-image-upload"
               >
                 {isUploading ? "Uploading..." : "Add Images"}
                 <input
@@ -831,6 +713,7 @@ const UploadFilmSim: React.FC = () => {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               disabled={!user}
+              data-cy="film-sim-notes-input"
             />
 
             <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
@@ -842,6 +725,7 @@ const UploadFilmSim: React.FC = () => {
                   isUploading || !user || uploadedImageUrls.length === 0
                 }
                 startIcon={isUploading ? <CircularProgress size={20} /> : null}
+                data-cy="film-sim-submit-button"
               >
                 {isUploading ? "Uploading..." : "Upload"}
               </Button>

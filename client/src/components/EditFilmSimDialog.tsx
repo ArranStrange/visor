@@ -23,109 +23,18 @@ import { useMutation } from "@apollo/client";
 import { UPDATE_FILMSIM } from "../graphql/mutations/updateFilmSim";
 import WhiteBalanceGrid from "./WhiteBalanceGrid";
 import { WhiteBalanceShift } from "./WhiteBalanceGrid";
-
-const DYNAMIC_RANGE_OPTIONS = [
-  { value: null, label: "Auto" },
-  { value: 100, label: "DR100" },
-  { value: 200, label: "DR200 (min ISO 400)" },
-  { value: 400, label: "DR400 (min ISO 800)" },
-];
-
-const FILM_SIMULATION_OPTIONS = [
-  { value: "PROVIA", label: "Provia (Standard)" },
-  { value: "VELVIA", label: "Velvia (Vivid)" },
-  { value: "ASTIA", label: "Astia (Soft)" },
-  { value: "CLASSIC_CHROME", label: "Classic Chrome" },
-  { value: "CLASSIC_NEG", label: "Classic Neg" },
-  { value: "ETERNA", label: "Eterna" },
-  { value: "ETERNA_BLEACH", label: "Eterna Bleach Bypass" },
-  { value: "ACROS", label: "Acros" },
-  { value: "MONOCHROME", label: "Monochrome" },
-  { value: "SEPIA", label: "Sepia" },
-  { value: "NOSTALGIC_NEG", label: "Nostalgic Neg" },
-];
-
-const WHITE_BALANCE_OPTIONS = [
-  { value: "AUTO", label: "Auto" },
-  { value: "DAYLIGHT", label: "Daylight" },
-  { value: "SHADE", label: "Shade" },
-  { value: "FLUORESCENT_1", label: "Fluorescent Light 1 (Daylight)" },
-  { value: "FLUORESCENT_2", label: "Fluorescent Light 2 (Warm White)" },
-  { value: "FLUORESCENT_3", label: "Fluorescent Light 3 (Cool White)" },
-  { value: "INCANDESCENT", label: "Incandescent" },
-  { value: "UNDERWATER", label: "Underwater" },
-  { value: "CUSTOM", label: "Custom" },
-];
-
-const TONE_SLIDER_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const COLOR_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const NOISE_REDUCTION_OPTIONS = [
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-];
-
-const GRAIN_EFFECT_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK_SMALL", label: "Weak / Small" },
-  { value: "WEAK_LARGE", label: "Weak / Large" },
-  { value: "STRONG_SMALL", label: "Strong / Small" },
-  { value: "STRONG_LARGE", label: "Strong / Large" },
-];
-
-const CLARITY_OPTIONS = [
-  { value: -5, label: "-5 (Softest)" },
-  { value: -4, label: "-4" },
-  { value: -3, label: "-3" },
-  { value: -2, label: "-2" },
-  { value: -1, label: "-1" },
-  { value: 0, label: "0 (Standard)" },
-  { value: 1, label: "+1" },
-  { value: 2, label: "+2" },
-  { value: 3, label: "+3" },
-  { value: 4, label: "+4" },
-  { value: 5, label: "+5 (Crispest)" },
-];
-
-const COLOR_CHROME_EFFECT_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK", label: "Weak" },
-  { value: "STRONG", label: "Strong" },
-];
-
-const COLOR_CHROME_FX_BLUE_OPTIONS = [
-  { value: "OFF", label: "Off" },
-  { value: "WEAK", label: "Weak" },
-  { value: "STRONG", label: "Strong" },
-];
+import {
+  DYNAMIC_RANGE_OPTIONS,
+  FILM_SIMULATION_OPTIONS,
+  WHITE_BALANCE_OPTIONS,
+  TONE_SLIDER_OPTIONS,
+  COLOR_OPTIONS,
+  NOISE_REDUCTION_OPTIONS,
+  GRAIN_EFFECT_OPTIONS,
+  CLARITY_OPTIONS,
+  COLOR_CHROME_EFFECT_OPTIONS,
+  COLOR_CHROME_FX_BLUE_OPTIONS,
+} from "../data/filmSimSettings";
 
 interface FilmSimSettings {
   filmSimulation?: string;
@@ -542,7 +451,6 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
                     "colorChromeFxBlue"
                   )}
 
-                  {/* White Balance Shift Grid - Always show for now */}
                   <Box sx={{ mt: 3, mb: 2, width: "100%" }}>
                     <Typography variant="subtitle2" gutterBottom>
                       White Balance Shift
