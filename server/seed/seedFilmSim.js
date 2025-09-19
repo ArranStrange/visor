@@ -2,11 +2,11 @@
 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const User = require("./models/User");
-const Tag = require("./models/Tag");
-const FilmSim = require("./models/FilmSim");
-const UserList = require("./models/UserList");
-const Image = require("./models/Image");
+const User = require("../models/User");
+const Tag = require("../models/Tag");
+const FilmSim = require("../models/FilmSim");
+const UserList = require("../models/UserList");
+const Image = require("../models/Image");
 
 dotenv.config();
 
@@ -200,12 +200,11 @@ const filmSims = [
 async function seedFilmSims() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
-    // Clear existing data
     await FilmSim.deleteMany({});
     await Image.deleteMany({});
-    console.log("🗑️ Cleared existing film sims and images");
+    console.log("Cleared existing film sims and images");
 
     for (const sim of filmSims) {
       const creator = await User.findOne();
@@ -225,7 +224,6 @@ async function seedFilmSims() {
         })
       );
 
-      // Create the film simulation first
       const newFilmSim = await FilmSim.create({
         name: sim.title,
         slug: sim.id,
@@ -234,14 +232,13 @@ async function seedFilmSims() {
         settings: sim.settings,
         toneCurve: sim.toneCurve,
         tags: tagIds,
-        sampleImages: [], // Will be updated after image creation
+        sampleImages: [],
         creator: creator?._id,
         notes: sim.notes,
         recommendedPresets: [],
         compatibleCameras: sim.compatibleCameras,
       });
 
-      // Create a sample image for the film simulation
       const sampleImage = await Image.create({
         url: sim.thumbnail,
         caption: `Sample image for ${sim.title}`,
@@ -255,14 +252,12 @@ async function seedFilmSims() {
         isAfterImage: true,
       });
 
-      // Update the film simulation with the sample image
       await FilmSim.findByIdAndUpdate(newFilmSim._id, {
         $push: { sampleImages: sampleImage._id },
       });
 
-      console.log(`✅ Seeded: ${sim.title} with sample image`);
+      console.log(`Seeded: ${sim.title} with sample image`);
 
-      // Create a user list for each film sim and assign it to the creator
       if (creator) {
         const listExists = await UserList.findOne({
           name: `${sim.title} Picks`,
@@ -285,17 +280,15 @@ async function seedFilmSims() {
             $push: { customLists: newList._id },
           });
 
-          console.log(
-            `📁 Created list for ${creator.username}: ${newList.name}`
-          );
+          console.log(`Created list for ${creator.username}: ${newList.name}`);
         }
       }
     }
 
-    console.log("🌱 Film simulation seeding complete");
+    console.log("Film simulation seeding complete");
     process.exit();
   } catch (err) {
-    console.error("❌ Error seeding film sims:", err);
+    console.error("Error seeding film sims:", err);
     process.exit(1);
   }
 }

@@ -4,23 +4,23 @@ VISOR is a web platform designed for photographers and visual creatives to **sha
 
 ---
 
-## ✨ What is VISOR?
+## What is VISOR?
 
 VISOR is more than just a preset manager. It's a place for photographers to:
 
-- 🎞 Browse and upload **Lightroom `.xmp` presets**
-- 🎨 Explore and share **Fujifilm film simulation recipes**
-- 🔍 Search and filter by mood, colour, camera, or use case
-- 💾 Save favourites into curated **personal or public lists**
-- 📷 View **before/after previews** and real-world image examples
-- 🧠 Read detailed **setting breakdowns**, creator notes, and camera compatibility
-- 💬 Comment, react, and connect with others in the community
+- Browse and upload **Lightroom `.xmp` presets**
+- Explore and share **Fujifilm film simulation recipes**
+- Search and filter by mood, colour, camera, or use case
+- Save favourites into curated **personal or public lists**
+- View **before/after previews** and real-world image examples
+- Read detailed **setting breakdowns**, creator notes, and camera compatibility
+- Comment, react, and connect with others in the community
 
 VISOR is built to be **clean, dark, and mobile-friendly**, with a strong visual focus and modern photographer-first design.
 
 ---
 
-## 🧑‍🤝‍🧑 Why VISOR?
+## Why VISOR?
 
 Creative tools should be just that—**creative**. Existing platforms for presets and film sims are often either too commercial, too technical, or not designed for inspiration and sharing.
 
@@ -33,7 +33,7 @@ VISOR aims to become a home for:
 
 ---
 
-## 🗂 Project Structure
+## Project Structure
 
 my-project/
 ├── frontend/ # React app (Vite + MUI + TypeScript)
@@ -42,7 +42,7 @@ my-project/
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Requirements
 
@@ -79,7 +79,7 @@ npm run dev
 
 ⸻
 
-🧱 Tech Stack
+Tech Stack
 
 Frontend
 	•	React + TypeScript
@@ -95,29 +95,14 @@ Backend
 
 ⸻
 
-📍 Roadmap Highlights
-	•	✅ Upload .xmp Lightroom presets
-	•	✅ Submit Fujifilm film sim recipes
-	•	🔜 User profiles with gear badges and galleries
-	•	🔜 Curated list sharing (like Pinterest boards)
-	•	🔜 Notifications & activity feed
-	•	🔜 Community forum
-	•	🔜 Mobile-first PWA version
+Roadmap Highlights
+	•	Upload .xmp Lightroom presets
+	•	Submit Fujifilm film sim recipes
+	•	User profiles with gear badges and galleries
+	•	Curated list sharing (like Pinterest boards)
+	•	Notifications & activity feed
+	•	Community forum
+	•	Mobile-first PWA version
 
 ⸻
-
-🖤 Join the Vision
-
-VISOR is still in early development, but it’s growing into a creative space for image-makers who care deeply about mood, tone, and story. It’s open, community-driven, and designed to evolve with its users.
-
-Have ideas, feedback, or presets to share? Get involved.
-Let’s build a better way to create and share the tools that shape our visual voice.
-
-⸻
-
-📄 License
-
-MIT © Arran Oxley Strange
-
-Let me know if you'd like a matching `CONTRIBUTING.md` or a public landing page intro copy for visitors.
 ```

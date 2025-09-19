@@ -20,7 +20,6 @@ const cleanSettings = (settings) => {
   if (!settings) return {};
   console.log("uploadPreset called");
 
-  // Remove colorGrading from settings if it exists (it should be sent as separate field)
   const { colorGrading, ...settingsWithoutColorGrading } = settings;
 
   return {
@@ -39,7 +38,6 @@ const cleanSettings = (settings) => {
     temp: Number(settingsWithoutColorGrading.temp) || 0,
     tint: Number(settingsWithoutColorGrading.tint) || 0,
 
-    // Detail settings
     sharpening: Number(settingsWithoutColorGrading.sharpening) || 0,
     sharpenRadius: Number(settingsWithoutColorGrading.sharpenRadius) || 0,
     sharpenDetail: Number(settingsWithoutColorGrading.sharpenDetail) || 0,
@@ -265,12 +263,10 @@ const cleanToneCurve = (toneCurve) => {
   };
 };
 
-// Helper function to clean comprehensive settings
 const cleanComprehensiveSettings = (data) => {
   if (!data) return {};
 
   return {
-    // Camera & Profile Metadata
     cameraProfileDigest: data.cameraProfileDigest || undefined,
     profileName: data.profileName || undefined,
     lookTableName: data.lookTableName || undefined,
@@ -279,7 +275,6 @@ const cleanComprehensiveSettings = (data) => {
     cameraProfile: data.cameraProfile || undefined,
     whiteBalance: data.whiteBalance || undefined,
 
-    // Color Grading
     colorGrading: data.colorGrading
       ? {
           shadowHue: Number(data.colorGrading.shadowHue) || 0,
@@ -299,7 +294,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Lens Corrections
     lensCorrections: data.lensCorrections
       ? {
           enableLensProfileCorrections: Boolean(
@@ -313,7 +307,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Optics
     optics: data.optics
       ? {
           removeChromaticAberration: Boolean(
@@ -324,7 +317,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Transform
     transform: data.transform
       ? {
           perspectiveVertical: Number(data.transform.perspectiveVertical) || 0,
@@ -337,7 +329,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Effects
     effects: data.effects
       ? {
           postCropVignetteAmount:
@@ -356,7 +347,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Calibration
     calibration: data.calibration
       ? {
           cameraCalibrationBluePrimaryHue:
@@ -380,7 +370,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Crop & Orientation
     crop: data.crop
       ? {
           cropTop: Number(data.crop.cropTop) || 0,
@@ -393,7 +382,6 @@ const cleanComprehensiveSettings = (data) => {
       : undefined,
     orientation: data.orientation || "0",
 
-    // Metadata
     metadata: data.metadata
       ? {
           rating: Number(data.metadata.rating) || 0,
@@ -406,7 +394,6 @@ const cleanComprehensiveSettings = (data) => {
         }
       : undefined,
 
-    // Other
     hasSettings: Boolean(data.hasSettings),
     rawFileName: data.rawFileName || undefined,
     snapshot: data.snapshot || undefined,
@@ -505,7 +492,6 @@ const presetResolvers = {
         console.log("Processed toneCurve:", presetData.toneCurve);
         const preset = await Preset.create(presetData);
         return preset;
-        // Note: uploadPreset is the preferred mutation for file uploads and full preset creation from the frontend.
       } catch (error) {
         console.error("Error creating preset:", error);
         throw error;
@@ -540,7 +526,7 @@ const presetResolvers = {
         beforeImage,
         afterImage,
         sampleImages,
-        // New comprehensive settings
+
         cameraProfileDigest,
         profileName,
         lookTableName,
@@ -604,12 +590,10 @@ const presetResolvers = {
           JSON.stringify(settings, null, 2)
         );
 
-        // Extract colorGrading from settings if it exists, otherwise use the separate parameter
         const colorGradingFromSettings =
           settings && settings.colorGrading ? settings.colorGrading : null;
         const finalColorGrading = colorGradingFromSettings || colorGradingParam;
 
-        // Clean comprehensive settings
         const comprehensiveSettings = cleanComprehensiveSettings({
           cameraProfileDigest,
           profileName,
@@ -688,7 +672,6 @@ const presetResolvers = {
           }
         }
 
-        // Save sample images if provided
         if (sampleImages && sampleImages.length > 0) {
           console.log("Creating sample image documents...");
           try {
@@ -732,10 +715,8 @@ const presetResolvers = {
         if (!finalPreset) {
           throw new Error("Preset not found after save");
         }
-
         console.log("Preset upload completed successfully");
 
-        // Create discussion for the preset
         try {
           const discussion = new Discussion({
             title: `Discussion: ${title}`,
@@ -745,7 +726,7 @@ const presetResolvers = {
             },
             tags: tags || [],
             createdBy: user._id,
-            followers: [user._id], // Auto-subscribe creator
+            followers: [user._id],
           });
 
           await discussion.save();
@@ -758,7 +739,6 @@ const presetResolvers = {
             "Error creating discussion for preset:",
             discussionError
           );
-          // Don't fail the preset creation if discussion creation fails
         }
 
         return finalPreset;

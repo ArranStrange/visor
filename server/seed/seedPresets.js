@@ -1,11 +1,11 @@
 // seedPresets.js
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const Preset = require("./models/Preset");
-const User = require("./models/User");
-const Tag = require("./models/Tag");
-const FilmSim = require("./models/FilmSim");
-const Image = require("./models/Image");
+const Preset = require("../models/Preset");
+const User = require("../models/User");
+const Tag = require("../models/Tag");
+const FilmSim = require("../models/FilmSim");
+const Image = require("../models/Image");
 
 dotenv.config();
 
@@ -181,12 +181,11 @@ const seedPresets = async () => {
       useUnifiedTopology: true,
     });
 
-    console.log("🌱 Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
-    // Clear existing presets and their images
     await Preset.deleteMany({});
     await Image.deleteMany({ associatedWith: { kind: "Preset" } });
-    console.log("🗑️ Cleared existing presets and their images");
+    console.log("Cleared existing presets and their images");
 
     for (const preset of presets) {
       const creator = await User.findOne();
@@ -207,7 +206,6 @@ const seedPresets = async () => {
         })
       );
 
-      // Create the preset
       const newPreset = await Preset.create({
         ...preset,
         slug: preset.id,
@@ -217,13 +215,13 @@ const seedPresets = async () => {
         isPublished: true,
       });
 
-      console.log(`✅ Seeded: ${preset.title}`);
+      console.log(`Seeded: ${preset.title}`);
     }
 
-    console.log("🌱 Preset seeding complete");
+    console.log("Preset seeding complete");
     process.exit(0);
   } catch (err) {
-    console.error("❌ Error seeding presets:", err);
+    console.error("Error seeding presets:", err);
     process.exit(1);
   }
 };

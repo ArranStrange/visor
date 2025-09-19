@@ -23,7 +23,6 @@ module.exports = {
             },
           });
 
-        // Convert all ObjectIds to strings
         return lists.map((list) => {
           const listObj = list.toObject();
           return {
@@ -128,7 +127,6 @@ module.exports = {
           filmSims: [],
         });
 
-        // Format the response to match the expected structure
         const listObj = list.toObject();
         return {
           ...listObj,
@@ -158,7 +156,6 @@ module.exports = {
           throw new Error("List not found");
         }
 
-        // Check if user is the owner
         if (list.owner.toString() !== user._id.toString()) {
           throw new AuthenticationError(
             "You don't have permission to delete this list"
@@ -188,14 +185,12 @@ module.exports = {
           throw new Error("List not found");
         }
 
-        // Check if user is the owner
         if (list.owner.toString() !== user._id.toString()) {
           throw new AuthenticationError(
             "You don't have permission to modify this list"
           );
         }
 
-        // Remove the item based on type
         if (presetId) {
           list.presets = list.presets.filter(
             (id) => id.toString() !== presetId
@@ -209,7 +204,6 @@ module.exports = {
 
         await list.save();
 
-        // Fetch the updated list with populated data
         const updatedList = await UserList.findById(listId)
           .populate({
             path: "presets",
@@ -233,7 +227,6 @@ module.exports = {
           throw new Error("Failed to fetch updated list");
         }
 
-        // Format the response
         const listObj = updatedList.toObject();
         return {
           ...listObj,
@@ -275,26 +268,22 @@ module.exports = {
           throw new Error("List not found");
         }
 
-        // Check if user is the owner
         if (list.owner.toString() !== user._id.toString()) {
           throw new AuthenticationError(
             "You don't have permission to modify this list"
           );
         }
 
-        // Add presets if provided
         if (presetIds && presetIds.length > 0) {
           list.presets = [...new Set([...list.presets, ...presetIds])];
         }
 
-        // Add film sims if provided
         if (filmSimIds && filmSimIds.length > 0) {
           list.filmSims = [...new Set([...list.filmSims, ...filmSimIds])];
         }
 
         await list.save();
 
-        // Fetch the updated list with populated data
         const updatedList = await UserList.findById(listId)
           .populate({
             path: "presets",
@@ -318,7 +307,6 @@ module.exports = {
           throw new Error("Failed to fetch updated list");
         }
 
-        // Format the response
         const listObj = updatedList.toObject();
         return {
           ...listObj,
@@ -360,7 +348,6 @@ module.exports = {
         throw new Error("You must be logged in to update a list");
       }
 
-      // Find the list and check ownership
       const list = await UserList.findById(id);
       if (!list) {
         throw new Error("List not found");
@@ -370,7 +357,6 @@ module.exports = {
         throw new Error("You can only update your own lists");
       }
 
-      // Update the list with the new values
       const updatedList = await UserList.findByIdAndUpdate(
         id,
         {
@@ -389,7 +375,6 @@ module.exports = {
 
       console.log("List updated successfully:", updatedList);
 
-      // Format the response
       return {
         id: updatedList._id.toString(),
         name: updatedList.name,

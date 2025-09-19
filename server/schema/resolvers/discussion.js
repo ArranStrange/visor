@@ -202,13 +202,9 @@ const discussionResolvers = {
         const skip = (page - 1) * limit;
         const query = { discussionId, isDeleted: false };
 
-        // If parentId is provided, get replies to that specific post
-        // If parentId is null, get root-level posts (no parent)
-        // If parentId is not provided, get all posts in the discussion
         if (parentId !== undefined) {
           query.parentId = parentId;
         }
-        // If parentId is not provided, don't filter by parentId - get all posts
 
         const [posts, totalCount] = await Promise.all([
           DiscussionPost.find(query)
@@ -220,7 +216,6 @@ const discussionResolvers = {
           DiscussionPost.countDocuments(query),
         ]);
 
-        // Serialize posts to ensure ObjectIds are converted to strings
         const serializedPosts = posts.map((post) => serializePost(post));
 
         return {
@@ -249,7 +244,6 @@ const discussionResolvers = {
           throw new Error("Post not found");
         }
 
-        // Serialize post to ensure ObjectIds are converted to strings
         const serialized = serializeDocument(post.toObject());
         if (serialized.reactions) {
           serialized.reactions = serializeReactions(serialized.reactions);
@@ -273,7 +267,6 @@ const discussionResolvers = {
           DiscussionPost.countDocuments({ author: authorId, isDeleted: false }),
         ]);
 
-        // Serialize posts to ensure ObjectIds are converted to strings
         const serializedPosts = posts.map((post) => serializePost(post));
 
         return {
@@ -371,7 +364,6 @@ const discussionResolvers = {
           DiscussionPost.countDocuments(searchQuery),
         ]);
 
-        // Serialize posts to ensure ObjectIds are converted to strings
         const serializedPosts = posts.map((post) => serializePost(post));
 
         return {
@@ -428,7 +420,6 @@ const discussionResolvers = {
           .populate("author", "id username avatar")
           .populate("discussionId", "id title");
 
-        // Serialize posts to ensure ObjectIds are converted to strings
         const serializedPosts = posts.map((post) => serializePost(post));
 
         return serializedPosts;
@@ -690,13 +681,11 @@ const discussionResolvers = {
           lastActivity: new Date(),
         });
 
-        // Create notifications for the new post (only for replies, not for the first post)
         if (parentId) {
           try {
             await createPostNotifications(post, discussion, user.id);
           } catch (notificationError) {
             console.error("Error creating notifications:", notificationError);
-            // Don't fail the post creation if notifications fail
           }
         }
 
@@ -708,7 +697,6 @@ const discussionResolvers = {
       } catch (error) {
         console.error("Error in createPost:", error);
 
-        // Re-throw specific errors
         if (error.name === "AuthenticationError") {
           throw error;
         }
@@ -721,7 +709,6 @@ const discussionResolvers = {
           throw new Error(`Invalid ID format: ${error.message}`);
         }
 
-        // Re-throw specific error messages
         if (
           error.message.includes("Discussion not found") ||
           error.message.includes("Linked") ||
@@ -730,7 +717,6 @@ const discussionResolvers = {
           throw error;
         }
 
-        // For database connection or other system errors
         console.error("Database error in createPost:", error);
         throw new Error(`Database error: ${error.message}`);
       }
@@ -811,7 +797,6 @@ const discussionResolvers = {
       } catch (error) {
         console.error("Error in updatePost:", error);
 
-        // Re-throw specific errors
         if (error.name === "AuthenticationError") {
           throw error;
         }
@@ -832,7 +817,6 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        // For database connection or other system errors
         console.error("Database error in updatePost:", error);
         throw new Error(`Database error: ${error.message}`);
       }
@@ -908,7 +892,6 @@ const discussionResolvers = {
       } catch (error) {
         console.error("Error in deletePost:", error);
 
-        // Re-throw specific errors
         if (error.name === "AuthenticationError") {
           throw error;
         }
@@ -929,7 +912,6 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        // For database connection or other system errors
         console.error("Database error in deletePost:", error);
         throw new Error(`Database error: ${error.message}`);
       }
@@ -977,7 +959,6 @@ const discussionResolvers = {
       } catch (error) {
         console.error("Error in addReaction:", error);
 
-        // Re-throw specific errors
         if (error.name === "AuthenticationError") {
           throw error;
         }
@@ -998,7 +979,6 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        // For database connection or other system errors
         console.error("Database error in addReaction:", error);
         throw new Error(`Database error: ${error.message}`);
       }
@@ -1043,7 +1023,6 @@ const discussionResolvers = {
       } catch (error) {
         console.error("Error in removeReaction:", error);
 
-        // Re-throw specific errors
         if (error.name === "AuthenticationError") {
           throw error;
         }
@@ -1064,7 +1043,6 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        // For database connection or other system errors
         console.error("Database error in removeReaction:", error);
         throw new Error(`Database error: ${error.message}`);
       }

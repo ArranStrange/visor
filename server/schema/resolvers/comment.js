@@ -1,38 +1,8 @@
-const { GraphQLUpload } = require("graphql-upload");
-const GraphQLJSON = require("graphql-type-json");
-const { GraphQLScalarType } = require("graphql");
+const Comment = require("../../models/comment");
+const User = require("../../models/User");
 
-const Comment = require("../models/comment");
-const Image = require("../models/Image");
-const User = require("../models/User");
-
-// ObjectId scalar resolver
-const ObjectIdScalar = new GraphQLScalarType({
-  name: "ObjectId",
-  description: "ObjectId custom scalar type",
-  serialize(value) {
-    if (value instanceof require("mongoose").Types.ObjectId) {
-      return value.toString();
-    }
-    return value;
-  },
-  parseValue(value) {
-    return value;
-  },
-  parseLiteral(ast) {
-    return ast.value;
-  },
-});
-
-module.exports = {
-  Upload: GraphQLUpload,
-  JSON: GraphQLJSON,
-  ObjectId: ObjectIdScalar,
-
+const commentResolvers = {
   Query: {
-    getImage: async (_, { id }) => await Image.findById(id),
-    listImagesByPreset: async (_, { presetId }) =>
-      await Image.find({ preset: presetId }),
     getCommentsForPreset: async (_, { presetId }) =>
       await Comment.find({ preset: presetId, parent: null }),
     getCommentsForFilmSim: async (_, { filmSimId }) =>
@@ -71,3 +41,5 @@ module.exports = {
       comment.parent ? await Comment.findById(comment.parent) : null,
   },
 };
+
+module.exports = commentResolvers;

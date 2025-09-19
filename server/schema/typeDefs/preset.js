@@ -212,6 +212,63 @@ const typeDefs = gql`
     snapshot: String
   }
 
+  type CurvePoint {
+    x: Float!
+    y: Float!
+  }
+
+  type ToneCurve {
+    rgb: [CurvePoint]
+    red: [CurvePoint]
+    green: [CurvePoint]
+    blue: [CurvePoint]
+  }
+
+  type Image {
+    id: ID!
+    url: String
+    publicId: String
+    caption: String
+    associatedWith: AssociatedWith
+    uploader: User
+    preset: Preset
+    filmSim: FilmSim
+    tags: [Tag]
+    isBeforeImage: Boolean
+    isAfterImage: Boolean
+    createdAt: String
+  }
+
+  type AssociatedWith {
+    kind: String!
+    item: ID!
+  }
+
+  type Comment {
+    id: ID!
+    author: User!
+    content: String!
+    preset: Preset
+    filmSim: FilmSim
+    parent: Comment
+    reactions: CommentReactions
+    createdAt: String
+    updatedAt: String
+  }
+
+  type CommentReactions {
+    thumbsUp: [User]
+    heart: [User]
+  }
+
+  type SplitToningSettings {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
+  }
+
   input CurvePointInput {
     x: Float!
     y: Float!
@@ -222,6 +279,44 @@ const typeDefs = gql`
     red: [CurvePointInput!]
     green: [CurvePointInput!]
     blue: [CurvePointInput!]
+  }
+
+  input ImageMetaInput {
+    caption: String
+    presetId: ID
+    filmSimId: ID
+    tagIds: [ID!]
+  }
+
+  input SampleImageInput {
+    url: String!
+    publicId: String!
+  }
+
+  input ImageInput {
+    url: String!
+    publicId: String!
+    associatedWith: AssociatedWithInput
+  }
+
+  input AssociatedWithInput {
+    kind: String!
+    item: ID!
+  }
+
+  input CreateCommentInput {
+    content: String!
+    presetId: ID
+    filmSimId: ID
+    parentId: ID
+  }
+
+  input SplitToningSettingsInput {
+    shadowHue: Float
+    shadowSaturation: Float
+    highlightHue: Float
+    highlightSaturation: Float
+    balance: Float
   }
 
   input PresetSettingsInput {

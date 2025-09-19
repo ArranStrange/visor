@@ -2,7 +2,7 @@
 
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const User = require("./models/User");
+const User = require("../models/User");
 
 dotenv.config();
 
@@ -94,20 +94,20 @@ const users = [
 async function seedUsers() {
   try {
     await mongoose.connect(MONGO_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
     for (const user of users) {
       const exists = await User.findOne({ username: user.username });
       if (!exists) {
         await User.create(user);
-        console.log(`✅ Created user: ${user.username}`);
+        console.log(`Created user: ${user.username}`);
       }
     }
 
-    console.log("🌱 User seeding complete");
+    console.log("User seeding complete");
     process.exit();
   } catch (err) {
-    console.error("❌ Error seeding users:", err);
+    console.error("Error seeding users:", err);
     process.exit(1);
   }
 }

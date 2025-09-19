@@ -25,7 +25,6 @@ const generateToken = (user) => {
   );
 };
 
-// Validation helpers
 const validateEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
@@ -55,24 +54,19 @@ const validateUsername = (username) => {
   }
 };
 
-// Helper function to handle file uploads
 const handleFileUpload = async (file, directory) => {
   const { createReadStream, filename, mimetype } = await file;
 
-  // Create directory if it doesn't exist
   const uploadDir = path.join(__dirname, "..", "..", "uploads", directory);
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
 
-  // Generate unique filename
   const uniqueFilename = `${Date.now()}-${filename}`;
   const filepath = path.join(uploadDir, uniqueFilename);
 
-  // Create write stream
   const writeStream = fs.createWriteStream(filepath);
 
-  // Pipe the file to the write stream
   await new Promise((resolve, reject) => {
     createReadStream()
       .pipe(writeStream)
@@ -80,7 +74,6 @@ const handleFileUpload = async (file, directory) => {
       .on("error", reject);
   });
 
-  // Return the relative path to the file
   return `/${directory}/${uniqueFilename}`;
 };
 
@@ -98,7 +91,6 @@ module.exports = {
           throw new AuthenticationError("User not found");
         }
 
-        // Return user with proper ID format
         const userObj = currentUser.toObject();
         return {
           ...userObj,
@@ -133,26 +125,22 @@ module.exports = {
   Mutation: {
     login: async (_, { email, password }) => {
       try {
-        // Find user by email
         const user = await User.findOne({ email });
         if (!user) {
           throw new AuthenticationError("Invalid email or password");
         }
 
-        // Check password
         const isValidPassword = await user.comparePassword(password);
         if (!isValidPassword) {
           throw new AuthenticationError("Invalid email or password");
         }
 
-        // Check if email is verified
         if (!user.emailVerified) {
           throw new AuthenticationError(
             "Please verify your email address before logging in"
           );
         }
 
-        // Generate token and return
         return {
           token: generateToken(user),
           user: {
@@ -188,7 +176,6 @@ module.exports = {
         validatePassword(password);
         validateUsername(username);
 
-        // Check for existing user
         const existingUser = await User.findOne({
           $or: [{ email }, { username }],
         });
@@ -201,7 +188,6 @@ module.exports = {
           }
         }
 
-        // Create user with email verification
         const user = new User({
           username,
           email,
@@ -209,11 +195,9 @@ module.exports = {
           emailVerified: false,
         });
 
-        // Generate verification token
         const verificationToken = user.generateVerificationToken();
         await user.save();
 
-        // Send verification email
         const emailResult = await EmailService.sendVerificationEmail(
           email,
           username,
@@ -227,7 +211,6 @@ module.exports = {
           );
         }
 
-        // Return success response without token (user needs to verify email first)
         return {
           success: true,
           message: emailResult.success
@@ -254,7 +237,6 @@ module.exports = {
 
     verifyEmail: async (_, { token }) => {
       try {
-        // Find user by verification token
         const user = await User.findOne({
           verificationToken: token,
           tokenExpiry: { $gt: new Date() },
@@ -268,13 +250,11 @@ module.exports = {
           };
         }
 
-        // Mark email as verified and clear token
         user.emailVerified = true;
         user.verificationToken = undefined;
         user.tokenExpiry = undefined;
         await user.save();
 
-        // Send welcome email
         EmailService.sendWelcomeEmail(user.email, user.username).catch(
           (error) => console.error("Failed to send welcome email:", error)
         );
@@ -300,7 +280,6 @@ module.exports = {
 
     resendVerificationEmail: async (_, { email }) => {
       try {
-        // Find user by email
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -317,11 +296,9 @@ module.exports = {
           };
         }
 
-        // Generate new verification token
         const verificationToken = user.generateVerificationToken();
         await user.save();
 
-        // Send verification email
         const emailResult = await EmailService.sendVerificationEmail(
           email,
           user.username,
@@ -349,11 +326,9 @@ module.exports = {
       }
 
       try {
-        // Parse the JSON input if it's a string
         const updateData =
           typeof input === "string" ? JSON.parse(input) : input;
 
-        // Prepare update object
         const updateFields = {};
 
         if (updateData.bio !== undefined) updateFields.bio = updateData.bio;
@@ -364,7 +339,6 @@ module.exports = {
         if (updateData.avatar !== undefined)
           updateFields.avatar = updateData.avatar;
 
-        // Find and update the user
         const updatedUser = await User.findByIdAndUpdate(
           user._id,
           { $set: updateFields },
@@ -375,7 +349,6 @@ module.exports = {
           throw new Error("User not found");
         }
 
-        // Return the updated user with proper ID format
         const userObj = updatedUser.toObject();
         return {
           ...userObj,
@@ -393,10 +366,8 @@ module.exports = {
       }
 
       try {
-        // Handle file upload
         const avatarPath = await handleFileUpload(file, "avatars");
 
-        // Update user's avatar
         const updatedUser = await User.findByIdAndUpdate(
           user._id,
           { avatar: avatarPath },
@@ -463,7 +434,7 @@ module.exports = {
         ],
       });
       if (!user || !user.uploadedFilmSims) return [];
-      // Manually transform to convert ObjectIds to strings
+
       return user.uploadedFilmSims.map((f) => ({
         ...f.toObject(),
         id: f._id.toString(),
@@ -472,8 +443,6 @@ module.exports = {
           : null,
         tags:
           f.tags?.map((t) => ({ ...t.toObject(), id: t._id.toString() })) || [],
-        // The model has likes as a Number, but schema expects [User].
-        // Return an empty array to prevent crash, though this is a schema/model mismatch.
         likes: [],
         sampleImages:
           f.sampleImages?.map((i) => ({

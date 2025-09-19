@@ -12,7 +12,7 @@ const { graphqlUploadExpress } = require("graphql-upload");
 dotenv.config();
 
 const { mergeTypeDefs, mergeResolvers } = require("@graphql-tools/merge");
-const mainTypeDefs = require("./schema/typeDefs");
+const scalarsTypeDefs = require("./schema/typeDefs/scalars");
 const presetTypeDefs = require("./schema/typeDefs/preset");
 const filmSimTypeDefs = require("./schema/typeDefs/filmSim");
 const listTypeDefs = require("./schema/typeDefs/list");
@@ -20,7 +20,11 @@ const tagTypeDefs = require("./schema/typeDefs/tag");
 const userTypeDefs = require("./schema/typeDefs/user");
 const discussionTypeDefs = require("./schema/typeDefs/discussion");
 const notificationTypeDefs = require("./schema/typeDefs/notification");
-const mainResolvers = require("./schema/resolvers");
+const commentTypeDefs = require("./schema/typeDefs/comment");
+const imageTypeDefs = require("./schema/typeDefs/image");
+const scalarsResolvers = require("./schema/resolvers/scalars");
+const commentResolvers = require("./schema/resolvers/comment");
+const imageResolvers = require("./schema/resolvers/image");
 const presetResolvers = require("./schema/resolvers/preset");
 const filmSimResolvers = require("./schema/resolvers/filmSim");
 const listResolvers = require("./schema/resolvers/list");
@@ -30,7 +34,7 @@ const discussionResolvers = require("./schema/resolvers/discussion");
 const notificationResolvers = require("./schema/resolvers/notification");
 
 const typeDefs = mergeTypeDefs([
-  mainTypeDefs,
+  scalarsTypeDefs,
   presetTypeDefs,
   filmSimTypeDefs,
   listTypeDefs,
@@ -38,9 +42,13 @@ const typeDefs = mergeTypeDefs([
   userTypeDefs,
   discussionTypeDefs,
   notificationTypeDefs,
+  commentTypeDefs,
+  imageTypeDefs,
 ]);
 const resolvers = mergeResolvers([
-  mainResolvers,
+  scalarsResolvers,
+  commentResolvers,
+  imageResolvers,
   presetResolvers,
   filmSimResolvers,
   listResolvers,
@@ -55,19 +63,17 @@ const MONGO_URI = process.env.MONGODB_URI;
 const NODE_ENV = process.env.NODE_ENV || "development";
 const RENDER_URL = process.env.RENDER_URL || "http://localhost:4000";
 
-// Validate MongoDB URI
 if (!MONGO_URI) {
-  console.error("❌ MONGODB_URI environment variable is not set");
+  console.error("MONGODB_URI environment variable is not set");
   process.exit(1);
 }
 
 if (!MONGO_URI.startsWith("mongodb+srv://")) {
-  console.error("❌ MONGODB_URI must start with 'mongodb+srv://'");
+  console.error("MONGODB_URI must start with 'mongodb+srv://'");
   console.error("Current URI format:", MONGO_URI.split("@")[0] + "@****");
   process.exit(1);
 }
 
-// Validate URI components
 try {
   const uriParts = MONGO_URI.split("@");
   if (uriParts.length !== 2) {
@@ -84,11 +90,11 @@ try {
     throw new Error("Missing credentials or host");
   }
 
-  console.log("✅ MongoDB URI format validation passed");
-  console.log("🔒 Protocol:", protocol);
-  console.log("🌐 Host:", host.split("?")[0]);
+  console.log("MongoDB URI format validation passed");
+  console.log("Protocol:", protocol);
+  console.log("Host:", host.split("?")[0]);
 } catch (error) {
-  console.error("❌ MongoDB URI validation failed:", error.message);
+  console.error("MongoDB URI validation failed:", error.message);
   process.exit(1);
 }
 
@@ -131,11 +137,8 @@ const startServer = async () => {
   });
 
   app.use(express.json());
-
-  // Add file upload middleware
   app.use(graphqlUploadExpress());
 
-  // Health check endpoint for Render
   app.get("/health", (req, res) => {
     res.status(200).json({
       status: "healthy",
@@ -144,9 +147,7 @@ const startServer = async () => {
     });
   });
 
-  // Serve uploaded images
   app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
   const server = new ApolloServer({
     typeDefs,
     resolvers,
@@ -154,7 +155,6 @@ const startServer = async () => {
       cache: "bounded",
     },
     context: async ({ req }) => {
-      // Get the token from the Authorization header
       const authHeader = req.headers.authorization || "";
       const token = authHeader.split(" ")[1];
 
@@ -199,10 +199,10 @@ const startServer = async () => {
     });
 
     console.log("Attempting to connect to MongoDB...");
-    console.log("MongoDB URI:", MONGO_URI.replace(/:[^:@]*@/, ":****@")); // Hide password in logs
+    console.log("MongoDB URI:", MONGO_URI.replace(/:[^:@]*@/, ":****@"));
 
     await mongoose.connect(MONGO_URI);
-    console.log("✅ MongoDB connected");
+    console.log("MongoDB connected");
 
     app.listen(PORT, "0.0.0.0", () => {
       console.log(`🚀 Server running in ${NODE_ENV} mode`);
@@ -215,7 +215,6 @@ const startServer = async () => {
   }
 };
 
-// Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
   console.error("Unhandled Promise Rejection:", err);
   process.exit(1);

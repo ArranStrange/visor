@@ -7,7 +7,6 @@ const notificationResolvers = {
   Query: {
     getNotifications: async (_, { userId, page = 1, limit = 20 }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -15,7 +14,6 @@ const notificationResolvers = {
         const authenticatedUserId = user.id;
         const skip = (page - 1) * limit;
 
-        // Get notifications with pagination using authenticated user ID
         const notifications = await Notification.find({
           recipientId: authenticatedUserId,
         })
@@ -23,12 +21,10 @@ const notificationResolvers = {
           .skip(skip)
           .limit(limit);
 
-        // Get total count
         const totalCount = await Notification.countDocuments({
           recipientId: authenticatedUserId,
         });
 
-        // Get unread count
         const unreadCount = await Notification.countDocuments({
           recipientId: authenticatedUserId,
           isRead: false,
@@ -51,7 +47,6 @@ const notificationResolvers = {
 
     getUnreadNotificationsCount: async (_, { userId }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -71,7 +66,6 @@ const notificationResolvers = {
 
     getNotificationById: async (_, { id }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -82,7 +76,6 @@ const notificationResolvers = {
           throw new Error("Notification not found");
         }
 
-        // Ensure user can only access their own notifications
         if (user.id.toString() !== notification.recipientId.toString()) {
           throw new Error("Unauthorized access to notification");
         }
@@ -97,7 +90,6 @@ const notificationResolvers = {
   Mutation: {
     markNotificationRead: async (_, { input }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -110,7 +102,6 @@ const notificationResolvers = {
           throw new Error("Notification not found");
         }
 
-        // Ensure user can only mark their own notifications as read
         if (user.id.toString() !== notification.recipientId.toString()) {
           throw new Error("Unauthorized access to notification");
         }
@@ -128,7 +119,6 @@ const notificationResolvers = {
 
     markAllNotificationsRead: async (_, { input }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -153,7 +143,6 @@ const notificationResolvers = {
 
     deleteNotification: async (_, { input }, { user }) => {
       try {
-        // Ensure user is authenticated
         if (!user) {
           throw new Error("Not authenticated");
         }
@@ -166,7 +155,6 @@ const notificationResolvers = {
           throw new Error("Notification not found");
         }
 
-        // Ensure user can only delete their own notifications
         if (user.id.toString() !== notification.recipientId.toString()) {
           throw new Error("Unauthorized access to notification");
         }
@@ -184,8 +172,6 @@ const notificationResolvers = {
 
     createNotification: async (_, { input }, { user }) => {
       try {
-        // This mutation is for internal use, so we'll allow it without strict user checks
-        // but we should validate the input data
         const {
           type,
           title,
@@ -197,13 +183,11 @@ const notificationResolvers = {
           linkedItem,
         } = input;
 
-        // Validate that recipient exists
         const recipient = await User.findById(recipientId);
         if (!recipient) {
           throw new Error("Recipient not found");
         }
 
-        // Validate that sender exists if provided
         if (senderId) {
           const sender = await User.findById(senderId);
           if (!sender) {
@@ -211,7 +195,6 @@ const notificationResolvers = {
           }
         }
 
-        // Validate that discussion exists if provided
         if (discussionId) {
           const discussion = await Discussion.findById(discussionId);
           if (!discussion) {
@@ -219,7 +202,6 @@ const notificationResolvers = {
           }
         }
 
-        // Validate that post exists if provided
         if (postId) {
           const post = await DiscussionPost.findById(postId);
           if (!post) {

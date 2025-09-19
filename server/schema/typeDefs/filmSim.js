@@ -29,7 +29,6 @@ const typeDefs = gql`
     description: String
     type: String
     settings: FilmSimSettings
-    toneCurve: ToneCurve
     tags: [Tag]
     sampleImages: [Image]
     thumbnail: String
@@ -44,7 +43,7 @@ const typeDefs = gql`
   }
 
   input FilmSimSettingsInput {
-    dynamicRange: String!
+    dynamicRange: Int
     filmSimulation: String!
     whiteBalance: String!
     wbShift: WhiteBalanceShiftInput!
@@ -70,7 +69,6 @@ const typeDefs = gql`
     description: String
     type: String
     settings: FilmSimSettingsInput
-    toneCurve: ToneCurveInput
     tagIds: [ID!]
     sampleImageIds: [ID!]
     notes: String

@@ -1,30 +1,30 @@
 const mongoose = require("mongoose");
-const Discussion = require("./models/Discussion");
-const Preset = require("./models/Preset");
-const FilmSim = require("./models/FilmSim");
-const User = require("./models/User");
-const Tag = require("./models/Tag");
+const Discussion = require("../models/Discussion");
+const Preset = require("../models/Preset");
+const FilmSim = require("../models/FilmSim");
+const User = require("../models/User");
+const Tag = require("../models/Tag");
 require("dotenv").config();
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
 async function seedDiscussions() {
   try {
-    console.log("🔌 Connecting to MongoDB...");
+    console.log("Connecting to MongoDB...");
     await mongoose.connect(MONGODB_URI);
-    console.log("✅ Connected to MongoDB");
+    console.log("Connected to MongoDB");
 
     // Clear existing discussions
-    console.log("🧹 Clearing existing discussions...");
+    console.log("Clearing existing discussions...");
     await Discussion.deleteMany({});
-    console.log("✅ Cleared existing discussions");
+    console.log("Cleared existing discussions");
 
     // Get all presets and film sims
     const presets = await Preset.find({}).populate("creator tags");
     const filmSims = await FilmSim.find({}).populate("creator tags");
 
-    console.log(`📸 Found ${presets.length} presets`);
-    console.log(`🎞️ Found ${filmSims.length} film sims`);
+    console.log(`Found ${presets.length} presets`);
+    console.log(`Found ${filmSims.length} film sims`);
 
     const discussions = [];
 
@@ -63,13 +63,13 @@ async function seedDiscussions() {
     }
 
     // Save all discussions
-    console.log(`💬 Creating ${discussions.length} discussions...`);
+    console.log(`Creating ${discussions.length} discussions...`);
     await Discussion.insertMany(discussions);
-    console.log("✅ Discussions seeded successfully");
+    console.log("Discussions seeded successfully");
 
     // Verify seeding
     const discussionCount = await Discussion.countDocuments();
-    console.log(`📊 Total discussions in database: ${discussionCount}`);
+    console.log(`Total discussions in database: ${discussionCount}`);
 
     // Show some sample discussions
     const sampleDiscussions = await Discussion.find({})
@@ -77,7 +77,7 @@ async function seedDiscussions() {
       .populate("linkedTo.refId", "title name")
       .limit(5);
 
-    console.log("\n📋 Sample discussions created:");
+    console.log("Sample discussions created:");
     sampleDiscussions.forEach((discussion) => {
       const linkedItem = discussion.linkedTo.refId;
       const itemName = linkedItem.title || linkedItem.name;
@@ -86,10 +86,10 @@ async function seedDiscussions() {
       );
     });
   } catch (error) {
-    console.error("❌ Error seeding discussions:", error);
+    console.error("Error seeding discussions:", error);
   } finally {
     await mongoose.disconnect();
-    console.log("🔌 Disconnected from MongoDB");
+    console.log("Disconnected from MongoDB");
   }
 }
 
