@@ -68,6 +68,34 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
             );
           })
         )}
+
+        {/* Crosshairs */}
+        <Box
+          sx={{
+            position: "absolute",
+            left: "50%",
+            top: 0,
+            width: 1,
+            height: "100%",
+            bgcolor: "rgba(0, 0, 0, 0.3)",
+            zIndex: 3,
+            pointerEvents: "none",
+            transform: "translateX(-50%)",
+          }}
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: 0,
+            width: "100%",
+            height: 1,
+            bgcolor: "rgba(0, 0, 0, 0.3)",
+            zIndex: 3,
+            pointerEvents: "none",
+            transform: "translateY(-50%)",
+          }}
+        />
       </Box>
 
       <Typography
