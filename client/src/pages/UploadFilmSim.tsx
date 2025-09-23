@@ -222,12 +222,20 @@ const UploadFilmSim: React.FC = () => {
             {user && (
               <FilmSimSettingsForm
                 settings={formState.settings}
-                onSettingChange={(settingKey, value) =>
-                  setFormState((prev) => ({
-                    ...prev,
-                    settings: { ...prev.settings, [settingKey]: value },
-                  }))
-                }
+                onSettingChange={(settingKey, value) => {
+                  if (settingKey.startsWith("settings.")) {
+                    const actualKey = settingKey.replace("settings.", "");
+                    setFormState((prev) => ({
+                      ...prev,
+                      settings: { ...prev.settings, [actualKey]: value },
+                    }));
+                  } else {
+                    setFormState((prev) => ({
+                      ...prev,
+                      settings: { ...prev.settings, [settingKey]: value },
+                    }));
+                  }
+                }}
               />
             )}
 
