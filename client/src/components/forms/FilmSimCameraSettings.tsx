@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
-import WhiteBalanceGrid from "./WhiteBalanceGrid";
+import WhiteBalanceGrid from "../settings/WhiteBalanceGrid";
 
 interface FilmSimSettings {
   filmSimulation?: string;

@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Card, Typography, Box, Chip, Stack } from "@mui/material";
-import { useMobileDetection } from "../hooks/useMobileDetection";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
 
 interface BuyMeACoffeeCardProps {
   id?: string;

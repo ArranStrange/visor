@@ -10,8 +10,8 @@ import {
 import { useQuery } from "@apollo/client";
 import { useSearchParams, useNavigate } from "react-router-dom";
 
-import ContentTypeToggle from "../components/ContentTypeToggle";
-import ContentGridLoader from "../components/ContentGridLoader";
+import ContentTypeToggle from "../components/ui/ContentTypeToggle";
+import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
 import {
   GET_ALL_TAGS,

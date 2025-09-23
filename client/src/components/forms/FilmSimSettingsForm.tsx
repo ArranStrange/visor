@@ -10,7 +10,7 @@ import {
   Box,
   SelectChangeEvent,
 } from "@mui/material";
-import WhiteBalanceGrid from "./WhiteBalanceGrid";
+import WhiteBalanceGrid from "../settings/WhiteBalanceGrid";
 import {
   DYNAMIC_RANGE_OPTIONS,
   FILM_SIMULATION_OPTIONS,
@@ -22,8 +22,8 @@ import {
   CLARITY_OPTIONS,
   COLOR_CHROME_EFFECT_OPTIONS,
   COLOR_CHROME_FX_BLUE_OPTIONS,
-} from "../data/filmSimSettings";
-import { FilmSimSettings } from "../hooks/useFilmSimForm";
+} from "../../data/filmSimSettings";
+import { FilmSimSettings } from "../../hooks/useFilmSimForm";
 
 interface FilmSimSettingsFormProps {
   settings: FilmSimSettings;

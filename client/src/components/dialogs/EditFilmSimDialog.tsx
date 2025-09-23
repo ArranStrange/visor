@@ -17,10 +17,10 @@ import {
   Alert,
 } from "@mui/material";
 import { useMutation } from "@apollo/client";
-import { UPDATE_FILMSIM } from "../graphql/mutations/updateFilmSim";
+import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
 
-import { FilmSimData, useFilmSimForm } from "../hooks/useFilmSimForm";
-import FilmSimSettingsForm from "./FilmSimSettingsForm";
+import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
+import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";
 
 interface EditFilmSimDialogProps {
   open: boolean;

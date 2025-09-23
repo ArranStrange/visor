@@ -8,7 +8,7 @@ import React, {
 import { Box, CircularProgress } from "@mui/material";
 import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
-import { useContentType } from "../context/ContentTypeFilter";
+import { useContentType } from "../../context/ContentTypeFilter";
 
 interface StaggeredGridProps {
   children: React.ReactNode[];

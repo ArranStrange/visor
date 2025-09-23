@@ -31,11 +31,11 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ListIcon from "@mui/icons-material/List";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ShareIcon from "@mui/icons-material/Share";
-import ContentTypeToggle from "../components/ContentTypeToggle";
-import ContentGridLoader from "../components/ContentGridLoader";
+import ContentTypeToggle from "../components/ui/ContentTypeToggle";
+import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
-import PresetCard from "../components/PresetCard";
-import FilmSimCard from "../components/FilmSimCard";
+import PresetCard from "../components/cards/PresetCard";
+import FilmSimCard from "../components/cards/FilmSimCard";
 
 const GET_USER_LISTS = gql`
   query GetUserLists($userId: ID!) {

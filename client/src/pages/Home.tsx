@@ -1,8 +1,8 @@
 import React from "react";
 import { Container } from "@mui/material";
-import ContentTypeToggle from "../components/ContentTypeToggle";
+import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import { useContentType } from "../context/ContentTypeFilter";
-import ContentGridLoader from "../components/ContentGridLoader";
+import ContentGridLoader from "../components/ui/ContentGridLoader";
 
 const HomePage: React.FC = () => {
   const { contentType } = useContentType();

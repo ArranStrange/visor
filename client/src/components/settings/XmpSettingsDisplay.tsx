@@ -1,9 +1,9 @@
 import React from "react";
 import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
-import SettingSliderDisplay from "./SettingSliderDisplay";
+import SettingSliderDisplay from "../forms/SettingSliderDisplay";
 import XmpSettingsAccordion from "./XmpSettingsAccordion";
 import { ParsedSettings } from "./XmpParser";
-import { XMP_SECTIONS } from "../constants/xmpSettingsConfig";
+import { XMP_SECTIONS } from "../../constants/xmpSettingsConfig";
 
 interface XmpSettingsDisplayProps {
   settings: ParsedSettings;

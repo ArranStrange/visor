@@ -1,53 +1,69 @@
-import React from "react";
-import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
+import React, { useEffect } from "react";
+import {
+  Card,
+  Typography,
+  Box,
+  Chip,
+  Stack,
+  Avatar,
+  IconButton,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
-import AddToListDialog from "./AddToListDialog";
-import { useImageColor } from "../hooks/useImageColor";
-import { useMobileDetection } from "../hooks/useMobileDetection";
-import ImageOptimizer from "./ImageOptimizer";
+import AddToListDialog from "../dialogs/AddToListDialog";
+import { useImageColor } from "../../hooks/useImageColor";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
+import ImageOptimizer from "../media/ImageOptimizer";
 
-const placeholderImage = "/placeholder-image.jpg";
-
-interface PresetCardProps {
+interface FilmSimCardProps {
+  id: string;
+  name: string;
   slug: string;
-  title: string;
-  afterImage?: any;
-  tags: { displayName: string }[];
+  description: string;
+  thumbnail: string;
+  tags?: Array<{
+    id?: string;
+    displayName: string;
+  }>;
   creator?: {
     username: string;
     avatar?: string;
     id?: string;
   };
-  id?: string;
+  settings?: {
+    dynamicRange?: string;
+    highlight?: string;
+    shadow?: string;
+    colour?: string;
+    sharpness?: string;
+    noiseReduction?: string;
+    grainEffect?: string;
+    clarity?: string;
+    whiteBalance?: string;
+    wbShift?: {
+      r: number;
+      b: number;
+    };
+  };
 }
 
-const PresetCard: React.FC<PresetCardProps> = ({
-  slug,
-  title,
-  afterImage,
-  tags,
-  creator,
+const FilmSimCard: React.FC<FilmSimCardProps> = ({
   id,
+  name,
+  slug,
+  thumbnail,
+  tags = [],
+  creator,
 }) => {
   const navigate = useNavigate();
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
   const isMobile = useMobileDetection();
 
-  let imageUrl = placeholderImage;
-  if (afterImage) {
-    if (typeof afterImage === "string") {
-      imageUrl = afterImage;
-    } else if (afterImage.url) {
-      imageUrl = afterImage.url;
-    }
-  }
-
-  const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
+  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
   const [showColor, setShowColor] = React.useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAnalyzing && offWhiteColor) {
       const timer = setTimeout(() => {
         setShowColor(true);
@@ -58,6 +74,20 @@ const PresetCard: React.FC<PresetCardProps> = ({
     }
   }, [isAnalyzing, offWhiteColor]);
 
+  const handleClick = () => {
+    if (!addToListOpen) {
+      if (isMobile) {
+        if (!showOptions) {
+          setShowOptions(true);
+        } else {
+          navigate(`/filmsim/${slug}`);
+        }
+      } else {
+        navigate(`/filmsim/${slug}`);
+      }
+    }
+  };
+
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
     setAddToListOpen(true);
@@ -67,21 +97,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
     setAddToListOpen(false);
   };
 
-  const handleCardClick = () => {
-    if (!addToListOpen) {
-      if (isMobile) {
-        if (!showOptions) {
-          setShowOptions(true);
-        } else {
-          navigate(`/preset/${slug}`);
-        }
-      } else {
-        navigate(`/preset/${slug}`);
-      }
-    }
-  };
-
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
         setShowOptions(false);
@@ -94,15 +110,13 @@ const PresetCard: React.FC<PresetCardProps> = ({
     <Card
       sx={{
         position: "relative",
-        aspectRatio: "4/5",
+        aspectRatio: "2/3",
         borderRadius: 1,
-        cursor: "pointer",
         overflow: "hidden",
-        "&:hover .tags-overlay": {
+        cursor: "pointer",
+        transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
+        "&:hover .tags-container": {
           opacity: 1,
-        },
-        "&:hover .title-overlay": {
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
         },
         "&:hover .creator-avatar": {
           opacity: 1,
@@ -112,7 +126,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
         },
 
         "@media (hover: none)": {
-          "& .tags-overlay": {
+          "& .tags-container": {
             opacity: showOptions ? 1 : 0,
           },
           "& .creator-avatar": {
@@ -123,15 +137,18 @@ const PresetCard: React.FC<PresetCardProps> = ({
           },
         },
       }}
-      onClick={handleCardClick}
+      onClick={handleClick}
     >
       <ImageOptimizer
-        src={imageUrl}
-        alt={title}
-        aspectRatio="4:5"
+        src={thumbnail || "/placeholder-image.jpg"}
+        alt={name}
+        aspectRatio="2:3"
         style={{
-          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
           width: "100%",
+          height: "100%",
           objectFit: "cover",
         }}
       />
@@ -199,21 +216,20 @@ const PresetCard: React.FC<PresetCardProps> = ({
       )}
 
       <Box
-        className="title-overlay"
+        className="title-container"
         sx={{
           position: "absolute",
           top: 0,
           left: 0,
-          right: 0,
-          bottom: 0,
+          width: "100%",
+          height: "100%",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          backgroundColor: "rgba(0, 0, 0, 0.4)",
           textAlign: "center",
-          transition: "background-color 0.3s ease-in-out",
           p: 2,
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
       >
         <Typography
@@ -221,78 +237,83 @@ const PresetCard: React.FC<PresetCardProps> = ({
           fontWeight="bold"
           sx={{
             color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+            textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+            lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",
           }}
         >
-          {title}
+          {name}
         </Typography>
         <Typography
           variant="body2"
           sx={{
             color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
+            textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
+            lineHeight: 1.2,
             transition: "color 0.8s ease-in-out",
           }}
         >
-          Lightroom Preset
+          Film Sim
         </Typography>
       </Box>
 
       <Box
-        className="tags-overlay"
+        className="tags-container"
         sx={{
           position: "absolute",
           bottom: 0,
           left: 0,
-          right: 0,
-          p: 1.5,
-          background:
-            "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)",
+          width: "100%",
+          p: 2,
           opacity: 0,
           transition: "opacity 0.3s ease-in-out",
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 0.5,
-          justifyContent: "flex-start",
         }}
       >
-        {tags
-          .slice(0, 3)
-          .reverse()
-          .map((tag, index) => (
-            <Chip
-              key={index}
-              label={tag.displayName}
-              size="small"
-              sx={{
-                color: "white",
-                backgroundColor: "black",
-                border: "none",
-                cursor: "pointer",
-                "& .MuiChip-label": {
+        <Stack
+          direction="row"
+          gap={1}
+          flexWrap="wrap"
+          justifyContent="flex-start"
+        >
+          {(tags ?? [])
+            .slice(0, 3)
+            .reverse()
+            .map((tag, index) => (
+              <Chip
+                key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
+                label={tag.displayName}
+                size="small"
+                sx={{
                   color: "white",
-                },
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                },
-              }}
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`);
-              }}
-            />
-          ))}
+                  backgroundColor: "black",
+                  border: "none",
+                  cursor: "pointer",
+                  "& .MuiChip-label": {
+                    color: "white",
+                  },
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  },
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(
+                    `/search?tag=${encodeURIComponent(tag.displayName)}`
+                  );
+                }}
+              />
+            ))}
+        </Stack>
       </Box>
 
       <AddToListDialog
         open={addToListOpen}
         onClose={handleCloseDialog}
-        presetId={id}
-        itemName={title}
+        filmSimId={id}
+        itemName={name}
       />
     </Card>
   );
 };
 
-export default PresetCard;
+export default FilmSimCard;

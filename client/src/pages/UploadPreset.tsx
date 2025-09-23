@@ -31,12 +31,12 @@ import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import FilterIcon from "@mui/icons-material/Filter";
 import InfoIcon from "@mui/icons-material/Info";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
-import XmpParser from "../components/XmpParser";
-import XmpSettingsDisplay from "../components/XmpSettingsDisplay";
+import WhiteBalanceGrid from "../components/settings/WhiteBalanceGrid";
+import XmpParser from "../components/settings/XmpParser";
+import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
 import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
-import ToneCurve from "../components/ToneCurve";
+import ToneCurve from "../components/settings/ToneCurve";
 import { useNavigate } from "react-router-dom";
 import type { GridProps } from "@mui/material";
 import {
@@ -44,7 +44,7 @@ import {
   ToneCurve as ToneCurveType,
   UploadPresetInput,
 } from "../types/graphql";
-import SettingSliderDisplay from "../components/SettingSliderDisplay";
+import SettingSliderDisplay from "../components/forms/SettingSliderDisplay";
 import { v4 as uuidv4 } from "uuid";
 import slugify from "slugify";
 
@@ -307,7 +307,7 @@ interface ImageInput {
 
 // Interface matching the XMP parser output format
 // Import the comprehensive ParsedSettings interface from XmpParser
-import { ParsedSettings } from "../components/XmpParser";
+import { ParsedSettings } from "../components/settings/XmpParser";
 
 const UploadPreset: React.FC = () => {
   const [uploadType, setUploadType] = useState<UploadType>("preset");

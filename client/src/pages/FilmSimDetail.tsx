@@ -28,11 +28,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
-import AddToListButton from "../components/AddToListButton";
+import AddToListButton from "../components/ui/AddToListButton";
 import DiscussionThread from "../components/discussions/DiscussionThread";
-import FilmSimCameraSettings from "../components/FilmSimCameraSettings";
-import EditFilmSimDialog from "../components/EditFilmSimDialog";
-import RecommendedPresetsManager from "../components/RecommendedPresetsManager";
+import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
+import EditFilmSimDialog from "../components/dialogs/EditFilmSimDialog";
+import RecommendedPresetsManager from "../components/cards/RecommendedPresetsManager";
 import { useAuth } from "../context/AuthContext";
 
 import CloseIcon from "@mui/icons-material/Close";

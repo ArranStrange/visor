@@ -1,69 +1,53 @@
-import React, { useEffect } from "react";
-import {
-  Card,
-  Typography,
-  Box,
-  Chip,
-  Stack,
-  Avatar,
-  IconButton,
-} from "@mui/material";
+import React from "react";
+import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
-import AddToListDialog from "./AddToListDialog";
-import { useImageColor } from "../hooks/useImageColor";
-import { useMobileDetection } from "../hooks/useMobileDetection";
-import ImageOptimizer from "./ImageOptimizer";
+import AddToListDialog from "../dialogs/AddToListDialog";
+import { useImageColor } from "../../hooks/useImageColor";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
+import ImageOptimizer from "../media/ImageOptimizer";
 
-interface FilmSimCardProps {
-  id: string;
-  name: string;
+const placeholderImage = "/placeholder-image.jpg";
+
+interface PresetCardProps {
   slug: string;
-  description: string;
-  thumbnail: string;
-  tags?: Array<{
-    id?: string;
-    displayName: string;
-  }>;
+  title: string;
+  afterImage?: any;
+  tags: { displayName: string }[];
   creator?: {
     username: string;
     avatar?: string;
     id?: string;
   };
-  settings?: {
-    dynamicRange?: string;
-    highlight?: string;
-    shadow?: string;
-    colour?: string;
-    sharpness?: string;
-    noiseReduction?: string;
-    grainEffect?: string;
-    clarity?: string;
-    whiteBalance?: string;
-    wbShift?: {
-      r: number;
-      b: number;
-    };
-  };
+  id?: string;
 }
 
-const FilmSimCard: React.FC<FilmSimCardProps> = ({
-  id,
-  name,
+const PresetCard: React.FC<PresetCardProps> = ({
   slug,
-  thumbnail,
-  tags = [],
+  title,
+  afterImage,
+  tags,
   creator,
+  id,
 }) => {
   const navigate = useNavigate();
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
   const isMobile = useMobileDetection();
 
-  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
+  let imageUrl = placeholderImage;
+  if (afterImage) {
+    if (typeof afterImage === "string") {
+      imageUrl = afterImage;
+    } else if (afterImage.url) {
+      imageUrl = afterImage.url;
+    }
+  }
+
+  const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
   const [showColor, setShowColor] = React.useState(false);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!isAnalyzing && offWhiteColor) {
       const timer = setTimeout(() => {
         setShowColor(true);
@@ -74,20 +58,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
     }
   }, [isAnalyzing, offWhiteColor]);
 
-  const handleClick = () => {
-    if (!addToListOpen) {
-      if (isMobile) {
-        if (!showOptions) {
-          setShowOptions(true);
-        } else {
-          navigate(`/filmsim/${slug}`);
-        }
-      } else {
-        navigate(`/filmsim/${slug}`);
-      }
-    }
-  };
-
   const handleAddToList = (e: React.MouseEvent) => {
     e.stopPropagation();
     setAddToListOpen(true);
@@ -97,7 +67,21 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
     setAddToListOpen(false);
   };
 
-  useEffect(() => {
+  const handleCardClick = () => {
+    if (!addToListOpen) {
+      if (isMobile) {
+        if (!showOptions) {
+          setShowOptions(true);
+        } else {
+          navigate(`/preset/${slug}`);
+        }
+      } else {
+        navigate(`/preset/${slug}`);
+      }
+    }
+  };
+
+  React.useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
         setShowOptions(false);
@@ -110,13 +94,15 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
     <Card
       sx={{
         position: "relative",
-        aspectRatio: "2/3",
+        aspectRatio: "4/5",
         borderRadius: 1,
-        overflow: "hidden",
         cursor: "pointer",
-        transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
-        "&:hover .tags-container": {
+        overflow: "hidden",
+        "&:hover .tags-overlay": {
           opacity: 1,
+        },
+        "&:hover .title-overlay": {
+          backgroundColor: "rgba(0, 0, 0, 0.5)",
         },
         "&:hover .creator-avatar": {
           opacity: 1,
@@ -126,7 +112,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         },
 
         "@media (hover: none)": {
-          "& .tags-container": {
+          "& .tags-overlay": {
             opacity: showOptions ? 1 : 0,
           },
           "& .creator-avatar": {
@@ -137,18 +123,15 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           },
         },
       }}
-      onClick={handleClick}
+      onClick={handleCardClick}
     >
       <ImageOptimizer
-        src={thumbnail || "/placeholder-image.jpg"}
-        alt={name}
-        aspectRatio="2:3"
+        src={imageUrl}
+        alt={title}
+        aspectRatio="4:5"
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
           height: "100%",
+          width: "100%",
           objectFit: "cover",
         }}
       />
@@ -216,20 +199,21 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       )}
 
       <Box
-        className="title-container"
+        className="title-overlay"
         sx={{
           position: "absolute",
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
+          right: 0,
+          bottom: 0,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          backgroundColor: "rgba(0, 0, 0, 0.4)",
           textAlign: "center",
+          transition: "background-color 0.3s ease-in-out",
           p: 2,
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
       >
         <Typography
@@ -237,83 +221,78 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
           fontWeight="bold"
           sx={{
             color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-            lineHeight: 1.2,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}
         >
-          {name}
+          {title}
         </Typography>
         <Typography
           variant="body2"
           sx={{
             color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
-            lineHeight: 1.2,
+            textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           }}
         >
-          Film Sim
+          Lightroom Preset
         </Typography>
       </Box>
 
       <Box
-        className="tags-container"
+        className="tags-overlay"
         sx={{
           position: "absolute",
           bottom: 0,
           left: 0,
-          width: "100%",
-          p: 2,
+          right: 0,
+          p: 1.5,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)",
           opacity: 0,
           transition: "opacity 0.3s ease-in-out",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 0.5,
+          justifyContent: "flex-start",
         }}
       >
-        <Stack
-          direction="row"
-          gap={1}
-          flexWrap="wrap"
-          justifyContent="flex-start"
-        >
-          {(tags ?? [])
-            .slice(0, 3)
-            .reverse()
-            .map((tag, index) => (
-              <Chip
-                key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
-                label={tag.displayName}
-                size="small"
-                sx={{
+        {tags
+          .slice(0, 3)
+          .reverse()
+          .map((tag, index) => (
+            <Chip
+              key={index}
+              label={tag.displayName}
+              size="small"
+              sx={{
+                color: "white",
+                backgroundColor: "black",
+                border: "none",
+                cursor: "pointer",
+                "& .MuiChip-label": {
                   color: "white",
-                  backgroundColor: "black",
-                  border: "none",
-                  cursor: "pointer",
-                  "& .MuiChip-label": {
-                    color: "white",
-                  },
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(
-                    `/search?tag=${encodeURIComponent(tag.displayName)}`
-                  );
-                }}
-              />
-            ))}
-        </Stack>
+                },
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                },
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`);
+              }}
+            />
+          ))}
       </Box>
 
       <AddToListDialog
         open={addToListOpen}
         onClose={handleCloseDialog}
-        filmSimId={id}
-        itemName={name}
+        presetId={id}
+        itemName={title}
       />
     </Card>
   );
 };
 
-export default FilmSimCard;
+export default PresetCard;

@@ -6,7 +6,7 @@ import {
   Tooltip,
   IconButton,
 } from "@mui/material";
-import { useContentType } from "../context/ContentTypeFilter";
+import { useContentType } from "../../context/ContentTypeFilter";
 
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import TuneIcon from "@mui/icons-material/Tune";

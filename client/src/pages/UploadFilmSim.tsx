@@ -17,9 +17,9 @@ import { useAuth } from "../context/AuthContext";
 
 import { useImageUpload } from "../hooks/useImageUpload";
 
-import FilmSimSettingsForm from "../components/FilmSimSettingsForm";
-import FilmSimTagsInput from "../components/FilmSimTagsInput";
-import ImageUpload from "../components/ImageUpload";
+import FilmSimSettingsForm from "../components/forms/FilmSimSettingsForm";
+import FilmSimTagsInput from "../components/forms/FilmSimTagsInput";
+import ImageUpload from "../components/media/ImageUpload";
 
 import { FilmSimFormState, FilmSimSettings } from "../types/filmSim";
 import { DEFAULT_FILM_SIM_SETTINGS } from "../constants/filmSimConfig";

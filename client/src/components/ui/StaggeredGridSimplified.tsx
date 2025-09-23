@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { useStaggeredGrid } from "../hooks/useStaggeredGrid";
+import { useStaggeredGrid } from "../../hooks/useStaggeredGrid";
 
 interface StaggeredGridProps {
   children: React.ReactNode[];

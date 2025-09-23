@@ -7,14 +7,14 @@ import React, {
 } from "react";
 import { useQuery } from "@apollo/client";
 import { Alert, Box } from "@mui/material";
-import { useContentType } from "../context/ContentTypeFilter";
-import { useMobileDetection } from "../hooks/useMobileDetection";
+import { useContentType } from "../../context/ContentTypeFilter";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
 
-import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
+import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
 
-import PresetCard from "./PresetCard";
-import FilmSimCard from "./FilmSimCard";
+import PresetCard from "../cards/PresetCard";
+import FilmSimCard from "../cards/FilmSimCard";
 import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import StaggeredGrid from "./StaggeredGrid";
 

@@ -8,7 +8,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
-import { FilmSimSettings } from "../types/filmSim";
+import { FilmSimSettings } from "../../types/filmSim";
 
 interface FilmSimSettingSelectProps {
   label: string;

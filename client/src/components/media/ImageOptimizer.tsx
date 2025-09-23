@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { CloudinaryOptimizer } from "../utils/cloudinary";
+import { CloudinaryOptimizer } from "../../utils/cloudinary";
 
 interface ImageProps {
   src: string;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Container, Typography, Box } from "@mui/material";
-import BuyMeACoffeeCard from "../components/BuyMeACoffeeCard";
-import StaggeredGrid from "../components/StaggeredGrid";
+import BuyMeACoffeeCard from "../components/ui/BuyMeACoffeeCard";
+import StaggeredGrid from "../components/ui/StaggeredGrid";
 
 const BuyMeACoffeeDemo: React.FC = () => {
   return (

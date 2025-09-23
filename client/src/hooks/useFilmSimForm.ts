@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
+import { WhiteBalanceShift } from "../components/settings/WhiteBalanceGrid";
 
 export interface FilmSimSettings {
   filmSimulation?: string;

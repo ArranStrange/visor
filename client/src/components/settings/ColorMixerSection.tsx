@@ -5,7 +5,7 @@ import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,
   COLOR_MIXER_SETTINGS,
-} from "../constants/xmpSettingsConfig";
+} from "../../constants/xmpSettingsConfig";
 
 interface ColorMixerSectionProps {
   settings: ParsedSettings;

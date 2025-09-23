@@ -15,8 +15,8 @@ import {
   Stack,
 } from "@mui/material";
 import { gql } from "@apollo/client";
-import ContentTypeToggle from "../components/ContentTypeToggle";
-import ContentGridLoader from "../components/ContentGridLoader";
+import ContentTypeToggle from "../components/ui/ContentTypeToggle";
+import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
 import DeleteIcon from "@mui/icons-material/Delete";
