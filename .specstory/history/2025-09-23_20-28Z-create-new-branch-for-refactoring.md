@@ -1925,9 +1925,140 @@ The WhiteBalanceGrid is now completely minimal and clean, showing only the color
 
 ---
 
-_**User**_
+_**User (2025-09-23 19:22Z)**_
 
 I still need the cross hair on there
+
+---
+
+_**Assistant**_
+
+I understand! You want to keep the crosshairs but remove the white overlays. Let me add the crosshairs back, but I'll make them more subtle and not white.
+
+
+---
+
+The string to replace was not found in the file.
+
+---
+
+Let me read the current file to see its exact structure:
+
+
+---
+
+Read file: undefined
+
+---
+
+Now I can see the exact structure. Let me add the crosshairs back with a subtle dark color instead of white:
+
+
+---
+
+<details><summary>Edit file: client/src/components/WhiteBalanceGrid.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 28, lines removed: undefined
+
+```diff
+@@ -69,4 +69,32 @@
+            })
+          )}
++ 
++         {/* Crosshairs */}
++         <Box
++           sx={{
++             position: "absolute",
++             left: "50%",
++             top: 0,
++             width: 1,
++             height: "100%",
++             bgcolor: "rgba(0, 0, 0, 0.3)",
++             zIndex: 3,
++             pointerEvents: "none",
++             transform: "translateX(-50%)",
++           }}
++         />
++         <Box
++           sx={{
++             position: "absolute",
++             top: "50%",
++             left: 0,
++             width: "100%",
++             height: 1,
++             bgcolor: "rgba(0, 0, 0, 0.3)",
++             zIndex: 3,
++             pointerEvents: "none",
++             transform: "translateY(-50%)",
++           }}
++         />
+        </Box>
+  
+```
+
+</details>
+
+---
+
+Perfect! I've added the crosshairs back, but now they're subtle dark lines instead of white. The crosshairs will help with alignment and reference while maintaining the clean look without white overlays.
+
+Let me commit this change:
+
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project && git add . && git commit -m "feat: add back crosshairs with subtle dark color
+
+- Restored crosshairs for better alignment and reference
+- Changed from white to subtle dark color (rgba(0, 0, 0, 0.3))
+- Maintains clean appearance without white overlays
+- Provides visual guidance while keeping minimal design
+
+The crosshairs now help with positioning without being visually intrusive."
+```
+
+```
+[white-balance-grid-update 2319002] feat: add back crosshairs with subtle dark color
+ 2 files changed, 199 insertions(+)
+
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project && git push
+```
+
+```
+To https://github.com/ArranStrange/visor
+   9e8e76c..2319002  white-balance-grid-update -> white-balance-grid-update
+
+```
+
+---
+
+Excellent! I've added the crosshairs back to the WhiteBalanceGrid component. Here's what I did:
+
+## ✅ Crosshairs Restored with Subtle Design
+
+### **Changes Made**
+- **Added back the crosshairs** for better alignment and reference
+- **Changed color from white to dark** - Now using `rgba(0, 0, 0, 0.3)` for subtle dark lines
+- **Maintained clean appearance** without white overlays
+- **Preserved functionality** while keeping the minimal design
+
+### **Result**
+The WhiteBalanceGrid now has:
+- ✅ **Crosshairs** for visual guidance and alignment
+- ✅ **No white overlays** on selected or center dots
+- ✅ **Subtle dark crosshairs** that are helpful but not intrusive
+- ✅ **Clean, minimal appearance** with just the colored dots and reference lines
+
+The crosshairs will help users with positioning and alignment while maintaining the clean, non-white overlay design you wanted!
 
 ---
 

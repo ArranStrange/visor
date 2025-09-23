@@ -60,9 +60,12 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   height: DOT_SIZE,
                   borderRadius: "50%",
                   bgcolor: getWBColor(r, b),
-                  border: "1px solid #222",
+                  border: isSelected
+                    ? "2px solid white"
+                    : "1px solid #222",
                   cursor: "pointer",
                   transition: "border 0.1s",
+                  boxShadow: isSelected ? "0 0 0 1px #000" : undefined,
                 }}
               />
             );
