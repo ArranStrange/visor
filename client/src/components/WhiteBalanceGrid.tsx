@@ -11,60 +11,47 @@ interface WhiteBalanceGridProps {
   onChange: (value: WhiteBalanceShift) => void;
 }
 
-const GRID_SIZE = 19; // -9 to +9
-const GRID_RANGE = Array.from(
-  { length: GRID_SIZE },
-  (_, i) => i - Math.floor(GRID_SIZE / 2)
-);
-
-// Blend between four corners: (red, blue, green, magenta)
-function getWBColor(r: number, b: number) {
-  // Normalize to 0-1
-  const normR = (r + 9) / 18;
-  const normB = (b + 9) / 18;
-  // Corners: TL (green), TR (magenta), BL (blue), BR (red)
-  // Interpolate
-  const green = (1 - normR) * (1 - normB);
-  const magenta = normR * (1 - normB);
-  const blue = (1 - normR) * normB;
-  const red = normR * normB;
-  // Compose RGB
-  const R = Math.round(255 * (red + magenta));
-  const G = Math.round(255 * green);
-  const B = Math.round(255 * (blue + magenta));
-  return `rgb(${R},${G},${B})`;
-}
-
+const GRID_SIZE = 19;
 const DOT_SIZE = 10;
 const DOT_GAP = 5;
-const GRID_PIXEL_SIZE = GRID_SIZE * DOT_SIZE + (GRID_SIZE - 1) * DOT_GAP;
+
+function getWBColor(r: number, b: number) {
+  const normR = (r + 9) / 18;
+  const normB = (b + 9) / 18;
+
+  const red = Math.round(255 * normR);
+  const green = Math.round(255 * (1 - normR) * (1 - normB));
+  const blue = Math.round(255 * normB);
+
+  return `rgb(${red},${green},${blue})`;
+}
 
 const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
   value,
   onChange,
 }) => {
+  const gridSize = GRID_SIZE * DOT_SIZE + (GRID_SIZE - 1) * DOT_GAP;
+  const range = Array.from({ length: GRID_SIZE }, (_, i) => i - 9);
+
   return (
     <Box>
       <Box
         sx={{
           position: "relative",
-          width: GRID_PIXEL_SIZE,
-          height: GRID_PIXEL_SIZE,
-          bgcolor: "transparent",
+          width: gridSize,
+          height: gridSize,
           display: "grid",
           gridTemplateColumns: `repeat(${GRID_SIZE}, ${DOT_SIZE}px)`,
-          gridTemplateRows: `repeat(${GRID_SIZE}, ${DOT_SIZE}px)`,
           gap: `${DOT_GAP}px`,
           borderRadius: 2,
           boxShadow: 2,
-          overflow: "visible",
         }}
       >
-        {/* Render grid dots */}
-        {GRID_RANGE.flatMap((b, rowIdx) =>
-          GRID_RANGE.map((r, colIdx) => {
+        {range.flatMap((b) =>
+          range.map((r) => {
             const isSelected = value.r === r && value.b === b;
             const isCenter = r === 0 && b === 0;
+
             return (
               <Box
                 key={`${r},${b}`}
@@ -75,64 +62,58 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   borderRadius: "50%",
                   bgcolor: getWBColor(r, b),
                   border: isSelected
-                    ? "2.5px solid white"
+                    ? "2px solid white"
                     : isCenter
-                    ? "1.5px solid #fff8"
+                    ? "1px solid #fff8"
                     : "1px solid #222",
-                  boxSizing: "border-box",
                   cursor: "pointer",
-                  position: "relative",
                   zIndex: isSelected ? 2 : 1,
-                  transition: "border 0.1s, box-shadow 0.1s",
-                  boxShadow: isSelected ? "0 0 0 2px #000" : undefined,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  transition: "border 0.1s",
+                  boxShadow: isSelected ? "0 0 0 1px #000" : undefined,
                 }}
               />
             );
           })
         )}
+
         {/* Crosshairs */}
-        {/* Vertical */}
         <Box
           sx={{
             position: "absolute",
-            left: `calc(50% - 1px)`,
+            left: "50%",
             top: 0,
-            width: 2,
+            width: 1,
             height: "100%",
             bgcolor: "white",
-            opacity: 0.7,
+            opacity: 0.5,
             zIndex: 3,
             pointerEvents: "none",
+            transform: "translateX(-50%)",
           }}
         />
-        {/* Horizontal */}
         <Box
           sx={{
             position: "absolute",
-            top: `calc(50% - 1px)`,
-
+            top: "50%",
             left: 0,
             width: "100%",
-            height: 2,
+            height: 1,
             bgcolor: "white",
-            opacity: 0.7,
+            opacity: 0.5,
             zIndex: 3,
             pointerEvents: "none",
+            transform: "translateY(-50%)",
           }}
         />
       </Box>
+
       <Typography
         variant="body1"
         sx={{
           mt: 2,
           textAlign: "center",
-          color: "text.primary",
-          fontSize: { xs: "0.80rem", sm: "0.95rem" },
+          fontSize: "0.9rem",
           fontWeight: 600,
-          letterSpacing: 0.2,
         }}
       >
         R:{value.r > 0 ? `+${value.r}` : value.r} B:

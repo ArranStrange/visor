@@ -43,10 +43,8 @@ const NotificationBell: React.FC = () => {
   };
 
   const handleNotificationClick = async (notification: Notification) => {
-    // Mark as read
     await markAsRead(notification.id);
 
-    // Navigate based on notification type
     if (notification.discussionId) {
       navigate(`/discussions/${notification.discussionId}`);
     } else if (notification.linkedItem?.slug) {
@@ -145,7 +143,6 @@ const NotificationBell: React.FC = () => {
             bgcolor: "background.paper",
           }}
         >
-          {/* Header */}
           <Box
             sx={{
               p: 3,
@@ -185,7 +182,6 @@ const NotificationBell: React.FC = () => {
             </Typography>
           </Box>
 
-          {/* Content */}
           <Box
             sx={{
               flex: 1,
@@ -285,7 +281,6 @@ const NotificationBell: React.FC = () => {
             )}
           </Box>
 
-          {/* Footer */}
           {recentNotifications.length > 0 && (
             <Box
               sx={{

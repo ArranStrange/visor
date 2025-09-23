@@ -19,7 +19,6 @@ export const CREATE_DISCUSSION = gql`
           slug
         }
       }
-      tags
       createdBy {
         id
         username
@@ -58,7 +57,6 @@ export const UPDATE_DISCUSSION = gql`
           slug
         }
       }
-      tags
       createdBy {
         id
         username
@@ -122,36 +120,6 @@ export const CREATE_POST = gql`
         avatar
       }
       content
-      imageUrl
-      mentions {
-        type
-        refId
-        displayName
-        user {
-          id
-          username
-          avatar
-        }
-        preset {
-          id
-          title
-          slug
-        }
-        filmSim {
-          id
-          name
-          slug
-        }
-      }
-      reactions {
-        emoji
-        users {
-          id
-          username
-          avatar
-        }
-        count
-      }
       isEdited
       editedAt
       isDeleted
@@ -178,36 +146,6 @@ export const UPDATE_POST = gql`
         avatar
       }
       content
-      imageUrl
-      mentions {
-        type
-        refId
-        displayName
-        user {
-          id
-          username
-          avatar
-        }
-        preset {
-          id
-          title
-          slug
-        }
-        filmSim {
-          id
-          name
-          slug
-        }
-      }
-      reactions {
-        emoji
-        users {
-          id
-          username
-          avatar
-        }
-        count
-      }
       isEdited
       editedAt
       isDeleted
@@ -225,39 +163,5 @@ export const UPDATE_POST = gql`
 export const DELETE_POST = gql`
   mutation DeletePost($id: ID!) {
     deletePost(id: $id)
-  }
-`;
-
-export const ADD_REACTION = gql`
-  mutation AddReaction($input: AddReactionInput!) {
-    addReaction(input: $input) {
-      id
-      reactions {
-        emoji
-        users {
-          id
-          username
-          avatar
-        }
-        count
-      }
-    }
-  }
-`;
-
-export const REMOVE_REACTION = gql`
-  mutation RemoveReaction($input: RemoveReactionInput!) {
-    removeReaction(input: $input) {
-      id
-      reactions {
-        emoji
-        users {
-          id
-          username
-          avatar
-        }
-        count
-      }
-    }
   }
 `;

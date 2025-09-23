@@ -37,8 +37,6 @@ import {
   UNFOLLOW_DISCUSSION,
   DELETE_POST,
   UPDATE_POST,
-  ADD_REACTION,
-  REMOVE_REACTION,
 } from "../../graphql/mutations/discussions";
 import Post from "./Post";
 import PostComposer from "./PostComposer";
@@ -357,102 +355,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     },
   });
 
-  // Add reaction mutation
-  const [addReaction] = useMutation(ADD_REACTION, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Add reaction mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.addReaction) {
-        console.log("Reaction added successfully, updating cache");
-
-        // Read the existing posts
-        const existingPosts = cache.readQuery({
-          query: GET_POSTS,
-          variables: {
-            discussionId: discussion?.id || "",
-            parentId: null,
-            page: 1,
-            limit: isEmbedded && !showFullThread ? 3 : 20,
-          },
-        }) as any;
-
-        if (existingPosts?.getPosts) {
-          // Update the post in cache
-          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
-            post.id === data.addReaction.id ? data.addReaction : post
-          );
-
-          cache.writeQuery({
-            query: GET_POSTS,
-            variables: {
-              discussionId: discussion?.id || "",
-              parentId: null,
-              page: 1,
-              limit: isEmbedded && !showFullThread ? 3 : 20,
-            },
-            data: {
-              getPosts: {
-                ...existingPosts.getPosts,
-                posts: updatedPosts,
-              },
-            },
-          });
-        }
-      }
-    },
-  });
-
-  // Remove reaction mutation
-  const [removeReaction] = useMutation(REMOVE_REACTION, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Remove reaction mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.removeReaction) {
-        console.log("Reaction removed successfully, updating cache");
-
-        // Read the existing posts
-        const existingPosts = cache.readQuery({
-          query: GET_POSTS,
-          variables: {
-            discussionId: discussion?.id || "",
-            parentId: null,
-            page: 1,
-            limit: isEmbedded && !showFullThread ? 3 : 20,
-          },
-        }) as any;
-
-        if (existingPosts?.getPosts) {
-          // Update the post in cache
-          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
-            post.id === data.removeReaction.id ? data.removeReaction : post
-          );
-
-          cache.writeQuery({
-            query: GET_POSTS,
-            variables: {
-              discussionId: discussion?.id || "",
-              parentId: null,
-              page: 1,
-              limit: isEmbedded && !showFullThread ? 3 : 20,
-            },
-            data: {
-              getPosts: {
-                ...existingPosts.getPosts,
-                posts: updatedPosts,
-              },
-            },
-          });
-        }
-      }
-    },
-  });
-
   const isUserFollowing = (discussion: DiscussionType): boolean => {
     if (!user) return false;
     return discussion.followers.some((follower) => follower.id === user.id);
@@ -478,19 +380,10 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     if (!content.trim() || !replyingTo) return;
 
     try {
-      // For now, we'll handle image upload separately
-      let imageUrl: string | undefined;
-
-      if (images && images.length > 0) {
-        // TODO: Implement image upload to your storage service
-        console.log("Image upload not implemented yet");
-      }
-
       const postInput = {
         discussionId: discussion?.id,
         parentId: replyingTo,
         content: content.trim(),
-        imageUrl,
       };
 
       console.log("Creating reply with input:", postInput);
@@ -514,14 +407,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     if (!content.trim()) return;
 
     try {
-      // For now, we'll handle image upload separately
-      let imageUrl: string | undefined;
-
-      if (images && images.length > 0) {
-        // TODO: Implement image upload to your storage service
-        console.log("Image upload not implemented yet");
-      }
-
       let currentDiscussionId = discussion?.id;
 
       // If no discussion exists, create one first
@@ -531,7 +416,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           title: `Discussion about ${itemTitle}`,
           linkedToType: itemType.toUpperCase() as "PRESET" | "FILMSIM",
           linkedToId: itemId,
-          tags: [itemType],
         };
 
         console.log("Creating discussion with input:", discussionInput);
@@ -553,7 +437,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       const postInput = {
         discussionId: currentDiscussionId,
         content: content.trim(),
-        imageUrl,
       };
 
       console.log("Creating post with input:", postInput);
@@ -607,19 +490,10 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     if (!content.trim()) return;
 
     try {
-      // For now, we'll handle image upload separately
-      let imageUrl: string | undefined;
-
-      if (images && images.length > 0) {
-        // TODO: Implement image upload to your storage service
-        console.log("Image upload not implemented yet");
-      }
-
       const replyInput = {
         discussionId: discussion?.id || "",
         parentId: postId,
         content: content.trim(),
-        imageUrl,
       };
 
       console.log("Creating reply with input:", replyInput);
@@ -791,63 +665,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
     }
   };
 
-  const handleReact = async (postId: string, reactionType: string) => {
-    try {
-      // Check if user already has this reaction
-      const post = posts.find((p) => p.id === postId);
-      const hasReaction = post?.reactions.some(
-        (r: any) =>
-          r.emoji === reactionType &&
-          r.users.some((u: any) => u.id === user?.id)
-      );
-
-      if (hasReaction) {
-        // Remove reaction
-        const result = await removeReaction({
-          variables: {
-            input: { postId, emoji: reactionType },
-          },
-        });
-
-        if (result.data?.removeReaction) {
-          console.log("Reaction removed successfully");
-          // Refetch posts to update the UI
-          await refetchTopLevel();
-        } else {
-          console.error("Failed to remove reaction - no data returned");
-        }
-      } else {
-        // Add reaction
-        const result = await addReaction({
-          variables: {
-            input: { postId, emoji: reactionType },
-          },
-        });
-
-        if (result.data?.addReaction) {
-          console.log("Reaction added successfully");
-          // Refetch posts to update the UI
-          await refetchTopLevel();
-        } else {
-          console.error("Failed to add reaction - no data returned");
-        }
-      }
-    } catch (error: any) {
-      console.error("Error handling reaction:", error);
-
-      // Extract error message from GraphQL errors
-      let errorMessage = "Failed to update reaction. Please try again.";
-      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      // You might want to show this error to the user
-      console.error("Reaction error:", errorMessage);
-    }
-  };
-
   const formatDate = (dateString: string | undefined | null): string => {
     if (!dateString) return "a moment ago";
     try {
@@ -899,7 +716,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           onReply={handleReply}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onReact={handleReact}
           onPin={() => {}} // Not implemented in new schema
           onHighlight={() => {}} // Not implemented in new schema
           onReport={() => {}} // Not implemented in new schema
@@ -931,7 +747,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
           onReply={handleReply}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onReact={handleReact}
           onPin={() => {}}
           onHighlight={() => {}}
           onReport={() => {}}
@@ -950,7 +765,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                 onReply={handleReply}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onReact={handleReact}
                 onPin={() => {}}
                 onHighlight={() => {}}
                 onReport={() => {}}
@@ -1187,21 +1001,6 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
                       }}
                       sx={{ cursor: "pointer" }}
                     />
-                  </Box>
-                )}
-
-                {/* Tags */}
-                {discussion.tags.length > 0 && (
-                  <Box display="flex" gap={0.5} mb={2} flexWrap="wrap">
-                    {discussion.tags.map((tag) => (
-                      <Chip
-                        key={tag}
-                        label={tag}
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontSize: "0.7rem" }}
-                      />
-                    ))}
                   </Box>
                 )}
 

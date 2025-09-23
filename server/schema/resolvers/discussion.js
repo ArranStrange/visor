@@ -6,7 +6,6 @@ const FilmSim = require("../../models/FilmSim");
 const { createPostNotifications } = require("../../utils/notificationUtils");
 const {
   serializeDocument,
-  serializeReactions,
   serializePost,
 } = require("../../utils/serializationUtils");
 const {
@@ -14,107 +13,28 @@ const {
   UserInputError,
 } = require("apollo-server-express");
 
-// Helper function to parse mentions from content
-const parseMentions = async (content) => {
-  const mentions = [];
-  const seenMentions = new Set(); // Track seen mentions to avoid duplicates
-
-  // Parse @user mentions
-  const userMentions = content.match(/@(\w+)/g);
-  if (userMentions) {
-    const uniqueUsernames = [...new Set(userMentions.map((m) => m.slice(1)))]; // Remove @ and deduplicate
-
-    // Batch query for users
-    const users = await User.find({
-      username: { $in: uniqueUsernames },
-    });
-
-    for (const user of users) {
-      if (!seenMentions.has(`user:${user._id}`)) {
-        mentions.push({
-          type: "user",
-          refId: user._id,
-          displayName: user.username,
-        });
-        seenMentions.add(`user:${user._id}`);
-      }
-    }
-  }
-
-  // Parse preset and film sim mentions
-  // Look for patterns like "Portra 400", "Classic Chrome", etc.
-  const wordPatterns = content.match(/\b[A-Za-z]+(?:\s+[A-Za-z]+)*\b/g);
-  if (wordPatterns) {
-    const uniquePatterns = [
-      ...new Set(wordPatterns.filter((p) => p.length > 2)),
-    ]; // Filter out short words
-
-    // Batch query for presets
-    const presets = await Preset.find({
-      title: { $in: uniquePatterns.map((p) => new RegExp(p, "i")) },
-    });
-
-    for (const preset of presets) {
-      if (!seenMentions.has(`preset:${preset._id}`)) {
-        mentions.push({
-          type: "preset",
-          refId: preset._id,
-          displayName: preset.title,
-        });
-        seenMentions.add(`preset:${preset._id}`);
-      }
-    }
-
-    // Batch query for film sims
-    const filmSims = await FilmSim.find({
-      name: { $in: uniquePatterns.map((p) => new RegExp(p, "i")) },
-    });
-
-    for (const filmSim of filmSims) {
-      if (!seenMentions.has(`filmsim:${filmSim._id}`)) {
-        mentions.push({
-          type: "filmsim",
-          refId: filmSim._id,
-          displayName: filmSim.name,
-        });
-        seenMentions.add(`filmsim:${filmSim._id}`);
-      }
-    }
-  }
-
-  return mentions;
-};
-
 const discussionResolvers = {
   Query: {
-    // Discussion queries
     getDiscussions: async (
       _,
-      { page = 1, limit = 20, tags, type, search, createdBy }
+      { page = 1, limit = 20, type, search, createdBy }
     ) => {
       try {
         const skip = (page - 1) * limit;
         const query = { isActive: true };
-
-        if (tags && tags.length > 0) {
-          query.tags = { $in: tags };
-        }
 
         if (type) {
           query["linkedTo.type"] = type.toLowerCase();
         }
 
         if (search) {
-          // Enhanced search: search across discussion titles, tags, and post content
           const searchRegex = new RegExp(search, "i");
 
-          // First, find discussions that match the search criteria directly
           const directMatches = await Discussion.find({
             ...query,
-            $or: [{ title: searchRegex }, { tags: { $in: [searchRegex] } }],
+            title: searchRegex,
           }).select("_id");
 
-          // Then, find discussions that have posts matching the search
           const postsWithMatches = await DiscussionPost.find({
             content: searchRegex,
             isDeleted: false,
@@ -124,19 +44,16 @@ const discussionResolvers = {
             ...new Set(postsWithMatches.map((p) => p.discussionId.toString())),
           ];
 
-          // Combine both sets of discussion IDs
           const allMatchingDiscussionIds = [
             ...directMatches.map((d) => d._id.toString()),
             ...discussionIdsFromPosts,
           ];
 
-          // Remove duplicates
           const uniqueDiscussionIds = [...new Set(allMatchingDiscussionIds)];
 
           if (uniqueDiscussionIds.length > 0) {
             query._id = { $in: uniqueDiscussionIds };
           } else {
-            // If no matches found, return empty result
             return {
               discussions: [],
               totalCount: 0,
@@ -196,7 +113,6 @@ const discussionResolvers = {
       }
     },
 
-    // Post queries
     getPosts: async (_, { discussionId, page = 1, limit = 20, parentId }) => {
       try {
         const skip = (page - 1) * limit;
@@ -244,12 +160,7 @@ const discussionResolvers = {
           throw new Error("Post not found");
         }
 
-        const serialized = serializeDocument(post.toObject());
-        if (serialized.reactions) {
-          serialized.reactions = serializeReactions(serialized.reactions);
-        }
-
-        return serialized;
+        return serializeDocument(post.toObject());
       } catch (error) {
         throw new Error("Failed to fetch post");
       }
@@ -289,7 +200,7 @@ const discussionResolvers = {
         // First, find discussions that match the search criteria directly
         const directMatches = await Discussion.find({
           isActive: true,
-          $or: [{ title: searchRegex }, { tags: { $in: [searchRegex] } }],
+          title: searchRegex,
         }).select("_id");
 
         // Then, find discussions that have posts matching the search
@@ -437,7 +348,7 @@ const discussionResolvers = {
           throw new AuthenticationError("Not authenticated");
         }
 
-        const { title, linkedToType, linkedToId, tags } = input;
+        const { title, linkedToType, linkedToId } = input;
 
         // Verify the linked item exists
         const linkedItem =
@@ -457,7 +368,6 @@ const discussionResolvers = {
             type: linkedToType.toLowerCase(),
             refId: linkedToId,
           },
-          tags: tags || [],
           createdBy: user.id,
           followers: [user.id], // Auto-subscribe creator
         });
@@ -588,14 +498,8 @@ const discussionResolvers = {
           throw new AuthenticationError("Not authenticated");
         }
 
-        const {
-          discussionId,
-          parentId,
-          content,
-          imageUrl,
-          linkedToType,
-          linkedToId,
-        } = input;
+        const { discussionId, parentId, content, linkedToType, linkedToId } =
+          input;
 
         let discussion;
 
@@ -641,9 +545,6 @@ const discussionResolvers = {
                 type: linkedToType.toLowerCase(),
                 refId: linkedToId,
               },
-              tags: linkedItem.tags
-                ? linkedItem.tags.map((tag) => tag.displayName || tag.name)
-                : [],
               createdBy: user.id,
               followers: [user.id], // Auto-subscribe creator
             });
@@ -661,16 +562,11 @@ const discussionResolvers = {
           );
         }
 
-        // Parse mentions from content
-        const mentions = await parseMentions(content);
-
         const post = new DiscussionPost({
           discussionId: discussion._id,
           parentId,
           author: user.id,
           content,
-          imageUrl,
-          mentions,
         });
 
         await post.save();
@@ -724,66 +620,31 @@ const discussionResolvers = {
 
     updatePost: async (_, { id, input }, { user }) => {
       try {
-        console.log("[DEBUG] updatePost called with id:", id);
-        console.log("[DEBUG] User context:", user);
-
         if (!user) {
-          console.log(
-            "[DEBUG] No user context - throwing authentication error"
-          );
           throw new AuthenticationError("Not authenticated");
         }
 
         const post = await DiscussionPost.findById(id);
         if (!post) {
-          console.log("[DEBUG] Post not found");
           throw new Error("Post not found");
         }
 
-        console.log("[DEBUG] Post found:", {
-          id: post._id,
-          author: post.author,
-          authorType: typeof post.author,
-          authorString: post.author.toString(),
-          user: user.id,
-          userType: typeof user.id,
-        });
-
-        // Check if user is author
         const authorString = post.author.toString();
         const userIdString = user.id.toString();
         const idsMatch = authorString === userIdString;
 
-        console.log("[DEBUG] Authorization check:", {
-          authorString,
-          userIdString,
-          idsMatch,
-          comparison: `${authorString} === ${userIdString}`,
-        });
-
         if (!idsMatch) {
-          console.log("[DEBUG] Authorization failed - user is not the author");
           throw new AuthenticationError("Not authorized");
         }
 
-        console.log(
-          "[DEBUG] Authorization successful - proceeding with update"
-        );
-
-        // Check if post is deleted
         if (post.isDeleted) {
-          console.log("[DEBUG] Post is deleted - cannot edit");
           throw new Error("Cannot edit deleted post");
         }
-
-        // Parse mentions from new content
-        const mentions = await parseMentions(input.content);
 
         const updatedPost = await DiscussionPost.findByIdAndUpdate(
           id,
           {
             ...input,
-            mentions,
             isEdited: true,
             editedAt: new Date(),
           },
@@ -792,7 +653,6 @@ const discussionResolvers = {
           .populate("author", "id username avatar")
           .populate("parent", "id content author");
 
-        console.log("[DEBUG] Post updated successfully");
         return serializePost(updatedPost);
       } catch (error) {
         console.error("Error in updatePost:", error);
@@ -849,7 +709,6 @@ const discussionResolvers = {
           userType: typeof user.id,
         });
 
-        // Check if user is author
         const authorString = post.author.toString();
         const userIdString = user.id.toString();
         const idsMatch = authorString === userIdString;
@@ -870,7 +729,6 @@ const discussionResolvers = {
           "[DEBUG] Authorization successful - proceeding with deletion"
         );
 
-        // Check if post is already deleted
         if (post.isDeleted) {
           console.log("[DEBUG] Post is already deleted");
           throw new Error("Post is already deleted");
@@ -882,7 +740,6 @@ const discussionResolvers = {
           deletedBy: user.id,
         });
 
-        // Update discussion stats
         await Discussion.findByIdAndUpdate(post.discussionId, {
           $inc: { postCount: -1 },
         });
@@ -916,140 +773,8 @@ const discussionResolvers = {
         throw new Error(`Database error: ${error.message}`);
       }
     },
-
-    // Reactions
-    addReaction: async (_, { input }, { user }) => {
-      try {
-        if (!user) {
-          throw new AuthenticationError("Not authenticated");
-        }
-
-        const { postId, emoji } = input;
-
-        const post = await DiscussionPost.findById(postId);
-        if (!post) {
-          throw new Error("Post not found");
-        }
-
-        // Check if post is deleted
-        if (post.isDeleted) {
-          throw new Error("Cannot react to deleted post");
-        }
-
-        // Find or create reaction
-        let reaction = post.reactions.find((r) => r.emoji === emoji);
-        if (reaction) {
-          // Add user to existing reaction if not already there
-          if (!reaction.users.includes(user.id)) {
-            reaction.users.push(user.id);
-          }
-        } else {
-          // Create new reaction
-          post.reactions.push({
-            emoji,
-            users: [user.id],
-          });
-        }
-
-        await post.save();
-
-        return await DiscussionPost.findById(postId)
-          .populate("author", "id username avatar")
-          .populate("parent", "id content author");
-      } catch (error) {
-        console.error("Error in addReaction:", error);
-
-        if (error.name === "AuthenticationError") {
-          throw error;
-        }
-
-        if (error.message === "Post not found") {
-          throw new Error("Post not found");
-        }
-
-        if (error.message === "Cannot react to deleted post") {
-          throw new Error("Cannot react to deleted post");
-        }
-
-        if (error.name === "CastError") {
-          throw new Error(`Invalid post ID format: ${input.postId}`);
-        }
-
-        if (error.name === "ValidationError") {
-          throw new Error(`Validation error: ${error.message}`);
-        }
-
-        console.error("Database error in addReaction:", error);
-        throw new Error(`Database error: ${error.message}`);
-      }
-    },
-
-    removeReaction: async (_, { input }, { user }) => {
-      try {
-        if (!user) {
-          throw new AuthenticationError("Not authenticated");
-        }
-
-        const { postId, emoji } = input;
-
-        const post = await DiscussionPost.findById(postId);
-        if (!post) {
-          throw new Error("Post not found");
-        }
-
-        // Check if post is deleted
-        if (post.isDeleted) {
-          throw new Error("Cannot remove reaction from deleted post");
-        }
-
-        // Find reaction and remove user
-        const reaction = post.reactions.find((r) => r.emoji === emoji);
-        if (reaction) {
-          reaction.users = reaction.users.filter(
-            (userId) => userId.toString() !== user.id
-          );
-
-          // Remove reaction if no users left
-          if (reaction.users.length === 0) {
-            post.reactions = post.reactions.filter((r) => r.emoji !== emoji);
-          }
-        }
-
-        await post.save();
-
-        return await DiscussionPost.findById(postId)
-          .populate("author", "id username avatar")
-          .populate("parent", "id content author");
-      } catch (error) {
-        console.error("Error in removeReaction:", error);
-
-        if (error.name === "AuthenticationError") {
-          throw error;
-        }
-
-        if (error.message === "Post not found") {
-          throw new Error("Post not found");
-        }
-
-        if (error.message === "Cannot remove reaction from deleted post") {
-          throw new Error("Cannot remove reaction from deleted post");
-        }
-
-        if (error.name === "CastError") {
-          throw new Error(`Invalid post ID format: ${input.postId}`);
-        }
-
-        if (error.name === "ValidationError") {
-          throw new Error(`Validation error: ${error.message}`);
-        }
-
-        console.error("Database error in removeReaction:", error);
-        throw new Error(`Database error: ${error.message}`);
-      }
-    },
   },
 
-  // Field resolvers
   Discussion: {
     linkedTo: async (discussion) => {
       const linkedItem =
@@ -1074,25 +799,6 @@ const discussionResolvers = {
         "id username avatar"
       );
     },
-  },
-
-  Mention: {
-    user: async (mention) => {
-      if (mention.type !== "user") return null;
-      return await User.findById(mention.refId);
-    },
-    preset: async (mention) => {
-      if (mention.type !== "preset") return null;
-      return await Preset.findById(mention.refId);
-    },
-    filmSim: async (mention) => {
-      if (mention.type !== "filmsim") return null;
-      return await FilmSim.findById(mention.refId);
-    },
-  },
-
-  Reaction: {
-    count: (reaction) => reaction.users.length,
   },
 };
 

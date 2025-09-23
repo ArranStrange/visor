@@ -2,7 +2,6 @@ export interface Discussion {
   id: string;
   title: string;
   linkedTo: DiscussionTarget;
-  tags: string[];
   createdBy: User;
   followers: User[];
   postCount: number;
@@ -36,9 +35,6 @@ export interface DiscussionPost {
   parentId?: string;
   author: User;
   content: string;
-  imageUrl?: string;
-  mentions: Mention[];
-  reactions: Reaction[];
   isEdited: boolean;
   editedAt?: string;
   isDeleted: boolean;
@@ -47,21 +43,6 @@ export interface DiscussionPost {
   createdAt: string;
   updatedAt: string;
   replies?: DiscussionPost[];
-}
-
-export interface Mention {
-  type: MentionType;
-  refId: string;
-  displayName: string;
-  user?: User;
-  preset?: Preset;
-  filmSim?: FilmSim;
-}
-
-export interface Reaction {
-  emoji: string;
-  users: User[];
-  count: number;
 }
 
 export interface DiscussionConnection {
@@ -95,22 +76,14 @@ export enum DiscussionTargetType {
   EVENT = "EVENT",
 }
 
-export enum MentionType {
-  USER = "USER",
-  PRESET = "PRESET",
-  FILMSIM = "FILMSIM",
-}
-
 export interface CreateDiscussionInput {
   title: string;
   linkedToType: DiscussionTargetType;
   linkedToId: string;
-  tags?: string[];
 }
 
 export interface UpdateDiscussionInput {
   title?: string;
-  tags?: string[];
   isActive?: boolean;
 }
 
@@ -118,24 +91,12 @@ export interface CreatePostInput {
   discussionId?: string;
   parentId?: string;
   content: string;
-  imageUrl?: string;
   linkedToType?: DiscussionTargetType;
   linkedToId?: string;
 }
 
 export interface UpdatePostInput {
   content: string;
-  imageUrl?: string;
-}
-
-export interface AddReactionInput {
-  postId: string;
-  emoji: string;
-}
-
-export interface RemoveReactionInput {
-  postId: string;
-  emoji: string;
 }
 
 // Supporting types

@@ -14,12 +14,10 @@ async function seedDiscussions() {
     await mongoose.connect(MONGODB_URI);
     console.log("Connected to MongoDB");
 
-    // Clear existing discussions
     console.log("Clearing existing discussions...");
     await Discussion.deleteMany({});
     console.log("Cleared existing discussions");
 
-    // Get all presets and film sims
     const presets = await Preset.find({}).populate("creator tags");
     const filmSims = await FilmSim.find({}).populate("creator tags");
 
@@ -28,7 +26,6 @@ async function seedDiscussions() {
 
     const discussions = [];
 
-    // Create discussions for presets
     for (const preset of presets) {
       if (preset.creator) {
         const discussion = new Discussion({
@@ -45,7 +42,6 @@ async function seedDiscussions() {
       }
     }
 
-    // Create discussions for film sims
     for (const filmSim of filmSims) {
       if (filmSim.creator) {
         const discussion = new Discussion({
@@ -62,16 +58,13 @@ async function seedDiscussions() {
       }
     }
 
-    // Save all discussions
     console.log(`Creating ${discussions.length} discussions...`);
     await Discussion.insertMany(discussions);
     console.log("Discussions seeded successfully");
 
-    // Verify seeding
     const discussionCount = await Discussion.countDocuments();
     console.log(`Total discussions in database: ${discussionCount}`);
 
-    // Show some sample discussions
     const sampleDiscussions = await Discussion.find({})
       .populate("createdBy", "username")
       .populate("linkedTo.refId", "title name")

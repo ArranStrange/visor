@@ -47,7 +47,6 @@ interface CreateDiscussionForm {
     | "EVENT"
     | "GENERAL";
   linkedToId: string;
-  tags: string[];
 }
 
 const CreateDiscussion: React.FC = () => {
@@ -57,9 +56,7 @@ const CreateDiscussion: React.FC = () => {
     title: "",
     linkedToType: "PRESET",
     linkedToId: "",
-    tags: [],
   });
-  const [tagInput, setTagInput] = useState("");
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
   // Get presets and film sims for selection
@@ -98,7 +95,6 @@ const CreateDiscussion: React.FC = () => {
             title: form.title.trim(),
             linkedToType: form.linkedToType,
             linkedToId: form.linkedToId || "",
-            tags: form.tags,
           },
         },
       });
@@ -108,30 +104,6 @@ const CreateDiscussion: React.FC = () => {
       }
     } catch (error) {
       console.error("Error creating discussion:", error);
-    }
-  };
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !form.tags.includes(tagInput.trim())) {
-      setForm((prev) => ({
-        ...prev,
-        tags: [...prev.tags, tagInput.trim()],
-      }));
-      setTagInput("");
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setForm((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((tag) => tag !== tagToRemove),
-    }));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleAddTag();
     }
   };
 
@@ -364,40 +336,6 @@ const CreateDiscussion: React.FC = () => {
                   </FormControl>
                 </>
               )}
-
-              {/* Tags */}
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="subtitle1" gutterBottom>
-                  Tags (optional)
-                </Typography>
-                <Box display="flex" gap={1} mb={1}>
-                  <TextField
-                    size="small"
-                    placeholder="Add a tag..."
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    sx={{ flex: 1 }}
-                  />
-                  <Button
-                    variant="outlined"
-                    onClick={handleAddTag}
-                    disabled={!tagInput.trim()}
-                  >
-                    Add
-                  </Button>
-                </Box>
-                <Box display="flex" flexWrap="wrap" gap={1}>
-                  {form.tags.map((tag) => (
-                    <Chip
-                      key={tag}
-                      label={tag}
-                      onDelete={() => handleRemoveTag(tag)}
-                      size="small"
-                    />
-                  ))}
-                </Box>
-              </Box>
 
               {/* Submit Button */}
               <Box display="flex" gap={2}>

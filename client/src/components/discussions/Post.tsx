@@ -24,14 +24,9 @@ import {
   Reply as ReplyIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
-  ThumbUp as LikeIcon,
-  Favorite as HeartIcon,
-  Psychology as ThinkingIcon,
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Flag as ReportIcon,
-  Block as BlockIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
   PushPin as PinIcon,
@@ -42,7 +37,7 @@ import {
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "../../context/AuthContext";
-import { DiscussionPost as PostType, Reaction } from "../../types/discussions";
+import { DiscussionPost as PostType } from "../../types/discussions";
 import PostComposer from "./PostComposer";
 
 interface PostProps {
@@ -51,11 +46,6 @@ interface PostProps {
   onReply: (postId: string, content: string, images?: File[]) => void;
   onEdit: (postId: string, content: string) => void;
   onDelete: (postId: string) => void;
-  onReact: (postId: string, reactionType: string) => void;
-  onPin: (postId: string) => void;
-  onHighlight: (postId: string) => void;
-  onReport: (postId: string, reason: string) => void;
-  onBlock: (userId: string) => void;
   maxDepth?: number;
   hasReplies?: boolean;
   isCollapsed?: boolean;
@@ -63,94 +53,12 @@ interface PostProps {
   isDeleting?: boolean;
 }
 
-interface ReactionButtonProps {
-  type: string;
-  count: number;
-  isActive: boolean;
-  onClick: () => void;
-}
-
-const ReactionButton: React.FC<ReactionButtonProps> = ({
-  type,
-  count,
-  isActive,
-  onClick,
-}) => {
-  const getIcon = () => {
-    switch (type) {
-      case "like":
-        return <LikeIcon fontSize="small" />;
-      case "heart":
-        return <HeartIcon fontSize="small" />;
-      case "thinking":
-        return <ThinkingIcon fontSize="small" />;
-      case "👍":
-        return <LikeIcon fontSize="small" />;
-      case "❤️":
-        return <HeartIcon fontSize="small" />;
-      case "🤔":
-        return <ThinkingIcon fontSize="small" />;
-      default:
-        return <LikeIcon fontSize="small" />;
-    }
-  };
-
-  const getColor = () => {
-    if (!isActive) return "default";
-    switch (type) {
-      case "like":
-      case "👍":
-        return "primary";
-      case "heart":
-      case "❤️":
-        return "error";
-      case "thinking":
-      case "🤔":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  return (
-    <Tooltip title={`${type.charAt(0).toUpperCase() + type.slice(1)}`}>
-      <IconButton
-        size="small"
-        color={getColor()}
-        onClick={onClick}
-        sx={{
-          minWidth: "auto",
-          px: 1,
-          py: 0.5,
-          borderRadius: 2,
-          backgroundColor: isActive ? "action.selected" : "transparent",
-          "&:hover": {
-            backgroundColor: "action.hover",
-          },
-        }}
-      >
-        {getIcon()}
-        {count > 0 && (
-          <Typography variant="caption" sx={{ ml: 0.5 }}>
-            {count}
-          </Typography>
-        )}
-      </IconButton>
-    </Tooltip>
-  );
-};
-
 const Post: React.FC<PostProps> = ({
   post,
   depth = 0,
   onReply,
   onEdit,
   onDelete,
-  onReact,
-  onPin,
-  onHighlight,
-  onReport,
-  onBlock,
   maxDepth = 3,
   hasReplies = false,
   isCollapsed = true,
@@ -403,21 +311,6 @@ const Post: React.FC<PostProps> = ({
                 </Box>
               )}
 
-              {/* Reactions */}
-              {post.reactions && post.reactions.length > 0 && (
-                <Box display="flex" gap={0.5} mt={1} flexWrap="wrap">
-                  {post.reactions.map((reaction) => (
-                    <ReactionButton
-                      key={reaction.emoji}
-                      type={reaction.emoji}
-                      count={reaction.count}
-                      isActive={reaction.users.some((u) => u.id === user?.id)}
-                      onClick={() => onReact(post.id, reaction.emoji)}
-                    />
-                  ))}
-                </Box>
-              )}
-
               {/* Action buttons */}
               {!post.isDeleted && (
                 <Box display="flex" alignItems="center" gap={1} mt={2}>
@@ -431,14 +324,6 @@ const Post: React.FC<PostProps> = ({
                   </Tooltip>
 
                   {/* Add reaction button */}
-                  <Tooltip title="Add reaction">
-                    <IconButton
-                      size="small"
-                      onClick={() => onReact(post.id, "like")}
-                    >
-                      <LikeIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
 
                   {/* More options - only show for post creator */}
                   {isLoggedIn && isAuthor && (
@@ -540,32 +425,6 @@ const Post: React.FC<PostProps> = ({
               <ListItemText>
                 {isDeleting ? "Deleting..." : "Delete"}
               </ListItemText>
-            </MenuItem>
-          </>
-        )}
-        {isLoggedIn && !isAuthor && (
-          <>
-            <MenuItem
-              onClick={() => {
-                onReport(post.id, "spam");
-                handleMenuClose();
-              }}
-            >
-              <ListItemIcon>
-                <ReportIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Report</ListItemText>
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onBlock(post.author.id);
-                handleMenuClose();
-              }}
-            >
-              <ListItemIcon>
-                <BlockIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Block user</ListItemText>
             </MenuItem>
           </>
         )}

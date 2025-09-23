@@ -5,9 +5,9 @@ const commentSchema = new Schema(
   {
     author: { type: Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, required: true },
-    preset: { type: Schema.Types.ObjectId, ref: "Preset" }, // or filmSim, allow one or both
+    preset: { type: Schema.Types.ObjectId, ref: "Preset" },
     filmSim: { type: Schema.Types.ObjectId, ref: "FilmSim" },
-    parent: { type: Schema.Types.ObjectId, ref: "Comment" }, // for replies
+    parent: { type: Schema.Types.ObjectId, ref: "Comment" },
     reactions: {
       thumbsUp: [{ type: Schema.Types.ObjectId, ref: "User" }],
       heart: [{ type: Schema.Types.ObjectId, ref: "User" }],

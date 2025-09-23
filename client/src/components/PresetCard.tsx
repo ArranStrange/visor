@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
 import { useImageColor } from "../hooks/useImageColor";
-import FastImage from "./FastImage";
+import { useMobileDetection } from "../hooks/useMobileDetection";
+import ImageOptimizer from "./ImageOptimizer";
 
 const placeholderImage = "/placeholder-image.jpg";
 
@@ -32,17 +33,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
   const navigate = useNavigate();
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  // Check if we're on mobile
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.matchMedia("(hover: none)").matches);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useMobileDetection();
 
   let imageUrl = placeholderImage;
   if (afterImage) {
@@ -134,7 +125,7 @@ const PresetCard: React.FC<PresetCardProps> = ({
       }}
       onClick={handleCardClick}
     >
-      <FastImage
+      <ImageOptimizer
         src={imageUrl}
         alt={title}
         aspectRatio="4:5"

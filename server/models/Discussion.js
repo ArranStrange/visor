@@ -20,12 +20,6 @@ const discussionSchema = new Schema(
         refPath: "linkedTo.type",
       },
     },
-    tags: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -53,11 +47,9 @@ const discussionSchema = new Schema(
   { timestamps: true }
 );
 
-// Indexes for better query performance
 discussionSchema.index({ "linkedTo.type": 1, "linkedTo.refId": 1 });
 discussionSchema.index({ createdBy: 1, createdAt: -1 });
-discussionSchema.index({ tags: 1 });
-discussionSchema.index({ title: "text", tags: "text" });
+discussionSchema.index({ title: "text" });
 discussionSchema.index({ lastActivity: -1 });
 
 module.exports = mongoose.model("Discussion", discussionSchema);

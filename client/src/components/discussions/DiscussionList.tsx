@@ -27,20 +27,7 @@ import {
   Palette as PresetIcon,
   TrendingUp as TrendingIcon,
   Schedule as ScheduleIcon,
-  ThumbUp as LikeIcon,
   Chat as ChatIcon,
-  School as TechniqueIcon,
-  Build as EquipmentIcon,
-  LocationOn as LocationIcon,
-  MenuBook as TutorialIcon,
-  Star as ReviewIcon,
-  EmojiEvents as ChallengeIcon,
-  Timeline as WorkflowIcon,
-  Lightbulb as InspirationIcon,
-  RateReview as CritiqueIcon,
-  Article as NewsIcon,
-  Event as EventIcon,
-  Forum as GeneralIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useQuery, useMutation } from "@apollo/client";
@@ -428,7 +415,6 @@ const DiscussionList: React.FC = () => {
                   <MenuItem value="newest">Newest first</MenuItem>
                   <MenuItem value="oldest">Oldest first</MenuItem>
                   <MenuItem value="mostActive">Most active</MenuItem>
-                  <MenuItem value="mostReactions">Most reactions</MenuItem>
                 </Select>
               </FormControl>
             </Box>
@@ -572,32 +558,6 @@ const DiscussionList: React.FC = () => {
                             opacity: discussion.linkedTo.refId ? 1 : 0.7,
                           }}
                         />
-                      </Box>
-                    )}
-
-                    {/* Tags */}
-                    {discussion.tags.length > 0 && (
-                      <Box display="flex" gap={0.5} mb={1} flexWrap="wrap">
-                        {discussion.tags.slice(0, 3).map((tag) => (
-                          <Chip
-                            key={tag}
-                            label={highlightSearchTerms(
-                              tag,
-                              filters.search || ""
-                            )}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontSize: "0.7rem" }}
-                          />
-                        ))}
-                        {discussion.tags.length > 3 && (
-                          <Chip
-                            label={`+${discussion.tags.length - 3} more`}
-                            size="small"
-                            variant="outlined"
-                            sx={{ fontSize: "0.7rem" }}
-                          />
-                        )}
                       </Box>
                     )}
 

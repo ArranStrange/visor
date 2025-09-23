@@ -7,26 +7,21 @@ import {
   Button,
   TextField,
   List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  ListItemAvatar,
-  Avatar,
   Typography,
   CircularProgress,
   Box,
-  Chip,
   IconButton,
   Divider,
   Alert,
 } from "@mui/material";
 import { useQuery, useMutation } from "@apollo/client";
 import { ADD_RECOMMENDED_PRESET } from "../graphql/mutations/addRecommendedPreset";
-import { REMOVE_RECOMMENDED_PRESET } from "../graphql/mutations/removeRecommendedPreset";
 import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+import { usePresetSearch } from "../hooks/usePresetSearch";
+import PresetSearchItem from "./PresetSearchItem";
+import CurrentPresetsList from "./CurrentPresetsList";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
-import RemoveIcon from "@mui/icons-material/Remove";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface RecommendedPresetsManagerProps {
@@ -41,7 +36,7 @@ interface RecommendedPresetsManagerProps {
     description?: string;
     afterImage?: { url: string };
     creator?: { id: string; username: string; avatar?: string };
-    tags?: Array<{ id: string; displayName: string }>;
+    tags?: Array<{ id?: string; displayName: string }>;
   }>;
 }
 
@@ -52,11 +47,22 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
   filmSimName,
   currentRecommendedPresets,
 }) => {
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
 
   const { data: presetData, loading: searchLoading } =
     useQuery(GET_ALL_PRESETS);
+  const allPresets = presetData?.listPresets || [];
+
+  const {
+    searchQuery,
+    setSearchQuery,
+    searchResults,
+    hasResults,
+    shouldShowResults,
+  } = usePresetSearch({
+    allPresets,
+    currentRecommendedPresets,
+  });
 
   const [addRecommendedPreset, { loading: addingPreset }] = useMutation(
     ADD_RECOMMENDED_PRESET,
@@ -67,14 +73,6 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
       },
     }
   );
-
-  const [removeRecommendedPreset, { loading: removingPreset }] = useMutation(
-    REMOVE_RECOMMENDED_PRESET
-  );
-
-  const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(event.target.value);
-  };
 
   const handlePresetSelect = (presetId: string) => {
     setSelectedPreset(presetId);
@@ -94,39 +92,6 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
       }
     }
   };
-
-  const handleRemovePreset = async (presetId: string) => {
-    try {
-      await removeRecommendedPreset({
-        variables: {
-          filmSimId,
-          presetId,
-        },
-      });
-    } catch (error) {
-      console.error("Error removing recommended preset:", error);
-    }
-  };
-
-  const allPresets = presetData?.listPresets || [];
-  const searchResults =
-    searchQuery.length < 2
-      ? []
-      : allPresets.filter((preset: any) => {
-          const searchTerm = searchQuery.toLowerCase();
-          const searchableText = [
-            preset.title,
-            preset.description,
-            preset.creator?.username,
-            ...(preset.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
-              []),
-          ]
-            .join(" ")
-            .toLowerCase();
-          return searchableText.includes(searchTerm);
-        });
-  const isAlreadyRecommended = (presetId: string) =>
-    currentRecommendedPresets.some((preset) => preset.id === presetId);
 
   return (
     <Dialog
@@ -157,19 +122,7 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
           <Typography variant="subtitle1" gutterBottom>
             Current Recommended Presets
           </Typography>
-          {currentRecommendedPresets.length > 0 ? (
-            <List>
-              {currentRecommendedPresets.map((preset) => (
-                <ListItem key={preset.id} disableGutters>
-                  <ListItemText primary={preset.title} />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography variant="body2" color="text.secondary">
-              No recommended presets yet.
-            </Typography>
-          )}
+          <CurrentPresetsList presets={currentRecommendedPresets} />
         </Box>
 
         <Divider sx={{ my: 2 }} />
@@ -182,7 +135,7 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
             fullWidth
             placeholder="Search presets by name..."
             value={searchQuery}
-            onChange={handleSearch}
+            onChange={(e) => setSearchQuery(e.target.value)}
             InputProps={{
               startAdornment: (
                 <SearchIcon sx={{ mr: 1, color: "text.secondary" }} />
@@ -191,72 +144,22 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
             sx={{ mb: 2 }}
           />
 
-          {searchQuery.length >= 2 && (
+          {shouldShowResults && (
             <Box>
               {searchLoading ? (
                 <Box display="flex" justifyContent="center" py={2}>
                   <CircularProgress />
                 </Box>
-              ) : searchResults.length > 0 ? (
+              ) : hasResults ? (
                 <List sx={{ maxHeight: 300, overflow: "auto" }}>
-                  {searchResults
-                    .filter((preset: any) => !isAlreadyRecommended(preset.id))
-                    .map((preset: any) => (
-                      <ListItemButton
-                        key={preset.id}
-                        selected={selectedPreset === preset.id}
-                        onClick={() => handlePresetSelect(preset.id)}
-                      >
-                        <ListItemAvatar>
-                          <Avatar
-                            src={preset.afterImage?.url}
-                            alt={preset.title}
-                            variant="rounded"
-                          />
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={preset.title}
-                          secondary={
-                            <Box>
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                by {preset.creator?.username}
-                              </Typography>
-                              {preset.description && (
-                                <Typography
-                                  variant="body2"
-                                  color="text.secondary"
-                                  sx={{
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    display: "-webkit-box",
-                                    WebkitLineClamp: 2,
-                                    WebkitBoxOrient: "vertical",
-                                  }}
-                                >
-                                  {preset.description}
-                                </Typography>
-                              )}
-                              {preset.tags && preset.tags.length > 0 && (
-                                <Box sx={{ mt: 0.5 }}>
-                                  {preset.tags.slice(0, 3).map((tag: any) => (
-                                    <Chip
-                                      key={tag.id}
-                                      label={tag.displayName}
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ mr: 0.5, mb: 0.5 }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                            </Box>
-                          }
-                        />
-                      </ListItemButton>
-                    ))}
+                  {searchResults.map((preset) => (
+                    <PresetSearchItem
+                      key={preset.id}
+                      preset={preset}
+                      isSelected={selectedPreset === preset.id}
+                      onSelect={handlePresetSelect}
+                    />
+                  ))}
                 </List>
               ) : (
                 <Alert severity="info">

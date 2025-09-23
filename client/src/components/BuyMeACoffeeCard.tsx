@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Card, Typography, Box, Chip, Stack } from "@mui/material";
+import { useMobileDetection } from "../hooks/useMobileDetection";
 
 interface BuyMeACoffeeCardProps {
   id?: string;
@@ -7,16 +8,7 @@ interface BuyMeACoffeeCardProps {
 
 const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
   const [showOptions, setShowOptions] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(false);
-
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.matchMedia("(hover: none)").matches);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
+  const isMobile = useMobileDetection();
 
   const handleClick = () => {
     if (isMobile) {
@@ -30,7 +22,7 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
         setShowOptions(false);

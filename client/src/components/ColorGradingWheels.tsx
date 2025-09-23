@@ -112,7 +112,7 @@ function ColorWheel({
   );
 }
 
-const CenteredSlider = styled(Slider)(({ theme }) => ({
+const CenteredSlider = styled(Slider)(() => ({
   color: "#fff",
   height: 4,
   padding: "13px 0",

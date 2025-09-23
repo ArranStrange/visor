@@ -91,10 +91,9 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
   }, [calculateColumnCount, columnCount]);
 
   useEffect(() => {
-    // Force immediate calculation on mount
     updateColumns();
 
-    let timeoutId: NodeJS.Timeout;
+    let timeoutId: number;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(updateColumns, 100);
@@ -106,7 +105,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = ({
       clearTimeout(timeoutId);
     };
   }, [updateColumns]);
-  // Force column calculation on mount and when container ref is available
+
   useEffect(() => {
     if (containerRef.current) {
       updateColumns();

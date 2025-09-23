@@ -1,7 +1,14 @@
-import React, { useMemo, useState, useCallback, useRef } from "react";
+import React, {
+  useMemo,
+  useState,
+  useCallback,
+  useRef,
+  useEffect,
+} from "react";
 import { useQuery } from "@apollo/client";
-import { CircularProgress, Alert, Box } from "@mui/material";
+import { Alert, Box } from "@mui/material";
 import { useContentType } from "../context/ContentTypeFilter";
+import { useMobileDetection } from "../hooks/useMobileDetection";
 
 import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
 import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
@@ -30,7 +37,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 }) => {
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const isMobile = useMobileDetection();
 
   const { randomizeOrder } = useContentType();
 
@@ -98,7 +105,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       );
     }
 
-
     const buyMeACoffeeCard = {
       type: "buymeacoffee" as const,
       data: {
@@ -107,11 +113,9 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       },
     };
 
-
     if (results.length > 0) {
       results.splice(0, 0, buyMeACoffeeCard);
     } else {
-
       results.unshift(buyMeACoffeeCard);
     }
 
@@ -122,26 +126,14 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       : results;
   }, [customData, contentType, presetData, filmSimData, searchQuery, isMobile]);
 
-
-  React.useEffect(() => {
+  useEffect(() => {
     setVisibleItems(ITEMS_PER_PAGE);
   }, [combined.length]);
-
 
   const loadMore = useCallback(() => {
     setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, combined.length));
   }, [combined.length]);
   const hasMore = visibleItems < combined.length;
-
-
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.matchMedia("(hover: none)").matches);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   if (isError) {
     return (

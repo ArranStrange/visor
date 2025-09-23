@@ -5,7 +5,6 @@ const Image = require("../../models/Image");
 const Discussion = require("../../models/Discussion");
 const Preset = require("../../models/Preset");
 
-// Shared population function
 const populateFilmSim = (query) => {
   return query
     .populate({

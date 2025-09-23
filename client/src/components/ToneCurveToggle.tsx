@@ -1,4 +1,3 @@
-import React from "react";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 
 const ToneCurveToggle = ({

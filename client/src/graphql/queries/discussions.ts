@@ -27,7 +27,6 @@ export const GET_DISCUSSION = gql`
           thumbnail
         }
       }
-      tags
       createdBy {
         id
         username
@@ -51,7 +50,6 @@ export const GET_DISCUSSIONS = gql`
   query GetDiscussions(
     $page: Int
     $limit: Int
-    $tags: [String!]
     $type: DiscussionTargetType
     $search: String
     $createdBy: ID
@@ -59,7 +57,6 @@ export const GET_DISCUSSIONS = gql`
     getDiscussions(
       page: $page
       limit: $limit
-      tags: $tags
       type: $type
       search: $search
       createdBy: $createdBy
@@ -81,7 +78,6 @@ export const GET_DISCUSSIONS = gql`
             slug
           }
         }
-        tags
         createdBy {
           id
           username
@@ -132,7 +128,6 @@ export const GET_DISCUSSION_BY_ITEM = gql`
           thumbnail
         }
       }
-      tags
       createdBy {
         id
         username
@@ -170,36 +165,6 @@ export const GET_POSTS = gql`
           avatar
         }
         content
-        imageUrl
-        mentions {
-          type
-          refId
-          displayName
-          user {
-            id
-            username
-            avatar
-          }
-          preset {
-            id
-            title
-            slug
-          }
-          filmSim {
-            id
-            name
-            slug
-          }
-        }
-        reactions {
-          emoji
-          users {
-            id
-            username
-            avatar
-          }
-          count
-        }
         isEdited
         editedAt
         isDeleted

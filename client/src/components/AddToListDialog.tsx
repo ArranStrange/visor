@@ -93,9 +93,8 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 
   const [addToList] = useMutation(ADD_TO_LIST, {
     onCompleted: (data) => {
-      // console.log("Mutation completed successfully:", data);
       setSuccess("Added to list successfully!");
-      // Refetch the lists to get updated data
+
       refetch();
       setTimeout(() => {
         onClose();
@@ -132,7 +131,6 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
         throw new Error("Invalid list ID");
       }
 
-      // Validate that we have a logged in user
       if (!currentUser?.id) {
         throw new Error("You must be logged in to add items to a list");
       }
@@ -144,8 +142,6 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
           filmSimIds: filmSimId ? [filmSimId] : [],
         },
       });
-
-      // console.log("Mutation result:", result);
     } catch (err) {
       console.error("Error adding to list:", err);
       setError(err instanceof Error ? err.message : "Failed to add to list");
@@ -158,9 +154,12 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
   };
 
   const lists = data?.getUserLists || [];
-  const userLists = lists.filter((list) => list.owner?.id === currentUser?.id);
+  const userLists = lists.filter(
+    (list: any) => list.owner?.id === currentUser?.id
+  );
   const uniqueLists = userLists.filter(
-    (list, index, self) => index === self.findIndex((l) => l.id === list.id)
+    (list: any, index: any, self: any) =>
+      index === self.findIndex((l: any) => l.id === list.id)
   );
 
   return (

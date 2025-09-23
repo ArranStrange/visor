@@ -13,7 +13,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          // Split vendor chunks
+
           "vendor-react": ["react", "react-dom", "react-router-dom"],
           "vendor-mui": [
             "@mui/material",
@@ -24,13 +24,13 @@ export default defineConfig({
           "vendor-apollo": ["@apollo/client", "graphql", "graphql-tag"],
           "vendor-animations": ["framer-motion", "react-intersection-observer"],
         },
-        // Ensure chunks are named consistently
+      
         chunkFileNames: "assets/[name]-[hash].js",
         entryFileNames: "assets/[name]-[hash].js",
         assetFileNames: "assets/[name]-[hash].[ext]",
       },
     },
-    // Increase the chunk size warning limit slightly
+
     chunkSizeWarningLimit: 600,
   },
 });

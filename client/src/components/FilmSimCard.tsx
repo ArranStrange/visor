@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Card,
   Typography,
@@ -12,7 +12,8 @@ import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "./AddToListDialog";
 import { useImageColor } from "../hooks/useImageColor";
-import FastImage from "./FastImage";
+import { useMobileDetection } from "../hooks/useMobileDetection";
+import ImageOptimizer from "./ImageOptimizer";
 
 interface FilmSimCardProps {
   id: string;
@@ -55,15 +56,14 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
   creator,
 }) => {
   const navigate = useNavigate();
-  const [loaded, setLoaded] = React.useState(false);
   const [addToListOpen, setAddToListOpen] = React.useState(false);
   const [showOptions, setShowOptions] = React.useState(false);
-  const [isMobile, setIsMobile] = React.useState(false);
+  const isMobile = useMobileDetection();
 
   const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
   const [showColor, setShowColor] = React.useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAnalyzing && offWhiteColor) {
       const timer = setTimeout(() => {
         setShowColor(true);
@@ -73,15 +73,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       setShowColor(false);
     }
   }, [isAnalyzing, offWhiteColor]);
-
-  React.useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.matchMedia("(hover: none)").matches);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
 
   const handleClick = () => {
     if (!addToListOpen) {
@@ -106,7 +97,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
     setAddToListOpen(false);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isMobile && showOptions) {
       const timer = setTimeout(() => {
         setShowOptions(false);
@@ -148,11 +139,10 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
       }}
       onClick={handleClick}
     >
-      <FastImage
+      <ImageOptimizer
         src={thumbnail || "/placeholder-image.jpg"}
         alt={name}
         aspectRatio="2:3"
-        onLoad={() => setLoaded(true)}
         style={{
           position: "absolute",
           top: 0,

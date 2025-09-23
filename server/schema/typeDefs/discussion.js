@@ -5,7 +5,6 @@ module.exports = gql`
     id: ID!
     title: String!
     linkedTo: DiscussionTarget!
-    tags: [String!]!
     createdBy: User!
     followers: [User!]!
     postCount: Int!
@@ -29,9 +28,6 @@ module.exports = gql`
     parent: DiscussionPost
     author: User!
     content: String!
-    imageUrl: String
-    mentions: [Mention!]!
-    reactions: [Reaction!]!
     isEdited: Boolean!
     editedAt: String
     isDeleted: Boolean!
@@ -39,21 +35,6 @@ module.exports = gql`
     deletedBy: User
     createdAt: String!
     updatedAt: String!
-  }
-
-  type Mention {
-    type: MentionType!
-    refId: ID!
-    displayName: String!
-    user: User
-    preset: Preset
-    filmSim: FilmSim
-  }
-
-  type Reaction {
-    emoji: String!
-    users: [User!]!
-    count: Int!
   }
 
   type DiscussionConnection {
@@ -75,22 +56,14 @@ module.exports = gql`
     FILMSIM
   }
 
-  enum MentionType {
-    USER
-    PRESET
-    FILMSIM
-  }
-
   input CreateDiscussionInput {
     title: String!
     linkedToType: DiscussionTargetType!
     linkedToId: ID!
-    tags: [String!]
   }
 
   input UpdateDiscussionInput {
     title: String
-    tags: [String!]
     isActive: Boolean
   }
 
@@ -98,24 +71,12 @@ module.exports = gql`
     discussionId: ID
     parentId: ID
     content: String!
-    imageUrl: String
     linkedToType: DiscussionTargetType
     linkedToId: ID
   }
 
   input UpdatePostInput {
     content: String!
-    imageUrl: String
-  }
-
-  input AddReactionInput {
-    postId: ID!
-    emoji: String!
-  }
-
-  input RemoveReactionInput {
-    postId: ID!
-    emoji: String!
   }
 
   extend type Query {
@@ -123,7 +84,6 @@ module.exports = gql`
     getDiscussions(
       page: Int
       limit: Int
-      tags: [String!]
       type: DiscussionTargetType
       search: String
       createdBy: ID
@@ -178,9 +138,5 @@ module.exports = gql`
     createPost(input: CreatePostInput!): DiscussionPost!
     updatePost(id: ID!, input: UpdatePostInput!): DiscussionPost!
     deletePost(id: ID!): Boolean!
-
-    # Reactions
-    addReaction(input: AddReactionInput!): DiscussionPost!
-    removeReaction(input: RemoveReactionInput!): DiscussionPost!
   }
 `;
