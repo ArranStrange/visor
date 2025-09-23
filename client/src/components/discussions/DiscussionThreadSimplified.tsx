@@ -27,7 +27,10 @@ import Post from "./Post";
 import PostComposer from "./PostComposer";
 import { useDiscussionPosts } from "../../hooks/useDiscussionPosts";
 import { useDiscussionMutations } from "../../hooks/useDiscussionMutations";
-import { organizePostsIntoThreads, formatDate } from "../../utils/discussionUtils";
+import {
+  organizePostsIntoThreads,
+  formatDate,
+} from "../../utils/discussionUtils";
 
 interface DiscussionThreadProps {
   itemId: string;
@@ -441,9 +444,7 @@ const DiscussionThreadSimplified: React.FC<DiscussionThreadProps> = ({
                 No posts yet. Be the first to join the discussion!
               </Alert>
             ) : (
-              threadedPosts.map((post: any) =>
-                renderPostWithReplies(post)
-              )
+              threadedPosts.map((post: any) => renderPostWithReplies(post))
             )}
 
             {/* Show more button */}
@@ -479,9 +480,7 @@ const DiscussionThreadSimplified: React.FC<DiscussionThreadProps> = ({
                 No posts yet. Be the first to join the discussion!
               </Alert>
             ) : (
-              threadedPosts.map((post: any) =>
-                renderCollapsedPost(post)
-              )
+              threadedPosts.map((post: any) => renderCollapsedPost(post))
             )}
 
             {/* Show more button */}

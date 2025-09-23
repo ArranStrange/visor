@@ -7,8 +7,14 @@ import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
 } from "../graphql/mutations/discussions";
-import { GET_DISCUSSION_BY_ITEM, GET_POSTS } from "../graphql/queries/discussions";
-import { useCreateNotification, createDiscussionReplyNotification } from "../utils/notificationUtils";
+import {
+  GET_DISCUSSION_BY_ITEM,
+  GET_POSTS,
+} from "../graphql/queries/discussions";
+import {
+  useCreateNotification,
+  createDiscussionReplyNotification,
+} from "../utils/notificationUtils";
 import { Discussion as DiscussionType } from "../types/discussions";
 
 interface UseDiscussionMutationsProps {

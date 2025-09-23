@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useInView } from "react-intersection-observer";
 import { useContentType } from "../context/ContentTypeFilter";
-import { calculateColumnCount, shuffleArrayInChunks, distributeItemsAcrossColumns } from "../utils/gridUtils";
+import {
+  calculateColumnCount,
+  shuffleArrayInChunks,
+  distributeItemsAcrossColumns,
+} from "../utils/gridUtils";
 
 interface UseStaggeredGridProps {
   children: React.ReactNode[];
