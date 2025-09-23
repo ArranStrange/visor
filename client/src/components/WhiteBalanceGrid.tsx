@@ -60,48 +60,14 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   height: DOT_SIZE,
                   borderRadius: "50%",
                   bgcolor: getWBColor(r, b),
-                  border: isSelected
-                    ? "2px solid white"
-                    : isCenter
-                    ? "1px solid rgba(255, 255, 255, 0.5)"
-                    : "1px solid #222",
+                  border: "1px solid #222",
                   cursor: "pointer",
-                  zIndex: isSelected ? 2 : 1,
                   transition: "border 0.1s",
-                  boxShadow: isSelected ? "0 0 0 1px #000" : undefined,
                 }}
               />
             );
           })
         )}
-
-        {/* Crosshairs */}
-        <Box
-          sx={{
-            position: "absolute",
-            left: "50%",
-            top: 0,
-            width: 1,
-            height: "100%",
-            bgcolor: "rgba(255, 255, 255, 0.3)",
-            zIndex: 3,
-            pointerEvents: "none",
-            transform: "translateX(-50%)",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: 0,
-            width: "100%",
-            height: 1,
-            bgcolor: "rgba(255, 255, 255, 0.3)",
-            zIndex: 3,
-            pointerEvents: "none",
-            transform: "translateY(-50%)",
-          }}
-        />
       </Box>
 
       <Typography
