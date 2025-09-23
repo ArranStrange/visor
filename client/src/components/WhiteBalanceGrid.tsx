@@ -43,8 +43,6 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
           display: "grid",
           gridTemplateColumns: `repeat(${GRID_SIZE}, ${DOT_SIZE}px)`,
           gap: `${DOT_GAP}px`,
-          borderRadius: 2,
-          boxShadow: 2,
           backgroundColor: "transparent",
         }}
       >
