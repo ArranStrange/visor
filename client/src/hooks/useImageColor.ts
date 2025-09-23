@@ -43,16 +43,23 @@ export const useImageColor = (imageUrl: string | undefined) => {
       return;
     }
 
+    // Skip analysis for placeholder images
+    if (imageUrl === "/placeholder-image.jpg") {
+      setOffWhiteColor(colorPalettes.neutral);
+      setIsAnalyzing(false);
+      return;
+    }
+
     setIsAnalyzing(true);
 
-    // Use a small delay to simulate analysis (but much faster than canvas)
-    const timer = setTimeout(() => {
+    // Use requestAnimationFrame for better performance
+    const frameId = requestAnimationFrame(() => {
       const color = getColorFromUrl(imageUrl);
       setOffWhiteColor(color);
       setIsAnalyzing(false);
-    }, 50); // Much faster than the previous 500ms
+    });
 
-    return () => clearTimeout(timer);
+    return () => cancelAnimationFrame(frameId);
   }, [imageUrl]);
 
   return {

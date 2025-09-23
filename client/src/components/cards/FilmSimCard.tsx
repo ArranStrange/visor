@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, memo, useCallback, useMemo } from "react";
 import {
   Card,
   Typography,
@@ -47,69 +47,64 @@ interface FilmSimCardProps {
   };
 }
 
-const FilmSimCard: React.FC<FilmSimCardProps> = ({
-  id,
-  name,
-  slug,
-  thumbnail,
-  tags = [],
-  creator,
-}) => {
-  const navigate = useNavigate();
-  const [addToListOpen, setAddToListOpen] = React.useState(false);
-  const [showOptions, setShowOptions] = React.useState(false);
-  const isMobile = useMobileDetection();
+const FilmSimCard: React.FC<FilmSimCardProps> = memo(
+  ({ id, name, slug, thumbnail, tags = [], creator }) => {
+    const navigate = useNavigate();
+    const [addToListOpen, setAddToListOpen] = React.useState(false);
+    const [showOptions, setShowOptions] = React.useState(false);
+    const isMobile = useMobileDetection();
 
-  const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
-  const [showColor, setShowColor] = React.useState(false);
+    const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
+    const [showColor, setShowColor] = React.useState(false);
 
-  useEffect(() => {
-    if (!isAnalyzing && offWhiteColor) {
-      const timer = setTimeout(() => {
-        setShowColor(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    } else {
-      setShowColor(false);
-    }
-  }, [isAnalyzing, offWhiteColor]);
+    useEffect(() => {
+      if (!isAnalyzing && offWhiteColor) {
+        const timer = setTimeout(() => {
+          setShowColor(true);
+        }, 100);
+        return () => clearTimeout(timer);
+      } else {
+        setShowColor(false);
+      }
+    }, [isAnalyzing, offWhiteColor]);
 
-  const handleClick = () => {
-    if (!addToListOpen) {
-      if (isMobile) {
-        if (!showOptions) {
-          setShowOptions(true);
+    // Memoize event handlers
+    const handleClick = useCallback(() => {
+      if (!addToListOpen) {
+        if (isMobile) {
+          if (!showOptions) {
+            setShowOptions(true);
+          } else {
+            navigate(`/filmsim/${slug}`);
+          }
         } else {
           navigate(`/filmsim/${slug}`);
         }
-      } else {
-        navigate(`/filmsim/${slug}`);
       }
-    }
-  };
+    }, [addToListOpen, isMobile, showOptions, navigate, slug]);
 
-  const handleAddToList = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setAddToListOpen(true);
-  };
+    const handleAddToList = useCallback((e: React.MouseEvent) => {
+      e.stopPropagation();
+      setAddToListOpen(true);
+    }, []);
 
-  const handleCloseDialog = () => {
-    setAddToListOpen(false);
-  };
+    const handleCloseDialog = useCallback(() => {
+      setAddToListOpen(false);
+    }, []);
 
-  useEffect(() => {
-    if (!isMobile && showOptions) {
-      const timer = setTimeout(() => {
-        setShowOptions(false);
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showOptions, isMobile]);
+    useEffect(() => {
+      if (!isMobile && showOptions) {
+        const timer = setTimeout(() => {
+          setShowOptions(false);
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    }, [showOptions, isMobile]);
 
-  return (
-    <Card
-      sx={{
-        position: "relative",
+    // Memoize card styles
+    const cardStyles = useMemo(
+      () => ({
+        position: "relative" as const,
         aspectRatio: "2/3",
         borderRadius: 1,
         overflow: "hidden",
@@ -124,7 +119,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
         "&:hover .add-to-list-button": {
           opacity: 1,
         },
-
         "@media (hover: none)": {
           "& .tags-container": {
             opacity: showOptions ? 1 : 0,
@@ -136,184 +130,191 @@ const FilmSimCard: React.FC<FilmSimCardProps> = ({
             opacity: showOptions ? 1 : 0,
           },
         },
-      }}
-      onClick={handleClick}
-    >
-      <ImageOptimizer
-        src={thumbnail || "/placeholder-image.jpg"}
-        alt={name}
-        aspectRatio="2:3"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-      />
+      }),
+      [showOptions]
+    );
 
-      <Box
-        className="add-to-list-button"
-        sx={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          zIndex: 10,
-          opacity: 0,
-          transition: "opacity 0.3s ease-in-out",
-        }}
-      >
-        <IconButton
-          onClick={handleAddToList}
-          onMouseDown={(e) => e.stopPropagation()}
-          onMouseUp={(e) => e.stopPropagation()}
-          sx={{
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
-            color: "white",
-            width: 32,
-            height: 32,
-            "&:hover": {
-              backgroundColor: "rgba(0, 0, 0, 0.9)",
-            },
+    return (
+      <Card sx={cardStyles} onClick={handleClick}>
+        <ImageOptimizer
+          src={thumbnail || "/placeholder-image.jpg"}
+          alt={name}
+          aspectRatio="2:3"
+          loading="lazy"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
-        >
-          <AddIcon fontSize="small" />
-        </IconButton>
-      </Box>
+        />
 
-      {creator && (
         <Box
+          className="add-to-list-button"
           sx={{
             position: "absolute",
             top: 12,
-            left: 12,
-            zIndex: 2,
+            right: 12,
+            zIndex: 10,
             opacity: 0,
             transition: "opacity 0.3s ease-in-out",
-            cursor: "pointer",
-          }}
-          className="creator-avatar"
-          onClick={(e) => {
-            e.stopPropagation();
-            if (creator.id) {
-              navigate(`/profile/${creator.id}`);
-            }
           }}
         >
-          <Avatar
-            src={creator.avatar}
-            alt={creator.username}
+          <IconButton
+            onClick={handleAddToList}
+            onMouseDown={(e) => e.stopPropagation()}
+            onMouseUp={(e) => e.stopPropagation()}
             sx={{
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              color: "white",
               width: 32,
               height: 32,
-              backgroundColor: "rgba(0, 0, 0, 0.6)",
+              "&:hover": {
+                backgroundColor: "rgba(0, 0, 0, 0.9)",
+              },
             }}
           >
-            {creator.username.charAt(0).toUpperCase()}
-          </Avatar>
+            <AddIcon fontSize="small" />
+          </IconButton>
         </Box>
-      )}
 
-      <Box
-        className="title-container"
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          textAlign: "center",
-          p: 2,
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
-        }}
-      >
-        <Typography
-          variant="h5"
-          fontWeight="bold"
+        {creator && (
+          <Box
+            sx={{
+              position: "absolute",
+              top: 12,
+              left: 12,
+              zIndex: 2,
+              opacity: 0,
+              transition: "opacity 0.3s ease-in-out",
+              cursor: "pointer",
+            }}
+            className="creator-avatar"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (creator.id) {
+                navigate(`/profile/${creator.id}`);
+              }
+            }}
+          >
+            <Avatar
+              src={creator.avatar}
+              alt={creator.username}
+              sx={{
+                width: 32,
+                height: 32,
+                backgroundColor: "rgba(0, 0, 0, 0.6)",
+              }}
+            >
+              {creator.username.charAt(0).toUpperCase()}
+            </Avatar>
+          </Box>
+        )}
+
+        <Box
+          className="title-container"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-            lineHeight: 1.2,
-            transition: "color 0.8s ease-in-out",
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            p: 2,
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
           }}
         >
-          {name}
-        </Typography>
-        <Typography
-          variant="body2"
+          <Typography
+            variant="h5"
+            fontWeight="bold"
+            sx={{
+              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+              lineHeight: 1.2,
+              transition: "color 0.8s ease-in-out",
+            }}
+          >
+            {name}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
+              lineHeight: 1.2,
+              transition: "color 0.8s ease-in-out",
+            }}
+          >
+            Film Sim
+          </Typography>
+        </Box>
+
+        <Box
+          className="tags-container"
           sx={{
-            color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
-            lineHeight: 1.2,
-            transition: "color 0.8s ease-in-out",
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: "100%",
+            p: 2,
+            opacity: 0,
+            transition: "opacity 0.3s ease-in-out",
           }}
         >
-          Film Sim
-        </Typography>
-      </Box>
-
-      <Box
-        className="tags-container"
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          p: 2,
-          opacity: 0,
-          transition: "opacity 0.3s ease-in-out",
-        }}
-      >
-        <Stack
-          direction="row"
-          gap={1}
-          flexWrap="wrap"
-          justifyContent="flex-start"
-        >
-          {(tags ?? [])
-            .slice(0, 3)
-            .reverse()
-            .map((tag, index) => (
-              <Chip
-                key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
-                label={tag.displayName}
-                size="small"
-                sx={{
-                  color: "white",
-                  backgroundColor: "black",
-                  border: "none",
-                  cursor: "pointer",
-                  "& .MuiChip-label": {
+          <Stack
+            direction="row"
+            gap={1}
+            flexWrap="wrap"
+            justifyContent="flex-start"
+          >
+            {(tags ?? [])
+              .slice(0, 3)
+              .reverse()
+              .map((tag, index) => (
+                <Chip
+                  key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
+                  label={tag.displayName}
+                  size="small"
+                  sx={{
                     color: "white",
-                  },
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  },
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(
-                    `/search?tag=${encodeURIComponent(tag.displayName)}`
-                  );
-                }}
-              />
-            ))}
-        </Stack>
-      </Box>
+                    backgroundColor: "black",
+                    border: "none",
+                    cursor: "pointer",
+                    "& .MuiChip-label": {
+                      color: "white",
+                    },
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.2)",
+                    },
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(
+                      `/search?tag=${encodeURIComponent(tag.displayName)}`
+                    );
+                  }}
+                />
+              ))}
+          </Stack>
+        </Box>
 
-      <AddToListDialog
-        open={addToListOpen}
-        onClose={handleCloseDialog}
-        filmSimId={id}
-        itemName={name}
-      />
-    </Card>
-  );
-};
+        <AddToListDialog
+          open={addToListOpen}
+          onClose={handleCloseDialog}
+          filmSimId={id}
+          itemName={name}
+        />
+      </Card>
+    );
+  }
+);
+
+FilmSimCard.displayName = "FilmSimCard";
 
 export default FilmSimCard;

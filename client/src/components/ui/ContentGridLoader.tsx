@@ -154,18 +154,24 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   }
 
   const visibleData = combined.slice(0, visibleItems);
-  const children = visibleData.map((item, index) =>
-    renderItem ? (
-      <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-        {renderItem(item.data)}
-      </React.Fragment>
-    ) : item.type === "preset" ? (
-      <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
-    ) : item.type === "buymeacoffee" ? (
-      <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
-    ) : (
-      <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
-    )
+
+  // Memoize the children to prevent unnecessary re-renders
+  const children = useMemo(
+    () =>
+      visibleData.map((item, index) =>
+        renderItem ? (
+          <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
+            {renderItem(item.data)}
+          </React.Fragment>
+        ) : item.type === "preset" ? (
+          <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
+        ) : item.type === "buymeacoffee" ? (
+          <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
+        ) : (
+          <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
+        )
+      ),
+    [visibleData, renderItem]
   );
 
   return (
