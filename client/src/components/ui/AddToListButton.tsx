@@ -119,7 +119,6 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
         filmSimId: filmSimId || null,
       });
 
-
       if (!presetId && !filmSimId) {
         throw new Error("No item selected to add to list");
       }

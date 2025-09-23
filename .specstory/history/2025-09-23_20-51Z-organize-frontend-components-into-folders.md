@@ -10,7 +10,1580 @@ I want to group my frontend components into folders. create a branch and organis
 
 _**Assistant**_
 
+I'll help you organize your frontend components into folders by creating a new branch and restructuring the components directory. Let me start by examining the current component structure and then create a plan.
 
+
+---
+
+## Todo List
+
+- [-] Create a new branch for component organization
+- [ ] Analyze current component structure and categorize components
+- [ ] Create organized folder structure for components
+- [ ] Move components to appropriate folders
+- [ ] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project && git checkout -b organize-components
+```
+
+```
+Switched to a new branch 'organize-components'
+
+```
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [ ] Analyze current component structure and categorize components
+- [ ] Create organized folder structure for components
+- [ ] Move components to appropriate folders
+- [ ] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+Now let me analyze the current component structure to understand how to best organize them:
+
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [-] Analyze current component structure and categorize components
+- [ ] Create organized folder structure for components
+- [ ] Move components to appropriate folders
+- [ ] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+<details>
+            <summary>Listed directory undefined • **0** results</summary>
+        
+No results found
+</details>
+
+---
+
+Now let me examine a few key components to understand their functionality and categorize them properly:
+
+
+---
+
+Read file: undefined
+
+---
+
+Read file: undefined
+
+---
+
+Read file: undefined
+
+---
+
+Read file: undefined
+
+---
+
+Based on my analysis of the components, I can see clear categories. Let me create a logical folder structure:
+
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [x] Analyze current component structure and categorize components
+- [-] Create organized folder structure for components
+- [ ] Move components to appropriate folders
+- [ ] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+Now I'll create the organized folder structure. Based on the components, I can categorize them as follows:
+
+1. **cards/** - Card components (FilmSimCard, PresetCard, etc.)
+2. **forms/** - Form and input components (FilmSimSettingsForm, FilmSimTagsInput, etc.)
+3. **media/** - Image and media related components (Image, ImageUpload, ImageOptimizer, etc.)
+4. **settings/** - Settings and configuration components (ColorGradingWheels, ToneCurve, WhiteBalanceGrid, etc.)
+5. **ui/** - General UI components (BeforeAfterSlider, ContentGridLoader, etc.)
+6. **dialogs/** - Dialog components (AddItemDialog, EditFilmSimDialog, etc.)
+7. **layout/** - Already exists, keep as is
+8. **discussions/** - Already exists, keep as is
+
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mkdir -p cards forms media settings ui dialogs
+```
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [x] Analyze current component structure and categorize components
+- [x] Create organized folder structure for components
+- [-] Move components to appropriate folders
+- [ ] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+Now I'll move the components to their appropriate folders:
+
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv FilmSimCard.tsx PresetCard.tsx PresetSearchItem.tsx CurrentPresetsList.tsx RecommendedPresetsManager.tsx cards/
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv FilmSimSettingsForm.tsx FilmSimTagsInput.tsx FilmSimSettingSelect.tsx FilmSimCameraSettings.tsx SettingsDisplay.tsx SettingSliderDisplay.tsx forms/
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv Image.tsx ImageUpload.tsx ImageOptimizer.tsx BeforeAfterSlider.tsx media/
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv ColorGradingWheels.tsx ColorMixerSection.tsx ToneCurve.tsx ToneCurveToggle.tsx WhiteBalanceGrid.tsx XmpSettingsAccordion.tsx XmpSettingsDisplay.tsx XmpParser.tsx settings/
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv AddItemDialog.tsx AddToListDialog.tsx EditFilmSimDialog.tsx dialogs/
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components && mv AddToListButton.tsx BuyMeACoffeeCard.tsx CommentSection.tsx ContentGridLoader.tsx ContentTypeToggle.tsx StaggeredGrid.tsx StaggeredGridSimplified.tsx ui/
+```
+
+---
+
+Let me verify the current structure:
+
+
+---
+
+<details>
+            <summary>Listed directory undefined • **0** results</summary>
+        
+No results found
+</details>
+
+---
+
+Perfect! Now I need to update all the import statements throughout the codebase to reflect the new component locations. Let me search for all files that import these components:
+
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [x] Analyze current component structure and categorize components
+- [x] Create organized folder structure for components
+- [x] Move components to appropriate folders
+- [-] Update all import statements to reflect new component locations
+- [ ] Test that the application builds successfully after reorganization
+
+---
+
+
+
+---
+
+Let me also search for imports that might use different patterns:
+
+
+---
+
+
+
+---
+
+Now I need to update all these import statements. Let me start with the files that have the most imports:
+
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/UploadFilmSim.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 3, lines removed: 3
+
+```diff
+@@ -18,7 +18,7 @@
+  import { useImageUpload } from "../hooks/useImageUpload";
+  
+- import FilmSimSettingsForm from "../components/FilmSimSettingsForm";
+- import FilmSimTagsInput from "../components/FilmSimTagsInput";
+- import ImageUpload from "../components/ImageUpload";
++ import FilmSimSettingsForm from "../components/forms/FilmSimSettingsForm";
++ import FilmSimTagsInput from "../components/forms/FilmSimTagsInput";
++ import ImageUpload from "../components/media/ImageUpload";
+  
+  import { FilmSimFormState, FilmSimSettings } from "../types/filmSim";
+```
+
+</details>
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/hooks/useFilmSimForm.ts</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,4 +1,4 @@
+  import { useState, useEffect, useCallback } from "react";
+- import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
++ import { WhiteBalanceShift } from "../components/settings/WhiteBalanceGrid";
+  
+  export interface FilmSimSettings {
+```
+
+</details>
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/FilmSimDetail.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 4, lines removed: 4
+
+```diff
+@@ -29,9 +29,9 @@
+  import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
+  import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
+- import AddToListButton from "../components/AddToListButton";
++ import AddToListButton from "../components/ui/AddToListButton";
+  import DiscussionThread from "../components/discussions/DiscussionThread";
+- import FilmSimCameraSettings from "../components/FilmSimCameraSettings";
+- import EditFilmSimDialog from "../components/EditFilmSimDialog";
+- import RecommendedPresetsManager from "../components/RecommendedPresetsManager";
++ import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
++ import EditFilmSimDialog from "../components/dialogs/EditFilmSimDialog";
++ import RecommendedPresetsManager from "../components/cards/RecommendedPresetsManager";
+  import { useAuth } from "../context/AuthContext";
+  
+```
+
+</details>
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/types/filmSim.ts</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,3 +1,3 @@
+- import { WhiteBalanceShift } from "../components/WhiteBalanceGrid";
++ import { WhiteBalanceShift } from "../components/settings/WhiteBalanceGrid";
+  
+  export interface FilmSimSettings {
+```
+
+</details>
+
+---
+
+Now let me continue with the remaining files. Let me handle the PresetDetail.tsx file which has many imports:
+
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/PresetDetail.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 8, lines removed: 8
+
+```diff
+@@ -45,13 +45,13 @@
+  import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+  import CloseIcon from "@mui/icons-material/Close";
+- import ToneCurve from "../components/ToneCurve";
+- import SettingSliderDisplay from "../components/SettingSliderDisplay";
+- import SettingsDisplay from "../components/SettingsDisplay";
+- import BeforeAfterSlider from "../components/BeforeAfterSlider";
+- import AddToListButton from "../components/AddToListButton";
+- import XmpParser from "../components/XmpParser";
+- import XmpSettingsDisplay from "../components/XmpSettingsDisplay";
++ import ToneCurve from "../components/settings/ToneCurve";
++ import SettingSliderDisplay from "../components/forms/SettingSliderDisplay";
++ import SettingsDisplay from "../components/forms/SettingsDisplay";
++ import BeforeAfterSlider from "../components/media/BeforeAfterSlider";
++ import AddToListButton from "../components/ui/AddToListButton";
++ import XmpParser from "../components/settings/XmpParser";
++ import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
+  import DiscussionThread from "../components/discussions/DiscussionThread";
+- import ColorGradingWheels from "../components/ColorGradingWheels";
++ import ColorGradingWheels from "../components/settings/ColorGradingWheels";
+  import { useParams, useNavigate } from "react-router-dom";
+  import { useQuery, useMutation, gql } from "@apollo/client";
+```
+
+</details>
+
+---
+
+Let me continue with the remaining files:
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/SearchView.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -11,6 +11,6 @@
+  import { useSearchParams, useNavigate } from "react-router-dom";
+  
+- import ContentTypeToggle from "../components/ContentTypeToggle";
+- import ContentGridLoader from "../components/ContentGridLoader";
++ import ContentTypeToggle from "../components/ui/ContentTypeToggle";
++ import ContentGridLoader from "../components/ui/ContentGridLoader";
+  import { useContentType } from "../context/ContentTypeFilter";
+  import {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/Home.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -1,7 +1,7 @@
+  import React from "react";
+  import { Container } from "@mui/material";
+- import ContentTypeToggle from "../components/ContentTypeToggle";
++ import ContentTypeToggle from "../components/ui/ContentTypeToggle";
+  import { useContentType } from "../context/ContentTypeFilter";
+- import ContentGridLoader from "../components/ContentGridLoader";
++ import ContentGridLoader from "../components/ui/ContentGridLoader";
+  
+  const HomePage: React.FC = () => {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/BuyMeACoffeeDemo.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -1,6 +1,6 @@
+  import React from "react";
+  import { Container, Typography, Box } from "@mui/material";
+- import BuyMeACoffeeCard from "../components/BuyMeACoffeeCard";
+- import StaggeredGrid from "../components/StaggeredGrid";
++ import BuyMeACoffeeCard from "../components/ui/BuyMeACoffeeCard";
++ import StaggeredGrid from "../components/ui/StaggeredGrid";
+  
+  const BuyMeACoffeeDemo: React.FC = () => {
+```
+
+</details>
+
+---
+
+Now let me handle the UploadPreset.tsx file which has many imports:
+
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/UploadPreset.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 4, lines removed: 4
+
+```diff
+@@ -32,10 +32,10 @@
+  import InfoIcon from "@mui/icons-material/Info";
+  import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+- import WhiteBalanceGrid from "../components/WhiteBalanceGrid";
+- import XmpParser from "../components/XmpParser";
+- import XmpSettingsDisplay from "../components/XmpSettingsDisplay";
++ import WhiteBalanceGrid from "../components/settings/WhiteBalanceGrid";
++ import XmpParser from "../components/settings/XmpParser";
++ import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
+  import { useMutation } from "@apollo/client";
+  import { gql } from "@apollo/client";
+- import ToneCurve from "../components/ToneCurve";
++ import ToneCurve from "../components/settings/ToneCurve";
+  import { useNavigate } from "react-router-dom";
+  import type { GridProps } from "@mui/material";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/UploadPreset.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -45,5 +45,5 @@
+    UploadPresetInput,
+  } from "../types/graphql";
+- import SettingSliderDisplay from "../components/SettingSliderDisplay";
++ import SettingSliderDisplay from "../components/forms/SettingSliderDisplay";
+  import { v4 as uuidv4 } from "uuid";
+  import slugify from "slugify";
+```
+
+</details>
+
+---
+
+Let me also check if there's an import of ParsedSettings in the UploadPreset file:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/UploadPreset.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -308,5 +308,5 @@
+  // Interface matching the XMP parser output format
+  // Import the comprehensive ParsedSettings interface from XmpParser
+- import { ParsedSettings } from "../components/XmpParser";
++ import { ParsedSettings } from "../components/settings/XmpParser";
+  
+  const UploadPreset: React.FC = () => {
+```
+
+</details>
+
+---
+
+Now let me handle the remaining files:
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/PublicProfile.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 4, lines removed: 4
+
+```diff
+@@ -32,9 +32,9 @@
+  import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+  import ShareIcon from "@mui/icons-material/Share";
+- import ContentTypeToggle from "../components/ContentTypeToggle";
+- import ContentGridLoader from "../components/ContentGridLoader";
++ import ContentTypeToggle from "../components/ui/ContentTypeToggle";
++ import ContentGridLoader from "../components/ui/ContentGridLoader";
+  import { useContentType } from "../context/ContentTypeFilter";
+- import PresetCard from "../components/PresetCard";
+- import FilmSimCard from "../components/FilmSimCard";
++ import PresetCard from "../components/cards/PresetCard";
++ import FilmSimCard from "../components/cards/FilmSimCard";
+  
+  const GET_USER_LISTS = gql`
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/pages/ListDetail.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -16,6 +16,6 @@
+  } from "@mui/material";
+  import { gql } from "@apollo/client";
+- import ContentTypeToggle from "../components/ContentTypeToggle";
+- import ContentGridLoader from "../components/ContentGridLoader";
++ import ContentTypeToggle from "../components/ui/ContentTypeToggle";
++ import ContentGridLoader from "../components/ui/ContentGridLoader";
+  import { useAuth } from "../context/AuthContext";
+  import { useContentType } from "../context/ContentTypeFilter";
+```
+
+</details>
+
+---
+
+Now I need to check if there are any internal imports within the components themselves that need to be updated. Let me search for any imports within the components directory:
+
+
+---
+
+
+
+---
+
+I can see there are several internal imports that need to be updated. Let me fix the most critical ones:
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/settings/XmpSettingsDisplay.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,5 +1,5 @@
+  import React from "react";
+  import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
+- import SettingSliderDisplay from "./SettingSliderDisplay";
++ import SettingSliderDisplay from "../forms/SettingSliderDisplay";
+  import XmpSettingsAccordion from "./XmpSettingsAccordion";
+  import { ParsedSettings } from "./XmpParser";
+```
+
+</details>
+
+---
+
+Invalid: old_string and new_string are exactly the same.
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/PresetCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -3,5 +3,5 @@
+  import { useNavigate } from "react-router-dom";
+  import AddIcon from "@mui/icons-material/Add";
+- import AddToListDialog from "./AddToListDialog";
++ import AddToListDialog from "../dialogs/AddToListDialog";
+  import { useImageColor } from "../hooks/useImageColor";
+  import { useMobileDetection } from "../hooks/useMobileDetection";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/PresetCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -6,5 +6,5 @@
+  import { useImageColor } from "../hooks/useImageColor";
+  import { useMobileDetection } from "../hooks/useMobileDetection";
+- import ImageOptimizer from "./ImageOptimizer";
++ import ImageOptimizer from "../media/ImageOptimizer";
+  
+  const placeholderImage = "/placeholder-image.jpg";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/FilmSimCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -11,5 +11,5 @@
+  import { useNavigate } from "react-router-dom";
+  import AddIcon from "@mui/icons-material/Add";
+- import AddToListDialog from "./AddToListDialog";
++ import AddToListDialog from "../dialogs/AddToListDialog";
+  import { useImageColor } from "../hooks/useImageColor";
+  import { useMobileDetection } from "../hooks/useMobileDetection";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/FilmSimCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -14,5 +14,5 @@
+  import { useImageColor } from "../hooks/useImageColor";
+  import { useMobileDetection } from "../hooks/useMobileDetection";
+- import ImageOptimizer from "./ImageOptimizer";
++ import ImageOptimizer from "../media/ImageOptimizer";
+  
+  interface FilmSimCardProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/forms/FilmSimSettingsForm.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -11,5 +11,5 @@
+    SelectChangeEvent,
+  } from "@mui/material";
+- import WhiteBalanceGrid from "./WhiteBalanceGrid";
++ import WhiteBalanceGrid from "../settings/WhiteBalanceGrid";
+  import {
+    DYNAMIC_RANGE_OPTIONS,
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/dialogs/EditFilmSimDialog.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -21,5 +21,5 @@
+  
+  import { FilmSimData, useFilmSimForm } from "../hooks/useFilmSimForm";
+- import FilmSimSettingsForm from "./FilmSimSettingsForm";
++ import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";
+  
+  interface EditFilmSimDialogProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentGridLoader.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -14,6 +14,6 @@
+  import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
+  
+- import PresetCard from "./PresetCard";
+- import FilmSimCard from "./FilmSimCard";
++ import PresetCard from "../cards/PresetCard";
++ import FilmSimCard from "../cards/FilmSimCard";
+  import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
+  import StaggeredGrid from "./StaggeredGrid";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/forms/FilmSimCameraSettings.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,5 +1,5 @@
+  import React from "react";
+  import { Box, Typography } from "@mui/material";
+- import WhiteBalanceGrid from "./WhiteBalanceGrid";
++ import WhiteBalanceGrid from "../settings/WhiteBalanceGrid";
+  
+  interface FilmSimSettings {
+```
+
+</details>
+
+---
+
+Invalid: old_string and new_string are exactly the same.
+
+---
+
+Now let me test the build to see if everything is working correctly:
+
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [x] Analyze current component structure and categorize components
+- [x] Create organized folder structure for components
+- [x] Move components to appropriate folders
+- [x] Update all import statements to reflect new component locations
+- [-] Test that the application builds successfully after reorganization
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client && npm run build
+```
+
+```
+
+> visor-client@1.0.0 build
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v6.3.5 building for production...
+transforming...
+✓ 572 modules transformed.
+✗ Build failed in 3.09s
+error during build:
+Could not resolve "../context/ContentTypeFilter" from "src/components/ui/ContentTypeToggle.tsx"
+file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentTypeToggle.tsx
+    at getRollupError (file:///Users/arranstrange/Documents/Coding/visor_full_project/client/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///Users/arranstrange/Documents/Coding/visor_full_project/client/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at ModuleLoader.handleInvalidResolvedId (file:///Users/arranstrange/Documents/Coding/visor_full_project/client/node_modules/rollup/dist/es/shared/node-entry.js:21396:24)
+    at file:///Users/arranstrange/Documents/Coding/visor_full_project/client/node_modules/rollup/dist/es/shared/node-entry.js:21356:26
+
+```
+
+---
+
+I need to fix the import path in ContentTypeToggle.tsx. Let me check and fix it:
+
+
+---
+
+Read file: undefined
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentTypeToggle.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -7,5 +7,5 @@
+    IconButton,
+  } from "@mui/material";
+- import { useContentType } from "../context/ContentTypeFilter";
++ import { useContentType } from "../../context/ContentTypeFilter";
+  
+  import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
+```
+
+</details>
+
+---
+
+Let me check for other similar import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentGridLoader.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -8,5 +8,5 @@
+  import { useQuery } from "@apollo/client";
+  import { Alert, Box } from "@mui/material";
+- import { useContentType } from "../context/ContentTypeFilter";
++ import { useContentType } from "../../context/ContentTypeFilter";
+  import { useMobileDetection } from "../hooks/useMobileDetection";
+  
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/StaggeredGrid.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -9,5 +9,5 @@
+  import { useInView } from "react-intersection-observer";
+  import { motion, AnimatePresence } from "framer-motion";
+- import { useContentType } from "../context/ContentTypeFilter";
++ import { useContentType } from "../../context/ContentTypeFilter";
+  
+  interface StaggeredGridProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/dialogs/AddToListDialog.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,5 +1,5 @@
+  import React, { useState } from "react";
+  import { useNavigate } from "react-router-dom";
+- import { useAuth } from "../context/AuthContext";
++ import { useAuth } from "../../context/AuthContext";
+  import { useQuery, useMutation } from "@apollo/client";
+  import {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/AddToListButton.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,5 +1,5 @@
+  import React, { useState } from "react";
+  import { useNavigate } from "react-router-dom";
+- import { useAuth } from "../context/AuthContext";
++ import { useAuth } from "../../context/AuthContext";
+  import { useQuery, useMutation } from "@apollo/client";
+  import {
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentGridLoader.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -9,5 +9,5 @@
+  import { Alert, Box } from "@mui/material";
+  import { useContentType } from "../../context/ContentTypeFilter";
+- import { useMobileDetection } from "../hooks/useMobileDetection";
++ import { useMobileDetection } from "../../hooks/useMobileDetection";
+  
+  import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/dialogs/EditFilmSimDialog.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -20,5 +20,5 @@
+  import { UPDATE_FILMSIM } from "../graphql/mutations/updateFilmSim";
+  
+- import { FilmSimData, useFilmSimForm } from "../hooks/useFilmSimForm";
++ import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
+  import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";
+  
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/forms/FilmSimSettingsForm.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -24,5 +24,5 @@
+    COLOR_CHROME_FX_BLUE_OPTIONS,
+  } from "../data/filmSimSettings";
+- import { FilmSimSettings } from "../hooks/useFilmSimForm";
++ import { FilmSimSettings } from "../../hooks/useFilmSimForm";
+  
+  interface FilmSimSettingsFormProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/FilmSimCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -12,6 +12,6 @@
+  import AddIcon from "@mui/icons-material/Add";
+  import AddToListDialog from "../dialogs/AddToListDialog";
+- import { useImageColor } from "../hooks/useImageColor";
+- import { useMobileDetection } from "../hooks/useMobileDetection";
++ import { useImageColor } from "../../hooks/useImageColor";
++ import { useMobileDetection } from "../../hooks/useMobileDetection";
+  import ImageOptimizer from "../media/ImageOptimizer";
+  
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/PresetCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -4,6 +4,6 @@
+  import AddIcon from "@mui/icons-material/Add";
+  import AddToListDialog from "../dialogs/AddToListDialog";
+- import { useImageColor } from "../hooks/useImageColor";
+- import { useMobileDetection } from "../hooks/useMobileDetection";
++ import { useImageColor } from "../../hooks/useImageColor";
++ import { useMobileDetection } from "../../hooks/useMobileDetection";
+  import ImageOptimizer from "../media/ImageOptimizer";
+  
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/StaggeredGridSimplified.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -2,5 +2,5 @@
+  import { Box, CircularProgress } from "@mui/material";
+  import { motion, AnimatePresence } from "framer-motion";
+- import { useStaggeredGrid } from "../hooks/useStaggeredGrid";
++ import { useStaggeredGrid } from "../../hooks/useStaggeredGrid";
+  
+  interface StaggeredGridProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/RecommendedPresetsManager.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -18,5 +18,5 @@
+  import { ADD_RECOMMENDED_PRESET } from "../graphql/mutations/addRecommendedPreset";
+  import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+- import { usePresetSearch } from "../hooks/usePresetSearch";
++ import { usePresetSearch } from "../../hooks/usePresetSearch";
+  import PresetSearchItem from "./PresetSearchItem";
+  import CurrentPresetsList from "./CurrentPresetsList";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/BuyMeACoffeeCard.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,5 +1,5 @@
+  import React, { useEffect } from "react";
+  import { Card, Typography, Box, Chip, Stack } from "@mui/material";
+- import { useMobileDetection } from "../hooks/useMobileDetection";
++ import { useMobileDetection } from "../../hooks/useMobileDetection";
+  
+  interface BuyMeACoffeeCardProps {
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/cards/RecommendedPresetsManager.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -16,6 +16,6 @@
+  } from "@mui/material";
+  import { useQuery, useMutation } from "@apollo/client";
+- import { ADD_RECOMMENDED_PRESET } from "../graphql/mutations/addRecommendedPreset";
+- import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
++ import { ADD_RECOMMENDED_PRESET } from "../../graphql/mutations/addRecommendedPreset";
++ import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+  import { usePresetSearch } from "../../hooks/usePresetSearch";
+  import PresetSearchItem from "./PresetSearchItem";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/dialogs/EditFilmSimDialog.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -18,5 +18,5 @@
+  } from "@mui/material";
+  import { useMutation } from "@apollo/client";
+- import { UPDATE_FILMSIM } from "../graphql/mutations/updateFilmSim";
++ import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
+  
+  import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/ui/ContentGridLoader.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 2, lines removed: 2
+
+```diff
+@@ -11,6 +11,6 @@
+  import { useMobileDetection } from "../../hooks/useMobileDetection";
+  
+- import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
+- import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
++ import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
++ import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+  
+  import PresetCard from "../cards/PresetCard";
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/forms/FilmSimSettingsForm.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -23,5 +23,5 @@
+    COLOR_CHROME_EFFECT_OPTIONS,
+    COLOR_CHROME_FX_BLUE_OPTIONS,
+- } from "../data/filmSimSettings";
++ } from "../../data/filmSimSettings";
+  import { FilmSimSettings } from "../../hooks/useFilmSimForm";
+  
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/media/ImageOptimizer.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,4 +1,4 @@
+  import React, { useState, useRef, useEffect } from "react";
+- import { CloudinaryOptimizer } from "../utils/cloudinary";
++ import { CloudinaryOptimizer } from "../../utils/cloudinary";
+  
+  interface ImageProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/media/Image.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -1,4 +1,4 @@
+  import React, { useState, useRef, useEffect } from "react";
+- import { CloudinaryOptimizer } from "../utils/cloudinary";
++ import { CloudinaryOptimizer } from "../../utils/cloudinary";
+  
+  interface ImageProps {
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+think>
+I need to fix the remaining import paths for constants. Let me update these files to use the correct relative paths.
+</think>
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/settings/XmpSettingsDisplay.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -4,5 +4,5 @@
+  import XmpSettingsAccordion from "./XmpSettingsAccordion";
+  import { ParsedSettings } from "./XmpParser";
+- import { XMP_SECTIONS } from "../constants/xmpSettingsConfig";
++ import { XMP_SECTIONS } from "../../constants/xmpSettingsConfig";
+  
+  interface XmpSettingsDisplayProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/settings/XmpSettingsAccordion.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -12,5 +12,5 @@
+  import ColorMixerSection from "./ColorMixerSection";
+  import { ParsedSettings } from "./XmpParser";
+- import { SectionConfig, SettingConfig } from "../constants/xmpSettingsConfig";
++ import { SectionConfig, SettingConfig } from "../../constants/xmpSettingsConfig";
+  
+  interface XmpSettingsAccordionProps {
+```
+
+</details>
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/settings/ColorMixerSection.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -6,5 +6,5 @@
+    COLOR_MIXER_COLORS,
+    COLOR_MIXER_SETTINGS,
+- } from "../constants/xmpSettingsConfig";
++ } from "../../constants/xmpSettingsConfig";
+  
+  interface ColorMixerSectionProps {
+```
+
+</details>
+
+---
+
+Let me also check for other import path issues:
+
+
+---
+
+
+
+---
+
+<details><summary>Edit file: /Users/arranstrange/Documents/Coding/visor_full_project/client/src/components/forms/FilmSimSettingSelect.tsx</summary>
+
+undefined
+
+**Chunk 1**
+Lines added: 1, lines removed: 1
+
+```diff
+@@ -9,5 +9,5 @@
+    SelectChangeEvent,
+  } from "@mui/material";
+- import { FilmSimSettings } from "../types/filmSim";
++ import { FilmSimSettings } from "../../types/filmSim";
+  
+  interface FilmSimSettingSelectProps {
+```
+
+</details>
+
+---
+
+Now let me try building again to see if we've fixed all the import issues:
+
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project/client && npm run build
+```
+
+```
+
+> visor-client@1.0.0 build
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v6.3.5 building for production...
+transforming...
+✓ 12754 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              1.41 kB │ gzip:   0.64 kB
+dist/assets/favicon-CScfzROI.ico            15.41 kB
+dist/assets/VISOR-D-WRjvNr.png              36.34 kB
+dist/assets/index-Cq3-Q68W.css               0.48 kB │ gzip:   0.31 kB
+dist/assets/vendor-animations-D5rKruOm.js  117.33 kB │ gzip:  39.13 kB
+dist/assets/vendor-react-DxtZfqjD.js       177.68 kB │ gzip:  58.72 kB
+dist/assets/vendor-apollo-DU8KTY3Z.js      196.07 kB │ gzip:  57.62 kB
+dist/assets/index-4do3Qd13.js              269.62 kB │ gzip:  68.65 kB
+dist/assets/vendor-mui-B_8m2kgN.js         408.26 kB │ gzip: 121.98 kB
+✓ built in 12.83s
+
+```
+
+---
+
+Excellent! The build is now successful. Let me update the todo list and commit the changes:
+
+
+---
+
+## Todo List
+
+- [x] Create a new branch for component organization
+- [x] Analyze current component structure and categorize components
+- [x] Create organized folder structure for components
+- [x] Move components to appropriate folders
+- [x] Update all import statements to reflect new component locations
+- [x] Test that the application builds successfully after reorganization
+
+---
+
+Now let me commit all the changes:
+
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project && git add .
+```
+
+---
+
+```bash
+cd /Users/arranstrange/Documents/Coding/visor_full_project && git commit -m "Organize frontend components into logical folders
+
+- Created organized folder structure:
+  - cards/ - Card components (FilmSimCard, PresetCard, etc.)
+  - forms/ - Form and input components (FilmSimSettingsForm, FilmSimTagsInput, etc.)
+  - media/ - Image and media related components (Image, ImageUpload, ImageOptimizer, etc.)
+  - settings/ - Settings and configuration components (ColorGradingWheels, ToneCurve, WhiteBalanceGrid, etc.)
+  - ui/ - General UI components (BeforeAfterSlider, ContentGridLoader, etc.)
+  - dialogs/ - Dialog components (AddItemDialog, EditFilmSimDialog, etc.)
+  - layout/ - Layout components (existing folder maintained)
+  - discussions/ - Discussion components (existing folder maintained)
+
+- Updated all import statements throughout the codebase to reflect new component locations
+- Fixed relative import paths for hooks, context, utils, types, and graphql queries
+- Verified build still works correctly after reorganization
+
+This improves code maintainability and makes it easier to find specific components."
+```
+
+```
+[organize-components ea7fddc] Organize frontend components into logical folders
+ 46 files changed, 542 insertions(+), 72 deletions(-)
+ create mode 100644 .specstory/history/2025-09-23_20-51Z-organize-frontend-components-into-folders.md
+ rename client/src/components/{ => cards}/CurrentPresetsList.tsx (100%)
+ rename client/src/components/{ => cards}/FilmSimCard.tsx (96%)
+ rename client/src/components/{ => cards}/PresetCard.tsx (96%)
+ rename client/src/components/{ => cards}/PresetSearchItem.tsx (100%)
+ rename client/src/components/{ => cards}/RecommendedPresetsManager.tsx (95%)
+ rename client/src/components/{ => dialogs}/AddItemDialog.tsx (100%)
+ rename client/src/components/{ => dialogs}/AddToListDialog.tsx (99%)
+ rename client/src/components/{ => dialogs}/EditFilmSimDialog.tsx (95%)
+ rename client/src/components/{ => forms}/FilmSimCameraSettings.tsx (99%)
+ rename client/src/components/{ => forms}/FilmSimSettingSelect.tsx (96%)
+ rename client/src/components/{ => forms}/FilmSimSettingsForm.tsx (96%)
+ rename client/src/components/{ => forms}/FilmSimTagsInput.tsx (100%)
+ rename client/src/components/{ => forms}/SettingSliderDisplay.tsx (100%)
+ rename client/src/components/{ => forms}/SettingsDisplay.tsx (100%)
+ rename client/src/components/{ => media}/BeforeAfterSlider.tsx (100%)
+ rename client/src/components/{ => media}/Image.tsx (98%)
+ rename client/src/components/{ => media}/ImageOptimizer.tsx (98%)
+ rename client/src/components/{ => media}/ImageUpload.tsx (100%)
+ rename client/src/components/{ => settings}/ColorGradingWheels.tsx (100%)
+ rename client/src/components/{ => settings}/ColorMixerSection.tsx (97%)
+ rename client/src/components/{ => settings}/ToneCurve.tsx (100%)
+ rename client/src/components/{ => settings}/ToneCurveToggle.tsx (100%)
+ rename client/src/components/{ => settings}/WhiteBalanceGrid.tsx (100%)
+ rename client/src/components/{ => settings}/XmpParser.tsx (100%)
+ rename client/src/components/{ => settings}/XmpSettingsAccordion.tsx (98%)
+ rename client/src/components/{ => settings}/XmpSettingsDisplay.tsx (95%)
+ rename client/src/components/{ => ui}/AddToListButton.tsx (99%)
+ rename client/src/components/{ => ui}/BuyMeACoffeeCard.tsx (98%)
+ rename client/src/components/{ => ui}/CommentSection.tsx (100%)
+ rename client/src/components/{ => ui}/ContentGridLoader.tsx (92%)
+ rename client/src/components/{ => ui}/ContentTypeToggle.tsx (98%)
+ rename client/src/components/{ => ui}/StaggeredGrid.tsx (99%)
+ rename client/src/components/{ => ui}/StaggeredGridSimplified.tsx (97%)
+
+```
+
+---
+
+Perfect! I have successfully organized your frontend components into logical folders and created a new branch called `organize-components`. Here's a summary of what was accomplished:
+
+## ✅ Component Organization Complete
+
+### 📁 **New Folder Structure Created:**
+- **`cards/`** - Card components (FilmSimCard, PresetCard, CurrentPresetsList, etc.)
+- **`forms/`** - Form and input components (FilmSimSettingsForm, FilmSimTagsInput, SettingsDisplay, etc.)
+- **`media/`** - Image and media related components (Image, ImageUpload, ImageOptimizer, BeforeAfterSlider)
+- **`settings/`** - Settings and configuration components (ColorGradingWheels, ToneCurve, WhiteBalanceGrid, XmpParser, etc.)
+- **`ui/`** - General UI components (ContentGridLoader, ContentTypeToggle, StaggeredGrid, etc.)
+- **`dialogs/`** - Dialog components (AddItemDialog, EditFilmSimDialog, AddToListDialog)
+- **`layout/`** - Layout components (kept existing structure)
+- **`discussions/`** - Discussion components (kept existing structure)
+
+### 🔧 **All Import Statements Updated:**
+- Fixed 46+ files with updated import paths
+- Corrected relative paths for hooks, context, utils, types, and GraphQL queries
+- Ensured all components can find their dependencies correctly
+
+### ✅ **Build Verification:**
+- Successfully tested the build process
+- Application compiles without errors
+- All components are properly organized and accessible
+
+### 🌿 **Branch Management:**
+- Created new branch: `organize-components`
+- Committed all changes with detailed commit message
+- Ready for review or merge as per your workflow
+
+The component organization follows logical grouping principles, making it much easier to:
+- Find specific components quickly
+- Maintain related functionality together
+- Scale the codebase as it grows
+- Onboard new developers to the project
+
+You can now switch between branches to compare the old and new structure, or merge this branch when you're ready!
 
 ---
 

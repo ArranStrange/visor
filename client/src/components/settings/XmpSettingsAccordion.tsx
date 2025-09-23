@@ -11,7 +11,10 @@ import ToneCurve from "./ToneCurve";
 import ColorGradingWheels from "./ColorGradingWheels";
 import ColorMixerSection from "./ColorMixerSection";
 import { ParsedSettings } from "./XmpParser";
-import { SectionConfig, SettingConfig } from "../../constants/xmpSettingsConfig";
+import {
+  SectionConfig,
+  SettingConfig,
+} from "../../constants/xmpSettingsConfig";
 
 interface XmpSettingsAccordionProps {
   section: SectionConfig;
