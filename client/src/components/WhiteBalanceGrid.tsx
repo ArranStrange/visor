@@ -45,6 +45,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
           gap: `${DOT_GAP}px`,
           borderRadius: 2,
           boxShadow: 2,
+          backgroundColor: "transparent",
         }}
       >
         {range.flatMap((b) =>
@@ -64,7 +65,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   border: isSelected
                     ? "2px solid white"
                     : isCenter
-                    ? "1px solid #fff8"
+                    ? "1px solid rgba(255, 255, 255, 0.5)"
                     : "1px solid #222",
                   cursor: "pointer",
                   zIndex: isSelected ? 2 : 1,
@@ -84,8 +85,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
             top: 0,
             width: 1,
             height: "100%",
-            bgcolor: "white",
-            opacity: 0.5,
+            bgcolor: "rgba(255, 255, 255, 0.3)",
             zIndex: 3,
             pointerEvents: "none",
             transform: "translateX(-50%)",
@@ -98,8 +98,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
             left: 0,
             width: "100%",
             height: 1,
-            bgcolor: "white",
-            opacity: 0.5,
+            bgcolor: "rgba(255, 255, 255, 0.3)",
             zIndex: 3,
             pointerEvents: "none",
             transform: "translateY(-50%)",
