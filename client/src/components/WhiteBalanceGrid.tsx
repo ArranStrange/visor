@@ -19,9 +19,10 @@ function getWBColor(r: number, b: number) {
   const normR = (r + 9) / 18;
   const normB = (b + 9) / 18;
 
-  const red = Math.round(255 * normR);
-  const green = Math.round(255 * (1 - normR) * (1 - normB));
-  const blue = Math.round(255 * normB);
+  // Increase saturation and brightness for more vibrant colors
+  const red = Math.round(255 * Math.pow(normR, 0.8));
+  const green = Math.round(255 * Math.pow((1 - normR) * (1 - normB), 0.6));
+  const blue = Math.round(255 * Math.pow(normB, 0.8));
 
   return `rgb(${red},${green},${blue})`;
 }
@@ -60,9 +61,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   height: DOT_SIZE,
                   borderRadius: "50%",
                   bgcolor: getWBColor(r, b),
-                  border: isSelected
-                    ? "2px solid white"
-                    : "1px solid #222",
+                  border: isSelected ? "2px solid white" : "1px solid #222",
                   cursor: "pointer",
                   transition: "border 0.1s",
                   boxShadow: isSelected ? "0 0 0 1px #000" : undefined,
