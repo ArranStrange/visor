@@ -5,6 +5,13 @@ import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
+import {
+  overlayButtonStyles,
+  overlayAvatarStyles,
+  overlayTitleContainerStyles,
+  overlayTagsContainerStyles,
+  getCardHoverStyles,
+} from "../../styles/cardOverlays";
 
 const placeholderImage = "/placeholder-image.jpg";
 
@@ -74,29 +81,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
         borderRadius: 1,
         cursor: "pointer",
         overflow: "hidden",
-        "&:hover .tags-overlay": {
-          opacity: 1,
-        },
-        "&:hover .title-overlay": {
-          backgroundColor: "rgba(0, 0, 0, 0.5)",
-        },
-        "&:hover .creator-avatar": {
-          opacity: 1,
-        },
-        "&:hover .add-to-list-button": {
-          opacity: 1,
-        },
-        "@media (hover: none)": {
-          "& .tags-overlay": {
-            opacity: showOptions ? 1 : 0,
-          },
-          "& .creator-avatar": {
-            opacity: showOptions ? 1 : 0,
-          },
-          "& .add-to-list-button": {
-            opacity: showOptions ? 1 : 0,
-          },
-        },
+        ...getCardHoverStyles(showOptions),
       }),
       [showOptions]
     );
@@ -115,30 +100,12 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           }}
         />
 
-        <Box
-          className="add-to-list-button"
-          sx={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            zIndex: 10,
-            opacity: 0,
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
+        <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
+            className="floating"
             onClick={handleAddToList}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
-            sx={{
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
-              color: "white",
-              width: 32,
-              height: 32,
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.9)",
-              },
-            }}
           >
             <AddIcon fontSize="small" />
           </IconButton>
@@ -146,15 +113,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
 
         {creator && (
           <Box
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              zIndex: 2,
-              opacity: 0,
-              transition: "opacity 0.3s ease-in-out",
-              cursor: "pointer",
-            }}
+            sx={overlayAvatarStyles}
             className="creator-avatar"
             onClick={(e) => {
               e.stopPropagation();
@@ -164,12 +123,12 @@ const PresetCard: React.FC<PresetCardProps> = memo(
             }}
           >
             <Avatar
+              variant="creator"
               src={creator.avatar}
               alt={creator.username}
               sx={{
                 width: 32,
                 height: 32,
-                backgroundColor: "rgba(0, 0, 0, 0.6)",
               }}
             >
               {creator.username.charAt(0).toUpperCase()}
@@ -180,82 +139,26 @@ const PresetCard: React.FC<PresetCardProps> = memo(
         <Box
           className="title-overlay"
           sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            ...overlayTitleContainerStyles,
             backgroundColor: "rgba(0, 0, 0, 0.4)",
-            textAlign: "center",
-            transition: "background-color 0.3s ease-in-out",
-            p: 2,
           }}
         >
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            sx={{
-              color: "rgba(255, 255, 255, 0.9)",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
-              transition: "color 0.8s ease-in-out",
-            }}
-          >
+          <Typography variant="overlayTitle" fontWeight="bold">
             {title}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "rgba(255, 255, 255, 0.9)",
-              textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
-              transition: "color 0.8s ease-in-out",
-            }}
-          >
-            Lightroom Preset
-          </Typography>
+          <Typography variant="overlaySubtitle">Lightroom Preset</Typography>
         </Box>
 
-        <Box
-          className="tags-overlay"
-          sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            p: 1.5,
-            background:
-              "linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%)",
-            opacity: 0,
-            transition: "opacity 0.3s ease-in-out",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 0.5,
-            justifyContent: "flex-start",
-          }}
-        >
+        <Box className="tags-overlay" sx={overlayTagsContainerStyles}>
           {tags
             .slice(0, 3)
             .reverse()
             .map((tag, index) => (
               <Chip
                 key={index}
+                variant="overlay"
                 label={tag.displayName}
                 size="small"
-                sx={{
-                  color: "white",
-                  backgroundColor: "black",
-                  border: "none",
-                  cursor: "pointer",
-                  "& .MuiChip-label": {
-                    color: "white",
-                  },
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  },
-                }}
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(

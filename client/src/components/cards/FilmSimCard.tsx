@@ -13,6 +13,13 @@ import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
+import {
+  overlayButtonStyles,
+  overlayAvatarStyles,
+  overlayTitleContainerStyles,
+  overlayTagsContainerStyles,
+  getCardHoverStyles,
+} from "../../styles/cardOverlays";
 
 interface FilmSimCardProps {
   id: string;
@@ -95,26 +102,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
         overflow: "hidden",
         cursor: "pointer",
         transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
-        "&:hover .tags-container": {
-          opacity: 1,
-        },
-        "&:hover .creator-avatar": {
-          opacity: 1,
-        },
-        "&:hover .add-to-list-button": {
-          opacity: 1,
-        },
-        "@media (hover: none)": {
-          "& .tags-container": {
-            opacity: showOptions ? 1 : 0,
-          },
-          "& .creator-avatar": {
-            opacity: showOptions ? 1 : 0,
-          },
-          "& .add-to-list-button": {
-            opacity: showOptions ? 1 : 0,
-          },
-        },
+        ...getCardHoverStyles(showOptions),
       }),
       [showOptions]
     );
@@ -136,30 +124,12 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           }}
         />
 
-        <Box
-          className="add-to-list-button"
-          sx={{
-            position: "absolute",
-            top: 12,
-            right: 12,
-            zIndex: 10,
-            opacity: 0,
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
+        <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
+            className="floating"
             onClick={handleAddToList}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}
-            sx={{
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
-              color: "white",
-              width: 32,
-              height: 32,
-              "&:hover": {
-                backgroundColor: "rgba(0, 0, 0, 0.9)",
-              },
-            }}
           >
             <AddIcon fontSize="small" />
           </IconButton>
@@ -167,15 +137,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
 
         {creator && (
           <Box
-            sx={{
-              position: "absolute",
-              top: 12,
-              left: 12,
-              zIndex: 2,
-              opacity: 0,
-              transition: "opacity 0.3s ease-in-out",
-              cursor: "pointer",
-            }}
+            sx={overlayAvatarStyles}
             className="creator-avatar"
             onClick={(e) => {
               e.stopPropagation();
@@ -185,12 +147,12 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
             }}
           >
             <Avatar
+              variant="creator"
               src={creator.avatar}
               alt={creator.username}
               sx={{
                 width: 32,
                 height: 32,
-                backgroundColor: "rgba(0, 0, 0, 0.6)",
               }}
             >
               {creator.username.charAt(0).toUpperCase()}
@@ -201,55 +163,21 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
         <Box
           className="title-container"
           sx={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            textAlign: "center",
-            p: 2,
+            ...overlayTitleContainerStyles,
             backgroundColor: "rgba(0, 0, 0, 0.3)",
           }}
         >
-          <Typography
-            variant="h5"
-            fontWeight="bold"
-            sx={{
-              color: "rgba(255, 255, 255, 0.9)",
-              textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
-              lineHeight: 1.2,
-              transition: "color 0.8s ease-in-out",
-            }}
-          >
+          <Typography variant="overlayTitle" fontWeight="bold">
             {name}
           </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: "rgba(255, 255, 255, 0.9)",
-              textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
-              lineHeight: 1.2,
-              transition: "color 0.8s ease-in-out",
-            }}
-          >
-            Film Sim
-          </Typography>
+          <Typography variant="overlaySubtitle">Film Sim</Typography>
         </Box>
 
         <Box
           className="tags-container"
           sx={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "100%",
+            ...overlayTagsContainerStyles,
             p: 2,
-            opacity: 0,
-            transition: "opacity 0.3s ease-in-out",
           }}
         >
           <Stack
@@ -264,20 +192,9 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
               .map((tag, index) => (
                 <Chip
                   key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
+                  variant="overlay"
                   label={tag.displayName}
                   size="small"
-                  sx={{
-                    color: "white",
-                    backgroundColor: "black",
-                    border: "none",
-                    cursor: "pointer",
-                    "& .MuiChip-label": {
-                      color: "white",
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    },
-                  }}
                   onClick={(e) => {
                     e.stopPropagation();
                     navigate(

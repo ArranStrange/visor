@@ -69,6 +69,70 @@ export const visorTheme = createTheme({
         },
       },
     },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          "&.floating": {
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            color: "white",
+            width: 32,
+            height: 32,
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.9)",
+            },
+          },
+        },
+      },
+    },
+    MuiAvatar: {
+      variants: [
+        {
+          props: { variant: "creator" },
+          style: {
+            backgroundColor: "rgba(0, 0, 0, 0.6)",
+          },
+        },
+      ],
+    },
+    MuiChip: {
+      variants: [
+        {
+          props: { variant: "overlay" },
+          style: {
+            color: "white",
+            backgroundColor: "black",
+            border: "none",
+            cursor: "pointer",
+            "& .MuiChip-label": {
+              color: "white",
+            },
+            "&:hover": {
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+            },
+          },
+        },
+      ],
+    },
+    MuiTypography: {
+      variants: [
+        {
+          props: { variant: "overlayTitle" },
+          style: {
+            color: "rgba(255, 255, 255, 0.9)",
+            textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
+            transition: "color 0.8s ease-in-out",
+          },
+        },
+        {
+          props: { variant: "overlaySubtitle" },
+          style: {
+            color: "rgba(255, 255, 255, 0.9)",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
+            transition: "color 0.8s ease-in-out",
+          },
+        },
+      ],
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
