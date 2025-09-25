@@ -28,7 +28,6 @@ import Discussions from "./pages/Discussions";
 import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateDiscussion from "./pages/CreateDiscussion";
 import Notifications from "./pages/Notifications";
-import BuyMeACoffeeDemo from "./pages/BuyMeACoffeeDemo";
 import EmailVerification from "./pages/EmailVerification";
 
 function App() {
@@ -67,10 +66,6 @@ function App() {
                     element={<DiscussionDetail />}
                   />
                   <Route path="/notifications" element={<Notifications />} />
-                  <Route
-                    path="/buy-me-a-coffee-demo"
-                    element={<BuyMeACoffeeDemo />}
-                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ContentTypeProvider>
