@@ -56,7 +56,7 @@ describe("Film Sim Upload and Delete", () => {
       { force: true }
     );
 
-    cy.wait(5000);
+    cy.wait(5000); // Wait for the URL to be returned instead - AS
 
     cy.get('[data-cy="film-sim-notes-input"]').type(testFilmSimUpload.notes);
 

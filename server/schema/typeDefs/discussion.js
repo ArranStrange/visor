@@ -7,8 +7,7 @@ module.exports = gql`
     linkedTo: DiscussionTarget!
     createdBy: User!
     followers: [User!]!
-    postCount: Int!
-    lastActivity: String!
+    posts: [DiscussionPost!]!
     isActive: Boolean!
     createdAt: String!
     updatedAt: String!
@@ -22,30 +21,17 @@ module.exports = gql`
   }
 
   type DiscussionPost {
-    id: ID!
-    discussionId: ID!
-    parentId: ID
-    parent: DiscussionPost
-    author: User!
+    userId: ID!
+    username: String!
+    avatar: String
     content: String!
+    timestamp: String!
     isEdited: Boolean!
     editedAt: String
-    isDeleted: Boolean!
-    deletedAt: String
-    deletedBy: User
-    createdAt: String!
-    updatedAt: String!
   }
 
   type DiscussionConnection {
     discussions: [Discussion!]!
-    totalCount: Int!
-    hasNextPage: Boolean!
-    hasPreviousPage: Boolean!
-  }
-
-  type PostConnection {
-    posts: [DiscussionPost!]!
     totalCount: Int!
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
@@ -68,14 +54,13 @@ module.exports = gql`
   }
 
   input CreatePostInput {
-    discussionId: ID
-    parentId: ID
+    discussionId: ID!
     content: String!
-    linkedToType: DiscussionTargetType
-    linkedToId: ID
   }
 
   input UpdatePostInput {
+    discussionId: ID!
+    postIndex: Int!
     content: String!
   }
 
@@ -95,24 +80,12 @@ module.exports = gql`
       refId: ID!
     ): Discussion
 
-    # Post queries
-    getPosts(
-      discussionId: ID!
-      page: Int
-      limit: Int
-      parentId: ID
-    ): PostConnection!
-
-    getPost(id: ID!): DiscussionPost
-    getPostsByAuthor(authorId: ID!, page: Int, limit: Int): PostConnection!
-
     # Search
     searchDiscussions(
       query: String!
       page: Int
       limit: Int
     ): DiscussionConnection!
-    searchPosts(query: String!, page: Int, limit: Int): PostConnection!
 
     # User activity
     getFollowedDiscussions(
@@ -121,7 +94,6 @@ module.exports = gql`
       limit: Int
     ): DiscussionConnection!
     getRecentDiscussions(limit: Int): [Discussion!]!
-    getRecentPosts(limit: Int): [DiscussionPost!]!
   }
 
   extend type Mutation {
@@ -136,7 +108,7 @@ module.exports = gql`
 
     # Post mutations
     createPost(input: CreatePostInput!): DiscussionPost!
-    updatePost(id: ID!, input: UpdatePostInput!): DiscussionPost!
-    deletePost(id: ID!): Boolean!
+    updatePost(input: UpdatePostInput!): DiscussionPost!
+    deletePost(discussionId: ID!, postIndex: Int!): Boolean!
   }
 `;

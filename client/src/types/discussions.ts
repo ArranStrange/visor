@@ -1,11 +1,20 @@
+export interface DiscussionPost {
+  userId: string;
+  username: string;
+  avatar?: string;
+  content: string;
+  timestamp: string;
+  isEdited?: boolean;
+  editedAt?: string;
+}
+
 export interface Discussion {
   id: string;
   title: string;
   linkedTo: DiscussionTarget;
   createdBy: User;
   followers: User[];
-  postCount: number;
-  lastActivity: string;
+  posts: DiscussionPost[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -29,31 +38,8 @@ export interface DiscussionTarget {
   event?: Event;
 }
 
-export interface DiscussionPost {
-  id: string;
-  discussionId: string;
-  parentId?: string;
-  author: User;
-  content: string;
-  isEdited: boolean;
-  editedAt?: string;
-  isDeleted: boolean;
-  deletedAt?: string;
-  deletedBy?: User;
-  createdAt: string;
-  updatedAt: string;
-  replies?: DiscussionPost[];
-}
-
 export interface DiscussionConnection {
   discussions: Discussion[];
-  totalCount: number;
-  hasNextPage: boolean;
-  hasPreviousPage: boolean;
-}
-
-export interface PostConnection {
-  posts: DiscussionPost[];
   totalCount: number;
   hasNextPage: boolean;
   hasPreviousPage: boolean;
@@ -88,14 +74,13 @@ export interface UpdateDiscussionInput {
 }
 
 export interface CreatePostInput {
-  discussionId?: string;
-  parentId?: string;
+  discussionId: string;
   content: string;
-  linkedToType?: DiscussionTargetType;
-  linkedToId?: string;
 }
 
 export interface UpdatePostInput {
+  discussionId: string;
+  postIndex: number;
   content: string;
 }
 

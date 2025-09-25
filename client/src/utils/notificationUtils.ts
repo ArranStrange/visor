@@ -19,22 +19,18 @@ export const createDiscussionReplyNotification = async (
   linkedItem?: { type: string; id: string; title: string; slug?: string }
 ) => {
   try {
-    // Get all users who should be notified
     const usersToNotify = new Set<string>();
 
-    // Add discussion owner
-    if (discussion.createdBy.id !== post.author.id) {
+    if (discussion.createdBy.id !== post.userId) {
       usersToNotify.add(discussion.createdBy.id);
     }
 
-    // Add all followers of the discussion
     discussion.followers.forEach((follower) => {
-      if (follower.id !== post.author.id) {
+      if (follower.id !== post.userId) {
         usersToNotify.add(follower.id);
       }
     });
 
-    // Create notifications for each user
     const notificationPromises = Array.from(usersToNotify).map((userId) => {
       const isOwner = userId === discussion.createdBy.id;
 
@@ -43,16 +39,16 @@ export const createDiscussionReplyNotification = async (
           ? NotificationType.DISCUSSION_OWNER_REPLY
           : NotificationType.DISCUSSION_REPLY,
         title: isOwner
-          ? `${post.author.username} replied to your discussion`
-          : `${post.author.username} replied to a discussion you're following`,
+          ? `${post.username} replied to your discussion`
+          : `${post.username} replied to a discussion you're following`,
         message:
           post.content.length > 100
             ? `${post.content.substring(0, 100)}...`
             : post.content,
         recipientId: userId,
-        senderId: post.author.id,
+        senderId: post.userId,
         discussionId: discussion.id,
-        postId: post.id,
+        postId: post.timestamp,
         linkedItem,
       };
 
@@ -77,15 +73,15 @@ export const createMentionNotification = async (
     const notificationPromises = mentionedUserIds.map((userId) => {
       const notificationInput: CreateNotificationInput = {
         type: NotificationType.MENTION,
-        title: `${post.author.username} mentioned you in a discussion`,
+        title: `${post.username} mentioned you in a discussion`,
         message:
           post.content.length > 100
             ? `${post.content.substring(0, 100)}...`
             : post.content,
         recipientId: userId,
-        senderId: post.author.id,
+        senderId: post.userId,
         discussionId: discussion.id,
-        postId: post.id,
+        postId: post.timestamp,
       };
 
       return createNotification({

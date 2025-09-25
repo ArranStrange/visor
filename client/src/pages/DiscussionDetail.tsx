@@ -21,16 +21,13 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "../context/AuthContext";
-import { GET_DISCUSSION, GET_POSTS } from "../graphql/queries/discussions";
+import { GET_DISCUSSION } from "../graphql/queries/discussions";
 import {
   CREATE_POST,
   DELETE_POST,
   UPDATE_POST,
 } from "../graphql/mutations/discussions";
-import {
-  Discussion as DiscussionType,
-  DiscussionPost,
-} from "../types/discussions";
+import { DiscussionPost } from "../types/discussions";
 import Post from "../components/discussions/Post";
 import PostComposer from "../components/discussions/PostComposer";
 import {
@@ -52,65 +49,15 @@ const DiscussionDetail: React.FC = () => {
     loading: discussionLoading,
     error: discussionError,
     data: discussionData,
-    refetch: refetchDiscussion,
   } = useQuery(GET_DISCUSSION, {
     variables: { id: discussionId! },
-    skip: !discussionId || discussionId === "new",
-    errorPolicy: "all", // Allow partial results even with errors
-  });
-
-  const discussion = discussionData?.getDiscussion;
-
-  // Get posts for this discussion
-  const {
-    loading: postsLoading,
-    error: postsError,
-    data: postsData,
-    refetch: refetchPosts,
-  } = useQuery(GET_POSTS, {
-    variables: {
-      discussionId: discussionId!,
-      page: 1,
-      limit: 20,
-    },
     skip: !discussionId || discussionId === "new",
     errorPolicy: "all",
   });
 
-  const posts = React.useMemo(() => {
-    const rawPosts = postsData?.getPosts?.posts || [];
+  const discussion = discussionData?.getDiscussion;
 
-    const filteredPosts = rawPosts.filter((post: any) => {
-      if (!post?.id || typeof post.id !== "string") {
-        console.warn("Post with invalid ID found:", post);
-        return false;
-      }
-
-      if (!post?.author?.id || typeof post.author.id !== "string") {
-        console.warn("Post with invalid author ID found:", post);
-        return false;
-      }
-
-      if (!post.author.username) {
-        console.warn("Post with missing author username found:", post);
-        return false;
-      }
-
-      if (!post.content) {
-        console.warn("Post with missing content found:", post);
-        return false;
-      }
-
-      if (!post.createdAt || typeof post.createdAt !== "string") {
-        console.warn("Post with invalid createdAt found:", post);
-        return false;
-      }
-
-      return true;
-    });
-
-    return filteredPosts;
-  }, [postsData]);
+  const posts = discussion?.posts || [];
 
   const createNotification = useCreateNotification();
   const [createPost] = useMutation(CREATE_POST, {
@@ -121,46 +68,32 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.createPost) {
-        const existingPosts = cache.readQuery({
-          query: GET_POSTS,
-          variables: {
-            discussionId: discussionId!,
-            page: 1,
-            limit: 20,
-          },
-        }) as any;
-
-        if (existingPosts?.getPosts) {
-          cache.writeQuery({
-            query: GET_POSTS,
-            variables: {
-              discussionId: discussionId!,
-              page: 1,
-              limit: 20,
-            },
-            data: {
-              getPosts: {
-                ...existingPosts.getPosts,
-                posts: [...existingPosts.getPosts.posts, data.createPost],
-                totalCount: existingPosts.getPosts.totalCount + 1,
-              },
-            },
-          });
-        }
-
         const existingDiscussion = cache.readQuery({
           query: GET_DISCUSSION,
           variables: { id: discussionId! },
         }) as any;
 
         if (existingDiscussion?.getDiscussion) {
+          const newPost = {
+            userId: data.createPost.userId,
+            username: data.createPost.username,
+            avatar: data.createPost.avatar,
+            content: data.createPost.content,
+            timestamp: data.createPost.timestamp,
+            isEdited: data.createPost.isEdited,
+            editedAt: data.createPost.editedAt,
+          };
+
           cache.writeQuery({
             query: GET_DISCUSSION,
             variables: { id: discussionId! },
             data: {
               getDiscussion: {
                 ...existingDiscussion.getDiscussion,
-                postCount: existingDiscussion.getDiscussion.postCount + 1,
+                posts: [
+                  ...(existingDiscussion.getDiscussion.posts || []),
+                  newPost,
+                ],
               },
             },
           });
@@ -179,64 +112,21 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.deletePost) {
-        cache.modify({
-          fields: {
-            getPosts(existingPosts = {}, { readField }) {
-              if (existingPosts.posts) {
-                const filteredPosts = existingPosts.posts.filter(
-                  (post: any) => {
-                    const postId = readField("id", post);
-                    return postId !== variables?.id;
-                  }
+        // Use cache.modify to safely update the posts array
+        const postIndexToRemove = variables?.postIndex;
+
+        if (postIndexToRemove !== undefined && postIndexToRemove >= 0) {
+          cache.modify({
+            id: cache.identify({
+              __typename: "Discussion",
+              id: variables?.discussionId,
+            }),
+            fields: {
+              posts(existingPosts = []) {
+                // Create a new array without the deleted post
+                return existingPosts.filter(
+                  (_: any, index: number) => index !== postIndexToRemove
                 );
-
-                return {
-                  ...existingPosts,
-                  posts: filteredPosts,
-                  totalCount: existingPosts.totalCount - 1,
-                };
-              }
-              return existingPosts;
-            },
-          },
-        });
-
-        try {
-          const postRef = cache.identify({
-            __typename: "DiscussionPost",
-            id: variables?.id,
-          });
-          if (postRef) {
-            cache.modify({
-              id: postRef,
-              fields: {
-                isDeleted: () => true,
-                deletedAt: () => new Date().toISOString(),
-                deletedBy: () => ({
-                  __typename: "User",
-                  id: user?.id,
-                  username: user?.username,
-                }),
-              },
-            });
-          }
-        } catch (error) {
-          console.log("Could not update post in cache, will refetch instead");
-        }
-
-        const existingDiscussion = cache.readQuery({
-          query: GET_DISCUSSION,
-          variables: { id: discussionId! },
-        }) as any;
-
-        if (existingDiscussion?.getDiscussion) {
-          cache.writeQuery({
-            query: GET_DISCUSSION,
-            variables: { id: discussionId! },
-            data: {
-              getDiscussion: {
-                ...existingDiscussion.getDiscussion,
-                postCount: existingDiscussion.getDiscussion.postCount - 1,
               },
             },
           });
@@ -255,30 +145,35 @@ const DiscussionDetail: React.FC = () => {
       if (data?.updatePost) {
         console.log("Post updated successfully, updating cache");
 
-        const existingPosts = cache.readQuery({
-          query: GET_POSTS,
-          variables: {
-            discussionId: discussionId!,
-            page: 1,
-            limit: 20,
-          },
+        const existingDiscussion = cache.readQuery({
+          query: GET_DISCUSSION,
+          variables: { id: discussionId! },
         }) as any;
 
-        if (existingPosts?.getPosts) {
-          const updatedPosts = existingPosts.getPosts.posts.map((post: any) =>
-            post.id === data.updatePost.id ? data.updatePost : post
-          );
+        if (existingDiscussion?.getDiscussion) {
+          const updatedPosts = (
+            existingDiscussion.getDiscussion.posts || []
+          ).map((post: any) => {
+            if (
+              post.userId === data.updatePost.userId &&
+              post.timestamp === data.updatePost.timestamp
+            ) {
+              return {
+                ...post,
+                content: data.updatePost.content,
+                isEdited: data.updatePost.isEdited,
+                editedAt: data.updatePost.editedAt,
+              };
+            }
+            return post;
+          });
 
           cache.writeQuery({
-            query: GET_POSTS,
-            variables: {
-              discussionId: discussionId!,
-              page: 1,
-              limit: 20,
-            },
+            query: GET_DISCUSSION,
+            variables: { id: discussionId! },
             data: {
-              getPosts: {
-                ...existingPosts.getPosts,
+              getDiscussion: {
+                ...existingDiscussion.getDiscussion,
                 posts: updatedPosts,
               },
             },
@@ -288,7 +183,7 @@ const DiscussionDetail: React.FC = () => {
     },
   });
 
-  const handleCreatePost = async (content: string, images?: File[]) => {
+  const handleCreatePost = async (content: string) => {
     if (!discussionId || !content.trim()) {
       console.log("Missing discussionId or content:", {
         discussionId,
@@ -348,61 +243,8 @@ const DiscussionDetail: React.FC = () => {
     }
   };
 
-  const handleReply = async (
-    postId: string,
-    content: string,
-    images?: File[]
-  ) => {
-    if (!discussionId || !content.trim()) return;
-
-    try {
-      const result = await createPost({
-        variables: {
-          input: {
-            discussionId,
-            parentId: postId,
-            content: content.trim(),
-          },
-        },
-      });
-
-      if (result.data?.createPost && discussion) {
-        const linkedItem = discussion.linkedTo.preset
-          ? {
-              type: "PRESET",
-              id: discussion.linkedTo.preset.id,
-              title: discussion.linkedTo.preset.title,
-              slug: discussion.linkedTo.preset.slug,
-            }
-          : discussion.linkedTo.filmSim
-          ? {
-              type: "FILMSIM",
-              id: discussion.linkedTo.filmSim.id,
-              title: discussion.linkedTo.filmSim.name,
-              slug: discussion.linkedTo.filmSim.slug,
-            }
-          : undefined;
-
-        await createDiscussionReplyNotification(
-          createNotification,
-          result.data.createPost,
-          discussion,
-          linkedItem
-        );
-      }
-    } catch (error: any) {
-      console.error("Failed to create reply:", error);
-      console.error("Error details:", {
-        message: error.message,
-        graphQLErrors: error.graphQLErrors,
-        networkError: error.networkError,
-        stack: error.stack,
-      });
-    }
-  };
-
-  const handleEdit = async (postId: string, content: string) => {
-    const postToEdit = posts.find((p: DiscussionPost) => p.id === postId);
+  const handleEdit = async (postIndex: number, content: string) => {
+    const postToEdit = posts[postIndex];
 
     if (!postToEdit) {
       console.error("Post not found. Please refresh the page and try again.");
@@ -412,13 +254,14 @@ const DiscussionDetail: React.FC = () => {
     try {
       const result = await updatePost({
         variables: {
-          id: postId,
+          discussionId: discussionId!,
+          postIndex: postIndex,
           input: { content: content.trim() },
         },
       });
 
       if (result.data?.updatePost) {
-        await refetchPosts();
+        console.log("Post updated successfully");
       } else {
         console.error("Failed to update post - no data returned");
       }
@@ -436,8 +279,8 @@ const DiscussionDetail: React.FC = () => {
     }
   };
 
-  const handleDelete = async (postId: string) => {
-    const postToDelete = posts.find((p: DiscussionPost) => p.id === postId);
+  const handleDelete = async (postIndex: number) => {
+    const postToDelete = posts[postIndex];
 
     if (!postToDelete) {
       console.error("Post not found. Please refresh the page and try again.");
@@ -446,11 +289,15 @@ const DiscussionDetail: React.FC = () => {
 
     try {
       const result = await deletePost({
-        variables: { id: postId },
+        variables: {
+          discussionId: discussionId!,
+          postIndex: postIndex,
+        },
       });
 
       if (result.data?.deletePost) {
-        await refetchPosts();
+        // Cache update is handled by the mutation
+        console.log("Post deleted successfully");
       } else if (result.errors && result.errors.length > 0) {
         console.error("Backend returned errors:", result.errors);
 
@@ -519,69 +366,7 @@ const DiscussionDetail: React.FC = () => {
     }
   };
 
-  const isTokenValid = (): boolean => {
-    const token = localStorage.getItem("visor_token");
-    if (!token) return false;
-
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const currentTime = Date.now() / 1000;
-      return payload.exp > currentTime;
-    } catch (error) {
-      console.error("Error parsing token:", error);
-      return false;
-    }
-  };
-
-  const organizePostsIntoThreads = (
-    posts: DiscussionPost[]
-  ): DiscussionPost[] => {
-    const postMap = new Map<string, DiscussionPost>();
-    const rootPosts: DiscussionPost[] = [];
-
-    posts.forEach((post) => {
-      postMap.set(post.id, { ...post, replies: [] });
-    });
-
-    posts.forEach((post) => {
-      if (post.parentId) {
-        const parentPost = postMap.get(post.parentId);
-        if (parentPost) {
-          parentPost.replies = parentPost.replies || [];
-          parentPost.replies.push(postMap.get(post.id)!);
-        }
-      } else {
-        rootPosts.push(postMap.get(post.id)!);
-      }
-    });
-
-    return rootPosts;
-  };
-
-  const renderPostWithReplies = (post: DiscussionPost, depth: number = 0) => {
-    return (
-      <Box key={post.id}>
-        <Post
-          post={post}
-          depth={depth}
-          onReply={handleReply}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          maxDepth={3}
-        />
-        {/* Render replies */}
-        {post.replies && post.replies.length > 0 && depth < 3 && (
-          <Box>
-            {post.replies.map((reply: DiscussionPost) =>
-              renderPostWithReplies(reply, depth + 1)
-            )}
-          </Box>
-        )}
-      </Box>
-    );
-  };
-
-  if (discussionLoading || postsLoading) {
+  if (discussionLoading) {
     return (
       <Container maxWidth="lg">
         <Box py={4} display="flex" justifyContent="center">
@@ -598,105 +383,6 @@ const DiscussionDetail: React.FC = () => {
           <Alert severity="error">
             Error loading discussion: {discussionError.message}
           </Alert>
-        </Box>
-      </Container>
-    );
-  }
-
-  const hasSerializationErrors = postsError?.graphQLErrors?.some(
-    (error: any) =>
-      (error.message.includes("ID cannot represent value") &&
-        error.message.includes("Buffer")) ||
-      error.message.includes("Cannot return null for non-nullable field") ||
-      (error.message.includes("String cannot represent value") &&
-        error.message.includes("createdAt"))
-  );
-
-  const rawPostsCount = postsData?.getPosts?.posts?.length || 0;
-  const filteredPostsCount = posts.length;
-  const hasFilteredPosts = rawPostsCount > filteredPostsCount;
-
-  if (postsError) {
-    return (
-      <Container maxWidth="lg">
-        <Box py={4}>
-          {hasSerializationErrors || hasFilteredPosts ? (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              {hasFilteredPosts
-                ? `${
-                    rawPostsCount - filteredPostsCount
-                  } posts were filtered out due to data issues. Showing ${filteredPostsCount} valid posts.`
-                : "Some posts may not be displaying correctly due to backend data issues. Invalid or corrupted posts have been filtered out. This is being investigated and will be fixed soon."}
-            </Alert>
-          ) : (
-            <Alert severity="warning" sx={{ mb: 3 }}>
-              Unable to load existing posts due to a backend data issue. You can
-              still create new posts below. The existing posts will be restored
-              once the backend issue is fixed.
-            </Alert>
-          )}
-          {discussion && (
-            <>
-              {/* Breadcrumbs */}
-              <Breadcrumbs
-                separator={<NavigateNextIcon fontSize="small" />}
-                sx={{ mb: 3 }}
-              >
-                <Link
-                  color="inherit"
-                  href="/discussions"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    navigate("/discussions");
-                  }}
-                >
-                  Discussions
-                </Link>
-                <Typography color="text.primary">{discussion.title}</Typography>
-              </Breadcrumbs>
-
-              {/* Discussion Header */}
-              <Card sx={{ mb: 3 }}>
-                <CardContent>
-                  <Box display="flex" alignItems="flex-start" gap={2}>
-                    <Avatar
-                      src={discussion.createdBy.avatar}
-                      sx={{ width: 50, height: 50, mt: 0.5 }}
-                    >
-                      {discussion.createdBy.username.charAt(0).toUpperCase()}
-                    </Avatar>
-                    <Box flex={1}>
-                      <Box display="flex" alignItems="center" gap={1} mb={1}>
-                        <Typography
-                          variant="h4"
-                          component="h1"
-                          sx={{ flex: 1 }}
-                        >
-                          {discussion.title}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-                </CardContent>
-              </Card>
-
-              {/* Post Composer for when posts can't be loaded */}
-              {user && (
-                <Card sx={{ mb: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Create New Post
-                    </Typography>
-                    <PostComposer
-                      onSubmit={handleCreatePost}
-                      placeholder="Start a new post in this discussion..."
-                      buttonText="Create Post"
-                    />
-                  </CardContent>
-                </Card>
-              )}
-            </>
-          )}
         </Box>
       </Container>
     );
@@ -725,7 +411,6 @@ const DiscussionDetail: React.FC = () => {
   return (
     <Container maxWidth="lg">
       <Box py={4}>
-        {/* Breadcrumbs */}
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
           sx={{ mb: 3 }}
@@ -801,13 +486,13 @@ const DiscussionDetail: React.FC = () => {
                   </Typography>
                   <Box display="flex" gap={1}>
                     <Typography variant="caption" color="text.secondary">
-                      {discussion.postCount} posts
+                      {discussion.posts.length} posts
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
                       {discussion.followers.length} followers
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Last activity {formatDate(discussion.lastActivity)}
+                      Last activity {formatDate(discussion.updatedAt)}
                     </Typography>
                   </Box>
                 </Box>
@@ -816,7 +501,6 @@ const DiscussionDetail: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Post composer - moved above posts */}
         {user && (
           <Card sx={{ mb: 3 }}>
             <CardContent>
@@ -836,9 +520,15 @@ const DiscussionDetail: React.FC = () => {
               No posts yet. Be the first to join the discussion!
             </Alert>
           ) : (
-            organizePostsIntoThreads(posts).map((post: DiscussionPost) =>
-              renderPostWithReplies(post)
-            )
+            posts.map((post: DiscussionPost, index: number) => (
+              <Post
+                key={index}
+                post={post}
+                postIndex={index}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
           )}
         </Box>
       </Box>

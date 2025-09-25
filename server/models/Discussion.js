@@ -31,14 +31,34 @@ const discussionSchema = new Schema(
         ref: "User",
       },
     ],
-    postCount: {
-      type: Number,
-      default: 0,
-    },
-    lastActivity: {
-      type: Date,
-      default: Date.now,
-    },
+    posts: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        username: {
+          type: String,
+          required: true,
+        },
+        avatar: String,
+        content: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        timestamp: {
+          type: Date,
+          default: Date.now,
+        },
+        isEdited: {
+          type: Boolean,
+          default: false,
+        },
+        editedAt: Date,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,
@@ -50,6 +70,6 @@ const discussionSchema = new Schema(
 discussionSchema.index({ "linkedTo.type": 1, "linkedTo.refId": 1 });
 discussionSchema.index({ createdBy: 1, createdAt: -1 });
 discussionSchema.index({ title: "text" });
-discussionSchema.index({ lastActivity: -1 });
+discussionSchema.index({ updatedAt: -1 });
 
 module.exports = mongoose.model("Discussion", discussionSchema);

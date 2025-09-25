@@ -37,8 +37,15 @@ export const GET_DISCUSSION = gql`
         username
         avatar
       }
-      postCount
-      lastActivity
+      posts {
+        userId
+        username
+        avatar
+        content
+        timestamp
+        isEdited
+        editedAt
+      }
       isActive
       createdAt
       updatedAt
@@ -88,8 +95,15 @@ export const GET_DISCUSSIONS = gql`
           username
           avatar
         }
-        postCount
-        lastActivity
+        posts {
+          userId
+          username
+          avatar
+          content
+          timestamp
+          isEdited
+          editedAt
+        }
         isActive
         createdAt
         updatedAt
@@ -138,8 +152,15 @@ export const GET_DISCUSSION_BY_ITEM = gql`
         username
         avatar
       }
-      postCount
-      lastActivity
+      posts {
+        userId
+        username
+        avatar
+        content
+        timestamp
+        isEdited
+        editedAt
+      }
       isActive
       createdAt
       updatedAt
@@ -147,38 +168,4 @@ export const GET_DISCUSSION_BY_ITEM = gql`
   }
 `;
 
-export const GET_POSTS = gql`
-  query GetPosts($discussionId: ID!, $page: Int, $limit: Int, $parentId: ID) {
-    getPosts(
-      discussionId: $discussionId
-      page: $page
-      limit: $limit
-      parentId: $parentId
-    ) {
-      posts {
-        id
-        discussionId
-        parentId
-        author {
-          id
-          username
-          avatar
-        }
-        content
-        isEdited
-        editedAt
-        isDeleted
-        deletedAt
-        deletedBy {
-          id
-          username
-        }
-        createdAt
-        updatedAt
-      }
-      totalCount
-      hasNextPage
-      hasPreviousPage
-    }
-  }
-`;
+// GET_POSTS query removed - posts are now included directly in discussion queries

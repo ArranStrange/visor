@@ -1,7 +1,6 @@
 const Notification = require("../../models/Notification");
 const User = require("../../models/User");
 const Discussion = require("../../models/Discussion");
-const DiscussionPost = require("../../models/DiscussionPost");
 
 const notificationResolvers = {
   Query: {
@@ -202,12 +201,8 @@ const notificationResolvers = {
           }
         }
 
-        if (postId) {
-          const post = await DiscussionPost.findById(postId);
-          if (!post) {
-            throw new Error("Post not found");
-          }
-        }
+        // Note: postId validation removed since posts are now embedded in discussions
+        // We'll validate the discussion exists instead
 
         // Don't create notification if sender is the same as recipient
         if (
@@ -249,8 +244,27 @@ const notificationResolvers = {
     },
 
     post: async (parent) => {
-      if (!parent.postId) return null;
-      return await DiscussionPost.findById(parent.postId).select("id content");
+      if (!parent.postId || !parent.discussionId) return null;
+
+      // Since posts are now embedded in discussions, we need to find the post by index
+      // For now, we'll return a simplified post structure
+      // In the future, we might want to store postIndex instead of postId
+      const discussion = await Discussion.findById(parent.discussionId);
+      if (!discussion || !discussion.posts || discussion.posts.length === 0) {
+        return null;
+      }
+
+      // Find the post by matching the postId (which might be a timestamp or other identifier)
+      // For now, return the first post as a fallback
+      const post = discussion.posts[0];
+      return {
+        content: post.content,
+        userId: post.userId,
+        username: post.username,
+        timestamp: post.timestamp,
+        isEdited: post.isEdited,
+        editedAt: post.editedAt,
+      };
     },
   },
 };

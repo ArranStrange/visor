@@ -29,8 +29,15 @@ export const CREATE_DISCUSSION = gql`
         username
         avatar
       }
-      postCount
-      lastActivity
+      posts {
+        userId
+        username
+        avatar
+        content
+        timestamp
+        isEdited
+        editedAt
+      }
       isActive
       createdAt
       updatedAt
@@ -67,8 +74,15 @@ export const UPDATE_DISCUSSION = gql`
         username
         avatar
       }
-      postCount
-      lastActivity
+      posts {
+        userId
+        username
+        avatar
+        content
+        timestamp
+        isEdited
+        editedAt
+      }
       isActive
       createdAt
       updatedAt
@@ -111,57 +125,33 @@ export const UNFOLLOW_DISCUSSION = gql`
 export const CREATE_POST = gql`
   mutation CreatePost($input: CreatePostInput!) {
     createPost(input: $input) {
-      id
-      discussionId
-      parentId
-      author {
-        id
-        username
-        avatar
-      }
+      userId
+      username
+      avatar
       content
+      timestamp
       isEdited
       editedAt
-      isDeleted
-      deletedAt
-      deletedBy {
-        id
-        username
-      }
-      createdAt
-      updatedAt
     }
   }
 `;
 
 export const UPDATE_POST = gql`
-  mutation UpdatePost($id: ID!, $input: UpdatePostInput!) {
-    updatePost(id: $id, input: $input) {
-      id
-      discussionId
-      parentId
-      author {
-        id
-        username
-        avatar
-      }
+  mutation UpdatePost($input: UpdatePostInput!) {
+    updatePost(input: $input) {
+      userId
+      username
+      avatar
       content
+      timestamp
       isEdited
       editedAt
-      isDeleted
-      deletedAt
-      deletedBy {
-        id
-        username
-      }
-      createdAt
-      updatedAt
     }
   }
 `;
 
 export const DELETE_POST = gql`
-  mutation DeletePost($id: ID!) {
-    deletePost(id: $id)
+  mutation DeletePost($discussionId: ID!, $postIndex: Int!) {
+    deletePost(discussionId: $discussionId, postIndex: $postIndex)
   }
 `;

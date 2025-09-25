@@ -31,8 +31,12 @@ export const GET_NOTIFICATIONS = gql`
           title
         }
         post {
-          id
           content
+          userId
+          username
+          timestamp
+          isEdited
+          editedAt
         }
       }
       totalCount
@@ -79,8 +83,12 @@ export const GET_NOTIFICATION_BY_ID = gql`
         title
       }
       post {
-        id
         content
+        userId
+        username
+        timestamp
+        isEdited
+        editedAt
       }
     }
   }
