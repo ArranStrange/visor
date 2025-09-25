@@ -2,40 +2,20 @@ const express = require("express");
 const { ApolloServer } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const path = require("path");
 const { graphqlUploadExpress } = require("graphql-upload");
 
 const config = require("./config");
+const corsOptions = require("./config/cors");
 const authMiddleware = require("./middleware/auth");
 const { typeDefs, resolvers } = require("./schema");
+const { validateMongoURI, maskCredentials } = require("./utils/validation");
 
-// Validate MongoDB URI
-if (!config.MONGO_URI || !config.MONGO_URI.startsWith("mongodb+srv://")) {
-  console.error("MONGODB_URI must be a valid MongoDB Atlas connection string");
-  process.exit(1);
-}
+validateMongoURI(config.MONGO_URI);
 
 const startServer = async () => {
   const app = express();
 
-  // CORS configuration
-  const corsOptions = {
-    origin:
-      config.ALLOWED_ORIGINS[
-        config.NODE_ENV === "production" ? "production" : "development"
-      ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Origin",
-      "X-Requested-With",
-      "Content-Type",
-      "Accept",
-      "Authorization",
-    ],
-  };
   app.use(cors(corsOptions));
-
   app.use(express.json());
   app.use(graphqlUploadExpress());
   app.use(authMiddleware);
@@ -51,24 +31,15 @@ const startServer = async () => {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    persistedQueries: {
-      cache: "bounded",
-    },
+    persistedQueries: { cache: "bounded" },
     context: ({ req }) => ({ user: req.user }),
   });
 
   try {
     await server.start();
-    server.applyMiddleware({
-      app,
-      path: "/graphql",
-      cors: false,
-      bodyParserConfig: true,
-    });
+    server.applyMiddleware({ app, path: "/graphql", cors: false });
 
-    console.log("Attempting to connect to MongoDB...");
-    console.log("MongoDB URI:", config.MONGO_URI.replace(/:[^:@]*@/, ":****@"));
-
+    console.log("Connecting to MongoDB:", maskCredentials(config.MONGO_URI));
     await mongoose.connect(config.MONGO_URI);
     console.log("MongoDB connected");
 
