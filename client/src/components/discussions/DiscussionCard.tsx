@@ -22,7 +22,6 @@ import {
   getDiscussionTypeIcon,
   getDiscussionTypeLabel,
 } from "../../utils/discussionIcons";
-import { highlightSearchTerms } from "../../utils/searchHighlighting";
 import { formatDate } from "../../utils/dateUtils";
 import { isUserFollowing } from "../../utils/discussionUtils";
 
@@ -77,7 +76,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
                 sx={{ cursor: "pointer" }}
                 onClick={handleViewDiscussion}
               >
-                {highlightSearchTerms(discussion.title, searchTerm)}
+                {discussion.title}
               </Typography>
             </Box>
 

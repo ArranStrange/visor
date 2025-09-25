@@ -1,15 +1,11 @@
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useCallback,
-  useMemo,
-  memo,
-} from "react";
+import React, { useMemo, memo, useEffect } from "react";
 import { Box, CircularProgress } from "@mui/material";
-import { useInView } from "react-intersection-observer";
 import { motion, AnimatePresence } from "framer-motion";
 import { useContentType } from "../../context/ContentTypeFilter";
+import { useColumnCount } from "../../hooks/useColumnCount";
+import { useShuffleOrder } from "../../hooks/useShuffleOrder";
+import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
+import { distributeItemsAcrossColumns } from "../../utils/gridUtils";
 
 interface StaggeredGridProps {
   children: React.ReactNode[];
@@ -33,194 +29,36 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = memo(
     hasMore = false,
     isLoading = false,
   }) => {
-    const { ref: triggerRef, inView } = useInView({
-      triggerOnce: true,
-      threshold: 0.1,
-    });
-
-    const { ref: loadMoreRef, inView: loadMoreInView } = useInView({
-      threshold: 0.1,
-      rootMargin: "200px",
-    });
-
-    const containerRef = useRef<HTMLDivElement>(null);
-    const [columnCount, setColumnCount] = useState(() => {
-      if (typeof window !== "undefined") {
-        const windowWidth = window.innerWidth;
-        if (windowWidth < 700) return 2;
-        if (windowWidth < 900) return 4;
-        return 5;
-      }
-      return 4;
-    });
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-
     const { shuffleCounter } = useContentType();
 
-    const shuffledOrderRef = useRef<number[]>([]);
-    const lastShuffleCounterRef = useRef<number>(shuffleCounter);
+    const { containerRef, columnCount, refreshColumns } = useColumnCount({
+      minWidth,
+      gap,
+    });
 
-    const calculateColumnCount = useCallback(
-      (containerWidth: number) => {
-        if (containerWidth < 700) {
-          return 2;
-        } else if (containerWidth < 900) {
-          return 3;
-        } else {
-          return 4;
-        }
-      },
-      [minWidth, gap]
-    );
+    const { triggerRef, inView, loadMoreRef } = useInfiniteScroll({
+      hasMore,
+      isLoading,
+      onLoadMore,
+    });
 
-    const updateColumns = useCallback(() => {
-      if (!containerRef.current) return;
-
-      const containerWidth = containerRef.current.offsetWidth;
-      const newColumnCount = calculateColumnCount(containerWidth);
-
-      // Debug logging
-      // console.log(
-      //   "Container width:",
-      //   containerWidth,
-      //   "New column count:",
-      //   newColumnCount
-      // );
-
-      if (newColumnCount !== columnCount) {
-        setColumnCount(newColumnCount);
-      }
-    }, [calculateColumnCount, columnCount]);
-
-    useEffect(() => {
-      updateColumns();
-
-      let timeoutId: number;
-      const handleResize = () => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(updateColumns, 100);
-      };
-
-      window.addEventListener("resize", handleResize);
-      return () => {
-        window.removeEventListener("resize", handleResize);
-        clearTimeout(timeoutId);
-      };
-    }, [updateColumns]);
-
-    useEffect(() => {
-      if (containerRef.current) {
-        updateColumns();
-      }
-    }, [updateColumns]);
-
-    useEffect(() => {
-      if (containerRef.current) {
-        setTimeout(() => {
-          updateColumns();
-        }, 50);
-      }
-    }, [children.length, updateColumns]);
-
-    useEffect(() => {
-      if (
-        loadMoreInView &&
-        hasMore &&
-        !isLoading &&
-        !isLoadingMore &&
-        onLoadMore
-      ) {
-        setIsLoadingMore(true);
-
-        setTimeout(() => {
-          onLoadMore();
-          setIsLoadingMore(false);
-        }, 100);
-      }
-    }, [loadMoreInView, hasMore, isLoading, isLoadingMore, onLoadMore]);
+    const shuffledIndices = useShuffleOrder({
+      childrenLength: children.length,
+      randomizeOrder,
+      shuffleCounter,
+    });
 
     const columns = useMemo(() => {
-      // console.log('StaggeredGrid: Recalculating columns', {
-      //   childrenLength: children.length,
-      //   columnCount,
-      //   randomizeOrder,
-      //   shuffleCounter,
-      //   lastShuffleCounter: lastShuffleCounterRef.current
-      // });
-
       if (!children.length) {
         return Array.from({ length: columnCount }, () => []);
       }
 
-      let itemIndices = Array.from({ length: children.length }, (_, i) => i);
-
-      if (randomizeOrder) {
-        const chunkSize = 10;
-        const shuffled: number[] = [];
-
-        for (
-          let chunkStart = 0;
-          chunkStart < children.length;
-          chunkStart += chunkSize
-        ) {
-          const chunkEnd = Math.min(chunkStart + chunkSize, children.length);
-          const chunkIndices = Array.from(
-            { length: chunkEnd - chunkStart },
-            (_, i) => chunkStart + i
-          );
-
-          const storedChunk = shuffledOrderRef.current.slice(
-            chunkStart,
-            chunkEnd
-          );
-
-          if (storedChunk.length === chunkIndices.length) {
-            shuffled.push(...storedChunk);
-          } else {
-            const shuffledChunk = [...chunkIndices];
-
-            for (let i = shuffledChunk.length - 1; i > 0; i--) {
-              const j = Math.floor(Math.random() * (i + 1));
-              [shuffledChunk[i], shuffledChunk[j]] = [
-                shuffledChunk[j],
-                shuffledChunk[i],
-              ];
-            }
-
-            shuffled.push(...shuffledChunk);
-          }
-        }
-
-        itemIndices = shuffled;
-        shuffledOrderRef.current = shuffled;
-        lastShuffleCounterRef.current = shuffleCounter;
-        // console.log('StaggeredGrid: New shuffled indices with chunk preservation', itemIndices);
-      } else {
-        // console.log('Shuffle disabled, using original order');
-
-        shuffledOrderRef.current = [];
-        lastShuffleCounterRef.current = shuffleCounter;
-      }
-
-      const newColumns: number[][] = Array.from(
-        { length: columnCount },
-        () => []
-      );
-
-      itemIndices.forEach((itemIndex, index) => {
-        const columnIndex = index % columnCount;
-        newColumns[columnIndex].push(itemIndex);
-      });
-
-      return newColumns;
-    }, [children.length, columnCount, randomizeOrder, shuffleCounter]);
+      return distributeItemsAcrossColumns(shuffledIndices, columnCount);
+    }, [shuffledIndices, columnCount, children.length]);
 
     useEffect(() => {
-      if (!randomizeOrder) {
-        shuffledOrderRef.current = [];
-        lastShuffleCounterRef.current = shuffleCounter;
-      }
-    }, [randomizeOrder, shuffleCounter]);
+      refreshColumns();
+    }, [children.length, refreshColumns]);
 
     if (!children.length && !loading) {
       return null;
@@ -242,8 +80,6 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = memo(
             maxWidth: "100vw",
             overflow: "hidden",
           }}
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          {...({} as any)}
         >
           <AnimatePresence>
             {columns.map((column, columnIndex) => (
