@@ -581,7 +581,7 @@ const FilmSimDetails: React.FC = () => {
         itemSlug={filmSim.slug}
         itemThumbnail={filmSim.thumbnail}
         isEmbedded={true}
-        showPreviewOnly={true}
+        showPreviewOnly={false}
         minimalHeader={true}
       />
 

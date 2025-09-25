@@ -1690,7 +1690,7 @@ const PresetDetails: React.FC = () => {
           itemSlug={preset.slug}
           itemThumbnail={preset.thumbnail}
           isEmbedded={true}
-          showPreviewOnly={true}
+          showPreviewOnly={false}
           minimalHeader={true}
         />
       </Box>
