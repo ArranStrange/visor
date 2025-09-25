@@ -1,9 +1,8 @@
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback, useMemo, useEffect } from "react";
 import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
-import { useImageColor } from "../../hooks/useImageColor";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
 
@@ -29,7 +28,6 @@ const PresetCard: React.FC<PresetCardProps> = memo(
     const [showOptions, setShowOptions] = React.useState(false);
     const isMobile = useMobileDetection();
 
-    // Memoize image URL calculation
     const imageUrl = useMemo(() => {
       if (!afterImage) return placeholderImage;
       if (typeof afterImage === "string") return afterImage;
@@ -37,21 +35,6 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       return placeholderImage;
     }, [afterImage]);
 
-    const { offWhiteColor, isAnalyzing } = useImageColor(imageUrl);
-    const [showColor, setShowColor] = React.useState(false);
-
-    React.useEffect(() => {
-      if (!isAnalyzing && offWhiteColor) {
-        const timer = setTimeout(() => {
-          setShowColor(true);
-        }, 100);
-        return () => clearTimeout(timer);
-      } else {
-        setShowColor(false);
-      }
-    }, [isAnalyzing, offWhiteColor]);
-
-    // Memoize event handlers
     const handleAddToList = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
       setAddToListOpen(true);
@@ -75,7 +58,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       }
     }, [addToListOpen, isMobile, showOptions, navigate, slug]);
 
-    React.useEffect(() => {
+    useEffect(() => {
       if (!isMobile && showOptions) {
         const timer = setTimeout(() => {
           setShowOptions(false);
@@ -84,7 +67,6 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       }
     }, [showOptions, isMobile]);
 
-    // Memoize card styles
     const cardStyles = useMemo(
       () => ({
         position: "relative" as const,
@@ -217,7 +199,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
             variant="h5"
             fontWeight="bold"
             sx={{
-              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              color: "rgba(255, 255, 255, 0.9)",
               textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
               transition: "color 0.8s ease-in-out",
             }}
@@ -227,7 +209,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           <Typography
             variant="body2"
             sx={{
-              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              color: "rgba(255, 255, 255, 0.9)",
               textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
               transition: "color 0.8s ease-in-out",
             }}

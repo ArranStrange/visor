@@ -11,7 +11,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
-import { useImageColor } from "../../hooks/useImageColor";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
 
@@ -53,20 +52,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);
     const isMobile = useMobileDetection();
-
-    const { offWhiteColor, isAnalyzing } = useImageColor(thumbnail);
-    const [showColor, setShowColor] = React.useState(false);
-
-    useEffect(() => {
-      if (!isAnalyzing && offWhiteColor) {
-        const timer = setTimeout(() => {
-          setShowColor(true);
-        }, 100);
-        return () => clearTimeout(timer);
-      } else {
-        setShowColor(false);
-      }
-    }, [isAnalyzing, offWhiteColor]);
 
     // Memoize event handlers
     const handleClick = useCallback(() => {
@@ -234,7 +219,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
             variant="h5"
             fontWeight="bold"
             sx={{
-              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              color: "rgba(255, 255, 255, 0.9)",
               textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
               lineHeight: 1.2,
               transition: "color 0.8s ease-in-out",
@@ -245,7 +230,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           <Typography
             variant="body2"
             sx={{
-              color: showColor ? offWhiteColor : "rgba(255, 255, 255, 0.5)",
+              color: "rgba(255, 255, 255, 0.9)",
               textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
               lineHeight: 1.2,
               transition: "color 0.8s ease-in-out",
