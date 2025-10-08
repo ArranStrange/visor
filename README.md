@@ -1,7 +1,7 @@
 # VISOR – Curate, Share, and Discover Creative Looks
 
 ---
-# [LINK TO VISOR]([https://example.com](https://visor-c51a1.web.app/))
+# [VISIT VISOR](https://visor-c51a1.web.app/)
 ---
 
 VISOR is a web platform designed for photographers and visual creatives to **share Lightroom presets**, **explore film simulation recipes**, and **build a curated personal toolkit** of styles. Whether you're chasing the look of a vintage Fujifilm stock or refining your golden hour tones, VISOR helps you discover and manage the tools that shape your aesthetic.
