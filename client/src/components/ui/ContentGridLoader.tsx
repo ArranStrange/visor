@@ -1,10 +1,4 @@
-import React, {
-  useMemo,
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-} from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
@@ -16,7 +10,7 @@ import FilmSimCard from "../cards/FilmSimCard";
 import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import StaggeredGrid from "./StaggeredGrid";
 
-// Content type interfaces following ISP
+// Content type interfaces
 interface ContentItem {
   type: "preset" | "film" | "buymeacoffee";
   data: any;
@@ -30,75 +24,6 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-// Separate data fetching service following SRP
-class ContentDataService {
-  constructor(private presetRepository: any, private filmSimRepository: any) {}
-
-  async fetchContent(
-    contentType: string,
-    filter?: any
-  ): Promise<ContentItem[]> {
-    const results: ContentItem[] = [];
-
-    if (contentType === "all" || contentType === "presets") {
-      const presets = await this.presetRepository.findAll(filter);
-      results.push(
-        ...presets
-          .filter((p: any) => p && p.creator)
-          .map((p: any) => ({
-            type: "preset" as const,
-            data: p,
-          }))
-      );
-    }
-
-    if (contentType === "all" || contentType === "films") {
-      const filmSims = await this.filmSimRepository.findAll(filter);
-      results.push(
-        ...filmSims
-          .filter((f: any) => f && f.creator)
-          .map((f: any) => ({
-            type: "film" as const,
-            data: {
-              ...f,
-              title: f.name,
-              thumbnail: f.sampleImages?.[0]?.url || "",
-              tags: f.tags || [],
-            },
-          }))
-      );
-    }
-
-    // Add BuyMeACoffee card
-    const buyMeACoffeeCard: ContentItem = {
-      type: "buymeacoffee",
-      data: {
-        id: "buymeacoffee",
-        title: "Buy Me a Coffee",
-      },
-    };
-
-    if (results.length > 0) {
-      results.splice(0, 0, buyMeACoffeeCard);
-    } else {
-      results.unshift(buyMeACoffeeCard);
-    }
-
-    return results;
-  }
-}
-
-// Content filtering service following SRP
-class ContentFilterService {
-  filterBySearch(content: ContentItem[], searchQuery?: string): ContentItem[] {
-    if (!searchQuery) return content;
-
-    return content.filter((item) =>
-      item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }
-}
-
 const ITEMS_PER_PAGE = 10;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
@@ -108,75 +33,121 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   customData,
   renderItem,
 }) => {
+  // State management - all hooks at the top level
   const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Refs and external hooks
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useMobileDetection();
   const { randomizeOrder } = useContentType();
 
+  // Service hooks
   const presetRepository = usePresetRepository();
   const filmSimRepository = useFilmSimRepository();
 
-  // Initialize services
-  const dataService = useMemo(
-    () => new ContentDataService(presetRepository, filmSimRepository),
-    [presetRepository, filmSimRepository]
-  );
+  // Data fetching function - moved outside of useEffect to avoid dependency issues
+  const fetchContentData = useCallback(async () => {
+    if (customData) {
+      setContent(customData.map((item) => ({ type: "preset", data: item })));
+      return;
+    }
 
-  const filterService = useMemo(() => new ContentFilterService(), []);
+    setLoading(true);
+    setError(null);
 
-  // Fetch content
-  useEffect(() => {
-    const fetchContent = async () => {
-      if (customData) {
-        setContent(customData.map((item) => ({ type: "preset", data: item })));
-        return;
+    try {
+      const results: ContentItem[] = [];
+
+      // Fetch presets
+      if (contentType === "all" || contentType === "presets") {
+        const presets = await presetRepository.findAll(filter);
+        results.push(
+          ...presets
+            .filter((p: any) => p && p.creator)
+            .map((p: any) => ({
+              type: "preset" as const,
+              data: p,
+            }))
+        );
       }
 
-      setLoading(true);
-      setError(null);
-
-      try {
-        const fetchedContent = await dataService.fetchContent(
-          contentType,
-          filter
+      // Fetch film sims
+      if (contentType === "all" || contentType === "films") {
+        const filmSims = await filmSimRepository.findAll(filter);
+        results.push(
+          ...filmSims
+            .filter((f: any) => f && f.creator)
+            .map((f: any) => ({
+              type: "film" as const,
+              data: {
+                ...f,
+                title: f.name,
+                thumbnail: f.sampleImages?.[0]?.url || "",
+                tags: f.tags || [],
+              },
+            }))
         );
-        const filteredContent = filterService.filterBySearch(
-          fetchedContent,
-          searchQuery
-        );
-        setContent(filteredContent);
-      } catch (err) {
-        console.error("Error fetching content:", err);
-        setError(err instanceof Error ? err.message : "Failed to load content");
-      } finally {
-        setLoading(false);
       }
-    };
 
-    fetchContent();
+      // Add BuyMeACoffee card
+      const buyMeACoffeeCard: ContentItem = {
+        type: "buymeacoffee",
+        data: {
+          id: "buymeacoffee",
+          title: "Buy Me a Coffee",
+        },
+      };
+
+      if (results.length > 0) {
+        results.splice(0, 0, buyMeACoffeeCard);
+      } else {
+        results.unshift(buyMeACoffeeCard);
+      }
+
+      // Apply search filter
+      const filteredContent = searchQuery
+        ? results.filter((item) =>
+            item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        : results;
+
+      setContent(filteredContent);
+    } catch (err) {
+      console.error("Error fetching content:", err);
+      setError(err instanceof Error ? err.message : "Failed to load content");
+    } finally {
+      setLoading(false);
+    }
   }, [
     contentType,
     filter,
     searchQuery,
     customData,
-    dataService,
-    filterService,
+    presetRepository,
+    filmSimRepository,
   ]);
 
+  // Fetch content on mount and when dependencies change
+  useEffect(() => {
+    fetchContentData();
+  }, [fetchContentData]);
+
+  // Reset visible items when content changes
   useEffect(() => {
     setVisibleItems(ITEMS_PER_PAGE);
   }, [content.length]);
 
+  // Load more function
   const loadMore = useCallback(() => {
     setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, content.length));
   }, [content.length]);
 
   const hasMore = visibleItems < content.length;
 
+  // Error state
   if (error) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
@@ -185,6 +156,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
+  // Empty state
   if (!content.length && !loading) {
     return (
       <Alert severity="info" sx={{ my: 2 }}>
@@ -193,24 +165,30 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
+  // Render content
   const visibleData = content.slice(0, visibleItems);
 
-  // Memoize the children to prevent unnecessary re-renders
-  const children = useMemo(() => {
-    return visibleData.map((item, index) =>
-      renderItem ? (
+  const renderContentItem = (item: ContentItem, index: number) => {
+    if (renderItem) {
+      return (
         <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
           {renderItem(item.data)}
         </React.Fragment>
-      ) : item.type === "preset" ? (
+      );
+    }
+
+    if (item.type === "preset") {
+      return (
         <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
-      ) : item.type === "buymeacoffee" ? (
-        <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
-      ) : (
-        <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
-      )
-    );
-  }, [visibleData, renderItem]);
+      );
+    }
+
+    if (item.type === "buymeacoffee") {
+      return <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />;
+    }
+
+    return <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />;
+  };
 
   return (
     <Box
@@ -229,7 +207,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         isLoading={loading}
         randomizeOrder={randomizeOrder}
       >
-        {children}
+        {visibleData.map((item, index) => renderContentItem(item, index))}
       </StaggeredGrid>
     </Box>
   );
