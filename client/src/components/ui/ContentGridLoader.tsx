@@ -6,10 +6,11 @@ import React, {
   useEffect,
 } from "react";
 import { Alert, Box } from "@mui/material";
+import { useQuery } from "@apollo/client";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
-import { usePresetRepository } from "../../core/hooks/useService";
-import { useFilmSimRepository } from "../../core/hooks/useService";
+import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
@@ -140,19 +141,19 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       setError(null);
 
       try {
-        console.log('Fetching content for type:', contentType);
+        console.log("Fetching content for type:", contentType);
         const fetchedContent = await dataService.fetchContent(
           contentType,
           filter
         );
-        console.log('Fetched content:', fetchedContent);
+        console.log("Fetched content:", fetchedContent);
         const filteredContent = filterService.filterBySearch(
           fetchedContent,
           searchQuery
         );
         setContent(filteredContent);
       } catch (err) {
-        console.error('Error fetching content:', err);
+        console.error("Error fetching content:", err);
         setError(err instanceof Error ? err.message : "Failed to load content");
       } finally {
         setLoading(false);

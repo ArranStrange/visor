@@ -24,7 +24,7 @@ export abstract class BaseRepository<T> implements IDataRepository<T> {
       const result = await this.apolloClient.query({
         query,
         variables,
-        fetchPolicy: "cache-and-network",
+        fetchPolicy: "cache-first",
         errorPolicy: 'all',
       });
       console.log('Query result:', result);
