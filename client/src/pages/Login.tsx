@@ -16,26 +16,24 @@ import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { login } = useAuth();
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
 
-  const [login, { loading }] = useMutation(LOGIN_USER, {
+  const [loginMutation, { loading }] = useMutation(LOGIN_USER, {
     onCompleted: (data) => {
       console.log("Login response:", data);
       if (data?.login?.token) {
-        // Store the token in localStorage
-        localStorage.setItem("visor_token", data.login.token);
-        // Store user data
         if (data.login.user) {
           const userData = {
             id: data.login.user.id,
             username: data.login.user.username,
             email: data.login.user.email,
             avatar: data.login.user.avatar,
+            isAdmin: data.login.user.isAdmin || false,
           };
-          localStorage.setItem("user", JSON.stringify(userData));
-          setUser(userData);
+          // Use the AuthContext login method
+          login(data.login.token, userData);
           // Navigate to home page
           navigate("/");
         } else {
@@ -60,7 +58,7 @@ const Login: React.FC = () => {
     setError(null);
 
     try {
-      await login({
+      await loginMutation({
         variables: {
           email: form.email,
           password: form.password,
