@@ -754,7 +754,9 @@ const presetResolvers = {
       }
 
       if (!user.isAdmin) {
-        throw new AuthenticationError("Only administrators can feature presets");
+        throw new AuthenticationError(
+          "Only administrators can feature presets"
+        );
       }
 
       try {
@@ -762,6 +764,9 @@ const presetResolvers = {
         if (!preset) {
           throw new UserInputError("Preset not found");
         }
+
+        // Remove featured status from all other presets (only one can be featured at a time)
+        await Preset.updateMany({ featured: true }, { featured: false });
 
         preset.featured = true;
         await preset.save();
@@ -779,7 +784,9 @@ const presetResolvers = {
       }
 
       if (!user.isAdmin) {
-        throw new AuthenticationError("Only administrators can remove featured status");
+        throw new AuthenticationError(
+          "Only administrators can remove featured status"
+        );
       }
 
       try {

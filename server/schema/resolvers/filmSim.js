@@ -440,7 +440,9 @@ const filmSimResolvers = {
       }
 
       if (!user.isAdmin) {
-        throw new AuthenticationError("Only administrators can feature film sims");
+        throw new AuthenticationError(
+          "Only administrators can feature film sims"
+        );
       }
 
       try {
@@ -448,6 +450,9 @@ const filmSimResolvers = {
         if (!filmSim) {
           throw new UserInputError("Film sim not found");
         }
+
+        // Remove featured status from all other film sims (only one can be featured at a time)
+        await FilmSim.updateMany({ featured: true }, { featured: false });
 
         filmSim.featured = true;
         await filmSim.save();
@@ -465,7 +470,9 @@ const filmSimResolvers = {
       }
 
       if (!user.isAdmin) {
-        throw new AuthenticationError("Only administrators can remove featured status");
+        throw new AuthenticationError(
+          "Only administrators can remove featured status"
+        );
       }
 
       try {

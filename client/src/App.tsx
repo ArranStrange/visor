@@ -4,7 +4,6 @@ import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "./config/apolloClient";
 import NavBar from "./components/layout/Navbar";
 import Home from "./pages/Home";
-import FeaturedHome from "./pages/FeaturedHome";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProfilePage from "./pages/Profile";
@@ -64,7 +63,6 @@ function App() {
                   <NavBar />
                   <Routes>
                     <Route path="/" element={<Home />} />
-                    <Route path="/featured" element={<FeaturedHome />} />
                     <Route path="/search" element={<SearchView />} />
                     <Route
                       path="/preset/:slug"

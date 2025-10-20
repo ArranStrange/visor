@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import SearchIcon from "@mui/icons-material/Search";
-import StarIcon from "@mui/icons-material/Star";
 import UploadIcon from "@mui/icons-material/CloudUpload";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
@@ -108,9 +107,6 @@ const NavBar: React.FC = () => {
         >
           <IconButton onClick={() => navigate("/search")} color="inherit">
             <SearchIcon />
-          </IconButton>
-          <IconButton onClick={() => navigate("/featured")} color="inherit">
-            <StarIcon />
           </IconButton>
           {isAuthenticated && (
             <>
