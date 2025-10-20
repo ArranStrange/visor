@@ -451,9 +451,6 @@ const filmSimResolvers = {
           throw new UserInputError("Film sim not found");
         }
 
-        // Remove featured status from all other film sims (only one can be featured at a time)
-        await FilmSim.updateMany({ featured: true }, { featured: false });
-
         filmSim.featured = true;
         await filmSim.save();
 

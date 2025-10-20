@@ -765,9 +765,6 @@ const presetResolvers = {
           throw new UserInputError("Preset not found");
         }
 
-        // Remove featured status from all other presets (only one can be featured at a time)
-        await Preset.updateMany({ featured: true }, { featured: false });
-
         preset.featured = true;
         await preset.save();
 

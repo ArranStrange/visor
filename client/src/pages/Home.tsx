@@ -1,21 +1,20 @@
 import React from "react";
-import { Container } from "@mui/material";
-import FeaturedSection from "../components/ui/FeaturedSection";
+import { Box } from "@mui/material";
+import FeaturedHeroSection from "../components/ui/FeaturedHeroSection";
+import FeaturedCardsGrid from "../components/ui/FeaturedCardsGrid";
 
 const HomePage: React.FC = () => {
   return (
-    <Container
-      maxWidth="xl"
-      sx={{
-        mt: 2,
-        mb: 6,
-        width: "100%",
-        maxWidth: "100vw",
-        px: { xs: 2, sm: 3, md: 4 }, // Responsive padding
-      }}
-    >
-      <FeaturedSection />
-    </Container>
+    <Box>
+      {/* Featured Film Sim Hero */}
+      <FeaturedHeroSection type="filmsim" />
+
+      {/* Featured Items Grid */}
+      <FeaturedCardsGrid />
+
+      {/* Featured Preset Hero */}
+      <FeaturedHeroSection type="preset" />
+    </Box>
   );
 };
 
