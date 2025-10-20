@@ -5,18 +5,22 @@ import React, {
   useRef,
   useEffect,
 } from "react";
-import { useQuery } from "@apollo/client";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
-
-import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+import { usePresetRepository } from "../../core/hooks/useService";
+import { useFilmSimRepository } from "../../core/hooks/useService";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
 import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import StaggeredGrid from "./StaggeredGrid";
+
+// Content type interfaces following ISP
+interface ContentItem {
+  type: "preset" | "film" | "buymeacoffee";
+  data: any;
+}
 
 interface ContentGridLoaderProps {
   contentType?: "all" | "presets" | "films";
@@ -26,58 +30,20 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 10;
+// Separate data fetching service following SRP
+class ContentDataService {
+  constructor(private presetRepository: any, private filmSimRepository: any) {}
 
-const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
-  contentType = "all",
-  filter,
-  searchQuery,
-  customData,
-  renderItem,
-}) => {
-  const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isMobile = useMobileDetection();
+  async fetchContent(
+    contentType: string,
+    filter?: any
+  ): Promise<ContentItem[]> {
+    const results: ContentItem[] = [];
 
-  const { randomizeOrder } = useContentType();
-
-  const {
-    data: presetData,
-    loading: loadingPresets,
-    error: presetError,
-  } = useQuery(GET_ALL_PRESETS, {
-    variables: { filter },
-    skip: !!customData,
-    fetchPolicy: "cache-and-network",
-  });
-
-  const {
-    data: filmSimData,
-    loading: loadingFilmSims,
-    error: filmSimError,
-  } = useQuery(GET_ALL_FILMSIMS, {
-    variables: { filter },
-    skip: !!customData,
-    fetchPolicy: "cache-and-network",
-  });
-
-  const isLoading = loadingPresets || loadingFilmSims;
-  const isError = presetError || filmSimError;
-
-  const combined = useMemo(() => {
-    if (customData) {
-      return customData;
-    }
-
-    const results: { type: "preset" | "film" | "buymeacoffee"; data: any }[] =
-      [];
-
-    if (
-      (contentType === "all" || contentType === "presets") &&
-      presetData?.listPresets
-    ) {
+    if (contentType === "all" || contentType === "presets") {
+      const presets = await this.presetRepository.findAll(filter);
       results.push(
-        ...presetData.listPresets
+        ...presets
           .filter((p: any) => p && p.creator)
           .map((p: any) => ({
             type: "preset" as const,
@@ -86,12 +52,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       );
     }
 
-    if (
-      (contentType === "all" || contentType === "films") &&
-      filmSimData?.listFilmSims
-    ) {
+    if (contentType === "all" || contentType === "films") {
+      const filmSims = await this.filmSimRepository.findAll(filter);
       results.push(
-        ...filmSimData.listFilmSims
+        ...filmSims
           .filter((f: any) => f && f.creator)
           .map((f: any) => ({
             type: "film" as const,
@@ -105,8 +69,9 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       );
     }
 
-    const buyMeACoffeeCard = {
-      type: "buymeacoffee" as const,
+    // Add BuyMeACoffee card
+    const buyMeACoffeeCard: ContentItem = {
+      type: "buymeacoffee",
       data: {
         id: "buymeacoffee",
         title: "Buy Me a Coffee",
@@ -119,33 +84,107 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       results.unshift(buyMeACoffeeCard);
     }
 
-    return searchQuery
-      ? results.filter((item) =>
-          item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-      : results;
-  }, [customData, contentType, presetData, filmSimData, searchQuery, isMobile]);
+    return results;
+  }
+}
+
+// Content filtering service following SRP
+class ContentFilterService {
+  filterBySearch(content: ContentItem[], searchQuery?: string): ContentItem[] {
+    if (!searchQuery) return content;
+
+    return content.filter((item) =>
+      item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }
+}
+
+const ITEMS_PER_PAGE = 10;
+
+const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
+  contentType = "all",
+  filter,
+  searchQuery,
+  customData,
+  renderItem,
+}) => {
+  const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
+  const [content, setContent] = useState<ContentItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useMobileDetection();
+  const { randomizeOrder } = useContentType();
+
+  const presetRepository = usePresetRepository();
+  const filmSimRepository = useFilmSimRepository();
+
+  // Initialize services
+  const dataService = useMemo(
+    () => new ContentDataService(presetRepository, filmSimRepository),
+    [presetRepository, filmSimRepository]
+  );
+
+  const filterService = useMemo(() => new ContentFilterService(), []);
+
+  // Fetch content
+  useEffect(() => {
+    const fetchContent = async () => {
+      if (customData) {
+        setContent(customData.map((item) => ({ type: "preset", data: item })));
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const fetchedContent = await dataService.fetchContent(
+          contentType,
+          filter
+        );
+        const filteredContent = filterService.filterBySearch(
+          fetchedContent,
+          searchQuery
+        );
+        setContent(filteredContent);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load content");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [
+    contentType,
+    filter,
+    searchQuery,
+    customData,
+    dataService,
+    filterService,
+  ]);
 
   useEffect(() => {
     setVisibleItems(ITEMS_PER_PAGE);
-  }, [combined.length]);
+  }, [content.length]);
 
   const loadMore = useCallback(() => {
-    setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, combined.length));
-  }, [combined.length]);
-  const hasMore = visibleItems < combined.length;
+    setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, content.length));
+  }, [content.length]);
 
-  if (isError) {
+  const hasMore = visibleItems < content.length;
+
+  if (error) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
-        {presetError?.message ||
-          filmSimError?.message ||
-          "Failed to load content"}
+        {error}
       </Alert>
     );
   }
 
-  if (!combined.length && !isLoading) {
+  if (!content.length && !loading) {
     return (
       <Alert severity="info" sx={{ my: 2 }}>
         No content found. Try adjusting filters or search terms.
@@ -153,7 +192,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
-  const visibleData = combined.slice(0, visibleItems);
+  const visibleData = content.slice(0, visibleItems);
 
   // Memoize the children to prevent unnecessary re-renders
   const children = useMemo(
@@ -188,7 +227,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         loading={false}
         onLoadMore={loadMore}
         hasMore={hasMore}
-        isLoading={isLoading}
+        isLoading={loading}
         randomizeOrder={randomizeOrder}
       >
         {children}

@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { useAuthService } from "../core/hooks/useService";
 
 interface User {
   id: string;
@@ -10,67 +16,55 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  setUser: (user: User | null) => void;
-  updateAuth: (updates: Partial<User>) => void;
-  logout: () => void;
   isAuthenticated: boolean;
+  login: (token: string, user: User) => void;
+  logout: () => void;
+  updateUser: (updates: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const navigate = useNavigate();
+  const authService = useAuthService();
 
   useEffect(() => {
-    // Check for user data in localStorage on mount
-    const storedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("visor_token");
+    const currentUser = authService.getCurrentUser();
+    setUser(currentUser);
+  }, [authService]);
 
-    if (storedUser && token) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing stored user:", error);
-        localStorage.removeItem("user");
-        localStorage.removeItem("visor_token");
-        setUser(null);
-      }
-    } else {
-      // If either user data or token is missing, clear both
-      localStorage.removeItem("user");
-      localStorage.removeItem("visor_token");
-      setUser(null);
-    }
-  }, []);
+  const login = (token: string, userData: User) => {
+    authService.login(token, userData);
+    setUser(userData);
+  };
 
   const logout = () => {
-    localStorage.removeItem("visor_token");
-    localStorage.removeItem("user");
+    authService.logout();
     setUser(null);
-    navigate("/login");
   };
 
-  const updateAuth = (updates: Partial<User>) => {
+  const updateUser = (updates: Partial<User>) => {
+    authService.updateUser(updates);
     if (user) {
-      const updatedUser = { ...user, ...updates };
-      setUser(updatedUser);
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser({ ...user, ...updates });
     }
   };
 
-  const isAuthenticated = !!user && !!localStorage.getItem("visor_token");
+  const isAuthenticated = authService.isAuthenticated();
 
-  return (
-    <AuthContext.Provider
-      value={{ user, setUser, updateAuth, logout, isAuthenticated }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  const value: AuthContextType = {
+    user,
+    isAuthenticated,
+    login,
+    logout,
+    updateUser,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {
