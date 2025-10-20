@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Chip, Stack, Avatar } from "@mui/material";
+import { Box, Typography, Chip, Stack, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
@@ -24,8 +24,27 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
     return null; // Don't render if no featured item of this type
   }
 
-  const imageUrl =
-    type === "preset" ? item.afterImage?.url : item.sampleImages?.[0]?.url;
+  // Build images array for carousel (supports side-scroll of additional images)
+  const images: string[] =
+    type === "preset"
+      ? [item.afterImage?.url].filter(Boolean)
+      : (item.sampleImages || [])
+          .map((s: { url?: string }) => s?.url)
+          .filter(Boolean);
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const imageUrl = images[currentIndex] || "";
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (images.length === 0) return;
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (images.length === 0) return;
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
   const title = type === "preset" ? item.title : item.name;
   const itemType = type === "preset" ? "Preset" : "Film Simulation";
 
@@ -57,16 +76,13 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         />
       )}
 
-      {/* Dark Overlay */}
+      {/* Subtle Overlay for readability */}
       <Box
         sx={{
           position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
+          inset: 0,
           background:
-            "linear-gradient(135deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 100%)",
+            "linear-gradient(0deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.35) 100%)",
         }}
       />
 
@@ -132,7 +148,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           </Avatar>
         </Box>
 
-        {/* Title - Center */}
+        {/* Title - Center (kept minimal to let image breathe) */}
         <Box
           sx={{
             position: "absolute",
@@ -149,7 +165,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             fontWeight="bold"
             sx={{
               color: "white",
-              fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
+              fontSize: { xs: "1.8rem", sm: "2.3rem", md: "3.2rem" },
               textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             }}
           >
@@ -224,6 +240,83 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             </Stack>
           )}
         </Box>
+
+        {/* Carousel Controls */}
+        {images.length > 1 && (
+          <>
+            <IconButton
+              aria-label="previous image"
+              onClick={handlePrev}
+              sx={{
+                position: "absolute",
+                left: { xs: 4, sm: 8 },
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "white",
+                backgroundColor: "rgba(0,0,0,0.3)",
+                "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
+              }}
+              size="large"
+            >
+              ‹
+            </IconButton>
+            <IconButton
+              aria-label="next image"
+              onClick={handleNext}
+              sx={{
+                position: "absolute",
+                right: { xs: 4, sm: 8 },
+                top: "50%",
+                transform: "translateY(-50%)",
+                color: "white",
+                backgroundColor: "rgba(0,0,0,0.3)",
+                "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
+              }}
+              size="large"
+            >
+              ›
+            </IconButton>
+          </>
+        )}
+
+        {/* Thumbnails - side scrollable */}
+        {images.length > 1 && (
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 12,
+              left: 12,
+              right: 12,
+              display: "flex",
+              gap: 1,
+              overflowX: "auto",
+              p: 0.5,
+              borderRadius: 2,
+              backgroundColor: "rgba(0,0,0,0.25)",
+              "&::-webkit-scrollbar": { display: "none" },
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((src, idx) => (
+              <Box
+                key={`${src}-${idx}`}
+                component="img"
+                src={src}
+                alt={`${title} ${idx + 1}`}
+                onClick={() => setCurrentIndex(idx)}
+                sx={{
+                  width: 64,
+                  height: 64,
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  outline: idx === currentIndex ? "2px solid #FFD700" : "2px solid transparent",
+                  cursor: "pointer",
+                  flex: "0 0 auto",
+                }}
+              />)
+            )}
+          </Box>
+        )}
       </Box>
     </Box>
   );
