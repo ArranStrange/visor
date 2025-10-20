@@ -1,6 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-/* Global styles */
 html,
 body,
 #root {
@@ -12,7 +11,6 @@ body,
   color: #ffffff;
 }
 
-/* Scrollbar styling (optional, for dark themes) */
 ::-webkit-scrollbar {
   width: 10px;
 }
@@ -30,7 +28,6 @@ body,
   background: #666;
 }
 
-/* Remove link underline and add transition */
 a {
   color: inherit;
   text-decoration: none;
@@ -38,5 +35,5 @@ a {
 }
 
 a:hover {
-  color: #90caf9; /* light blue highlight */
+  color: #90caf9;
 }
