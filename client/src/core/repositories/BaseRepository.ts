@@ -11,30 +11,30 @@ export abstract class BaseRepository<T> implements IDataRepository<T> {
   abstract delete(id: string): Promise<void>;
 
   protected async executeQuery(query: any, variables?: any): Promise<any> {
-    console.log('Executing query:', query);
-    console.log('Variables:', variables);
-    console.log('Apollo Client:', this.apolloClient);
-    
+    console.log("Executing query:", query);
+    console.log("Variables:", variables);
+    console.log("Apollo Client:", this.apolloClient);
+
     // Check if Apollo Client is properly initialized
     if (!this.apolloClient) {
-      throw new Error('Apollo Client not initialized');
+      throw new Error("Apollo Client not initialized");
     }
-    
+
     try {
       const result = await this.apolloClient.query({
         query,
         variables,
         fetchPolicy: "cache-first",
-        errorPolicy: 'all',
+        errorPolicy: "all",
       });
-      console.log('Query result:', result);
+      console.log("Query result:", result);
       return result.data;
     } catch (error) {
-      console.error('Query execution error:', error);
-      console.error('Error details:', {
+      console.error("Query execution error:", error);
+      console.error("Error details:", {
         message: error.message,
         stack: error.stack,
-        name: error.name
+        name: error.name,
       });
       throw error;
     }

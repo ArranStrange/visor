@@ -6,11 +6,10 @@ import React, {
   useEffect,
 } from "react";
 import { Alert, Box } from "@mui/material";
-import { useQuery } from "@apollo/client";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
-import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+import { usePresetRepository } from "../../core/hooks/useService";
+import { useFilmSimRepository } from "../../core/hooks/useService";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
