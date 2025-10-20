@@ -93,9 +93,17 @@ const ListRow: React.FC<ListRowProps> = ({
                   );
                   return { ...existing, lists };
                 },
+                getUserLists(existing) {
+                  if (!existing) return existing;
+                  return existing.map((l: any) =>
+                    l.id === id ? { ...l, isFeatured: false } : l
+                  );
+                },
               },
             });
           },
+          refetchQueries: ["BrowseUserLists", "GetUserLists"],
+          awaitRefetchQueries: true,
         });
       } else {
         await featureList({
@@ -107,14 +115,28 @@ const ListRow: React.FC<ListRowProps> = ({
               fields: {
                 browseUserLists(existing) {
                   if (!existing?.lists) return existing;
+                  // Unfeature all other lists, feature this one
                   const lists = existing.lists.map((l: any) =>
-                    l.id === id ? { ...l, isFeatured: true } : l
+                    l.id === id
+                      ? { ...l, isFeatured: true }
+                      : { ...l, isFeatured: false }
                   );
                   return { ...existing, lists };
+                },
+                getUserLists(existing) {
+                  if (!existing) return existing;
+                  // Unfeature all other lists, feature this one
+                  return existing.map((l: any) =>
+                    l.id === id
+                      ? { ...l, isFeatured: true }
+                      : { ...l, isFeatured: false }
+                  );
                 },
               },
             });
           },
+          refetchQueries: ["BrowseUserLists", "GetUserLists"],
+          awaitRefetchQueries: true,
         });
       }
     } catch (err) {
