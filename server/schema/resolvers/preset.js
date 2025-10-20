@@ -786,6 +786,12 @@ const presetResolvers = {
       }
 
       try {
+        // First, unfeature all other presets
+        await Preset.updateMany(
+          { _id: { $ne: presetId } },
+          { $set: { featured: false } }
+        );
+
         const preset = await Preset.findById(presetId);
         if (!preset) {
           throw new UserInputError("Preset not found");

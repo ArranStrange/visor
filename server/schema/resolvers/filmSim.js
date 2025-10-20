@@ -472,6 +472,12 @@ const filmSimResolvers = {
       }
 
       try {
+        // First, unfeature all other film sims
+        await FilmSim.updateMany(
+          { _id: { $ne: filmSimId } },
+          { $set: { featured: false } }
+        );
+
         const filmSim = await FilmSim.findById(filmSimId);
         if (!filmSim) {
           throw new UserInputError("Film sim not found");

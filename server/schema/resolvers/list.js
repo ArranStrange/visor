@@ -573,6 +573,12 @@ module.exports = {
       if (!user || !user.isAdmin) {
         throw new AuthenticationError("Only administrators can feature lists");
       }
+      // First, unfeature all other lists
+      await UserList.updateMany(
+        { _id: { $ne: id } },
+        { $set: { isFeatured: false } }
+      );
+      // Then feature the selected list
       const updated = await UserList.findByIdAndUpdate(
         id,
         { $set: { isFeatured: true } },
