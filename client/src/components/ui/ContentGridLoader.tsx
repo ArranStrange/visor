@@ -140,16 +140,19 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       setError(null);
 
       try {
+        console.log('Fetching content for type:', contentType);
         const fetchedContent = await dataService.fetchContent(
           contentType,
           filter
         );
+        console.log('Fetched content:', fetchedContent);
         const filteredContent = filterService.filterBySearch(
           fetchedContent,
           searchQuery
         );
         setContent(filteredContent);
       } catch (err) {
+        console.error('Error fetching content:', err);
         setError(err instanceof Error ? err.message : "Failed to load content");
       } finally {
         setLoading(false);
