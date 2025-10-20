@@ -748,12 +748,12 @@ const presetResolvers = {
       }
     },
 
-    makePresetFeatured: async (_, { presetId }, { req }) => {
-      if (!req.user) {
+    makePresetFeatured: async (_, { presetId }, { user }) => {
+      if (!user) {
         throw new AuthenticationError("You must be logged in");
       }
 
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         throw new AuthenticationError("Only administrators can feature presets");
       }
 
@@ -773,12 +773,12 @@ const presetResolvers = {
       }
     },
 
-    removePresetFeatured: async (_, { presetId }, { req }) => {
-      if (!req.user) {
+    removePresetFeatured: async (_, { presetId }, { user }) => {
+      if (!user) {
         throw new AuthenticationError("You must be logged in");
       }
 
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         throw new AuthenticationError("Only administrators can remove featured status");
       }
 

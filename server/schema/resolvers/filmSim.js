@@ -434,12 +434,12 @@ const filmSimResolvers = {
       }
     },
 
-    makeFilmSimFeatured: async (_, { filmSimId }, { req }) => {
-      if (!req.user) {
+    makeFilmSimFeatured: async (_, { filmSimId }, { user }) => {
+      if (!user) {
         throw new AuthenticationError("You must be logged in");
       }
 
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         throw new AuthenticationError("Only administrators can feature film sims");
       }
 
@@ -459,12 +459,12 @@ const filmSimResolvers = {
       }
     },
 
-    removeFilmSimFeatured: async (_, { filmSimId }, { req }) => {
-      if (!req.user) {
+    removeFilmSimFeatured: async (_, { filmSimId }, { user }) => {
+      if (!user) {
         throw new AuthenticationError("You must be logged in");
       }
 
-      if (!req.user.isAdmin) {
+      if (!user.isAdmin) {
         throw new AuthenticationError("Only administrators can remove featured status");
       }
 
