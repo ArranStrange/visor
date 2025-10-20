@@ -98,7 +98,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr auto", md: "1fr 1fr auto" },
-          gap: { xs: 1.25, md: 2.5 },
+          columnGap: { xs: 1, md: 2 },
+          rowGap: { xs: 1, md: 1.5 },
           alignItems: "center",
           px: { xs: 1.5, sm: 2, md: 0 },
         }}
@@ -128,8 +129,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                fontSize: { md: "0.95rem", lg: "1rem" },
-                lineHeight: 1.6,
+                fontSize: { md: "0.88rem", lg: "0.96rem" },
+                lineHeight: 1.55,
               }}
             >
               {item.description}
