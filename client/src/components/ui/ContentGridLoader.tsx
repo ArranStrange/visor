@@ -140,12 +140,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       setError(null);
 
       try {
-        console.log("Fetching content for type:", contentType);
         const fetchedContent = await dataService.fetchContent(
           contentType,
           filter
         );
-        console.log("Fetched content:", fetchedContent);
         const filteredContent = filterService.filterBySearch(
           fetchedContent,
           searchQuery
@@ -198,23 +196,21 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const visibleData = content.slice(0, visibleItems);
 
   // Memoize the children to prevent unnecessary re-renders
-  const children = useMemo(
-    () =>
-      visibleData.map((item, index) =>
-        renderItem ? (
-          <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-            {renderItem(item.data)}
-          </React.Fragment>
-        ) : item.type === "preset" ? (
-          <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
-        ) : item.type === "buymeacoffee" ? (
-          <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
-        ) : (
-          <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
-        )
-      ),
-    [visibleData, renderItem]
-  );
+  const children = useMemo(() => {
+    return visibleData.map((item, index) =>
+      renderItem ? (
+        <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
+          {renderItem(item.data)}
+        </React.Fragment>
+      ) : item.type === "preset" ? (
+        <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
+      ) : item.type === "buymeacoffee" ? (
+        <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />
+      ) : (
+        <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />
+      )
+    );
+  }, [visibleData, renderItem]);
 
   return (
     <Box
