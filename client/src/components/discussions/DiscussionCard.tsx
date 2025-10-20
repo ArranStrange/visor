@@ -64,10 +64,56 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
     navigate(`/discussions/${discussion.id}`);
   };
 
+  // Get image URL from linked preset or filmSim
+  const getLinkedImage = () => {
+    if (
+      discussion.linkedTo.type === "PRESET" &&
+      discussion.linkedTo.preset?.afterImage?.url
+    ) {
+      return discussion.linkedTo.preset.afterImage.url;
+    }
+    if (
+      discussion.linkedTo.type === "FILMSIM" &&
+      discussion.linkedTo.filmSim?.sampleImages?.[0]?.url
+    ) {
+      return discussion.linkedTo.filmSim.sampleImages[0].url;
+    }
+    return null;
+  };
+
+  const linkedImage = getLinkedImage();
+
   return (
     <Card sx={{ mb: 2 }}>
       <CardContent>
         <Box display="flex" alignItems="flex-start" gap={2}>
+          {linkedImage && (
+            <Box
+              sx={{
+                width: 120,
+                height: 120,
+                borderRadius: 2,
+                overflow: "hidden",
+                flexShrink: 0,
+                cursor: "pointer",
+              }}
+              onClick={handleChipClick}
+            >
+              <img
+                src={linkedImage}
+                alt={
+                  discussion.linkedTo.preset?.title ||
+                  discussion.linkedTo.filmSim?.name ||
+                  ""
+                }
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </Box>
+          )}
           <Box flex={1}>
             <Box display="flex" alignItems="center" gap={1} mb={1}>
               <Typography

@@ -496,10 +496,17 @@ const discussionResolvers = {
 
   Discussion: {
     linkedTo: async (discussion) => {
-      const linkedItem =
-        discussion.linkedTo.type === "preset"
-          ? await Preset.findById(discussion.linkedTo.refId)
-          : await FilmSim.findById(discussion.linkedTo.refId);
+      let linkedItem = null;
+
+      if (discussion.linkedTo.type === "preset") {
+        linkedItem = await Preset.findById(discussion.linkedTo.refId)
+          .populate("afterImage")
+          .populate("beforeImage");
+      } else if (discussion.linkedTo.type === "filmsim") {
+        linkedItem = await FilmSim.findById(discussion.linkedTo.refId).populate(
+          "sampleImages"
+        );
+      }
 
       return {
         type: discussion.linkedTo.type.toUpperCase(),

@@ -78,11 +78,17 @@ export const GET_DISCUSSIONS = gql`
             id
             title
             slug
+            afterImage {
+              url
+            }
           }
           filmSim {
             id
             name
             slug
+            sampleImages {
+              url
+            }
           }
         }
         createdBy {

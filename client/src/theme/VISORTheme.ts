@@ -63,7 +63,7 @@ export const visorTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#121212",
+          backgroundColor: "#0c0c0c",
           borderRadius: 20,
           boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
         },
