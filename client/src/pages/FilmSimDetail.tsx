@@ -28,6 +28,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
 import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
+import {
+  MAKE_FEATURED_PHOTO,
+  REMOVE_FEATURED_PHOTO,
+} from "../graphql/mutations/makeFeaturedPhoto";
 import AddToListButton from "../components/ui/AddToListButton";
 import DiscussionThread from "../components/discussions/DiscussionThread";
 import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
@@ -56,9 +60,16 @@ const FilmSimDetails: React.FC = () => {
   });
   const [deleteFilmSim, { loading: deletingFilmSim }] =
     useMutation(DELETE_FILMSIM);
+  const [makeFeaturedPhoto] = useMutation(MAKE_FEATURED_PHOTO);
+  const [removeFeaturedPhoto] = useMutation(REMOVE_FEATURED_PHOTO);
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
     null
   );
+  const [currentImageId, setCurrentImageId] = React.useState<string | null>(
+    null
+  );
+  const [currentImageFeatured, setCurrentImageFeatured] =
+    React.useState<boolean>(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
     null
@@ -138,6 +149,22 @@ const FilmSimDetails: React.FC = () => {
       refetch(); // Refresh the data to show updated featured status
     } catch (error) {
       console.error("Error toggling featured status:", error);
+    }
+  };
+
+  const handleToggleFeaturedPhoto = async () => {
+    if (!currentImageId) return;
+
+    try {
+      if (currentImageFeatured) {
+        await removeFeaturedPhoto({ variables: { imageId: currentImageId } });
+        setCurrentImageFeatured(false);
+      } else {
+        await makeFeaturedPhoto({ variables: { imageId: currentImageId } });
+        setCurrentImageFeatured(true);
+      }
+    } catch (error) {
+      console.error("Error toggling featured photo status:", error);
     }
   };
 
@@ -313,7 +340,12 @@ const FilmSimDetails: React.FC = () => {
           }}
         >
           {filmSim.sampleImages.map(
-            (image: { id: string; url: string; caption?: string }) => (
+            (image: {
+              id: string;
+              url: string;
+              caption?: string;
+              isFeaturedPhoto?: boolean;
+            }) => (
               <Box key={image.id}>
                 <img
                   src={image.url}
@@ -325,7 +357,11 @@ const FilmSimDetails: React.FC = () => {
                     cursor: "pointer",
                     objectFit: "cover",
                   }}
-                  onClick={() => setFullscreenImage(image.url)}
+                  onClick={() => {
+                    setFullscreenImage(image.url);
+                    setCurrentImageId(image.id);
+                    setCurrentImageFeatured(image.isFeaturedPhoto || false);
+                  }}
                 />
               </Box>
             )
@@ -366,6 +402,22 @@ const FilmSimDetails: React.FC = () => {
         >
           <CloseIcon />
         </IconButton>
+        {isAdmin && (
+          <IconButton
+            onClick={handleToggleFeaturedPhoto}
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 72,
+              color: currentImageFeatured ? "#FFD700" : "white",
+              zIndex: 10,
+              background: "rgba(0,0,0,0.3)",
+              "&:hover": { background: "rgba(0,0,0,0.5)" },
+            }}
+          >
+            {currentImageFeatured ? <StarIcon /> : <StarBorderIcon />}
+          </IconButton>
+        )}
         {fullscreenImage && (
           <Box
             sx={{

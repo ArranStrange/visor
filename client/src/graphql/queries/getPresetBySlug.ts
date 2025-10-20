@@ -127,6 +127,7 @@ export const GET_PRESET_BY_SLUG = gql`
         id
         url
         caption
+        isFeaturedPhoto
       }
       featured
       likes {

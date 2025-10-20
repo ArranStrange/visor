@@ -4,20 +4,20 @@ export const visorTheme = createTheme({
   palette: {
     mode: "dark",
     background: {
-      default: "#111111",
-      paper: "#181818",
+      default: "#080808",
+      paper: "#0b0b0b",
     },
     primary: {
-      main: "#E0E0E0", // soft light for UI elements
+      main: "#E0E0E0",
     },
     secondary: {
-      main: "#FF7E4D", // warm highlight (e.g. favourite/star)
+      main: "#FF7E4D",
     },
     text: {
       primary: "#f5f5f5",
       secondary: "#aaaaaa",
     },
-    divider: "#333333",
+    divider: "#252525",
   },
   typography: {
     fontFamily: `'Inter', 'Helvetica Neue', 'Arial', sans-serif`,
@@ -63,9 +63,9 @@ export const visorTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#1c1c1c",
+          backgroundColor: "#121212",
           borderRadius: 20,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
         },
       },
     },
@@ -136,7 +136,7 @@ export const visorTheme = createTheme({
     MuiTextField: {
       styleOverrides: {
         root: {
-          backgroundColor: "#222222",
+          backgroundColor: "#141414",
           borderRadius: 12,
         },
       },

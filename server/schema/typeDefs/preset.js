@@ -237,6 +237,7 @@ const typeDefs = gql`
     tags: [Tag]
     isBeforeImage: Boolean
     isAfterImage: Boolean
+    isFeaturedPhoto: Boolean
     createdAt: String
   }
 

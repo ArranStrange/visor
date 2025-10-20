@@ -47,6 +47,10 @@ const imageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isFeaturedPhoto: {
+      type: Boolean,
+      default: false,
+    },
     submittedAt: {
       type: Date,
       default: Date.now,

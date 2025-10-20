@@ -60,6 +60,10 @@ import { useQuery, useMutation, gql } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
 import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
+import {
+  MAKE_FEATURED_PHOTO,
+  REMOVE_FEATURED_PHOTO,
+} from "../graphql/mutations/makeFeaturedPhoto";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmpCompiler";
@@ -105,6 +109,8 @@ const PresetDetails: React.FC = () => {
     useMutation(UPDATE_PRESET);
   const [addPhotoToPreset, { loading: addingPhoto }] =
     useMutation(ADD_PHOTO_TO_PRESET);
+  const [makeFeaturedPhoto] = useMutation(MAKE_FEATURED_PHOTO);
+  const [removeFeaturedPhoto] = useMutation(REMOVE_FEATURED_PHOTO);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
@@ -126,6 +132,11 @@ const PresetDetails: React.FC = () => {
   const [fullscreenImage, setFullscreenImage] = React.useState<string | null>(
     null
   );
+  const [currentImageId, setCurrentImageId] = React.useState<string | null>(
+    null
+  );
+  const [currentImageFeatured, setCurrentImageFeatured] =
+    React.useState<boolean>(false);
   const [showAllImages, setShowAllImages] = React.useState(false);
   const menuOpen = Boolean(menuAnchorEl);
   const [selectedColor, setSelectedColor] = useState("blue"); // default to blue
@@ -178,6 +189,22 @@ const PresetDetails: React.FC = () => {
       window.location.reload();
     } catch (error) {
       console.error("Error toggling featured status:", error);
+    }
+  };
+
+  const handleToggleFeaturedPhoto = async () => {
+    if (!currentImageId) return;
+
+    try {
+      if (currentImageFeatured) {
+        await removeFeaturedPhoto({ variables: { imageId: currentImageId } });
+        setCurrentImageFeatured(false);
+      } else {
+        await makeFeaturedPhoto({ variables: { imageId: currentImageId } });
+        setCurrentImageFeatured(true);
+      }
+    } catch (error) {
+      console.error("Error toggling featured photo status:", error);
     }
   };
 
@@ -681,8 +708,10 @@ const PresetDetails: React.FC = () => {
                     <StarBorderIcon fontSize="small" />
                   )}
                 </ListItemIcon>
-                <ListItemText 
-                  primary={preset.featured ? "Remove from featured" : "Make featured"} 
+                <ListItemText
+                  primary={
+                    preset.featured ? "Remove from featured" : "Make featured"
+                  }
                 />
               </MenuItem>
             )}
@@ -1602,7 +1631,12 @@ const PresetDetails: React.FC = () => {
             {/* Real sample images */}
             {preset.sampleImages &&
               preset.sampleImages.map(
-                (image: { id: string; url: string; caption?: string }) => (
+                (image: {
+                  id: string;
+                  url: string;
+                  caption?: string;
+                  isFeaturedPhoto?: boolean;
+                }) => (
                   <Box key={image.id}>
                     <img
                       src={image.url}
@@ -1614,7 +1648,11 @@ const PresetDetails: React.FC = () => {
                         cursor: "pointer",
                         objectFit: "cover",
                       }}
-                      onClick={() => setFullscreenImage(image.url)}
+                      onClick={() => {
+                        setFullscreenImage(image.url);
+                        setCurrentImageId(image.id);
+                        setCurrentImageFeatured(image.isFeaturedPhoto || false);
+                      }}
                     />
                   </Box>
                 )
@@ -2184,6 +2222,22 @@ const PresetDetails: React.FC = () => {
         >
           <CloseIcon />
         </IconButton>
+        {isAdmin && currentImageId && (
+          <IconButton
+            onClick={handleToggleFeaturedPhoto}
+            sx={{
+              position: "absolute",
+              top: 16,
+              right: 72,
+              color: currentImageFeatured ? "#FFD700" : "white",
+              zIndex: 10,
+              background: "rgba(0,0,0,0.3)",
+              "&:hover": { background: "rgba(0,0,0,0.5)" },
+            }}
+          >
+            {currentImageFeatured ? <StarIcon /> : <StarBorderIcon />}
+          </IconButton>
+        )}
         {fullscreenImage && (
           <Box
             sx={{

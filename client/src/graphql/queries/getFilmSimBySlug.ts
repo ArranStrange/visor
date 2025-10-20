@@ -41,6 +41,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
         id
         url
         caption
+        isFeaturedPhoto
       }
       featured
       comments {
