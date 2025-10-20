@@ -39,11 +39,17 @@ const GET_LIST = gql`
         id
         title
         slug
+        afterImage {
+          url
+        }
       }
       filmSims {
         id
         name
         slug
+        sampleImages {
+          url
+        }
       }
       createdAt
       updatedAt
@@ -185,7 +191,9 @@ const ListDetail: React.FC = () => {
             data: fullPreset || {
               ...preset,
               afterImage: {
-                url: "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...",
+                url:
+                  preset?.afterImage?.url ||
+                  "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...",
               },
               tags: [],
               creator: { username: "Unknown" },
@@ -212,6 +220,7 @@ const ListDetail: React.FC = () => {
                   ...filmSim,
                   title: filmSim.name,
                   thumbnail:
+                    filmSim?.sampleImages?.[0]?.url ||
                     "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...",
                   tags: [],
                   creator: { username: "Unknown" },

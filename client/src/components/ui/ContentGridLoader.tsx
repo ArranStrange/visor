@@ -48,10 +48,20 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const presetRepository = usePresetRepository();
   const filmSimRepository = useFilmSimRepository();
 
-  // Data fetching function - moved outside of useEffect to avoid dependency issues
   const fetchContentData = useCallback(async () => {
     if (customData) {
-      setContent(customData.map((item) => ({ type: "preset", data: item })));
+      const shaped = customData.map((item: any) => {
+        if (
+          item &&
+          typeof item === "object" &&
+          "type" in item &&
+          "data" in item
+        ) {
+          return item as ContentItem;
+        }
+        return { type: "preset" as const, data: item } as ContentItem;
+      });
+      setContent(shaped);
       return;
     }
 

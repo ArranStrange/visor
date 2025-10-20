@@ -33,8 +33,12 @@ const SearchView: React.FC = () => {
   const allTags =
     tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
 
-  // Read tag parameter from URL on component mount
   useEffect(() => {
+    const qParam = searchParams.get("q");
+    if (qParam) {
+      setKeyword(qParam);
+    }
+
     const tagParam = searchParams.get("tag");
     if (tagParam) {
       const tag = allTags.find(
