@@ -17,13 +17,17 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
+import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";
 import { DiscussionReply as ReplyType } from "../../types/discussions";
+import { ADMIN_DELETE_REPLY } from "../../graphql/mutations/adminMutations";
+import { GET_DISCUSSION } from "../../graphql/queries/discussions";
 
 interface ReplyProps {
   reply: ReplyType;
   replyIndex: number;
   postIndex: number;
+  discussionId: string;
   onEdit: (postIndex: number, replyIndex: number, content: string) => void;
   onDelete: (postIndex: number, replyIndex: number) => void;
 }
@@ -32,6 +36,7 @@ const Reply: React.FC<ReplyProps> = ({
   reply,
   replyIndex,
   postIndex,
+  discussionId,
   onEdit,
   onDelete,
 }) => {
@@ -39,6 +44,11 @@ const Reply: React.FC<ReplyProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(reply.content);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [adminDeleteReply] = useMutation(ADMIN_DELETE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId } },
+    ],
+  });
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -58,6 +68,17 @@ const Reply: React.FC<ReplyProps> = ({
   const handleDelete = () => {
     onDelete(postIndex, replyIndex);
     handleMenuClose();
+  };
+
+  const handleAdminDelete = async () => {
+    try {
+      await adminDeleteReply({
+        variables: { discussionId, postIndex, replyIndex },
+      });
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error deleting reply:", error);
+    }
   };
 
   const formatDate = (dateString: string | undefined | null): string => {
@@ -109,7 +130,7 @@ const Reply: React.FC<ReplyProps> = ({
               (edited)
             </Typography>
           )}
-          {isAuthor && (
+          {(isAuthor || user?.isAdmin) && (
             <IconButton
               size="small"
               onClick={handleMenuOpen}
@@ -163,23 +184,35 @@ const Reply: React.FC<ReplyProps> = ({
         open={Boolean(anchorEl)}
         onClose={handleMenuClose}
       >
-        <MenuItem
-          onClick={() => {
-            setIsEditing(true);
-            handleMenuClose();
-          }}
-        >
-          <ListItemIcon>
-            <EditIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Edit</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleDelete}>
-          <ListItemIcon>
-            <DeleteIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Delete</ListItemText>
-        </MenuItem>
+        {isAuthor && (
+          <>
+            <MenuItem
+              onClick={() => {
+                setIsEditing(true);
+                handleMenuClose();
+              }}
+            >
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Edit</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={handleDelete}>
+              <ListItemIcon>
+                <DeleteIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Delete</ListItemText>
+            </MenuItem>
+          </>
+        )}
+        {user?.isAdmin && !isAuthor && (
+          <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete (Admin)</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </Box>
   );

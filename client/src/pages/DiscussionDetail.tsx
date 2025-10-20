@@ -647,6 +647,7 @@ const DiscussionDetail: React.FC = () => {
                 key={index}
                 post={post}
                 postIndex={index}
+                discussionId={discussion.id}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onReply={handleReply}

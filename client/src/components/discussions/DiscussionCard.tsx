@@ -9,13 +9,20 @@ import {
   Avatar,
   IconButton,
   Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import {
   Bookmark as BookmarkIcon,
   BookmarkBorder as BookmarkBorderIcon,
   Chat as ChatIcon,
+  Delete as DeleteIcon,
+  MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@apollo/client";
 import { Discussion as DiscussionType } from "../../types/discussions";
 import { User } from "../../types/discussions";
 import {
@@ -24,12 +31,15 @@ import {
 } from "../../utils/discussionIcons";
 import { formatDate } from "../../utils/dateUtils";
 import { isUserFollowing } from "../../utils/discussionUtils";
+import { ADMIN_DELETE_DISCUSSION } from "../../graphql/mutations/adminMutations";
+import { GET_DISCUSSIONS } from "../../graphql/queries/discussions";
 
 interface DiscussionCardProps {
   discussion: DiscussionType;
   user: User | null;
   searchTerm: string;
   onFollow: (discussionId: string, isFollowed: boolean) => void;
+  onDelete?: (discussionId: string) => void;
 }
 
 const DiscussionCard: React.FC<DiscussionCardProps> = ({
@@ -37,8 +47,13 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   user,
   searchTerm,
   onFollow,
+  onDelete,
 }) => {
   const navigate = useNavigate();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
+    refetchQueries: [GET_DISCUSSIONS],
+  });
 
   const handleChipClick = () => {
     if (discussion.linkedTo.refId) {
@@ -62,6 +77,28 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
   const handleViewDiscussion = () => {
     navigate(`/discussions/${discussion.id}`);
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleAdminDelete = async () => {
+    try {
+      await adminDeleteDiscussion({
+        variables: { id: discussion.id },
+      });
+      if (onDelete) {
+        onDelete(discussion.id);
+      }
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error deleting discussion:", error);
+    }
   };
 
   // Get image URL from linked preset or filmSim
@@ -124,6 +161,13 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               >
                 {discussion.title}
               </Typography>
+              {user?.isAdmin && !discussion.linkedTo.refId && (
+                <Tooltip title="Admin options">
+                  <IconButton size="small" onClick={handleMenuOpen}>
+                    <MoreVertIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              )}
             </Box>
 
             <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -209,6 +253,28 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
           </Box>
         </Box>
       </CardContent>
+
+      {/* Admin Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete Discussion</ListItemText>
+        </MenuItem>
+      </Menu>
     </Card>
   );
 };

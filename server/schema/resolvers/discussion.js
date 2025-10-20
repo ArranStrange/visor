@@ -621,6 +621,98 @@ const discussionResolvers = {
         throw new Error(`Failed to delete reply: ${error.message}`);
       }
     },
+
+    // Admin-only mutations
+    adminDeleteDiscussion: async (_, { id }, context) => {
+      try {
+        const user = context.user;
+        if (!user || !user.isAdmin) {
+          throw new Error("Admin access required");
+        }
+
+        const discussion = await Discussion.findById(id);
+        if (!discussion) {
+          throw new Error("Discussion not found");
+        }
+
+        // Check if discussion is linked to a preset or filmSim
+        if (discussion.linkedTo && discussion.linkedTo.refId) {
+          throw new Error(
+            "Cannot delete discussion linked to preset or filmSim"
+          );
+        }
+
+        await Discussion.findByIdAndDelete(id);
+        return true;
+      } catch (error) {
+        throw new Error(`Failed to delete discussion: ${error.message}`);
+      }
+    },
+
+    adminDeletePost: async (_, { discussionId, postIndex }, context) => {
+      try {
+        const user = context.user;
+        if (!user || !user.isAdmin) {
+          throw new Error("Admin access required");
+        }
+
+        const discussion = await Discussion.findById(discussionId);
+        if (!discussion) {
+          throw new Error("Discussion not found");
+        }
+
+        if (postIndex < 0 || postIndex >= discussion.posts.length) {
+          throw new Error("Invalid post index");
+        }
+
+        // Remove the post
+        discussion.posts.splice(postIndex, 1);
+        await discussion.save();
+
+        return discussion;
+      } catch (error) {
+        throw new Error(`Failed to delete post: ${error.message}`);
+      }
+    },
+
+    adminDeleteReply: async (
+      _,
+      { discussionId, postIndex, replyIndex },
+      context
+    ) => {
+      try {
+        const user = context.user;
+        if (!user || !user.isAdmin) {
+          throw new Error("Admin access required");
+        }
+
+        const discussion = await Discussion.findById(discussionId);
+        if (!discussion) {
+          throw new Error("Discussion not found");
+        }
+
+        if (postIndex < 0 || postIndex >= discussion.posts.length) {
+          throw new Error("Invalid post index");
+        }
+
+        const post = discussion.posts[postIndex];
+        if (
+          !post.replies ||
+          replyIndex < 0 ||
+          replyIndex >= post.replies.length
+        ) {
+          throw new Error("Invalid reply index");
+        }
+
+        // Remove the reply
+        post.replies.splice(replyIndex, 1);
+        await discussion.save();
+
+        return true;
+      } catch (error) {
+        throw new Error(`Failed to delete reply: ${error.message}`);
+      }
+    },
   },
 
   Discussion: {

@@ -139,5 +139,14 @@ module.exports = gql`
     createReply(input: CreateReplyInput!): DiscussionReply!
     updateReply(input: UpdateReplyInput!): DiscussionReply!
     deleteReply(discussionId: ID!, postIndex: Int!, replyIndex: Int!): Boolean!
+
+    # Admin-only mutations
+    adminDeleteDiscussion(id: ID!): Boolean!
+    adminDeletePost(discussionId: ID!, postIndex: Int!): Discussion!
+    adminDeleteReply(
+      discussionId: ID!
+      postIndex: Int!
+      replyIndex: Int!
+    ): Boolean!
   }
 `;

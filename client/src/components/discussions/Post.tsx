@@ -22,13 +22,17 @@ import {
   Reply as ReplyIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
+import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";
 import { DiscussionPost as PostType } from "../../types/discussions";
 import Reply from "./Reply";
+import { ADMIN_DELETE_POST } from "../../graphql/mutations/adminMutations";
+import { GET_DISCUSSION } from "../../graphql/queries/discussions";
 
 interface PostProps {
   post: PostType;
   postIndex: number;
+  discussionId: string;
   onEdit: (postIndex: number, content: string) => void;
   onDelete: (postIndex: number) => void;
   onReply?: (postIndex: number, content: string) => void;
@@ -44,6 +48,7 @@ interface PostProps {
 const Post: React.FC<PostProps> = ({
   post,
   postIndex,
+  discussionId,
   onEdit,
   onDelete,
   onReply,
@@ -57,6 +62,11 @@ const Post: React.FC<PostProps> = ({
   const [editContent, setEditContent] = useState(post.content);
   const [replyContent, setReplyContent] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [adminDeletePost] = useMutation(ADMIN_DELETE_POST, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId } },
+    ],
+  });
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -76,6 +86,17 @@ const Post: React.FC<PostProps> = ({
   const handleDelete = () => {
     onDelete(postIndex);
     handleMenuClose();
+  };
+
+  const handleAdminDelete = async () => {
+    try {
+      await adminDeletePost({
+        variables: { discussionId, postIndex },
+      });
+      handleMenuClose();
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    }
   };
 
   const handleReply = () => {
@@ -203,8 +224,8 @@ const Post: React.FC<PostProps> = ({
                   </Button>
                 )}
 
-                {/* More options - only show for post creator */}
-                {isLoggedIn && isAuthor && (
+                {/* More options - show for post creator or admin */}
+                {isLoggedIn && (isAuthor || user?.isAdmin) && (
                   <Tooltip title="More options">
                     <IconButton size="small" onClick={handleMenuOpen}>
                       <MoreVertIcon fontSize="small" />
@@ -258,6 +279,7 @@ const Post: React.FC<PostProps> = ({
                       reply={reply}
                       replyIndex={replyIndex}
                       postIndex={postIndex}
+                      discussionId={discussionId}
                       onEdit={onEditReply || (() => {})}
                       onDelete={onDeleteReply || (() => {})}
                     />
@@ -301,6 +323,14 @@ const Post: React.FC<PostProps> = ({
               </ListItemText>
             </MenuItem>
           </>
+        )}
+        {isLoggedIn && user?.isAdmin && !isAuthor && (
+          <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete (Admin)</ListItemText>
+          </MenuItem>
         )}
       </Menu>
     </Box>
