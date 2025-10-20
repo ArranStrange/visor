@@ -646,6 +646,24 @@ const discussionResolvers = {
     },
   },
 
+  DiscussionPost: {
+    timestamp: (post) => {
+      return post.timestamp ? post.timestamp.toISOString() : new Date().toISOString();
+    },
+    editedAt: (post) => {
+      return post.editedAt ? post.editedAt.toISOString() : null;
+    },
+  },
+
+  DiscussionReply: {
+    timestamp: (reply) => {
+      return reply.timestamp ? reply.timestamp.toISOString() : new Date().toISOString();
+    },
+    editedAt: (reply) => {
+      return reply.editedAt ? reply.editedAt.toISOString() : null;
+    },
+  },
+
   // DiscussionPost resolver removed - posts are now embedded in discussions
 };
 
