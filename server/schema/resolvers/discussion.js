@@ -625,24 +625,13 @@ const discussionResolvers = {
     // Admin-only mutations
     adminDeleteDiscussion: async (_, { id }, context) => {
       try {
-        console.log("Admin delete discussion - ID received:", id);
         const user = context.user;
         if (!user || !user.isAdmin) {
           throw new Error("Admin access required");
         }
 
         const discussion = await Discussion.findById(id);
-        console.log("Discussion found:", discussion ? "Yes" : "No");
-        if (discussion) {
-          console.log("Discussion title:", discussion.title);
-        }
         if (!discussion) {
-          // Let's also try to find any discussions to see what's in the database
-          const allDiscussions = await Discussion.find({}, "id title").limit(3);
-          console.log(
-            "Available discussions:",
-            allDiscussions.map((d) => ({ id: d._id, title: d.title }))
-          );
           throw new Error("Discussion not found");
         }
 
