@@ -1,13 +1,12 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ApolloProvider } from "@apollo/client";
-import { apolloClient } from "./config/apolloClient";
+import apolloClient from "./graphql/apolloClient";
 import NavBar from "./components/layout/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProfilePage from "./pages/Profile";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
 import { AuthProvider } from "./context/AuthContext";
