@@ -3,9 +3,11 @@ import { ApolloClient } from "@apollo/client";
 import {
   GET_UNREAD_NOTIFICATIONS_COUNT,
   GET_NOTIFICATIONS,
+} from "../../graphql/queries/notifications";
+import {
   MARK_NOTIFICATION_READ,
   MARK_ALL_NOTIFICATIONS_READ,
-} from "../../graphql/queries/notifications";
+} from "../../graphql/mutations/notifications";
 
 export class GraphQLNotificationService implements INotificationService {
   constructor(private apolloClient: ApolloClient<any>) {}
