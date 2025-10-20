@@ -44,6 +44,8 @@ import UploadIcon from "@mui/icons-material/Upload";
 import AddIcon from "@mui/icons-material/Add";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import ToneCurve from "../components/settings/ToneCurve";
 import SettingSliderDisplay from "../components/forms/SettingSliderDisplay";
 import SettingsDisplay from "../components/forms/SettingsDisplay";
@@ -59,6 +61,7 @@ import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
 import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
 import { useAuth } from "../context/AuthContext";
+import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmpCompiler";
 
 const ADD_PHOTO_TO_PRESET = gql`
@@ -90,6 +93,7 @@ const PresetDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { isAdmin, togglePresetFeatured } = useFeatured();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
@@ -164,6 +168,17 @@ const PresetDetails: React.FC = () => {
   const handleDelete = () => {
     handleMenuClose();
     setDeleteDialogOpen(true);
+  };
+
+  const handleToggleFeatured = async () => {
+    handleMenuClose();
+    try {
+      await togglePresetFeatured(preset.id, preset.featured);
+      // Refresh the data to show updated featured status
+      window.location.reload();
+    } catch (error) {
+      console.error("Error toggling featured status:", error);
+    }
   };
 
   const uploadToCloudinary = async (file: File): Promise<string> => {
@@ -657,6 +672,20 @@ const PresetDetails: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Edit" />
             </MenuItem>
+            {isAdmin && (
+              <MenuItem onClick={handleToggleFeatured}>
+                <ListItemIcon>
+                  {preset.featured ? (
+                    <StarIcon fontSize="small" sx={{ color: "#FFD700" }} />
+                  ) : (
+                    <StarBorderIcon fontSize="small" />
+                  )}
+                </ListItemIcon>
+                <ListItemText 
+                  primary={preset.featured ? "Remove from featured" : "Make featured"} 
+                />
+              </MenuItem>
+            )}
             <MenuItem onClick={handleDelete}>
               <ListItemIcon>
                 <DeleteIcon fontSize="small" color="error" />

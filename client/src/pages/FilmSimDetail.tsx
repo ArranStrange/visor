@@ -34,6 +34,7 @@ import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
 import EditFilmSimDialog from "../components/dialogs/EditFilmSimDialog";
 import RecommendedPresetsManager from "../components/cards/RecommendedPresetsManager";
 import { useAuth } from "../context/AuthContext";
+import { useFeatured } from "../hooks/useFeatured";
 
 import CloseIcon from "@mui/icons-material/Close";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -42,11 +43,14 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import AddIcon from "@mui/icons-material/Add";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 
 const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
+  const { isAdmin, toggleFilmSimFeatured } = useFeatured();
   const { loading, error, data, refetch } = useQuery(GET_FILMSIM_BY_SLUG, {
     variables: { slug },
   });
@@ -127,6 +131,16 @@ const FilmSimDetails: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
+  const handleToggleFeatured = async () => {
+    handleMenuClose();
+    try {
+      await toggleFilmSimFeatured(filmSim.id, filmSim.featured);
+      refetch(); // Refresh the data to show updated featured status
+    } catch (error) {
+      console.error("Error toggling featured status:", error);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4, position: "relative" }}>
       <AddToListButton filmSimId={filmSim.id} itemName={filmSim.name} />
@@ -204,6 +218,22 @@ const FilmSimDetails: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Edit" />
             </MenuItem>
+            {isAdmin && (
+              <MenuItem onClick={handleToggleFeatured}>
+                <ListItemIcon>
+                  {filmSim.featured ? (
+                    <StarIcon fontSize="small" sx={{ color: "#FFD700" }} />
+                  ) : (
+                    <StarBorderIcon fontSize="small" />
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    filmSim.featured ? "Remove from featured" : "Make featured"
+                  }
+                />
+              </MenuItem>
+            )}
             <MenuItem
               onClick={handleDelete}
               data-cy="film-sim-delete-menu-item"
