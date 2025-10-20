@@ -83,12 +83,12 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         <Box
           sx={{
             position: "absolute",
-            top: 24,
-            left: 24,
+            top: { xs: 12, sm: 16, md: 24 },
+            left: { xs: 12, sm: 16, md: 24 },
             backgroundColor: "rgba(255, 215, 0, 0.9)",
             backdropFilter: "blur(10px)",
-            px: 2,
-            py: 1,
+            px: { xs: 1, sm: 1.5, md: 2 },
+            py: { xs: 0.5, sm: 0.75, md: 1 },
             borderRadius: 2,
           }}
         >
@@ -99,6 +99,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               fontWeight: "bold",
               textTransform: "uppercase",
               letterSpacing: 1,
+              fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.75rem" },
             }}
           >
             ★ Featured {itemType}
@@ -109,8 +110,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         <Box
           sx={{
             position: "absolute",
-            top: 24,
-            right: 24,
+            top: { xs: 12, sm: 16, md: 24 },
+            right: { xs: 12, sm: 16, md: 24 },
             cursor: "pointer",
           }}
           onClick={(e) => {
@@ -122,8 +123,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             src={item.creator.avatar}
             alt={item.creator.username}
             sx={{
-              width: 48,
-              height: 48,
+              width: { xs: 36, sm: 42, md: 48 },
+              height: { xs: 36, sm: 42, md: 48 },
               border: "2px solid rgba(255, 255, 255, 0.3)",
             }}
           >
@@ -182,6 +183,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
+                  fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
                 }}
               >
                 {item.description}
