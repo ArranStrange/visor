@@ -10,6 +10,7 @@ export const GET_ALL_PRESETS = gql`
       description
       notes
       tags {
+        id
         displayName
       }
       creator {
