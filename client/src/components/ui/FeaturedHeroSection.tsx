@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Chip, Stack, Avatar, IconButton } from "@mui/material";
+import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
@@ -12,312 +12,139 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   const navigate = useNavigate();
   const { data, loading } = useQuery(GET_FEATURED_ITEMS);
 
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
-  const featuredItems =
-    type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
-  const item = featuredItems?.[0]; // Get the first featured item of this type
+  const featuredItems = type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
+  const item = featuredItems?.[0];
+  if (!item) return null;
 
-  if (!item) {
-    return null; // Don't render if no featured item of this type
-  }
-
-  // Build images array for carousel (supports side-scroll of additional images)
   const images: string[] =
     type === "preset"
       ? [item.afterImage?.url].filter(Boolean)
-      : (item.sampleImages || [])
-          .map((s: { url?: string }) => s?.url)
-          .filter(Boolean);
+      : (item.sampleImages || []).map((s: { url?: string }) => s?.url).filter(Boolean);
+
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const imageUrl = images[currentIndex] || "";
 
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (images.length === 0) return;
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  // Wheel and touch navigation
+  const touchStartX = React.useRef<number | null>(null);
+  const onWheel = (e: React.WheelEvent) => {
+    if (images.length < 2) return;
+    if (e.deltaY > 0) setCurrentIndex((p) => (p + 1) % images.length);
+    else if (e.deltaY < 0) setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+  };
+  const onTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (images.length < 2 || touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(dx) > 30) {
+      if (dx < 0) setCurrentIndex((p) => (p + 1) % images.length);
+      else setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+    }
+    touchStartX.current = null;
   };
 
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (images.length === 0) return;
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  };
   const title = type === "preset" ? item.title : item.name;
-  const itemType = type === "preset" ? "Preset" : "Film Simulation";
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        width: "100%",
-        height: { xs: 400, sm: 500, md: 600 },
-        overflow: "hidden",
-        cursor: "pointer",
-        mb: 4,
-      }}
-      onClick={() => navigate(`/${type}/${item.slug}`)}
-    >
-      {/* Background Image */}
-      {imageUrl && (
-        <img
-          src={imageUrl}
-          alt={title}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            position: "absolute",
-            top: 0,
-            left: 0,
-          }}
-        />
-      )}
-
-      {/* Subtle Overlay for readability */}
+    <Box sx={{ width: "100%", mb: 4 }}>
+      {/* Header Row: Title, Description, Avatar */}
       <Box
         sx={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(0deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.15) 60%, rgba(0,0,0,0.35) 100%)",
-        }}
-      />
-
-      {/* Content Overlay */}
-      <Box
-        sx={{
-          position: "relative",
-          height: "100%",
-          width: "100%",
-          zIndex: 2,
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr auto", md: "1fr 1fr auto" },
+          gap: { xs: 1.5, md: 2 },
+          alignItems: "center",
+          mb: { xs: 1.5, md: 2 },
+          px: { xs: 1, sm: 2, md: 0 },
         }}
       >
-        {/* Featured Badge */}
-        <Box
+        <Typography
+          variant="h1"
           sx={{
-            position: "absolute",
-            top: { xs: 12, sm: 16, md: 24 },
-            left: { xs: 12, sm: 16, md: 24 },
-            backgroundColor: "rgba(255, 215, 0, 0.9)",
-            backdropFilter: "blur(10px)",
-            px: { xs: 1, sm: 1.5, md: 2 },
-            py: { xs: 0.5, sm: 0.75, md: 1 },
-            borderRadius: 2,
+            fontWeight: 800,
+            letterSpacing: -0.5,
+            fontSize: { xs: "2rem", sm: "2.6rem", md: "4rem" },
+            lineHeight: 1.05,
+            whiteSpace: "pre-wrap",
           }}
         >
-          <Typography
-            variant="caption"
-            sx={{
-              color: "black",
-              fontWeight: "bold",
-              textTransform: "uppercase",
-              letterSpacing: 1,
-              fontSize: { xs: "0.6rem", sm: "0.7rem", md: "0.75rem" },
-            }}
-          >
-            ★ Featured {itemType}
-          </Typography>
+          {title}
+        </Typography>
+
+        <Box sx={{ display: { xs: "none", md: "block" } }}>
+          {item.description && (
+            <Typography
+              variant="body1"
+              sx={{
+                color: "text.secondary",
+                display: "-webkit-box",
+                WebkitLineClamp: 3,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                fontSize: { md: "1.05rem", lg: "1.1rem" },
+              }}
+            >
+              {item.description}
+            </Typography>
+          )}
         </Box>
 
-        {/* User Profile Icon - Top Right */}
         <Box
-          sx={{
-            position: "absolute",
-            top: { xs: 12, sm: 16, md: 24 },
-            right: { xs: 12, sm: 16, md: 24 },
-            cursor: "pointer",
-          }}
-          onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/profile/${item.creator.id}`);
-          }}
+          sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}
+          onClick={() => navigate(`/profile/${item.creator.id}`)}
         >
           <Avatar
             src={item.creator.avatar}
             alt={item.creator.username}
-            sx={{
-              width: { xs: 36, sm: 42, md: 48 },
-              height: { xs: 36, sm: 42, md: 48 },
-              border: "2px solid rgba(255, 255, 255, 0.3)",
-            }}
+            sx={{ width: { xs: 36, sm: 44 }, height: { xs: 36, sm: 44 }, cursor: "pointer" }}
           >
             {item.creator.username.charAt(0).toUpperCase()}
           </Avatar>
         </Box>
+      </Box>
 
-        {/* Title - Center (kept minimal to let image breathe) */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            textAlign: "center",
-            width: "100%",
-            px: 4,
-          }}
-        >
-          <Typography
-            variant="h2"
-            fontWeight="bold"
-            sx={{
-              color: "white",
-              fontSize: { xs: "1.8rem", sm: "2.3rem", md: "3.2rem" },
-              textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
-            }}
-          >
-            {title}
-          </Typography>
-        </Box>
-
-        {/* Bottom Content */}
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: 24,
-            left: 0,
-            right: 0,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            px: 4,
-          }}
-        >
-          {/* Description - Bottom Left */}
-          {item.description && (
-            <Box sx={{ maxWidth: "50%" }}>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.9)",
-                  lineHeight: 1.6,
-                  textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 3,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
-                }}
-              >
-                {item.description}
-              </Typography>
-            </Box>
-          )}
-
-          {/* Tags - Bottom Right */}
-          {item.tags && item.tags.length > 0 && (
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{ flexWrap: "wrap", gap: 1, justifyContent: "flex-end" }}
-            >
-              {item.tags.slice(0, 3).map((tag: any) => (
-                <Chip
-                  key={tag.id}
-                  label={tag.displayName}
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(
-                      `/search?tag=${encodeURIComponent(
-                        tag.displayName.toLowerCase()
-                      )}`
-                    );
-                  }}
-                  sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    color: "white",
-                    backdropFilter: "blur(10px)",
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.3)",
-                    },
-                  }}
-                />
-              ))}
-            </Stack>
-          )}
-        </Box>
-
-        {/* Carousel Controls */}
-        {images.length > 1 && (
-          <>
-            <IconButton
-              aria-label="previous image"
-              onClick={handlePrev}
-              sx={{
-                position: "absolute",
-                left: { xs: 4, sm: 8 },
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.3)",
-                "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
-              }}
-              size="large"
-            >
-              ‹
-            </IconButton>
-            <IconButton
-              aria-label="next image"
-              onClick={handleNext}
-              sx={{
-                position: "absolute",
-                right: { xs: 4, sm: 8 },
-                top: "50%",
-                transform: "translateY(-50%)",
-                color: "white",
-                backgroundColor: "rgba(0,0,0,0.3)",
-                "&:hover": { backgroundColor: "rgba(0,0,0,0.5)" },
-              }}
-              size="large"
-            >
-              ›
-            </IconButton>
-          </>
-        )}
-
-        {/* Thumbnails - side scrollable */}
-        {images.length > 1 && (
-          <Box
-            sx={{
-              position: "absolute",
-              bottom: 12,
-              left: 12,
-              right: 12,
-              display: "flex",
-              gap: 1,
-              overflowX: "auto",
-              p: 0.5,
-              borderRadius: 2,
-              backgroundColor: "rgba(0,0,0,0.25)",
-              "&::-webkit-scrollbar": { display: "none" },
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {images.map((src, idx) => (
-              <Box
-                key={`${src}-${idx}`}
-                component="img"
-                src={src}
-                alt={`${title} ${idx + 1}`}
-                onClick={() => setCurrentIndex(idx)}
-                sx={{
-                  width: 64,
-                  height: 64,
-                  objectFit: "cover",
-                  borderRadius: 1,
-                  outline: idx === currentIndex ? "2px solid #FFD700" : "2px solid transparent",
-                  cursor: "pointer",
-                  flex: "0 0 auto",
-                }}
-              />)
-            )}
-          </Box>
+      {/* Image Area (uninterrupted) */}
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          height: { xs: 360, sm: 460, md: 560 },
+          overflow: "hidden",
+          borderRadius: 3,
+          cursor: "pointer",
+        }}
+        onClick={() => navigate(`/${type}/${item.slug}`)}
+        onWheel={onWheel}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
+        {imageUrl && (
+          <img src={imageUrl} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         )}
       </Box>
+
+      {/* Pagination dots */}
+      {images.length > 1 && (
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 1, mt: 1.5 }}>
+          {images.map((_, idx) => (
+            <Box
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                backgroundColor: idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.2)",
+                cursor: "pointer",
+                transition: "all .2s ease",
+              }}
+            />
+          ))}
+        </Box>
+      )}
     </Box>
   );
 };
