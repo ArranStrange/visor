@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Chip, Stack, Avatar, Container } from "@mui/material";
+import { Box, Typography, Chip, Stack, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
@@ -71,15 +71,11 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
       />
 
       {/* Content Overlay */}
-      <Container
-        maxWidth="lg"
+      <Box
         sx={{
           position: "relative",
           height: "100%",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "flex-end",
-          pb: 4,
+          width: "100%",
           zIndex: 2,
         }}
       >
@@ -109,77 +105,94 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           </Typography>
         </Box>
 
-        {/* Main Content */}
-        <Box sx={{ maxWidth: "70%" }}>
-          {/* Title */}
+        {/* User Profile Icon - Top Right */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 24,
+            right: 24,
+            cursor: "pointer",
+          }}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/profile/${item.creator.id}`);
+          }}
+        >
+          <Avatar
+            src={item.creator.avatar}
+            alt={item.creator.username}
+            sx={{
+              width: 48,
+              height: 48,
+              border: "2px solid rgba(255, 255, 255, 0.3)",
+            }}
+          >
+            {item.creator.username.charAt(0).toUpperCase()}
+          </Avatar>
+        </Box>
+
+        {/* Title - Center */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            textAlign: "center",
+            width: "100%",
+            px: 4,
+          }}
+        >
           <Typography
             variant="h2"
             fontWeight="bold"
             sx={{
               color: "white",
               fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
-              mb: 2,
               textShadow: "2px 2px 4px rgba(0,0,0,0.5)",
             }}
           >
             {title}
           </Typography>
+        </Box>
 
-          {/* Description */}
+        {/* Bottom Content */}
+        <Box
+          sx={{
+            position: "absolute",
+            bottom: 24,
+            left: 0,
+            right: 0,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            px: 4,
+          }}
+        >
+          {/* Description - Bottom Left */}
           {item.description && (
-            <Typography
-              variant="h6"
-              sx={{
-                color: "rgba(255, 255, 255, 0.9)",
-                mb: 3,
-                lineHeight: 1.6,
-                textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-                maxWidth: "80%",
-              }}
-            >
-              {item.description}
-            </Typography>
-          )}
-
-          {/* Creator's Notes */}
-          {item.notes && (
-            <Box sx={{ mb: 3 }}>
+            <Box sx={{ maxWidth: "50%" }}>
               <Typography
-                variant="subtitle2"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.8)",
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                  fontSize: "0.75rem",
-                  mb: 1,
-                }}
-              >
-                Creator's Notes
-              </Typography>
-              <Typography
-                variant="body1"
+                variant="h6"
                 sx={{
                   color: "rgba(255, 255, 255, 0.9)",
-                  fontStyle: "italic",
                   lineHeight: 1.6,
-                  pl: 2,
-                  borderLeft: "3px solid #FFD700",
                   textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
                 }}
               >
-                {item.notes}
+                {item.description}
               </Typography>
             </Box>
           )}
 
-          {/* Tags */}
+          {/* Tags - Bottom Right */}
           {item.tags && item.tags.length > 0 && (
             <Stack
               direction="row"
               spacing={1}
-              sx={{ mb: 3, flexWrap: "wrap", gap: 1 }}
+              sx={{ flexWrap: "wrap", gap: 1, justifyContent: "flex-end" }}
             >
-              {item.tags.slice(0, 4).map((tag) => (
+              {item.tags.slice(0, 3).map((tag: any) => (
                 <Chip
                   key={tag.id}
                   label={tag.displayName}
@@ -204,55 +217,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               ))}
             </Stack>
           )}
-
-          {/* Creator */}
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/profile/${item.creator.id}`);
-            }}
-          >
-            <Avatar
-              src={item.creator.avatar}
-              alt={item.creator.username}
-              sx={{
-                width: 56,
-                height: 56,
-                border: "2px solid rgba(255, 255, 255, 0.3)",
-              }}
-            >
-              {item.creator.username.charAt(0).toUpperCase()}
-            </Avatar>
-            <Box>
-              <Typography
-                variant="caption"
-                sx={{
-                  color: "rgba(255, 255, 255, 0.8)",
-                  display: "block",
-                  textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-                }}
-              >
-                Created by
-              </Typography>
-              <Typography
-                variant="h6"
-                sx={{
-                  color: "white",
-                  fontWeight: "bold",
-                  textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
-                }}
-              >
-                {item.creator.username}
-              </Typography>
-            </Box>
-          </Box>
         </Box>
-      </Container>
+      </Box>
     </Box>
   );
 };
