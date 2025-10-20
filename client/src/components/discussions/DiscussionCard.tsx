@@ -287,22 +287,12 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
           </ListItemIcon>
           <ListItemText>Edit Discussion</ListItemText>
         </MenuItem>
-        {!discussion.linkedTo.refId && (
-          <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Delete Discussion</ListItemText>
-          </MenuItem>
-        )}
-        {discussion.linkedTo.refId && (
-          <MenuItem disabled sx={{ color: "text.secondary" }}>
-            <ListItemIcon>
-              <DeleteIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText>Cannot delete linked discussion</ListItemText>
-          </MenuItem>
-        )}
+        <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
+          <ListItemIcon>
+            <DeleteIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Delete Discussion</ListItemText>
+        </MenuItem>
       </Menu>
     </Card>
   );

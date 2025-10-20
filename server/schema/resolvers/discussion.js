@@ -635,12 +635,8 @@ const discussionResolvers = {
           throw new Error("Discussion not found");
         }
 
-        // Check if discussion is linked to a preset or filmSim
-        if (discussion.linkedTo && discussion.linkedTo.refId) {
-          throw new Error(
-            "Cannot delete discussion linked to preset or filmSim"
-          );
-        }
+        // Admin can delete any discussion, including linked ones
+        // (removed the linked discussion protection for admin deletions)
 
         await Discussion.findByIdAndDelete(id);
         return true;
