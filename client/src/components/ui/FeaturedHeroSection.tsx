@@ -203,6 +203,12 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               justifyContent: "center",
               gap: 1.25,
               pointerEvents: "auto",
+              backgroundColor: "rgba(0,0,0,0.7)",
+              py: 0.5,
+              px: 1,
+              borderRadius: 999,
+              width: "fit-content",
+              mx: "auto",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -211,11 +217,15 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                 key={idx}
                 onClick={() => setCurrentIndex(idx)}
                 sx={{
-                  width: idx === currentIndex ? 10 : 8,
-                  height: idx === currentIndex ? 10 : 8,
+                  width: idx === currentIndex ? 12 : 10,
+                  height: idx === currentIndex ? 12 : 10,
                   borderRadius: "50%",
                   backgroundColor:
-                    idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.35)",
+                    idx === currentIndex ? "#FFFFFF" : "transparent",
+                  border:
+                    idx === currentIndex
+                      ? "2px solid #FFFFFF"
+                      : "2px solid rgba(255,255,255,0.9)",
                   cursor: "pointer",
                   transition: "all .2s ease",
                 }}
@@ -224,7 +234,6 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           </Box>
         )}
       </Box>
-
     </Box>
   );
 };
