@@ -2,7 +2,7 @@ import React from "react";
 import { Container } from "@mui/material";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import { useContentType } from "../context/ContentTypeFilter";
-import ContentGridLoader from "../components/ui/ContentGridLoader";
+import ContentGridLoaderV2 from "../components/ui/ContentGridLoaderV2";
 
 const HomePage: React.FC = () => {
   const { contentType } = useContentType();
@@ -19,7 +19,7 @@ const HomePage: React.FC = () => {
       }}
     >
       <ContentTypeToggle />
-      <ContentGridLoader contentType={contentType} />
+      <ContentGridLoaderV2 contentType={contentType} />
     </Container>
   );
 };
