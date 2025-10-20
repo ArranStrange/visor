@@ -33,6 +33,31 @@ const NavBar: React.FC = () => {
   const { user, logout, isAuthenticated } = useAuth();
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [isVisible, setIsVisible] = React.useState(true);
+  const [lastScrollY, setLastScrollY] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show navbar when at the top
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+        setLastScrollY(currentScrollY);
+        return;
+      }
+
+      // Hide when scrolling down, show when scrolling up
+      // Using a threshold of 5px for quick response
+      if (Math.abs(currentScrollY - lastScrollY) > 5) {
+        setIsVisible(currentScrollY < lastScrollY);
+        setLastScrollY(currentScrollY);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -96,7 +121,11 @@ const NavBar: React.FC = () => {
     <AppBar
       position="sticky"
       elevation={2}
-      sx={{ backgroundColor: "background.paper" }}
+      sx={{
+        backgroundColor: "background.paper",
+        transform: isVisible ? "translateY(0)" : "translateY(-100%)",
+        transition: "transform 0.2s ease-in-out",
+      }}
     >
       <Toolbar sx={{ justifyContent: "space-between", gap: 2 }}>
         <Box

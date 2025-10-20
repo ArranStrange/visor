@@ -189,6 +189,26 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
+        {/* Type badge */}
+        <Box
+          sx={{
+            position: "absolute",
+            top: 15,
+            left: 15,
+            zIndex: 2,
+            backgroundColor: "rgba(0,0,0,0.6)",
+            color: "#fff",
+            px: 1,
+            py: 0.25,
+            borderRadius: 1,
+            fontSize: 12,
+            fontWeight: 700,
+            textTransform: "uppercase",
+            letterSpacing: 0.5,
+          }}
+        >
+          {type === "preset" ? "Preset" : "Film Sim"}
+        </Box>
         {imageUrl && (
           <img
             src={imageUrl}
