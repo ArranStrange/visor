@@ -62,7 +62,6 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
     setTimeout(() => {
       isNavigating.current = false;
     }, NAVIGATION_COOLDOWN_MS);
-    e.preventDefault();
   };
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;

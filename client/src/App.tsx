@@ -19,7 +19,7 @@ import UploadPage from "./pages/Upload";
 import UploadPreset from "./pages/UploadPreset";
 import UploadFilmSim from "./pages/UploadFilmSim";
 import NotFound from "./pages/NotFound";
-import Lists from "./pages/Lists";
+import MyLists from "./pages/MyLists";
 import ListDetail from "./pages/ListDetail";
 import BrowseLists from "./pages/BrowseLists";
 import { visorTheme } from "./theme/VISORTheme";
@@ -83,7 +83,7 @@ function App() {
                       path="/verify-email"
                       element={<EmailVerification />}
                     />
-                    <Route path="/lists" element={<Lists />} />
+                    <Route path="/lists" element={<MyLists />} />
                     <Route path="/browse-lists" element={<BrowseLists />} />
                     <Route path="/list/:id" element={<ListDetail />} />
                     <Route path="/create-list" element={<CreateList />} />

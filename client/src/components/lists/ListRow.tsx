@@ -25,13 +25,13 @@ interface ListRowProps {
     id: string;
     title: string;
     slug: string;
-    afterImage?: { id: string; url: string } | null;
+    afterImage?: { id?: string; url: string } | null;
   }>;
   filmSims: Array<{
     id: string;
     name: string;
     slug: string;
-    sampleImages?: Array<{ id: string; url: string }>;
+    sampleImages?: Array<{ id?: string; url: string }>;
   }>;
 }
 
