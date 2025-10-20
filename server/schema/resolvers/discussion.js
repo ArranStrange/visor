@@ -645,10 +645,14 @@ const discussionResolvers = {
       };
     },
     createdAt: (discussion) => {
-      return discussion.createdAt ? discussion.createdAt.toISOString() : new Date().toISOString();
+      return discussion.createdAt
+        ? discussion.createdAt.toISOString()
+        : new Date().toISOString();
     },
     updatedAt: (discussion) => {
-      return discussion.updatedAt ? discussion.updatedAt.toISOString() : new Date().toISOString();
+      return discussion.updatedAt
+        ? discussion.updatedAt.toISOString()
+        : new Date().toISOString();
     },
   },
 
