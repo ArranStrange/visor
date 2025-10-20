@@ -7,7 +7,6 @@ import {
   Stack,
   Avatar,
   IconButton,
-  Tooltip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -56,7 +55,7 @@ interface FilmSimCardProps {
 }
 
 const FilmSimCard: React.FC<FilmSimCardProps> = memo(
-  ({ id, name, slug, thumbnail, tags = [], creator, featured = false }) => {
+  ({ id, name, slug, thumbnail, tags = [], creator }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);

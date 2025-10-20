@@ -635,6 +635,28 @@ const PresetDetails: React.FC = () => {
           <Typography variant="h4" fontWeight="bold">
             {preset.title}
           </Typography>
+          {isAdmin && (
+            <IconButton
+              onClick={handleToggleFeatured}
+              size="small"
+              sx={{
+                backgroundColor: preset.featured
+                  ? "rgba(255, 165, 38, 0.1)"
+                  : "rgba(255, 255, 255, 0.1)",
+                "&:hover": {
+                  backgroundColor: preset.featured
+                    ? "rgba(255, 165, 38, 0.2)"
+                    : "rgba(255, 255, 255, 0.2)",
+                },
+              }}
+            >
+              {preset.featured ? (
+                <StarIcon fontSize="small" sx={{ color: "#ffa726" }} />
+              ) : (
+                <StarBorderIcon fontSize="small" />
+              )}
+            </IconButton>
+          )}
           {currentUser &&
             preset.creator &&
             currentUser.id === preset.creator.id && (
@@ -699,22 +721,6 @@ const PresetDetails: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Edit" />
             </MenuItem>
-            {isAdmin && (
-              <MenuItem onClick={handleToggleFeatured}>
-                <ListItemIcon>
-                  {preset.featured ? (
-                    <StarIcon fontSize="small" sx={{ color: "#FFD700" }} />
-                  ) : (
-                    <StarBorderIcon fontSize="small" />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    preset.featured ? "Remove from featured" : "Make featured"
-                  }
-                />
-              </MenuItem>
-            )}
             <MenuItem onClick={handleDelete}>
               <ListItemIcon>
                 <DeleteIcon fontSize="small" color="error" />

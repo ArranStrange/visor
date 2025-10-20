@@ -208,6 +208,28 @@ const FilmSimDetails: React.FC = () => {
         <Typography variant="h4" fontWeight={700}>
           {filmSim.name}
         </Typography>
+        {isAdmin && (
+          <IconButton
+            onClick={handleToggleFeatured}
+            size="small"
+            sx={{
+              backgroundColor: filmSim.featured
+                ? "rgba(255, 165, 38, 0.1)"
+                : "rgba(255, 255, 255, 0.1)",
+              "&:hover": {
+                backgroundColor: filmSim.featured
+                  ? "rgba(255, 165, 38, 0.2)"
+                  : "rgba(255, 255, 255, 0.2)",
+              },
+            }}
+          >
+            {filmSim.featured ? (
+              <StarIcon fontSize="small" sx={{ color: "#ffa726" }} />
+            ) : (
+              <StarBorderIcon fontSize="small" />
+            )}
+          </IconButton>
+        )}
         {currentUser &&
           filmSim.creator &&
           currentUser.id === filmSim.creator.id && (
@@ -245,22 +267,6 @@ const FilmSimDetails: React.FC = () => {
               </ListItemIcon>
               <ListItemText primary="Edit" />
             </MenuItem>
-            {isAdmin && (
-              <MenuItem onClick={handleToggleFeatured}>
-                <ListItemIcon>
-                  {filmSim.featured ? (
-                    <StarIcon fontSize="small" sx={{ color: "#FFD700" }} />
-                  ) : (
-                    <StarBorderIcon fontSize="small" />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    filmSim.featured ? "Remove from featured" : "Make featured"
-                  }
-                />
-              </MenuItem>
-            )}
             <MenuItem
               onClick={handleDelete}
               data-cy="film-sim-delete-menu-item"

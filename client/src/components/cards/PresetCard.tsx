@@ -1,13 +1,5 @@
 import React, { memo, useCallback, useMemo, useEffect } from "react";
-import {
-  Card,
-  Typography,
-  Chip,
-  Box,
-  Avatar,
-  IconButton,
-  Tooltip,
-} from "@mui/material";
+import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
@@ -38,7 +30,7 @@ interface PresetCardProps {
 }
 
 const PresetCard: React.FC<PresetCardProps> = memo(
-  ({ slug, title, afterImage, tags, creator, id, featured = false }) => {
+  ({ slug, title, afterImage, tags, creator, id }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);

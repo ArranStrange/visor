@@ -12,10 +12,22 @@ import {
 export const useFeatured = () => {
   const { isAdmin } = useAdmin();
 
-  const [makePresetFeatured] = useMutation(MAKE_PRESET_FEATURED);
-  const [removePresetFeatured] = useMutation(REMOVE_PRESET_FEATURED);
-  const [makeFilmSimFeatured] = useMutation(MAKE_FILMSIM_FEATURED);
-  const [removeFilmSimFeatured] = useMutation(REMOVE_FILMSIM_FEATURED);
+  const [makePresetFeatured] = useMutation(MAKE_PRESET_FEATURED, {
+    refetchQueries: ["GetFeaturedItems", "ListPresets", "GetPresetBySlug"],
+    awaitRefetchQueries: true,
+  });
+  const [removePresetFeatured] = useMutation(REMOVE_PRESET_FEATURED, {
+    refetchQueries: ["GetFeaturedItems", "ListPresets", "GetPresetBySlug"],
+    awaitRefetchQueries: true,
+  });
+  const [makeFilmSimFeatured] = useMutation(MAKE_FILMSIM_FEATURED, {
+    refetchQueries: ["GetFeaturedItems", "ListFilmSims", "GetFilmSimBySlug"],
+    awaitRefetchQueries: true,
+  });
+  const [removeFilmSimFeatured] = useMutation(REMOVE_FILMSIM_FEATURED, {
+    refetchQueries: ["GetFeaturedItems", "ListFilmSims", "GetFilmSimBySlug"],
+    awaitRefetchQueries: true,
+  });
 
   const togglePresetFeatured = async (
     presetId: string,
