@@ -60,12 +60,9 @@ export class ServiceContainer {
   }
 
   // Initialize all services
-  initialize(
-    apolloClient: ApolloClient<any>,
-    navigate: (path: string) => void
-  ): void {
+  initialize(apolloClient: ApolloClient<any>): void {
     const storageService = new LocalStorageService();
-    const navigationService = new ReactRouterNavigationService(navigate);
+    const navigationService = new ReactRouterNavigationService();
 
     this.register("storageService", storageService);
     this.register("navigationService", navigationService);
@@ -85,5 +82,12 @@ export class ServiceContainer {
       "filmSimRepository",
       this.createFilmSimRepository(apolloClient)
     );
+  }
+
+  // Update navigation function after React Router is available
+  setNavigationFunction(navigate: (path: string) => void): void {
+    const navigationService =
+      this.get<ReactRouterNavigationService>("navigationService");
+    navigationService.setNavigateFunction(navigate);
   }
 }

@@ -32,15 +32,18 @@ import EmailVerification from "./pages/EmailVerification";
 import { ServiceContainer } from "./core/container/ServiceContainer";
 import { useNavigate } from "react-router-dom";
 
-// Service container initialization component
+// Initialize services at module level
+const container = ServiceContainer.getInstance();
+container.initialize(apolloClient);
+
+// Service container provider component
 const ServiceContainerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const navigate = useNavigate();
-  const container = ServiceContainer.getInstance();
 
   React.useEffect(() => {
-    container.initialize(apolloClient, navigate);
+    container.setNavigationFunction(navigate);
   }, [navigate]);
 
   return <>{children}</>;

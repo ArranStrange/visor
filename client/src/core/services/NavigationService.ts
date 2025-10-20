@@ -1,10 +1,19 @@
 import { INavigationService } from "../interfaces";
 
 export class ReactRouterNavigationService implements INavigationService {
-  constructor(private navigate: (path: string) => void) {}
+  private navigateFunction: ((path: string) => void) | null = null;
+
+  setNavigateFunction(navigate: (path: string) => void): void {
+    this.navigateFunction = navigate;
+  }
 
   navigate(path: string): void {
-    this.navigate(path);
+    if (this.navigateFunction) {
+      this.navigateFunction(path);
+    } else {
+      // Fallback to window.location for initial navigation
+      window.location.href = path;
+    }
   }
 
   goBack(): void {
