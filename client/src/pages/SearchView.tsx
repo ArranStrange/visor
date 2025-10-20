@@ -8,7 +8,7 @@ import {
   Divider,
 } from "@mui/material";
 import { useQuery } from "@apollo/client";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
@@ -17,12 +17,9 @@ import {
   GET_ALL_TAGS,
   GET_ALL_TAGS_OPTIONS,
 } from "../graphql/queries/getAllTags";
-import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
 
 const SearchView: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
@@ -32,18 +29,6 @@ const SearchView: React.FC = () => {
     loading: tagsLoading,
     error: tagsError,
   } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
-
-  const {
-    data: presetData,
-    loading: loadingPresets,
-    error: presetError,
-  } = useQuery(GET_ALL_PRESETS);
-
-  const {
-    data: filmSimData,
-    loading: loadingFilmSims,
-    error: filmSimError,
-  } = useQuery(GET_ALL_FILMSIMS);
 
   const allTags =
     tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
@@ -84,150 +69,7 @@ const SearchView: React.FC = () => {
     }
   };
 
-  // Filter data locally based on active tag
-  const filteredData = useMemo(() => {
-    const results: { type: "preset" | "film" | "buymeacoffee"; data: any }[] =
-      [];
-
-    // Add Buy Me a Coffee card at the beginning
-    const buyMeACoffeeCard = {
-      type: "buymeacoffee" as const,
-      data: {
-        id: "buymeacoffee",
-        title: "Buy Me a Coffee",
-      },
-    };
-    results.push(buyMeACoffeeCard);
-
-    // Filter presets
-    if (
-      (contentType === "all" || contentType === "presets") &&
-      presetData?.listPresets
-    ) {
-      const filteredPresets = presetData.listPresets
-        .filter((p: any) => p && p.creator)
-        .filter((p: any) => {
-          // Apply keyword filter - search across all fields
-          if (keyword) {
-            const searchTerm = keyword.toLowerCase().trim();
-            const searchableText = [
-              p.title,
-              p.description,
-              p.notes,
-              p.creator?.username,
-              ...(p.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
-                []),
-            ]
-              .filter(Boolean) // Remove null/undefined values
-              .join(" ")
-              .toLowerCase();
-
-            // Split search term into words for more flexible matching
-            const searchWords = searchTerm
-              .split(/\s+/)
-              .filter((word) => word.length > 0);
-
-            // Check if all search words are found in the searchable text (partial matches allowed)
-            const allWordsFound = searchWords.every((word) => {
-              // Check if the word is found as a complete word or partial match
-              return (
-                searchableText.includes(word) ||
-                searchableText
-                  .split(/\s+/)
-                  .some(
-                    (textWord) =>
-                      textWord.toLowerCase().startsWith(word.toLowerCase()) ||
-                      textWord.toLowerCase().includes(word.toLowerCase())
-                  )
-              );
-            });
-
-            if (!allWordsFound) {
-              return false;
-            }
-          }
-          // Apply tag filter
-          if (activeTagId) {
-            return p.tags?.some((tag: any) => tag.id === activeTagId);
-          }
-          return true;
-        })
-        .map((p: any) => ({
-          type: "preset" as const,
-          data: p,
-        }));
-      results.push(...filteredPresets);
-    }
-
-    // Filter film sims
-    if (
-      (contentType === "all" || contentType === "films") &&
-      filmSimData?.listFilmSims
-    ) {
-      const filteredFilmSims = filmSimData.listFilmSims
-        .filter((f: any) => f && f.creator)
-        .filter((f: any) => {
-          // Apply keyword filter - search across all fields
-          if (keyword) {
-            const searchTerm = keyword.toLowerCase().trim();
-            const searchableText = [
-              f.name,
-              f.description,
-              f.notes,
-              f.creator?.username,
-              ...(f.tags?.map((tag: any) => tag?.displayName || "Unknown") ||
-                []),
-            ]
-              .filter(Boolean) // Remove null/undefined values
-              .join(" ")
-              .toLowerCase();
-
-            // Split search term into words for more flexible matching
-            const searchWords = searchTerm
-              .split(/\s+/)
-              .filter((word) => word.length > 0);
-
-            // Check if all search words are found in the searchable text (partial matches allowed)
-            const allWordsFound = searchWords.every((word) => {
-              // Check if the word is found as a complete word or partial match
-              return (
-                searchableText.includes(word) ||
-                searchableText
-                  .split(/\s+/)
-                  .some(
-                    (textWord) =>
-                      textWord.toLowerCase().startsWith(word.toLowerCase()) ||
-                      textWord.toLowerCase().includes(word.toLowerCase())
-                  )
-              );
-            });
-
-            if (!allWordsFound) {
-              return false;
-            }
-          }
-          // Apply tag filter
-          if (activeTagId) {
-            return f.tags?.some((tag: any) => tag.id === activeTagId);
-          }
-          return true;
-        })
-        .map((f: any) => ({
-          type: "film" as const,
-          data: {
-            ...f,
-            title: f.name,
-            thumbnail: f.sampleImages?.[0]?.url || "",
-            tags: f.tags || [],
-          },
-        }));
-      results.push(...filteredFilmSims);
-    }
-
-    return results;
-  }, [contentType, presetData, filmSimData, keyword, activeTagId]);
-
-  const isLoading = loadingPresets || loadingFilmSims || tagsLoading;
+  const isLoading = tagsLoading;
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
@@ -309,7 +151,11 @@ const SearchView: React.FC = () => {
       <ContentTypeToggle />
       <Divider sx={{ my: 2 }} />
 
-      <ContentGridLoader contentType={contentType} customData={filteredData} />
+      <ContentGridLoader
+        contentType={contentType}
+        searchQuery={keyword}
+        filter={activeTagId ? { tagId: activeTagId } : undefined}
+      />
     </Container>
   );
 };
