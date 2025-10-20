@@ -608,8 +608,6 @@ const FilmSimDetails: React.FC = () => {
         itemId={filmSim.id}
         itemType="filmsim"
         itemTitle={filmSim.name}
-        itemSlug={filmSim.slug}
-        itemThumbnail={filmSim.thumbnail}
         isEmbedded={true}
         showPreviewOnly={false}
         minimalHeader={true}
