@@ -31,21 +31,47 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
 
   // Wheel and touch navigation
   const touchStartX = React.useRef<number | null>(null);
-  const onWheel = (e: React.WheelEvent) => {
+  const isNavigating = React.useRef(false);
+  const NAVIGATION_COOLDOWN_MS = 350;
+
+  const goNext = () => {
     if (images.length < 2) return;
-    if (e.deltaY > 0) setCurrentIndex((p) => (p + 1) % images.length);
-    else if (e.deltaY < 0)
-      setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+    setCurrentIndex((p) => (p + 1) % images.length);
+  };
+
+  const goPrev = () => {
+    if (images.length < 2) return;
+    setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+  };
+  const onWheel = (e: React.WheelEvent) => {
+    if (images.length < 2 || isNavigating.current) return;
+    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
+    if (Math.abs(delta) < 5) return;
+    isNavigating.current = true;
+    if (delta > 0) goNext();
+    else goPrev();
+    setTimeout(() => {
+      isNavigating.current = false;
+    }, NAVIGATION_COOLDOWN_MS);
   };
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
   const onTouchEnd = (e: React.TouchEvent) => {
-    if (images.length < 2 || touchStartX.current === null) return;
+    if (
+      images.length < 2 ||
+      touchStartX.current === null ||
+      isNavigating.current
+    )
+      return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
     if (Math.abs(dx) > 30) {
-      if (dx < 0) setCurrentIndex((p) => (p + 1) % images.length);
-      else setCurrentIndex((p) => (p - 1 + images.length) % images.length);
+      isNavigating.current = true;
+      if (dx < 0) goNext();
+      else goPrev();
+      setTimeout(() => {
+        isNavigating.current = false;
+      }, NAVIGATION_COOLDOWN_MS);
     }
     touchStartX.current = null;
   };
@@ -74,6 +100,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             lineHeight: 1.03,
             whiteSpace: "pre-wrap",
             color: "text.primary",
+            textTransform: "uppercase",
           }}
         >
           {title}
@@ -99,7 +126,11 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         </Box>
 
         <Box
-          sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
           onClick={() => navigate(`/profile/${item.creator.id}`)}
         >
           <Avatar
@@ -149,7 +180,9 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
 
       {/* Pagination dots */}
       {images.length > 1 && (
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1.25, mt: 2 }}>
+        <Box
+          sx={{ display: "flex", justifyContent: "center", gap: 1.25, mt: 2 }}
+        >
           {images.map((_, idx) => (
             <Box
               key={idx}
@@ -158,7 +191,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                 width: idx === currentIndex ? 10 : 8,
                 height: idx === currentIndex ? 10 : 8,
                 borderRadius: "50%",
-                backgroundColor: idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.25)",
+                backgroundColor:
+                  idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.25)",
                 cursor: "pointer",
                 transition: "all .2s ease",
               }}
