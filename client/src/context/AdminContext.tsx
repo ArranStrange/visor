@@ -27,7 +27,11 @@ export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
 
   useEffect(() => {
     if (!authLoading) {
-      setIsAdmin(user?.isAdmin || false);
+      console.log("AdminContext - User:", user);
+      console.log("AdminContext - User isAdmin:", user?.isAdmin);
+      const adminStatus = user?.isAdmin || false;
+      console.log("AdminContext - Setting isAdmin to:", adminStatus);
+      setIsAdmin(adminStatus);
       setLoading(false);
     }
   }, [user, authLoading]);

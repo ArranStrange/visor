@@ -35,10 +35,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const currentUser = authService.getCurrentUser();
+    console.log("AuthContext - Current user:", currentUser);
+    console.log("AuthContext - Is admin:", currentUser?.isAdmin);
     setUser(currentUser);
   }, [authService]);
 
   const login = (token: string, userData: User) => {
+    console.log("AuthContext - Login user data:", userData);
+    console.log("AuthContext - Login isAdmin:", userData.isAdmin);
     authService.login(token, userData);
     setUser(userData);
   };
