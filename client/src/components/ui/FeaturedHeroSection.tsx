@@ -81,15 +81,25 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   const title = type === "preset" ? item.title : item.name;
 
   return (
-    <Box sx={{ width: { xs: "100%", md: "70%" }, mx: "auto", mb: 6 }}>
+    <Box
+      sx={{
+        width: { xs: "100%", md: "70%" },
+        mx: "auto",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: { xs: 2, md: 3 },
+        py: { xs: 2, md: 4 },
+      }}
+    >
       {/* Header Row: Title, Description, Avatar */}
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: { xs: "1fr auto", md: "1fr 1fr auto" },
-          gap: { xs: 1.5, md: 3 },
+          gap: { xs: 1.25, md: 2.5 },
           alignItems: "center",
-          mb: { xs: 2, md: 3 },
           px: { xs: 1.5, sm: 2, md: 0 },
         }}
       >
@@ -98,7 +108,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           sx={{
             fontWeight: 900,
             letterSpacing: { xs: -0.5, md: -1 },
-            fontSize: { xs: "2.2rem", sm: "2.8rem", md: "4.25rem" },
+            fontSize: { xs: "2rem", sm: "2.6rem", md: "4rem" },
             lineHeight: 1.03,
             whiteSpace: "pre-wrap",
             color: "text.primary",
@@ -118,8 +128,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                fontSize: { md: "1.05rem", lg: "1.12rem" },
-                lineHeight: 1.7,
+                fontSize: { md: "0.95rem", lg: "1rem" },
+                lineHeight: 1.6,
               }}
             >
               {item.description}
@@ -155,7 +165,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         sx={{
           position: "relative",
           width: "100%",
-          height: { xs: 360, sm: 480, md: 620 },
+          flex: 1,
+          minHeight: { xs: 300, md: 420 },
           overflow: "hidden",
           borderRadius: { xs: 2, md: 3 },
           cursor: "pointer",
