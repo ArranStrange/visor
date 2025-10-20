@@ -58,12 +58,21 @@ const NavBar: React.FC = () => {
       divider: true,
     },
     {
-      text: "Lists",
+      text: "My Lists",
       icon: <ListIcon />,
       onClick: () => {
         handleMenuClose();
         navigate("/lists");
       },
+    },
+    {
+      text: "Browse Lists",
+      icon: <ListIcon />,
+      onClick: () => {
+        handleMenuClose();
+        navigate("/browse-lists");
+      },
+      divider: true,
     },
     {
       text: "Discussions",

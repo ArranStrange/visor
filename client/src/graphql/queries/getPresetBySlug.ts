@@ -128,6 +128,7 @@ export const GET_PRESET_BY_SLUG = gql`
         url
         caption
       }
+      featured
       likes {
         id
       }

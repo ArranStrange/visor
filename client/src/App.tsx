@@ -22,6 +22,7 @@ import UploadFilmSim from "./pages/UploadFilmSim";
 import NotFound from "./pages/NotFound";
 import Lists from "./pages/Lists";
 import ListDetail from "./pages/ListDetail";
+import BrowseLists from "./pages/BrowseLists";
 import { visorTheme } from "./theme/VISORTheme";
 import CreateList from "./pages/CreateList";
 import PublicProfile from "./pages/PublicProfile";
@@ -84,6 +85,7 @@ function App() {
                       element={<EmailVerification />}
                     />
                     <Route path="/lists" element={<Lists />} />
+                    <Route path="/browse-lists" element={<BrowseLists />} />
                     <Route path="/list/:id" element={<ListDetail />} />
                     <Route path="/create-list" element={<CreateList />} />
                     <Route path="/discussions" element={<Discussions />} />

@@ -2,8 +2,7 @@ import React from "react";
 import { Box, Typography, Container } from "@mui/material";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
-import PresetCard from "../cards/PresetCard";
-import FilmSimCard from "../cards/FilmSimCard";
+import ListRow from "../lists/ListRow";
 
 const FeaturedCardsGrid: React.FC = () => {
   const { data, loading } = useQuery(GET_FEATURED_ITEMS);
@@ -12,16 +11,11 @@ const FeaturedCardsGrid: React.FC = () => {
     return null;
   }
 
-  const featuredPresets = data?.featuredPreset || [];
-  const featuredFilmSims = data?.featuredFilmSim || [];
+  const featuredLists = data?.featuredUserLists || [];
 
   // Combine all featured items and sort by creation date or randomize
   const allFeaturedItems = [
-    ...featuredPresets.map((preset: any) => ({ ...preset, type: "preset" })),
-    ...featuredFilmSims.map((filmSim: any) => ({
-      ...filmSim,
-      type: "filmsim",
-    })),
+    ...featuredLists.map((list: any) => ({ ...list, type: "list" })),
   ];
 
   if (allFeaturedItems.length === 0) {
@@ -52,21 +46,25 @@ const FeaturedCardsGrid: React.FC = () => {
           }}
         >
           {allFeaturedItems.map((item: any, index: number) => {
-            if (item.type === "preset") {
+            if (item.type === "list") {
               return (
-                <PresetCard
-                  key={`featured-preset-${item.id}-${index}`}
-                  {...item}
-                />
-              );
-            } else {
-              return (
-                <FilmSimCard
-                  key={`featured-filmsim-${item.id}-${index}`}
-                  {...item}
-                />
+                <Box
+                  key={`featured-list-${item.id}-${index}`}
+                  sx={{ gridColumn: { xs: "1", md: "span 2" } }}
+                >
+                  <ListRow
+                    id={item.id}
+                    name={item.name}
+                    description={item.description}
+                    owner={item.owner}
+                    isFeatured={item.isFeatured}
+                    presets={item.presets}
+                    filmSims={item.filmSims}
+                  />
+                </Box>
               );
             }
+            return null;
           })}
         </Box>
       </Container>

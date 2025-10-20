@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 import FeaturedHeroSection from "../components/ui/FeaturedHeroSection";
-import FeaturedCardsGrid from "../components/ui/FeaturedCardsGrid";
+import FeaturedListHero from "../components/ui/FeaturedListHero";
 
 const HomePage: React.FC = () => {
   return (
@@ -9,8 +9,8 @@ const HomePage: React.FC = () => {
       {/* Featured Film Sim Hero */}
       <FeaturedHeroSection type="filmsim" />
 
-      {/* Featured Items Grid */}
-      <FeaturedCardsGrid />
+      {/* Featured List Hero */}
+      <FeaturedListHero />
 
       {/* Featured Preset Hero */}
       <FeaturedHeroSection type="preset" />

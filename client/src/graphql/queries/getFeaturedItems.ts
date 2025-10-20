@@ -40,5 +40,32 @@ export const GET_FEATURED_ITEMS = gql`
         avatar
       }
     }
+    featuredUserLists {
+      id
+      name
+      description
+      isFeatured
+      owner {
+        id
+        username
+        avatar
+      }
+      presets {
+        id
+        title
+        slug
+        afterImage {
+          url
+        }
+      }
+      filmSims {
+        id
+        name
+        slug
+        sampleImages {
+          url
+        }
+      }
+    }
   }
 `;

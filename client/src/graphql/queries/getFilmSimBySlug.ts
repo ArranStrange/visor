@@ -42,6 +42,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
         url
         caption
       }
+      featured
       comments {
         id
         content

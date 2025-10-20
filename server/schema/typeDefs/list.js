@@ -10,6 +10,7 @@ module.exports = gql`
     filmSims: [FilmSim]
     isFavouriteList: Boolean
     isPublic: Boolean
+    isFeatured: Boolean
     collaborators: [User]
     createdAt: String
     updatedAt: String
@@ -30,6 +31,15 @@ module.exports = gql`
   extend type Query {
     getUserLists(userId: ID!): [UserList]
     getUserList(id: ID!): UserList
+    browseUserLists(search: String, page: Int, limit: Int): UserListConnection
+    featuredUserLists: [UserList]
+  }
+
+  type UserListConnection {
+    lists: [UserList]
+    totalCount: Int
+    hasNextPage: Boolean
+    hasPreviousPage: Boolean
   }
 
   extend type Mutation {
@@ -38,5 +48,7 @@ module.exports = gql`
     deleteUserList(id: ID!): Boolean
     addToUserList(listId: ID!, presetIds: [ID!], filmSimIds: [ID!]): UserList
     removeFromUserList(listId: ID!, presetId: ID, filmSimId: ID): UserList
+    featureUserList(id: ID!): UserList!
+    unfeatureUserList(id: ID!): UserList!
   }
 `;

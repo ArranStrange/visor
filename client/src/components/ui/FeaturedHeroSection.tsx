@@ -12,20 +12,24 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   const navigate = useNavigate();
   const { data, loading } = useQuery(GET_FEATURED_ITEMS);
 
-  if (loading) return null;
-
-  const featuredItems =
-    type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
-  // Hooks must run on every render to keep order stable
+  // All hooks must be at the top, before any conditional returns
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const touchStartX = React.useRef<number | null>(null);
   const isNavigating = React.useRef(false);
   const NAVIGATION_COOLDOWN_MS = 350;
 
+  if (loading) return null;
+
+  const featuredItems =
+    type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
+
   const item = featuredItems?.[0];
-  // If there is no featured item, render nothing to avoid hook order changes elsewhere
   if (!item) {
-    return <Box sx={{ width: { xs: "100%", md: "70%" }, mx: "auto", height: "40vh" }} />;
+    return (
+      <Box
+        sx={{ width: { xs: "100%", md: "70%" }, mx: "auto", height: "40vh" }}
+      />
+    );
   }
 
   const images: string[] =
@@ -37,7 +41,6 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
 
   const imageUrl = images[currentIndex] || "";
 
-  // Navigation helpers (defined after images are known)
   const goNext = () => {
     if (images.length < 2) return;
     setCurrentIndex((p) => (p + 1) % images.length);
@@ -48,7 +51,6 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
     setCurrentIndex((p) => (p - 1 + images.length) % images.length);
   };
   const onWheel = (e: React.WheelEvent) => {
-    // Only react to horizontal wheel gestures; ignore vertical scrolling
     if (images.length < 2 || isNavigating.current) return;
     const deltaX = e.deltaX;
     if (Math.abs(deltaX) < 10) return;
