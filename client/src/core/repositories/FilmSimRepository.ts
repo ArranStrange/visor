@@ -1,13 +1,8 @@
 import { BaseRepository } from "./BaseRepository";
-import {
-  GET_ALL_FILMSIMS,
-  GET_FILMSIM_BY_ID,
-} from "../../graphql/queries/getAllFilmSims";
-import {
-  CREATE_FILMSIM,
-  UPDATE_FILMSIM,
-  DELETE_FILMSIM,
-} from "../../graphql/mutations/filmSims";
+import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+import { GET_FILMSIM_BY_SLUG } from "../../graphql/queries/getFilmSimBySlug";
+import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
+import { DELETE_FILMSIM } from "../../graphql/mutations/deleteFilmSim";
 
 export interface FilmSim {
   id: string;
@@ -29,13 +24,14 @@ export class FilmSimRepository extends BaseRepository<FilmSim> {
   }
 
   async findById(id: string): Promise<FilmSim | null> {
-    const data = await this.executeQuery(GET_FILMSIM_BY_ID, { id });
+    // Note: This uses slug instead of ID since the API uses slugs
+    const data = await this.executeQuery(GET_FILMSIM_BY_SLUG, { slug: id });
     return data.getFilmSim || null;
   }
 
   async create(data: Partial<FilmSim>): Promise<FilmSim> {
-    const result = await this.executeMutation(CREATE_FILMSIM, { input: data });
-    return result.createFilmSim;
+    // Note: CREATE_FILMSIM mutation doesn't exist yet, this would need to be implemented
+    throw new Error("Create film sim functionality not implemented yet");
   }
 
   async update(id: string, data: Partial<FilmSim>): Promise<FilmSim> {

@@ -1,13 +1,8 @@
 import { BaseRepository } from "./BaseRepository";
-import {
-  GET_ALL_PRESETS,
-  GET_PRESET_BY_ID,
-} from "../../graphql/queries/getAllPresets";
-import {
-  CREATE_PRESET,
-  UPDATE_PRESET,
-  DELETE_PRESET,
-} from "../../graphql/mutations/presets";
+import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { GET_PRESET_BY_SLUG } from "../../graphql/queries/getPresetBySlug";
+import { UPDATE_PRESET } from "../../graphql/mutations/updatePreset";
+import { DELETE_PRESET } from "../../graphql/mutations/deletePreset";
 
 export interface Preset {
   id: string;
@@ -28,13 +23,14 @@ export class PresetRepository extends BaseRepository<Preset> {
   }
 
   async findById(id: string): Promise<Preset | null> {
-    const data = await this.executeQuery(GET_PRESET_BY_ID, { id });
+    // Note: This uses slug instead of ID since the API uses slugs
+    const data = await this.executeQuery(GET_PRESET_BY_SLUG, { slug: id });
     return data.getPreset || null;
   }
 
   async create(data: Partial<Preset>): Promise<Preset> {
-    const result = await this.executeMutation(CREATE_PRESET, { input: data });
-    return result.createPreset;
+    // Note: CREATE_PRESET mutation doesn't exist yet, this would need to be implemented
+    throw new Error("Create preset functionality not implemented yet");
   }
 
   async update(id: string, data: Partial<Preset>): Promise<Preset> {
