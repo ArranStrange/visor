@@ -23,22 +23,26 @@ import { gql } from "@apollo/client";
 
 const SEARCH_PRESETS = gql`
   query SearchPresets($query: String!) {
-    listPresets(filter: { title: $query }) {
-      id
-      title
-      slug
-      thumbnail
+    listPresets(filter: { title: $query }, limit: 100) {
+      presets {
+        id
+        title
+        slug
+        thumbnail
+      }
     }
   }
 `;
 
 const SEARCH_FILM_SIMS = gql`
   query SearchFilmSims($query: String!) {
-    listFilmSims(filter: { name: $query }) {
-      id
-      name
-      slug
-      thumbnail
+    listFilmSims(filter: { name: $query }, limit: 100) {
+      filmSims {
+        id
+        name
+        slug
+        thumbnail
+      }
     }
   }
 `;
@@ -99,8 +103,8 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({
 
   const items =
     activeTab === 0
-      ? presetsData?.listPresets || []
-      : filmSimsData?.listFilmSims || [];
+      ? presetsData?.listPresets?.presets || []
+      : filmSimsData?.listFilmSims?.filmSims || [];
 
   const loading = activeTab === 0 ? loadingPresets : loadingFilmSims;
 

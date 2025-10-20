@@ -16,10 +16,46 @@ export interface Preset {
   tags?: Array<{ displayName: string }>;
 }
 
+export interface PaginatedPresets {
+  presets: Preset[];
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  currentPage: number;
+  totalPages: number;
+}
+
 export class PresetRepository extends BaseRepository<Preset> {
   async findAll(filter?: any): Promise<Preset[]> {
-    const data = await this.executeQuery(GET_ALL_PRESETS, { filter });
-    return data.listPresets || [];
+    // For backward compatibility, fetch first page with a large limit
+    const data = await this.executeQuery(GET_ALL_PRESETS, {
+      filter,
+      page: 1,
+      limit: 1000,
+    });
+    return data.listPresets?.presets || [];
+  }
+
+  async findPaginated(
+    page: number = 1,
+    limit: number = 20,
+    filter?: any
+  ): Promise<PaginatedPresets> {
+    const data = await this.executeQuery(GET_ALL_PRESETS, {
+      filter,
+      page,
+      limit,
+    });
+    return (
+      data.listPresets || {
+        presets: [],
+        totalCount: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        currentPage: page,
+        totalPages: 0,
+      }
+    );
   }
 
   async findById(id: string): Promise<Preset | null> {

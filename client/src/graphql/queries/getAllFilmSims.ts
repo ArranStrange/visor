@@ -1,26 +1,33 @@
 import { gql } from "@apollo/client";
 
 export const GET_ALL_FILMSIMS = gql`
-  query ListFilmSims {
-    listFilmSims {
-      id
-      name
-      slug
-      description
-      notes
-      tags {
+  query ListFilmSims($page: Int, $limit: Int, $filter: JSON) {
+    listFilmSims(page: $page, limit: $limit, filter: $filter) {
+      filmSims {
         id
-        displayName
+        name
+        slug
+        description
+        notes
+        tags {
+          id
+          displayName
+        }
+        creator {
+          id
+          username
+          avatar
+        }
+        sampleImages {
+          url
+        }
+        featured
       }
-      creator {
-        id
-        username
-        avatar
-      }
-      sampleImages {
-        url
-      }
-      featured
+      totalCount
+      hasNextPage
+      hasPreviousPage
+      currentPage
+      totalPages
     }
   }
 `;

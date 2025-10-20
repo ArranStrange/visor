@@ -51,7 +51,7 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
 
   const { data: presetData, loading: searchLoading } =
     useQuery(GET_ALL_PRESETS);
-  const allPresets = presetData?.listPresets || [];
+  const allPresets = presetData?.listPresets?.presets || [];
 
   const {
     searchQuery,

@@ -21,7 +21,9 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   if (loading) return null;
 
   const featuredItems =
-    type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
+    type === "preset"
+      ? data?.featuredPreset?.presets
+      : data?.featuredFilmSim?.filmSims;
 
   const item = featuredItems?.[0];
   if (!item) {

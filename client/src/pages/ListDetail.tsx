@@ -173,11 +173,16 @@ const ListDetail: React.FC = () => {
 
   // Create maps for quick lookup of full data
   const presetsMap = new Map(
-    presetsData?.listPresets?.map((preset: any) => [preset.id, preset]) || []
+    presetsData?.listPresets?.presets?.map((preset: any) => [
+      preset.id,
+      preset,
+    ]) || []
   );
   const filmSimsMap = new Map(
-    filmSimsData?.listFilmSims?.map((filmSim: any) => [filmSim.id, filmSim]) ||
-      []
+    filmSimsData?.listFilmSims?.filmSims?.map((filmSim: any) => [
+      filmSim.id,
+      filmSim,
+    ]) || []
   );
 
   // Prepare data for ContentGridLoader using full data from the maps

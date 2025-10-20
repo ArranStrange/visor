@@ -1,22 +1,29 @@
 import { gql } from "@apollo/client";
 
 export const LIST_PRESETS = gql`
-  query ListPresets {
-    listPresets {
-      id
-      title
-      slug
-      afterImage
-      tags {
+  query ListPresets($page: Int, $limit: Int, $filter: JSON) {
+    listPresets(page: $page, limit: $limit, filter: $filter) {
+      presets {
         id
-        name
-        displayName
+        title
+        slug
+        afterImage
+        tags {
+          id
+          name
+          displayName
+        }
+        creator {
+          id
+          username
+          avatar
+        }
       }
-      creator {
-        id
-        username
-        avatar
-      }
+      totalCount
+      hasNextPage
+      hasPreviousPage
+      currentPage
+      totalPages
     }
   }
 `;

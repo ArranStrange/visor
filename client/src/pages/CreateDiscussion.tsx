@@ -71,9 +71,9 @@ const CreateDiscussion: React.FC = () => {
   // Combine and filter items based on type
   const getAvailableItems = () => {
     if (form.linkedToType === "PRESET") {
-      return presetsData?.listPresets || [];
+      return presetsData?.listPresets?.presets || [];
     } else if (form.linkedToType === "FILMSIM") {
-      return filmSimsData?.listFilmSims || [];
+      return filmSimsData?.listFilmSims?.filmSims || [];
     }
     return [];
   };

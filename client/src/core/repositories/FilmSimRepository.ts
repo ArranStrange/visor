@@ -17,10 +17,46 @@ export interface FilmSim {
   settings?: any;
 }
 
+export interface PaginatedFilmSims {
+  filmSims: FilmSim[];
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  currentPage: number;
+  totalPages: number;
+}
+
 export class FilmSimRepository extends BaseRepository<FilmSim> {
   async findAll(filter?: any): Promise<FilmSim[]> {
-    const data = await this.executeQuery(GET_ALL_FILMSIMS, { filter });
-    return data.listFilmSims || [];
+    // For backward compatibility, fetch first page with a large limit
+    const data = await this.executeQuery(GET_ALL_FILMSIMS, {
+      filter,
+      page: 1,
+      limit: 1000,
+    });
+    return data.listFilmSims?.filmSims || [];
+  }
+
+  async findPaginated(
+    page: number = 1,
+    limit: number = 20,
+    filter?: any
+  ): Promise<PaginatedFilmSims> {
+    const data = await this.executeQuery(GET_ALL_FILMSIMS, {
+      filter,
+      page,
+      limit,
+    });
+    return (
+      data.listFilmSims || {
+        filmSims: [],
+        totalCount: 0,
+        hasNextPage: false,
+        hasPreviousPage: false,
+        currentPage: page,
+        totalPages: 0,
+      }
+    );
   }
 
   async findById(id: string): Promise<FilmSim | null> {

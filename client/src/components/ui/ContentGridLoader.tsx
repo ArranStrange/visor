@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { useMobileDetection } from "../../hooks/useMobileDetection";
 import { usePresetRepository } from "../../core/hooks/useService";
 import { useFilmSimRepository } from "../../core/hooks/useService";
 
@@ -24,7 +23,7 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 20;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
@@ -34,145 +33,172 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   renderItem,
 }) => {
   // State management - all hooks at the top level
-  const [visibleItems, setVisibleItems] = useState(ITEMS_PER_PAGE);
   const [content, setContent] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Refs and external hooks
   const containerRef = useRef<HTMLDivElement>(null);
-  const isMobile = useMobileDetection();
   const { randomizeOrder } = useContentType();
 
   // Service hooks
   const presetRepository = usePresetRepository();
   const filmSimRepository = useFilmSimRepository();
 
-  const fetchContentData = useCallback(async () => {
-    if (customData) {
-      const shaped = customData.map((item: any) => {
-        if (
-          item &&
-          typeof item === "object" &&
-          "type" in item &&
-          "data" in item
-        ) {
-          return item as ContentItem;
-        }
-        return { type: "preset" as const, data: item } as ContentItem;
-      });
-      setContent(shaped);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    try {
-      const results: ContentItem[] = [];
-
-      // Fetch presets
-      if (contentType === "all" || contentType === "presets") {
-        const presets = await presetRepository.findAll(filter);
-        results.push(
-          ...presets
-            .filter((p: any) => p && p.creator)
-            .filter((p: any) => {
-              // Apply tag filter if provided
-              if (filter?.tagId) {
-                return p.tags?.some((tag: any) => tag.id === filter.tagId);
-              }
-              return true;
-            })
-            .map((p: any) => ({
-              type: "preset" as const,
-              data: {
-                ...p,
-                tags: p.tags || [], // Ensure tags is always an array
-              },
-            }))
-        );
+  const fetchContentData = useCallback(
+    async (page: number, append: boolean = false) => {
+      if (customData) {
+        const shaped = customData.map((item: any) => {
+          if (
+            item &&
+            typeof item === "object" &&
+            "type" in item &&
+            "data" in item
+          ) {
+            return item as ContentItem;
+          }
+          return { type: "preset" as const, data: item } as ContentItem;
+        });
+        setContent(shaped);
+        setHasMore(false);
+        return;
       }
 
-      // Fetch film sims
-      if (contentType === "all" || contentType === "films") {
-        const filmSims = await filmSimRepository.findAll(filter);
-        results.push(
-          ...filmSims
-            .filter((f: any) => f && f.creator)
-            .filter((f: any) => {
-              // Apply tag filter if provided
-              if (filter?.tagId) {
-                return f.tags?.some((tag: any) => tag.id === filter.tagId);
-              }
-              return true;
-            })
-            .map((f: any) => ({
-              type: "film" as const,
-              data: {
-                ...f,
-                title: f.name,
-                thumbnail: f.sampleImages?.[0]?.url || "",
-                tags: f.tags || [], // Ensure tags is always an array
-              },
-            }))
-        );
-      }
-
-      // Add BuyMeACoffee card
-      const buyMeACoffeeCard: ContentItem = {
-        type: "buymeacoffee",
-        data: {
-          id: "buymeacoffee",
-          title: "Buy Me a Coffee",
-        },
-      };
-
-      if (results.length > 0) {
-        results.splice(0, 0, buyMeACoffeeCard);
+      if (append) {
+        setIsLoadingMore(true);
       } else {
-        results.unshift(buyMeACoffeeCard);
+        setLoading(true);
       }
+      setError(null);
 
-      // Apply search filter
-      const filteredContent = searchQuery
-        ? results.filter((item) =>
-            item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-        : results;
+      try {
+        const results: ContentItem[] = [];
+        let hasNextPage = false;
 
-      setContent(filteredContent);
-    } catch (err) {
-      console.error("Error fetching content:", err);
-      setError(err instanceof Error ? err.message : "Failed to load content");
-    } finally {
-      setLoading(false);
-    }
-  }, [
-    contentType,
-    filter,
-    searchQuery,
-    customData,
-    presetRepository,
-    filmSimRepository,
-  ]);
+        // Fetch presets with pagination
+        if (contentType === "all" || contentType === "presets") {
+          const paginatedPresets = await presetRepository.findPaginated(
+            page,
+            ITEMS_PER_PAGE,
+            filter
+          );
+          hasNextPage = paginatedPresets.hasNextPage;
+
+          results.push(
+            ...paginatedPresets.presets
+              .filter((p: any) => p && p.creator)
+              .filter((p: any) => {
+                // Apply tag filter if provided
+                if (filter?.tagId) {
+                  return p.tags?.some((tag: any) => tag.id === filter.tagId);
+                }
+                return true;
+              })
+              .map((p: any) => ({
+                type: "preset" as const,
+                data: {
+                  ...p,
+                  tags: p.tags || [], // Ensure tags is always an array
+                },
+              }))
+          );
+        }
+
+        // Fetch film sims with pagination
+        if (contentType === "all" || contentType === "films") {
+          const paginatedFilmSims = await filmSimRepository.findPaginated(
+            page,
+            ITEMS_PER_PAGE,
+            filter
+          );
+          hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
+
+          results.push(
+            ...paginatedFilmSims.filmSims
+              .filter((f: any) => f && f.creator)
+              .filter((f: any) => {
+                // Apply tag filter if provided
+                if (filter?.tagId) {
+                  return f.tags?.some((tag: any) => tag.id === filter.tagId);
+                }
+                return true;
+              })
+              .map((f: any) => ({
+                type: "film" as const,
+                data: {
+                  ...f,
+                  title: f.name,
+                  thumbnail: f.sampleImages?.[0]?.url || "",
+                  tags: f.tags || [], // Ensure tags is always an array
+                },
+              }))
+          );
+        }
+
+        // Add BuyMeACoffee card only on first page
+        if (page === 1 && results.length > 0) {
+          const buyMeACoffeeCard: ContentItem = {
+            type: "buymeacoffee",
+            data: {
+              id: "buymeacoffee",
+              title: "Buy Me a Coffee",
+            },
+          };
+          results.splice(0, 0, buyMeACoffeeCard);
+        }
+
+        // Apply search filter
+        const filteredContent = searchQuery
+          ? results.filter((item) =>
+              item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
+            )
+          : results;
+
+        // Update content based on whether we're appending or replacing
+        if (append) {
+          setContent((prevContent) => [...prevContent, ...filteredContent]);
+        } else {
+          setContent(filteredContent);
+        }
+
+        setHasMore(hasNextPage);
+      } catch (err) {
+        console.error("Error fetching content:", err);
+        setError(err instanceof Error ? err.message : "Failed to load content");
+      } finally {
+        setLoading(false);
+        setIsLoadingMore(false);
+      }
+    },
+    [
+      contentType,
+      filter,
+      searchQuery,
+      customData,
+      presetRepository,
+      filmSimRepository,
+    ]
+  );
 
   // Fetch content on mount and when dependencies change
   useEffect(() => {
-    fetchContentData();
-  }, [fetchContentData]);
-
-  // Reset visible items when content changes
-  useEffect(() => {
-    setVisibleItems(ITEMS_PER_PAGE);
-  }, [content.length]);
+    setCurrentPage(1);
+    setHasMore(true);
+    setContent([]);
+    fetchContentData(1, false);
+  }, [contentType, filter, searchQuery]);
 
   // Load more function
   const loadMore = useCallback(() => {
-    setVisibleItems((prev) => Math.min(prev + ITEMS_PER_PAGE, content.length));
-  }, [content.length]);
-
-  const hasMore = visibleItems < content.length;
+    if (!isLoadingMore && hasMore) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      fetchContentData(nextPage, true);
+    }
+  }, [currentPage, hasMore, isLoadingMore, fetchContentData]);
 
   // Error state
   if (error) {
@@ -193,8 +219,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   }
 
   // Render content
-  const visibleData = content.slice(0, visibleItems);
-
   const renderContentItem = (item: ContentItem, index: number) => {
     if (renderItem) {
       return (
@@ -231,10 +255,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         loading={false}
         onLoadMore={loadMore}
         hasMore={hasMore}
-        isLoading={loading}
+        isLoading={isLoadingMore}
         randomizeOrder={randomizeOrder}
       >
-        {visibleData.map((item, index) => renderContentItem(item, index))}
+        {content.map((item, index) => renderContentItem(item, index))}
       </StaggeredGrid>
     </Box>
   );
