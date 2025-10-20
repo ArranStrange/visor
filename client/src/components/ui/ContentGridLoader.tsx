@@ -69,7 +69,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
             .filter((p: any) => p && p.creator)
             .map((p: any) => ({
               type: "preset" as const,
-              data: p,
+              data: {
+                ...p,
+                tags: p.tags || [], // Ensure tags is always an array
+              },
             }))
         );
       }
@@ -86,7 +89,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
                 ...f,
                 title: f.name,
                 thumbnail: f.sampleImages?.[0]?.url || "",
-                tags: f.tags || [],
+                tags: f.tags || [], // Ensure tags is always an array
               },
             }))
         );

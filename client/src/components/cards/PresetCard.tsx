@@ -150,7 +150,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
         </Box>
 
         <Box className="tags-overlay" sx={overlayTagsContainerStyles}>
-          {tags
+          {(tags || [])
             .slice(0, 3)
             .reverse()
             .map((tag, index) => (
