@@ -8,9 +8,16 @@ import {
   Avatar,
   IconButton,
   Tooltip,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import AddToListDialog from "../dialogs/AddToListDialog";
@@ -63,6 +70,9 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);
+    const [menuAnchorEl, setMenuAnchorEl] = React.useState<null | HTMLElement>(
+      null
+    );
     const isMobile = useMobileDetection();
     const { isAdmin, toggleFilmSimFeatured } = useFeatured();
 
@@ -89,6 +99,39 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
     const handleCloseDialog = useCallback(() => {
       setAddToListOpen(false);
     }, []);
+
+    const handleMenuOpen = useCallback(
+      (event: React.MouseEvent<HTMLElement>) => {
+        event.stopPropagation();
+        setMenuAnchorEl(event.currentTarget);
+      },
+      []
+    );
+
+    const handleMenuClose = useCallback(() => {
+      setMenuAnchorEl(null);
+    }, []);
+
+    const handleEdit = useCallback(() => {
+      handleMenuClose();
+      // TODO: Implement edit functionality
+      console.log("Edit film sim:", id);
+    }, [handleMenuClose, id]);
+
+    const handleDelete = useCallback(() => {
+      handleMenuClose();
+      // TODO: Implement delete functionality
+      console.log("Delete film sim:", id);
+    }, [handleMenuClose, id]);
+
+    const handleToggleFeatured = useCallback(async () => {
+      handleMenuClose();
+      try {
+        await toggleFilmSimFeatured(id, featured);
+      } catch (error) {
+        console.error("Error toggling featured status:", error);
+      }
+    }, [handleMenuClose, toggleFilmSimFeatured, id, featured]);
 
     useEffect(() => {
       if (!isMobile && showOptions) {
@@ -143,42 +186,27 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
 
         {isAdmin && id && (
           <Box
-            className="featured-button"
+            className="options-button"
             sx={{
               ...overlayButtonStyles,
               top: "8px",
               right: "8px",
             }}
           >
-            <Tooltip
-              title={featured ? "Remove from featured" : "Make featured"}
+            <IconButton
+              className="floating"
+              onClick={handleMenuOpen}
+              onMouseDown={(e) => e.stopPropagation()}
+              onMouseUp={(e) => e.stopPropagation()}
+              sx={{
+                color: "rgba(255, 255, 255, 0.7)",
+                "&:hover": {
+                  color: "white",
+                },
+              }}
             >
-              <IconButton
-                className="floating"
-                onClick={async (e) => {
-                  e.stopPropagation();
-                  try {
-                    await toggleFilmSimFeatured(id, featured);
-                  } catch (error) {
-                    console.error("Error toggling featured status:", error);
-                  }
-                }}
-                onMouseDown={(e) => e.stopPropagation()}
-                onMouseUp={(e) => e.stopPropagation()}
-                sx={{
-                  color: featured ? "#FFD700" : "rgba(255, 255, 255, 0.7)",
-                  "&:hover": {
-                    color: featured ? "#FFA500" : "#FFD700",
-                  },
-                }}
-              >
-                {featured ? (
-                  <StarIcon fontSize="small" />
-                ) : (
-                  <StarBorderIcon fontSize="small" />
-                )}
-              </IconButton>
-            </Tooltip>
+              <MoreVertIcon fontSize="small" />
+            </IconButton>
           </Box>
         )}
 
@@ -259,6 +287,50 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           filmSimId={id}
           itemName={name}
         />
+
+        <Menu
+          anchorEl={menuAnchorEl}
+          open={Boolean(menuAnchorEl)}
+          onClose={handleMenuClose}
+          onClick={(e) => e.stopPropagation()}
+          PaperProps={{
+            sx: {
+              backgroundColor: "rgba(0, 0, 0, 0.9)",
+              color: "white",
+              "& .MuiMenuItem-root": {
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                },
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={handleEdit}>
+            <ListItemIcon>
+              <EditIcon sx={{ color: "white" }} />
+            </ListItemIcon>
+            <ListItemText>Edit</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleToggleFeatured}>
+            <ListItemIcon>
+              {featured ? (
+                <StarIcon sx={{ color: "#FFD700" }} />
+              ) : (
+                <StarBorderIcon sx={{ color: "white" }} />
+              )}
+            </ListItemIcon>
+            <ListItemText>
+              {featured ? "Remove from featured" : "Make featured"}
+            </ListItemText>
+          </MenuItem>
+          <MenuItem onClick={handleDelete}>
+            <ListItemIcon>
+              <DeleteIcon sx={{ color: "#ff4444" }} />
+            </ListItemIcon>
+            <ListItemText>Delete</ListItemText>
+          </MenuItem>
+        </Menu>
       </Card>
     );
   }
