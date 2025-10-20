@@ -24,6 +24,8 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
+import { useAuth } from "../../context/AuthContext";
+import { useAdmin } from "../../context/AdminContext";
 import { Discussion as DiscussionType } from "../../types/discussions";
 import { User } from "../../types/discussions";
 import {
@@ -53,7 +55,16 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   onEdit,
 }) => {
   const navigate = useNavigate();
+  const { isAdmin } = useAdmin();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  // Debug logging
+  console.log("DiscussionCard - user:", user);
+  console.log("DiscussionCard - isAdmin:", isAdmin);
+  console.log(
+    "DiscussionCard - discussion.linkedTo.refId:",
+    discussion.linkedTo.refId
+  );
   const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
     refetchQueries: [GET_DISCUSSIONS],
   });
@@ -171,7 +182,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               >
                 {discussion.title}
               </Typography>
-              {user?.isAdmin && !discussion.linkedTo.refId && (
+              {isAdmin && !discussion.linkedTo.refId && (
                 <Tooltip title="Admin options">
                   <IconButton size="small" onClick={handleMenuOpen}>
                     <MoreVertIcon fontSize="small" />
