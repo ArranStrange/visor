@@ -644,11 +644,19 @@ const discussionResolvers = {
         filmSim: discussion.linkedTo.type === "filmsim" ? linkedItem : null,
       };
     },
+    createdAt: (discussion) => {
+      return discussion.createdAt ? discussion.createdAt.toISOString() : new Date().toISOString();
+    },
+    updatedAt: (discussion) => {
+      return discussion.updatedAt ? discussion.updatedAt.toISOString() : new Date().toISOString();
+    },
   },
 
   DiscussionPost: {
     timestamp: (post) => {
-      return post.timestamp ? post.timestamp.toISOString() : new Date().toISOString();
+      return post.timestamp
+        ? post.timestamp.toISOString()
+        : new Date().toISOString();
     },
     editedAt: (post) => {
       return post.editedAt ? post.editedAt.toISOString() : null;
@@ -657,7 +665,9 @@ const discussionResolvers = {
 
   DiscussionReply: {
     timestamp: (reply) => {
-      return reply.timestamp ? reply.timestamp.toISOString() : new Date().toISOString();
+      return reply.timestamp
+        ? reply.timestamp.toISOString()
+        : new Date().toISOString();
     },
     editedAt: (reply) => {
       return reply.editedAt ? reply.editedAt.toISOString() : null;
