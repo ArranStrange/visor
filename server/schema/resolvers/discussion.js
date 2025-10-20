@@ -625,18 +625,17 @@ const discussionResolvers = {
     // Admin-only mutations
     adminDeleteDiscussion: async (_, { id }, context) => {
       try {
+        console.log("Admin delete discussion - ID received:", id);
         const user = context.user;
         if (!user || !user.isAdmin) {
           throw new Error("Admin access required");
         }
 
         const discussion = await Discussion.findById(id);
+        console.log("Discussion found:", discussion ? "Yes" : "No");
         if (!discussion) {
           throw new Error("Discussion not found");
         }
-
-        // Admin can delete any discussion, including linked ones
-        // (removed the linked discussion protection for admin deletions)
 
         await Discussion.findByIdAndDelete(id);
         return true;

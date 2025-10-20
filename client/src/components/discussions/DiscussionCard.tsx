@@ -95,6 +95,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
 
   const handleAdminDelete = async () => {
     try {
+      console.log("Attempting to delete discussion with ID:", discussion.id);
       await adminDeleteDiscussion({
         variables: { id: discussion.id },
       });
