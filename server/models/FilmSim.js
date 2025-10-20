@@ -96,6 +96,11 @@ const filmSimSchema = new Schema(
       default: true,
     },
 
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
     // Basic Settings
     version: String,
     processVersion: String,

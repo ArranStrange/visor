@@ -747,6 +747,56 @@ const presetResolvers = {
         throw new Error(`Failed to upload preset: ${error.message}`);
       }
     },
+
+    makePresetFeatured: async (_, { presetId }, { req }) => {
+      if (!req.user) {
+        throw new AuthenticationError("You must be logged in");
+      }
+
+      if (!req.user.isAdmin) {
+        throw new AuthenticationError("Only administrators can feature presets");
+      }
+
+      try {
+        const preset = await Preset.findById(presetId);
+        if (!preset) {
+          throw new UserInputError("Preset not found");
+        }
+
+        preset.featured = true;
+        await preset.save();
+
+        return preset;
+      } catch (error) {
+        console.error("Make preset featured error:", error);
+        throw new Error("Failed to feature preset");
+      }
+    },
+
+    removePresetFeatured: async (_, { presetId }, { req }) => {
+      if (!req.user) {
+        throw new AuthenticationError("You must be logged in");
+      }
+
+      if (!req.user.isAdmin) {
+        throw new AuthenticationError("Only administrators can remove featured status");
+      }
+
+      try {
+        const preset = await Preset.findById(presetId);
+        if (!preset) {
+          throw new UserInputError("Preset not found");
+        }
+
+        preset.featured = false;
+        await preset.save();
+
+        return preset;
+      } catch (error) {
+        console.error("Remove preset featured error:", error);
+        throw new Error("Failed to remove featured status");
+      }
+    },
   },
   Preset: {
     creator: async (preset) => await User.findById(preset.creator),

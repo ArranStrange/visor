@@ -433,6 +433,56 @@ const filmSimResolvers = {
         throw error;
       }
     },
+
+    makeFilmSimFeatured: async (_, { filmSimId }, { req }) => {
+      if (!req.user) {
+        throw new AuthenticationError("You must be logged in");
+      }
+
+      if (!req.user.isAdmin) {
+        throw new AuthenticationError("Only administrators can feature film sims");
+      }
+
+      try {
+        const filmSim = await FilmSim.findById(filmSimId);
+        if (!filmSim) {
+          throw new UserInputError("Film sim not found");
+        }
+
+        filmSim.featured = true;
+        await filmSim.save();
+
+        return filmSim;
+      } catch (error) {
+        console.error("Make film sim featured error:", error);
+        throw new Error("Failed to feature film sim");
+      }
+    },
+
+    removeFilmSimFeatured: async (_, { filmSimId }, { req }) => {
+      if (!req.user) {
+        throw new AuthenticationError("You must be logged in");
+      }
+
+      if (!req.user.isAdmin) {
+        throw new AuthenticationError("Only administrators can remove featured status");
+      }
+
+      try {
+        const filmSim = await FilmSim.findById(filmSimId);
+        if (!filmSim) {
+          throw new UserInputError("Film sim not found");
+        }
+
+        filmSim.featured = false;
+        await filmSim.save();
+
+        return filmSim;
+      } catch (error) {
+        console.error("Remove film sim featured error:", error);
+        throw new Error("Failed to remove featured status");
+      }
+    },
   },
 };
 

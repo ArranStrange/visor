@@ -165,6 +165,7 @@ const typeDefs = gql`
     likes: [User]
     downloads: Int
     isPublished: Boolean
+    featured: Boolean
     comments: [Comment]
     createdAt: String
     updatedAt: String
@@ -609,6 +610,8 @@ const typeDefs = gql`
     deletePreset(id: ID!): Boolean
     likePreset(presetId: ID!): Boolean
     downloadPreset(presetId: ID!): Boolean
+    makePresetFeatured(presetId: ID!): Preset
+    removePresetFeatured(presetId: ID!): Preset
   }
 `;
 

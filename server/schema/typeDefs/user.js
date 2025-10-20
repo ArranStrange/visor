@@ -10,6 +10,7 @@ module.exports = gql`
     emailVerified: Boolean!
     instagram: String
     cameras: [String]
+    isAdmin: Boolean!
     presets: [Preset!]!
     filmSims: [FilmSim!]!
   }

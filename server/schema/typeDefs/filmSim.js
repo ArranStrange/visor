@@ -38,6 +38,7 @@ const typeDefs = gql`
     notes: String
     comments: [Comment]
     likes: [User]
+    featured: Boolean
     createdAt: String
     updatedAt: String
   }
@@ -102,6 +103,8 @@ const typeDefs = gql`
 
     addRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
     removeRecommendedPreset(filmSimId: ID!, presetId: ID!): FilmSim
+    makeFilmSimFeatured(filmSimId: ID!): FilmSim
+    removeFilmSimFeatured(filmSimId: ID!): FilmSim
   }
 `;
 
