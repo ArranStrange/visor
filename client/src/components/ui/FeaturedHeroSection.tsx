@@ -44,15 +44,17 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
     setCurrentIndex((p) => (p - 1 + images.length) % images.length);
   };
   const onWheel = (e: React.WheelEvent) => {
+    // Only react to horizontal wheel gestures; ignore vertical scrolling
     if (images.length < 2 || isNavigating.current) return;
-    const delta = Math.abs(e.deltaY) > Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-    if (Math.abs(delta) < 5) return;
+    const deltaX = e.deltaX;
+    if (Math.abs(deltaX) < 10) return;
     isNavigating.current = true;
-    if (delta > 0) goNext();
+    if (deltaX > 0) goNext();
     else goPrev();
     setTimeout(() => {
       isNavigating.current = false;
     }, NAVIGATION_COOLDOWN_MS);
+    e.preventDefault();
   };
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
