@@ -190,30 +190,41 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         )}
+
+        {/* Pagination dots overlay on image */}
+        {images.length > 1 && (
+          <Box
+            sx={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 8,
+              display: "flex",
+              justifyContent: "center",
+              gap: 1.25,
+              pointerEvents: "auto",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {images.map((_, idx) => (
+              <Box
+                key={idx}
+                onClick={() => setCurrentIndex(idx)}
+                sx={{
+                  width: idx === currentIndex ? 10 : 8,
+                  height: idx === currentIndex ? 10 : 8,
+                  borderRadius: "50%",
+                  backgroundColor:
+                    idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.35)",
+                  cursor: "pointer",
+                  transition: "all .2s ease",
+                }}
+              />
+            ))}
+          </Box>
+        )}
       </Box>
 
-      {/* Pagination dots */}
-      {images.length > 1 && (
-        <Box
-          sx={{ display: "flex", justifyContent: "center", gap: 1.25, mt: 2 }}
-        >
-          {images.map((_, idx) => (
-            <Box
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              sx={{
-                width: idx === currentIndex ? 10 : 8,
-                height: idx === currentIndex ? 10 : 8,
-                borderRadius: "50%",
-                backgroundColor:
-                  idx === currentIndex ? "#556cd6" : "rgba(0,0,0,0.25)",
-                cursor: "pointer",
-                transition: "all .2s ease",
-              }}
-            />
-          ))}
-        </Box>
-      )}
     </Box>
   );
 };
