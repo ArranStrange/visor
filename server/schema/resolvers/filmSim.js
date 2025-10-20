@@ -50,9 +50,35 @@ const filmSimResolvers = {
       }
     },
 
-    listFilmSims: async (_, { filter }) => {
+    listFilmSims: async (_, { filter, page = 1, limit = 20 }) => {
       try {
-        return await populateFilmSim(FilmSim.find(filter || {}));
+        // Calculate pagination
+        const skip = (page - 1) * limit;
+
+        // Get total count
+        const totalCount = await FilmSim.countDocuments(filter || {});
+
+        // Fetch paginated film sims
+        const filmSims = await populateFilmSim(
+          FilmSim.find(filter || {})
+            .sort({ createdAt: -1 }) // Sort by newest first
+            .skip(skip)
+            .limit(limit)
+        );
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limit);
+        const hasNextPage = page < totalPages;
+        const hasPreviousPage = page > 1;
+
+        return {
+          filmSims,
+          totalCount,
+          hasNextPage,
+          hasPreviousPage,
+          currentPage: page,
+          totalPages,
+        };
       } catch (error) {
         console.error("Error listing film simulations:", error);
         throw new Error("Failed to list film simulations: " + error.message);

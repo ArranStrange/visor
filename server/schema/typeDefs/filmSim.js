@@ -77,9 +77,18 @@ const typeDefs = gql`
     compatibleCameras: [String!]
   }
 
+  type PaginatedFilmSims {
+    filmSims: [FilmSim!]!
+    totalCount: Int!
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    currentPage: Int!
+    totalPages: Int!
+  }
+
   extend type Query {
     getFilmSim(slug: String!): FilmSim
-    listFilmSims(filter: JSON): [FilmSim]
+    listFilmSims(filter: JSON, page: Int, limit: Int): PaginatedFilmSims!
   }
 
   extend type Mutation {

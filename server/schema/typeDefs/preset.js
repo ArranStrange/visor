@@ -567,10 +567,19 @@ const typeDefs = gql`
     snapshot: String
   }
 
+  type PaginatedPresets {
+    presets: [Preset!]!
+    totalCount: Int!
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+    currentPage: Int!
+    totalPages: Int!
+  }
+
   extend type Query {
     getPreset(slug: String!): Preset
     getPresetById(id: ID!): Preset
-    listPresets(filter: JSON): [Preset]
+    listPresets(filter: JSON, page: Int, limit: Int): PaginatedPresets!
   }
 
   extend type Mutation {

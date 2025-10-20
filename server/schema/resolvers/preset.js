@@ -446,17 +446,43 @@ const presetResolvers = {
       }
     },
     getPresetById: async (_, { id }) => await Preset.findById(id),
-    listPresets: async (_, { filter }) => {
+    listPresets: async (_, { filter, page = 1, limit = 20 }) => {
       try {
+        // Calculate pagination
+        const skip = (page - 1) * limit;
+
+        // Get total count
+        const totalCount = await Preset.countDocuments(filter || {});
+
+        // Fetch paginated presets
         const presets = await Preset.find(filter || {})
           .populate({ path: "creator", select: "id username avatar" })
           .populate({ path: "tags", select: "id name displayName" })
           .populate({ path: "filmSim", select: "id name slug" })
           .populate({ path: "afterImage", select: "id url publicId" })
-          .populate({ path: "sampleImages", select: "id url caption" });
-        return presets.filter(
+          .populate({ path: "sampleImages", select: "id url caption" })
+          .sort({ createdAt: -1 }) // Sort by newest first
+          .skip(skip)
+          .limit(limit);
+
+        // Filter out presets without afterImage
+        const filteredPresets = presets.filter(
           (preset) => preset.afterImage && preset.afterImage.url
         );
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limit);
+        const hasNextPage = page < totalPages;
+        const hasPreviousPage = page > 1;
+
+        return {
+          presets: filteredPresets,
+          totalCount,
+          hasNextPage,
+          hasPreviousPage,
+          currentPage: page,
+          totalPages,
+        };
       } catch (error) {
         console.error("Error listing presets:", error);
         throw new Error("Failed to list presets: " + error.message);
