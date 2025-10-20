@@ -16,8 +16,17 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
 
   const featuredItems =
     type === "preset" ? data?.featuredPreset : data?.featuredFilmSim;
+  // Hooks must run on every render to keep order stable
+  const [currentIndex, setCurrentIndex] = React.useState(0);
+  const touchStartX = React.useRef<number | null>(null);
+  const isNavigating = React.useRef(false);
+  const NAVIGATION_COOLDOWN_MS = 350;
+
   const item = featuredItems?.[0];
-  if (!item) return null;
+  // If there is no featured item, render nothing to avoid hook order changes elsewhere
+  if (!item) {
+    return <Box sx={{ width: { xs: "100%", md: "70%" }, mx: "auto", height: "40vh" }} />;
+  }
 
   const images: string[] =
     type === "preset"
@@ -26,14 +35,9 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           .map((s: { url?: string }) => s?.url)
           .filter(Boolean);
 
-  const [currentIndex, setCurrentIndex] = React.useState(0);
   const imageUrl = images[currentIndex] || "";
 
-  // Wheel and touch navigation
-  const touchStartX = React.useRef<number | null>(null);
-  const isNavigating = React.useRef(false);
-  const NAVIGATION_COOLDOWN_MS = 350;
-
+  // Navigation helpers (defined after images are known)
   const goNext = () => {
     if (images.length < 2) return;
     setCurrentIndex((p) => (p + 1) % images.length);
