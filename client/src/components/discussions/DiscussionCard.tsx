@@ -57,14 +57,6 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   const navigate = useNavigate();
   const { isAdmin } = useAdmin();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
-  // Debug logging
-  console.log("DiscussionCard - user:", user);
-  console.log("DiscussionCard - isAdmin:", isAdmin);
-  console.log(
-    "DiscussionCard - discussion.linkedTo.refId:",
-    discussion.linkedTo.refId
-  );
   const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
     refetchQueries: [GET_DISCUSSIONS],
   });
@@ -182,7 +174,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               >
                 {discussion.title}
               </Typography>
-              {isAdmin && !discussion.linkedTo.refId && (
+              {isAdmin && (
                 <Tooltip title="Admin options">
                   <IconButton size="small" onClick={handleMenuOpen}>
                     <MoreVertIcon fontSize="small" />
@@ -295,12 +287,22 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
           </ListItemIcon>
           <ListItemText>Edit Discussion</ListItemText>
         </MenuItem>
-        <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
-          <ListItemIcon>
-            <DeleteIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Delete Discussion</ListItemText>
-        </MenuItem>
+        {!discussion.linkedTo.refId && (
+          <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Delete Discussion</ListItemText>
+          </MenuItem>
+        )}
+        {discussion.linkedTo.refId && (
+          <MenuItem disabled sx={{ color: "text.secondary" }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Cannot delete linked discussion</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
     </Card>
   );
