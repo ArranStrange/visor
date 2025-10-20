@@ -148,5 +148,6 @@ module.exports = gql`
       postIndex: Int!
       replyIndex: Int!
     ): Boolean!
+    adminUpdateDiscussion(id: ID!, input: UpdateDiscussionInput!): Discussion!
   }
 `;

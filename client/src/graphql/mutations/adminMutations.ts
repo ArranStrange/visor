@@ -46,3 +46,65 @@ export const ADMIN_DELETE_REPLY = gql`
     )
   }
 `;
+
+export const ADMIN_UPDATE_DISCUSSION = gql`
+  mutation AdminUpdateDiscussion($id: ID!, $input: UpdateDiscussionInput!) {
+    adminUpdateDiscussion(id: $id, input: $input) {
+      id
+      title
+      description
+      linkedTo {
+        type
+        refId
+        preset {
+          id
+          title
+          slug
+          afterImage {
+            id
+            url
+          }
+        }
+        filmSim {
+          id
+          name
+          slug
+          sampleImages {
+            id
+            url
+          }
+        }
+      }
+      createdBy {
+        id
+        username
+        avatar
+      }
+      createdAt
+      updatedAt
+      posts {
+        userId
+        username
+        avatar
+        content
+        timestamp
+        isEdited
+        editedAt
+        replies {
+          userId
+          username
+          avatar
+          content
+          timestamp
+          isEdited
+          editedAt
+        }
+      }
+      followers {
+        id
+        username
+        avatar
+      }
+    }
+  }
+`;

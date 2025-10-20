@@ -10,6 +10,7 @@ import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
 } from "../../graphql/mutations/discussions";
+import { ADMIN_DELETE_DISCUSSION } from "../../graphql/mutations/adminMutations";
 import DiscussionFiltersComponent from "./DiscussionFilters";
 import DiscussionCard from "./DiscussionCard";
 import DiscussionEmptyState from "./DiscussionEmptyState";
@@ -73,6 +74,20 @@ const DiscussionList: React.FC = () => {
     ],
   });
 
+  const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
+    refetchQueries: [
+      {
+        query: GET_DISCUSSIONS,
+        variables: {
+          search: filters.search || undefined,
+          type: filters.type !== "all" ? filters.type : undefined,
+          page: 1,
+          limit: 20,
+        },
+      },
+    ],
+  });
+
   const discussions: DiscussionType[] = data?.getDiscussions?.discussions || [];
 
   const handleFollow = async (discussionId: string, isFollowed: boolean) => {
@@ -85,6 +100,18 @@ const DiscussionList: React.FC = () => {
     } catch (error) {
       console.error("Failed to follow/unfollow discussion:", error);
     }
+  };
+
+  const handleAdminDelete = async (discussionId: string) => {
+    try {
+      await adminDeleteDiscussion({ variables: { id: discussionId } });
+    } catch (error) {
+      console.error("Failed to delete discussion:", error);
+    }
+  };
+
+  const handleAdminEdit = (discussionId: string) => {
+    navigate(`/discussions/${discussionId}/edit`);
   };
 
   const handleSearchChange = (value: string) => {
@@ -172,6 +199,8 @@ const DiscussionList: React.FC = () => {
               user={user}
               searchTerm={filters.search || ""}
               onFollow={handleFollow}
+              onDelete={handleAdminDelete}
+              onEdit={handleAdminEdit}
             />
           ))
         )}

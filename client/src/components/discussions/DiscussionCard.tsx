@@ -19,6 +19,7 @@ import {
   BookmarkBorder as BookmarkBorderIcon,
   Chat as ChatIcon,
   Delete as DeleteIcon,
+  Edit as EditIcon,
   MoreVert as MoreVertIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +41,7 @@ interface DiscussionCardProps {
   searchTerm: string;
   onFollow: (discussionId: string, isFollowed: boolean) => void;
   onDelete?: (discussionId: string) => void;
+  onEdit?: (discussionId: string) => void;
 }
 
 const DiscussionCard: React.FC<DiscussionCardProps> = ({
@@ -48,6 +50,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   searchTerm,
   onFollow,
   onDelete,
+  onEdit,
 }) => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -99,6 +102,13 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
     } catch (error) {
       console.error("Error deleting discussion:", error);
     }
+  };
+
+  const handleAdminEdit = () => {
+    if (onEdit) {
+      onEdit(discussion.id);
+    }
+    handleMenuClose();
   };
 
   // Get image URL from linked preset or filmSim
@@ -268,6 +278,12 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
           horizontal: "right",
         }}
       >
+        <MenuItem onClick={handleAdminEdit}>
+          <ListItemIcon>
+            <EditIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit Discussion</ListItemText>
+        </MenuItem>
         <MenuItem onClick={handleAdminDelete} sx={{ color: "error.main" }}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />

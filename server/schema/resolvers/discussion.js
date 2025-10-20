@@ -713,6 +713,32 @@ const discussionResolvers = {
         throw new Error(`Failed to delete reply: ${error.message}`);
       }
     },
+
+    adminUpdateDiscussion: async (_, { id, input }, context) => {
+      try {
+        const user = context.user;
+        if (!user || !user.isAdmin) {
+          throw new Error("Admin access required");
+        }
+
+        const discussion = await Discussion.findById(id);
+        if (!discussion) {
+          throw new Error("Discussion not found");
+        }
+
+        // Update the discussion
+        Object.keys(input).forEach((key) => {
+          if (input[key] !== undefined) {
+            discussion[key] = input[key];
+          }
+        });
+
+        await discussion.save();
+        return discussion;
+      } catch (error) {
+        throw new Error(`Failed to update discussion: ${error.message}`);
+      }
+    },
   },
 
   Discussion: {
