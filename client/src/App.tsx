@@ -4,6 +4,7 @@ import { ApolloProvider } from "@apollo/client";
 import { apolloClient } from "./config/apolloClient";
 import NavBar from "./components/layout/Navbar";
 import Home from "./pages/Home";
+import FeaturedHome from "./pages/FeaturedHome";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProfilePage from "./pages/Profile";
@@ -12,6 +13,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
+import { AdminProvider } from "./context/AdminContext";
 import SearchView from "./pages/SearchView";
 import PresetDetailPage from "./pages/PresetDetail";
 import FilmSimPage from "./pages/FilmSimDetail";
@@ -56,48 +58,51 @@ function App() {
       <Router>
         <ServiceContainerProvider>
           <AuthProvider>
-            <NotificationProvider>
-              <ContentTypeProvider>
-                <NavBar />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/search" element={<SearchView />} />
-                  <Route
-                    path="/preset/:slug"
-                    element={<PresetDetailPage />}
-                  />
-                  <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route
-                    path="/profile/:userId"
-                    element={<PublicProfile />}
-                  />
-                  <Route path="/upload" element={<UploadPage />} />
-                  <Route path="/upload/preset" element={<UploadPreset />} />
-                  <Route path="/upload/filmsim" element={<UploadFilmSim />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/register" element={<Register />} />
-                  <Route
-                    path="/verify-email"
-                    element={<EmailVerification />}
-                  />
-                  <Route path="/lists" element={<Lists />} />
-                  <Route path="/list/:id" element={<ListDetail />} />
-                  <Route path="/create-list" element={<CreateList />} />
-                  <Route path="/discussions" element={<Discussions />} />
-                  <Route
-                    path="/discussions/new"
-                    element={<CreateDiscussion />}
-                  />
-                  <Route
-                    path="/discussions/:discussionId"
-                    element={<DiscussionDetail />}
-                  />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </ContentTypeProvider>
-            </NotificationProvider>
+            <AdminProvider>
+              <NotificationProvider>
+                <ContentTypeProvider>
+                  <NavBar />
+                  <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/featured" element={<FeaturedHome />} />
+                    <Route path="/search" element={<SearchView />} />
+                    <Route
+                      path="/preset/:slug"
+                      element={<PresetDetailPage />}
+                    />
+                    <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route
+                      path="/profile/:userId"
+                      element={<PublicProfile />}
+                    />
+                    <Route path="/upload" element={<UploadPage />} />
+                    <Route path="/upload/preset" element={<UploadPreset />} />
+                    <Route path="/upload/filmsim" element={<UploadFilmSim />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                    <Route
+                      path="/verify-email"
+                      element={<EmailVerification />}
+                    />
+                    <Route path="/lists" element={<Lists />} />
+                    <Route path="/list/:id" element={<ListDetail />} />
+                    <Route path="/create-list" element={<CreateList />} />
+                    <Route path="/discussions" element={<Discussions />} />
+                    <Route
+                      path="/discussions/new"
+                      element={<CreateDiscussion />}
+                    />
+                    <Route
+                      path="/discussions/:discussionId"
+                      element={<DiscussionDetail />}
+                    />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </ContentTypeProvider>
+              </NotificationProvider>
+            </AdminProvider>
           </AuthProvider>
         </ServiceContainerProvider>
       </Router>

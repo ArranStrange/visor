@@ -7,11 +7,15 @@ import {
   Stack,
   Avatar,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { useFeatured } from "../../hooks/useFeatured";
 import ImageOptimizer from "../media/ImageOptimizer";
 import {
   overlayButtonStyles,
@@ -27,6 +31,7 @@ interface FilmSimCardProps {
   slug: string;
   description: string;
   thumbnail: string;
+  featured?: boolean;
   tags?: Array<{
     id?: string;
     displayName: string;
@@ -54,11 +59,12 @@ interface FilmSimCardProps {
 }
 
 const FilmSimCard: React.FC<FilmSimCardProps> = memo(
-  ({ id, name, slug, thumbnail, tags = [], creator }) => {
+  ({ id, name, slug, thumbnail, tags = [], creator, featured = false }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);
     const isMobile = useMobileDetection();
+    const { isAdmin, toggleFilmSimFeatured } = useFeatured();
 
     // Memoize event handlers
     const handleClick = useCallback(() => {
@@ -134,6 +140,47 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
             <AddIcon fontSize="small" />
           </IconButton>
         </Box>
+
+        {isAdmin && id && (
+          <Box
+            className="featured-button"
+            sx={{
+              ...overlayButtonStyles,
+              top: "8px",
+              right: "8px",
+            }}
+          >
+            <Tooltip
+              title={featured ? "Remove from featured" : "Make featured"}
+            >
+              <IconButton
+                className="floating"
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    await toggleFilmSimFeatured(id, featured);
+                  } catch (error) {
+                    console.error("Error toggling featured status:", error);
+                  }
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
+                onMouseUp={(e) => e.stopPropagation()}
+                sx={{
+                  color: featured ? "#FFD700" : "rgba(255, 255, 255, 0.7)",
+                  "&:hover": {
+                    color: featured ? "#FFA500" : "#FFD700",
+                  },
+                }}
+              >
+                {featured ? (
+                  <StarIcon fontSize="small" />
+                ) : (
+                  <StarBorderIcon fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
+          </Box>
+        )}
 
         {creator && (
           <Box

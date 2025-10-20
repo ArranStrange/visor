@@ -21,6 +21,7 @@ export const GET_ALL_PRESETS = gql`
       afterImage {
         url
       }
+      featured
     }
   }
 `;

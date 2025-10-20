@@ -20,6 +20,7 @@ export const GET_ALL_FILMSIMS = gql`
       sampleImages {
         url
       }
+      featured
     }
   }
 `;
