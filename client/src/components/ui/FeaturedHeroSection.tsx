@@ -178,6 +178,10 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                   color: "rgba(255, 255, 255, 0.9)",
                   lineHeight: 1.6,
                   textShadow: "1px 1px 2px rgba(0,0,0,0.5)",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
                 }}
               >
                 {item.description}
