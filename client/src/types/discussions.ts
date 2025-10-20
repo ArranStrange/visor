@@ -1,3 +1,13 @@
+export interface DiscussionReply {
+  userId: string;
+  username: string;
+  avatar?: string;
+  content: string;
+  timestamp: string;
+  isEdited?: boolean;
+  editedAt?: string;
+}
+
 export interface DiscussionPost {
   userId: string;
   username: string;
@@ -6,6 +16,7 @@ export interface DiscussionPost {
   timestamp: string;
   isEdited?: boolean;
   editedAt?: string;
+  replies?: DiscussionReply[];
 }
 
 export interface Discussion {

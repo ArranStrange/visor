@@ -45,6 +45,15 @@ export const GET_DISCUSSION = gql`
         timestamp
         isEdited
         editedAt
+        replies {
+          userId
+          username
+          avatar
+          content
+          timestamp
+          isEdited
+          editedAt
+        }
       }
       isActive
       createdAt
@@ -109,6 +118,15 @@ export const GET_DISCUSSIONS = gql`
           timestamp
           isEdited
           editedAt
+          replies {
+            userId
+            username
+            avatar
+            content
+            timestamp
+            isEdited
+            editedAt
+          }
         }
         isActive
         createdAt
@@ -166,6 +184,15 @@ export const GET_DISCUSSION_BY_ITEM = gql`
         timestamp
         isEdited
         editedAt
+        replies {
+          userId
+          username
+          avatar
+          content
+          timestamp
+          isEdited
+          editedAt
+        }
       }
       isActive
       createdAt

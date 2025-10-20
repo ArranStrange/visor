@@ -12,21 +12,32 @@ import {
   ListItemText,
   Tooltip,
   CircularProgress,
+  Button,
+  TextField,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
+  Reply as ReplyIcon,
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "../../context/AuthContext";
 import { DiscussionPost as PostType } from "../../types/discussions";
+import Reply from "./Reply";
 
 interface PostProps {
   post: PostType;
   postIndex: number;
   onEdit: (postIndex: number, content: string) => void;
   onDelete: (postIndex: number) => void;
+  onReply?: (postIndex: number, content: string) => void;
+  onEditReply?: (
+    postIndex: number,
+    replyIndex: number,
+    content: string
+  ) => void;
+  onDeleteReply?: (postIndex: number, replyIndex: number) => void;
   isDeleting?: boolean;
 }
 
@@ -35,11 +46,16 @@ const Post: React.FC<PostProps> = ({
   postIndex,
   onEdit,
   onDelete,
+  onReply,
+  onEditReply,
+  onDeleteReply,
   isDeleting,
 }) => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
+  const [isReplying, setIsReplying] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
+  const [replyContent, setReplyContent] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -62,6 +78,13 @@ const Post: React.FC<PostProps> = ({
     handleMenuClose();
   };
 
+  const handleReply = () => {
+    if (!replyContent.trim() || !onReply) return;
+    onReply(postIndex, replyContent);
+    setReplyContent("");
+    setIsReplying(false);
+  };
+
   const formatDate = (dateString: string | undefined | null): string => {
     if (!dateString) return "a moment ago";
     try {
@@ -77,7 +100,7 @@ const Post: React.FC<PostProps> = ({
   const isLoggedIn = !!user;
 
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box sx={{ mb: 1.5 }}>
       <Card
         sx={{
           position: "relative",
@@ -86,9 +109,9 @@ const Post: React.FC<PostProps> = ({
           backgroundColor: "background.paper",
         }}
       >
-        <CardContent>
+        <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
           {/* Post Header */}
-          <Box display="flex" alignItems="flex-start" gap={2} mb={1}>
+          <Box display="flex" alignItems="flex-start" gap={2} mb={0.5}>
             <Avatar src={post.avatar} sx={{ width: 32, height: 32 }}>
               {post.username.charAt(0).toUpperCase()}
             </Avatar>
@@ -167,7 +190,19 @@ const Post: React.FC<PostProps> = ({
               )}
 
               {/* Action buttons */}
-              <Box display="flex" alignItems="center" gap={1} mt={2}>
+              <Box display="flex" alignItems="center" gap={1} mt={1}>
+                {/* Reply button */}
+                {isLoggedIn && onReply && (
+                  <Button
+                    size="small"
+                    startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
+                    onClick={() => setIsReplying(!isReplying)}
+                    sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                  >
+                    Reply
+                  </Button>
+                )}
+
                 {/* More options - only show for post creator */}
                 {isLoggedIn && isAuthor && (
                   <Tooltip title="More options">
@@ -177,6 +212,58 @@ const Post: React.FC<PostProps> = ({
                   </Tooltip>
                 )}
               </Box>
+
+              {/* Reply composer */}
+              {isReplying && (
+                <Box mt={2}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    placeholder="Write a reply..."
+                    value={replyContent}
+                    onChange={(e) => setReplyContent(e.target.value)}
+                    size="small"
+                    sx={{ mb: 1 }}
+                  />
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      onClick={handleReply}
+                      disabled={!replyContent.trim()}
+                    >
+                      Reply
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setIsReplying(false);
+                        setReplyContent("");
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+
+              {/* Display replies */}
+              {post.replies && post.replies.length > 0 && (
+                <Box mt={2}>
+                  {post.replies.map((reply, replyIndex) => (
+                    <Reply
+                      key={replyIndex}
+                      reply={reply}
+                      replyIndex={replyIndex}
+                      postIndex={postIndex}
+                      onEdit={onEditReply || (() => {})}
+                      onDelete={onDeleteReply || (() => {})}
+                    />
+                  ))}
+                </Box>
+              )}
             </Box>
           </Box>
         </CardContent>

@@ -27,6 +27,11 @@ import {
   DELETE_POST,
   UPDATE_POST,
 } from "../graphql/mutations/discussions";
+import {
+  CREATE_REPLY,
+  UPDATE_REPLY,
+  DELETE_REPLY,
+} from "../graphql/mutations/replyMutations";
 import { DiscussionPost } from "../types/discussions";
 import Post from "../components/discussions/Post";
 import PostComposer from "../components/discussions/PostComposer";
@@ -133,6 +138,24 @@ const DiscussionDetail: React.FC = () => {
         }
       }
     },
+  });
+
+  const [createReply] = useMutation(CREATE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId! } },
+    ],
+  });
+
+  const [updateReply] = useMutation(UPDATE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId! } },
+    ],
+  });
+
+  const [deleteReply] = useMutation(DELETE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId! } },
+    ],
   });
 
   const [updatePost] = useMutation(UPDATE_POST, {
@@ -279,6 +302,57 @@ const DiscussionDetail: React.FC = () => {
     }
   };
 
+  const handleReply = async (postIndex: number, content: string) => {
+    try {
+      await createReply({
+        variables: {
+          input: {
+            discussionId: discussionId!,
+            postIndex,
+            content: content.trim(),
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to create reply:", error);
+    }
+  };
+
+  const handleEditReply = async (
+    postIndex: number,
+    replyIndex: number,
+    content: string
+  ) => {
+    try {
+      await updateReply({
+        variables: {
+          input: {
+            discussionId: discussionId!,
+            postIndex,
+            replyIndex,
+            content: content.trim(),
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Failed to update reply:", error);
+    }
+  };
+
+  const handleDeleteReply = async (postIndex: number, replyIndex: number) => {
+    try {
+      await deleteReply({
+        variables: {
+          discussionId: discussionId!,
+          postIndex,
+          replyIndex,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to delete reply:", error);
+    }
+  };
+
   const handleDelete = async (postIndex: number) => {
     const postToDelete = posts[postIndex];
 
@@ -408,12 +482,31 @@ const DiscussionDetail: React.FC = () => {
     );
   }
 
+  // Get image URL from linked preset or filmSim
+  const getLinkedImage = () => {
+    if (
+      discussion.linkedTo.type === "PRESET" &&
+      discussion.linkedTo.preset?.afterImage?.url
+    ) {
+      return discussion.linkedTo.preset.afterImage.url;
+    }
+    if (
+      discussion.linkedTo.type === "FILMSIM" &&
+      discussion.linkedTo.filmSim?.sampleImages?.[0]?.url
+    ) {
+      return discussion.linkedTo.filmSim.sampleImages[0].url;
+    }
+    return null;
+  };
+
+  const linkedImage = getLinkedImage();
+
   return (
     <Container maxWidth="lg">
-      <Box py={4}>
+      <Box py={2}>
         <Breadcrumbs
           separator={<NavigateNextIcon fontSize="small" />}
-          sx={{ mb: 3 }}
+          sx={{ mb: 2 }}
         >
           <Link
             color="inherit"
@@ -429,25 +522,65 @@ const DiscussionDetail: React.FC = () => {
         </Breadcrumbs>
 
         {/* Discussion Header */}
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
+        <Card sx={{ mb: 2 }}>
+          <CardContent sx={{ pb: 2, "&:last-child": { pb: 2 } }}>
             <Box display="flex" alignItems="flex-start" gap={2}>
-              <Avatar
-                src={discussion.createdBy.avatar}
-                sx={{ width: 50, height: 50, mt: 0.5 }}
-              >
-                {discussion.createdBy.username.charAt(0).toUpperCase()}
-              </Avatar>
+              {linkedImage && (
+                <Box
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 2,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    const path =
+                      discussion.linkedTo.type === "PRESET"
+                        ? `/preset/${discussion.linkedTo.preset?.slug}`
+                        : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
+                    navigate(path);
+                  }}
+                >
+                  <img
+                    src={linkedImage}
+                    alt={
+                      discussion.linkedTo.preset?.title ||
+                      discussion.linkedTo.filmSim?.name ||
+                      ""
+                    }
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                </Box>
+              )}
               <Box flex={1}>
-                <Box display="flex" alignItems="center" gap={1} mb={1}>
-                  <Typography variant="h4" component="h1" sx={{ flex: 1 }}>
-                    {discussion.title}
+                <Box display="flex" alignItems="center" gap={1.5} mb={0.5}>
+                  <Avatar
+                    src={discussion.createdBy.avatar}
+                    sx={{ width: 32, height: 32 }}
+                  >
+                    {discussion.createdBy.username.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <Typography variant="body2">
+                    {discussion.createdBy.username}
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    {formatDate(discussion.createdAt)}
                   </Typography>
                 </Box>
 
+                <Typography variant="h5" component="h1" mb={0.5}>
+                  {discussion.title}
+                </Typography>
+
                 {/* Linked item */}
                 {discussion.linkedTo && (
-                  <Box display="flex" gap={1} mb={2}>
+                  <Box display="flex" gap={1} mb={1}>
                     <Chip
                       icon={
                         discussion.linkedTo.type === "PRESET" ? (
@@ -474,27 +607,16 @@ const DiscussionDetail: React.FC = () => {
                   </Box>
                 )}
 
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                >
+                <Box display="flex" gap={2} mt={0.5}>
                   <Typography variant="caption" color="text.secondary">
-                    by {discussion.createdBy.username}
-                    {" • "}
-                    {formatDate(discussion.createdAt)}
+                    {discussion.posts.length} posts
                   </Typography>
-                  <Box display="flex" gap={1}>
-                    <Typography variant="caption" color="text.secondary">
-                      {discussion.posts.length} posts
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {discussion.followers.length} followers
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Last activity {formatDate(discussion.updatedAt)}
-                    </Typography>
-                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    {discussion.followers.length} followers
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    Last activity {formatDate(discussion.updatedAt)}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
@@ -502,8 +624,8 @@ const DiscussionDetail: React.FC = () => {
         </Card>
 
         {user && (
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
+          <Card sx={{ mb: 2 }}>
+            <CardContent sx={{ py: 2, "&:last-child": { pb: 2 } }}>
               <PostComposer
                 onSubmit={handleCreatePost}
                 placeholder="Add to the discussion..."
@@ -527,6 +649,9 @@ const DiscussionDetail: React.FC = () => {
                 postIndex={index}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
+                onReply={handleReply}
+                onEditReply={handleEditReply}
+                onDeleteReply={handleDeleteReply}
               />
             ))
           )}

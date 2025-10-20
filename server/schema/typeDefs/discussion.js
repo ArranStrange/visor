@@ -28,6 +28,17 @@ module.exports = gql`
     timestamp: String!
     isEdited: Boolean!
     editedAt: String
+    replies: [DiscussionReply!]!
+  }
+
+  type DiscussionReply {
+    userId: ID!
+    username: String!
+    avatar: String
+    content: String!
+    timestamp: String!
+    isEdited: Boolean!
+    editedAt: String
   }
 
   type DiscussionConnection {
@@ -61,6 +72,19 @@ module.exports = gql`
   input UpdatePostInput {
     discussionId: ID!
     postIndex: Int!
+    content: String!
+  }
+
+  input CreateReplyInput {
+    discussionId: ID!
+    postIndex: Int!
+    content: String!
+  }
+
+  input UpdateReplyInput {
+    discussionId: ID!
+    postIndex: Int!
+    replyIndex: Int!
     content: String!
   }
 
@@ -110,5 +134,10 @@ module.exports = gql`
     createPost(input: CreatePostInput!): DiscussionPost!
     updatePost(input: UpdatePostInput!): DiscussionPost!
     deletePost(discussionId: ID!, postIndex: Int!): Boolean!
+
+    # Reply mutations
+    createReply(input: CreateReplyInput!): DiscussionReply!
+    updateReply(input: UpdateReplyInput!): DiscussionReply!
+    deleteReply(discussionId: ID!, postIndex: Int!, replyIndex: Int!): Boolean!
   }
 `;

@@ -57,6 +57,34 @@ const discussionSchema = new Schema(
           default: false,
         },
         editedAt: Date,
+        replies: [
+          {
+            userId: {
+              type: Schema.Types.ObjectId,
+              ref: "User",
+              required: true,
+            },
+            username: {
+              type: String,
+              required: true,
+            },
+            avatar: String,
+            content: {
+              type: String,
+              required: true,
+              trim: true,
+            },
+            timestamp: {
+              type: Date,
+              default: Date.now,
+            },
+            isEdited: {
+              type: Boolean,
+              default: false,
+            },
+            editedAt: Date,
+          },
+        ],
       },
     ],
     isActive: {
