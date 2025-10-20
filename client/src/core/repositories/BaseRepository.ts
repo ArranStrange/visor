@@ -11,12 +11,21 @@ export abstract class BaseRepository<T> implements IDataRepository<T> {
   abstract delete(id: string): Promise<void>;
 
   protected async executeQuery(query: any, variables?: any): Promise<any> {
-    const result = await this.apolloClient.query({
-      query,
-      variables,
-      fetchPolicy: "cache-and-network",
-    });
-    return result.data;
+    console.log('Executing query:', query);
+    console.log('Variables:', variables);
+    
+    try {
+      const result = await this.apolloClient.query({
+        query,
+        variables,
+        fetchPolicy: "cache-and-network",
+      });
+      console.log('Query result:', result);
+      return result.data;
+    } catch (error) {
+      console.error('Query execution error:', error);
+      throw error;
+    }
   }
 
   protected async executeMutation(
