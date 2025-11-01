@@ -28,6 +28,25 @@ const FilmSimTagsInput: React.FC<FilmSimTagsInputProps> = ({
     <Typography variant="subtitle1" gutterBottom>
       Tags
     </Typography>
+    {tags.length > 0 && (
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 0.5,
+          mb: 1.5,
+        }}
+      >
+        {tags.map((tag) => (
+          <Chip
+            key={tag}
+            label={tag}
+            onDelete={disabled ? undefined : () => onRemoveTag(tag)}
+            size="small"
+          />
+        ))}
+      </Box>
+    )}
     <FormControl fullWidth>
       <OutlinedInput
         value={tagInput}
@@ -36,18 +55,6 @@ const FilmSimTagsInput: React.FC<FilmSimTagsInputProps> = ({
         placeholder="Add tags (press Enter)"
         disabled={disabled}
         data-cy="film-sim-tags-input"
-        endAdornment={
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-            {tags.map((tag) => (
-              <Chip
-                key={tag}
-                label={tag}
-                onDelete={() => onRemoveTag(tag)}
-                size="small"
-              />
-            ))}
-          </Box>
-        }
       />
     </FormControl>
   </Box>

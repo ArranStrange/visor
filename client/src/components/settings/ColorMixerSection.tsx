@@ -58,17 +58,22 @@ const ColorMixerSection: React.FC<ColorMixerSectionProps> = ({
           />
         ))}
       </Box>
-      {COLOR_MIXER_SETTINGS.map(({ key, label }) =>
-        renderSettingRow(
-          label,
+      {COLOR_MIXER_SETTINGS.map(({ key, label }) => {
+        const rawValue =
           getNestedValue(
             settings.settings,
             `colorAdjustments.${selectedColor}.${key}`
-          ) || 0,
+          ) || 0;
+
+        const displayValue = Number(rawValue) / 100;
+
+        return renderSettingRow(
+          label,
+          displayValue,
           getColorMixerSpectrum(key),
           `${selectedColor}_${key}`
-        )
-      )}
+        );
+      })}
     </Box>
   );
 };

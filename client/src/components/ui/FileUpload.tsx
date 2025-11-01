@@ -29,6 +29,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         onChange={handleFileChange}
         style={{ display: "none" }}
         id={id}
+        data-cy={id}
       />
       <label htmlFor={id}>
         <Paper

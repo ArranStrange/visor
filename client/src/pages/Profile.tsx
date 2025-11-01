@@ -127,7 +127,7 @@ const Profile: React.FC = () => {
   const [success, setSuccess] = useState<string | null>(null);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarError, setAvatarError] = useState<string | null>(null);
-  const { updateAuth } = useAuth();
+  const { updateUser } = useAuth();
 
   const {
     loading,
@@ -236,13 +236,13 @@ const Profile: React.FC = () => {
       });
 
       // Update the AuthContext with the new avatar URL
-      updateAuth({ avatar: cloudinaryUrl });
+      updateUser({ avatar: cloudinaryUrl });
     } catch (error) {
       console.error("Error uploading avatar:", error);
       setAvatarError("Failed to upload profile picture");
     } finally {
       setIsUploadingAvatar(false);
-      e.target.value = ""; // Reset the input
+      e.target.value = "";
     }
   };
 
@@ -272,7 +272,14 @@ const Profile: React.FC = () => {
   const user = data?.getCurrentUser;
 
   return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+    <Container
+      maxWidth="md"
+      sx={{
+        mt: 4,
+        mb: 4,
+        px: { xs: 1, sm: 2, md: 3 },
+      }}
+    >
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
@@ -284,10 +291,16 @@ const Profile: React.FC = () => {
         </Alert>
       )}
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 2 }}>
+      <Paper
+        elevation={3}
+        sx={{
+          p: { xs: 2, sm: 3, md: 4 },
+          borderRadius: 2,
+        }}
+      >
         <Grid container spacing={4}>
           {/* Profile Picture Section */}
-          <Grid item xs={12} md={4}>
+          <Grid component={undefined as any} item xs={12} md={4}>
             <Box
               display="flex"
               flexDirection="column"
@@ -351,7 +364,7 @@ const Profile: React.FC = () => {
           </Grid>
 
           {/* Profile Information Section */}
-          <Grid item xs={12} md={8}>
+          <Grid component={undefined as any} item xs={12} md={8}>
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={3}>
                 <Box>

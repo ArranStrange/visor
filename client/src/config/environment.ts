@@ -14,6 +14,9 @@ export const ENV_CONFIG = {
   ENABLE_EMAIL_VERIFICATION:
     import.meta.env.VITE_ENABLE_EMAIL_VERIFICATION !== "false",
 
+  // Cloudinary Configuration
+  CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+
   // Development Settings
   IS_DEVELOPMENT: import.meta.env.DEV,
   IS_PRODUCTION: import.meta.env.PROD,
@@ -23,7 +26,9 @@ export const ENV_CONFIG = {
 //
 // VITE_GRAPHQL_ENDPOINT - Your GraphQL API endpoint
 // VITE_ENABLE_EMAIL_VERIFICATION - Set to "false" to disable email verification
+// VITE_CLOUDINARY_CLOUD_NAME - Your Cloudinary cloud name
 //
 // Example .env file:
 // VITE_GRAPHQL_ENDPOINT=https://your-api.com/graphql
 // VITE_ENABLE_EMAIL_VERIFICATION=true
+// VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name

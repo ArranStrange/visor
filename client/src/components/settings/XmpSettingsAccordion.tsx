@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ToneCurve from "./ToneCurve";
 import ColorGradingWheels from "./ColorGradingWheels";
 import ColorMixerSection from "./ColorMixerSection";
-import { ParsedSettings } from "./XmpParser";
+import { ParsedSettings } from "../../types/xmpSettings";
 import {
   SectionConfig,
   SettingConfig,
@@ -221,15 +221,24 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
 
 // Helper function for tone curve formatting
 const formatToneCurveData = (curveData: any) => {
-  if (!curveData) return [0, 64, 128, 192, 255];
+  // Handle null, undefined, or empty arrays
+  if (!curveData || !Array.isArray(curveData) || curveData.length === 0) {
+    return [0, 64, 128, 192, 255];
+  }
+
+  // Sort points by x value to ensure proper interpolation
+  const sortedPoints = [...curveData].sort((a, b) => (a?.x || 0) - (b?.x || 0));
 
   const inputPoints = [0, 64, 128, 192, 255];
   const outputPoints = inputPoints.map((input) => {
-    const lowerPoint = curveData.reduce((prev: any, curr: any) => {
+    // Find the two points that surround this input value
+    const lowerPoint = sortedPoints.reduce((prev: any, curr: any) => {
+      if (!curr || typeof curr.x === "undefined") return prev;
       return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
     }, null);
 
-    const upperPoint = curveData.reduce((prev: any, curr: any) => {
+    const upperPoint = sortedPoints.reduce((prev: any, curr: any) => {
+      if (!curr || typeof curr.x === "undefined") return prev;
       return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
     }, null);
 

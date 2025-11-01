@@ -198,7 +198,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   // Empty state
   if (!content.length && !loading) {
     return (
-      <Alert severity="info" sx={{ my: 2 }}>
+      <Alert severity="error" sx={{ my: 2 }}>
         No content found. Try adjusting filters or search terms.
       </Alert>
     );

@@ -46,25 +46,32 @@ export const XMP_SECTIONS: SectionConfig[] = [
         label: "Temp",
         spectrum:
           "linear-gradient(to right, #4a90e2, #eaeaea, #f7e7b6, #e2c44a)",
+        divider: 100,
       },
       {
         key: "tint",
         label: "Tint",
         spectrum: "linear-gradient(to right, #4ae2a1, #eaeaea, #e24ad6)",
+        divider: 100,
       },
       {
         key: "vibrance",
         label: "Vibrance",
         spectrum:
           "linear-gradient(to right, #444, #3b4a6a, #3b6a4a, #6a6a3b, #6a4a3b, #b94a4a)",
+        divider: 100,
       },
       {
         key: "saturation",
         label: "Saturation",
         spectrum:
           "linear-gradient(to right, #444, #3b4a6a, #3b6a4a, #6a6a3b, #6a4a3b, #b94a4a)",
+        divider: 100,
       },
     ],
+  },
+  {
+    title: "Tone Curve",
   },
   {
     title: "Effects",

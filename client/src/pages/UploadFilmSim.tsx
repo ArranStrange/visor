@@ -178,19 +178,6 @@ const UploadFilmSim: React.FC = () => {
           </Alert>
         )}
 
-        {(errors.length > 0 || fileError) && (
-          <Alert
-            severity="error"
-            sx={{ mb: 2 }}
-            onClose={() => {
-              setErrors([]);
-              setFileError(null);
-            }}
-          >
-            {errors.length > 0 ? errors.join(", ") : fileError}
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit}>
           <Stack spacing={3} mt={3}>
             <TextField
@@ -285,6 +272,19 @@ const UploadFilmSim: React.FC = () => {
               disabled={!user}
               data-cy="film-sim-notes-input"
             />
+
+            {(errors.length > 0 || fileError) && (
+              <Alert
+                severity="error"
+                sx={{ mt: 3 }}
+                onClose={() => {
+                  setErrors([]);
+                  setFileError(null);
+                }}
+              >
+                {errors.length > 0 ? errors.join(", ") : fileError}
+              </Alert>
+            )}
 
             <Box sx={{ mt: 4, display: "flex", justifyContent: "flex-end" }}>
               <Button
