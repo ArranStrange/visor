@@ -55,16 +55,58 @@ const filmSimResolvers = {
         // Calculate pagination
         const skip = (page - 1) * limit;
 
+        // Build MongoDB query from filter
+        let query = {};
+
+        if (filter) {
+          // Convert filter to proper MongoDB query format
+          if (filter.tagId) {
+            // Convert tagId string to ObjectId and query tags array
+            const mongoose = require("mongoose");
+            const tagObjectId = mongoose.Types.ObjectId.isValid(filter.tagId)
+              ? new mongoose.Types.ObjectId(filter.tagId)
+              : filter.tagId;
+            query.tags = { $in: [tagObjectId] };
+          }
+
+          // Include other filter properties (like featured, etc.)
+          Object.keys(filter).forEach((key) => {
+            if (key !== "tagId") {
+              query[key] = filter[key];
+            }
+          });
+        }
+
         // Get total count
-        const totalCount = await FilmSim.countDocuments(filter || {});
+        const totalCount = await FilmSim.countDocuments(query);
 
         // Fetch paginated film sims
         const filmSims = await populateFilmSim(
-          FilmSim.find(filter || {})
+          FilmSim.find(query)
             .sort({ createdAt: -1 }) // Sort by newest first
             .skip(skip)
             .limit(limit)
         );
+
+        // Serialize film sims to include id field properly
+        const serializedFilmSims = filmSims.map((filmSim) => {
+          const filmSimObj = filmSim.toObject();
+          return {
+            ...filmSimObj,
+            id: filmSimObj._id.toString(),
+            creator: filmSimObj.creator
+              ? {
+                  ...filmSimObj.creator,
+                  id:
+                    filmSimObj.creator._id?.toString() || filmSimObj.creator.id,
+                }
+              : null,
+            tags: (filmSimObj.tags || []).map((tag) => ({
+              ...tag,
+              id: tag._id?.toString() || tag.id,
+            })),
+          };
+        });
 
         // Calculate pagination metadata
         const totalPages = Math.ceil(totalCount / limit);
@@ -72,7 +114,7 @@ const filmSimResolvers = {
         const hasPreviousPage = page > 1;
 
         return {
-          filmSims,
+          filmSims: serializedFilmSims,
           totalCount,
           hasNextPage,
           hasPreviousPage,

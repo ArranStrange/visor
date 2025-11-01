@@ -1,37 +1,24 @@
-import React, { useMemo, useState, useEffect } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  InputBase,
-  Stack,
-  Divider,
-} from "@mui/material";
-import { useQuery } from "@apollo/client";
+import React, { useState, useEffect } from "react";
+import { Box, Container, InputBase, Divider } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
+import TagsList from "../components/ui/TagsList";
 import { useContentType } from "../context/ContentTypeFilter";
-import {
-  GET_ALL_TAGS,
-  GET_ALL_TAGS_OPTIONS,
-} from "../graphql/queries/getAllTags";
+import { useTags } from "../context/TagContext";
 
 const SearchView: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [keyword, setKeyword] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
+  const { tags, loading: tagsLoading, searchTags } = useTags();
 
-  const {
-    data: tagData,
-    loading: tagsLoading,
-    error: tagsError,
-  } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
-
-  const allTags =
-    tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
+  // Fetch all tags on mount
+  useEffect(() => {
+    searchTags();
+  }, [searchTags]);
 
   useEffect(() => {
     const qParam = searchParams.get("q");
@@ -41,20 +28,14 @@ const SearchView: React.FC = () => {
 
     const tagParam = searchParams.get("tag");
     if (tagParam) {
-      const tag = allTags.find(
-        (t: any) => t.displayName.toLowerCase() === tagParam.toLowerCase()
+      const tag = tags.find(
+        (t) => t.displayName.toLowerCase() === tagParam.toLowerCase()
       );
       if (tag) {
         setActiveTagId(tag.id);
       }
     }
-  }, [searchParams, allTags]);
-
-  const activeTagDisplayName = useMemo(() => {
-    return (
-      allTags.find((tag: any) => tag.id === activeTagId)?.displayName || null
-    );
-  }, [activeTagId, allTags]);
+  }, [searchParams, tags]);
 
   const handleClear = () => {
     setKeyword("");
@@ -73,8 +54,6 @@ const SearchView: React.FC = () => {
     }
   };
 
-  const isLoading = tagsLoading;
-
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
       <InputBase
@@ -92,64 +71,14 @@ const SearchView: React.FC = () => {
         }}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          mb: 2,
-          gap: 2,
-        }}
-      >
-        <Typography
-          onClick={handleClear}
-          sx={{
-            cursor: "pointer",
-            opacity: keyword || activeTagId ? 1 : 0.6,
-            transition: "opacity 0.2s",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            "&:hover": {
-              textDecoration: "underline",
-              textUnderlineOffset: "4px",
-            },
-          }}
-        >
-          all
-        </Typography>
-
-        <Stack
-          direction="row"
-          spacing={2}
-          sx={{
-            overflowX: "auto",
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-            flex: 1,
-            scrollSnapType: "x mandatory",
-            "& > *": {
-              scrollSnapAlign: "start",
-            },
-          }}
-        >
-          {allTags.map((tag: any) => (
-            <Typography
-              key={tag.id}
-              onClick={() => handleTagClick(tag.id, tag.displayName)}
-              sx={{
-                cursor: "pointer",
-                fontWeight: activeTagId === tag.id ? "bold" : "normal",
-                textDecoration: activeTagId === tag.id ? "underline" : "none",
-                textUnderlineOffset: "4px",
-                opacity: activeTagId === tag.id ? 1 : 0.6,
-                transition: "opacity 0.2s",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-              }}
-            >
-              {tag.displayName.toLowerCase()}
-            </Typography>
-          ))}
-        </Stack>
+      <Box sx={{ mb: 2 }}>
+        <TagsList
+          tags={tags}
+          activeTagId={activeTagId}
+          onTagClick={handleTagClick}
+          onClear={handleClear}
+          isLoading={tagsLoading}
+        />
       </Box>
 
       <ContentTypeToggle />

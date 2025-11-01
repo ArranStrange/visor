@@ -12,6 +12,7 @@ import { ContentTypeProvider } from "./context/ContentTypeFilter";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { AdminProvider } from "./context/AdminContext";
+import { TagProvider } from "./context/TagContext";
 import SearchView from "./pages/SearchView";
 import PresetDetailPage from "./pages/PresetDetail";
 import FilmSimPage from "./pages/FilmSimDetail";
@@ -60,45 +61,53 @@ function App() {
             <AdminProvider>
               <NotificationProvider>
                 <ContentTypeProvider>
-                  <NavBar />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/search" element={<SearchView />} />
-                    <Route
-                      path="/preset/:slug"
-                      element={<PresetDetailPage />}
-                    />
-                    <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route
-                      path="/profile/:userId"
-                      element={<PublicProfile />}
-                    />
-                    <Route path="/upload" element={<UploadPage />} />
-                    <Route path="/upload/preset" element={<UploadPreset />} />
-                    <Route path="/upload/filmsim" element={<UploadFilmSim />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route
-                      path="/verify-email"
-                      element={<EmailVerification />}
-                    />
-                    <Route path="/lists" element={<MyLists />} />
-                    <Route path="/browse-lists" element={<BrowseLists />} />
-                    <Route path="/list/:id" element={<ListDetail />} />
-                    <Route path="/create-list" element={<CreateList />} />
-                    <Route path="/discussions" element={<Discussions />} />
-                    <Route
-                      path="/discussions/new"
-                      element={<CreateDiscussion />}
-                    />
-                    <Route
-                      path="/discussions/:discussionId"
-                      element={<DiscussionDetail />}
-                    />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <TagProvider>
+                    <NavBar />
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/search" element={<SearchView />} />
+                      <Route
+                        path="/preset/:slug"
+                        element={<PresetDetailPage />}
+                      />
+                      <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route
+                        path="/profile/:userId"
+                        element={<PublicProfile />}
+                      />
+                      <Route path="/upload" element={<UploadPage />} />
+                      <Route path="/upload/preset" element={<UploadPreset />} />
+                      <Route
+                        path="/upload/filmsim"
+                        element={<UploadFilmSim />}
+                      />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route
+                        path="/verify-email"
+                        element={<EmailVerification />}
+                      />
+                      <Route path="/lists" element={<MyLists />} />
+                      <Route path="/browse-lists" element={<BrowseLists />} />
+                      <Route path="/list/:id" element={<ListDetail />} />
+                      <Route path="/create-list" element={<CreateList />} />
+                      <Route path="/discussions" element={<Discussions />} />
+                      <Route
+                        path="/discussions/new"
+                        element={<CreateDiscussion />}
+                      />
+                      <Route
+                        path="/discussions/:discussionId"
+                        element={<DiscussionDetail />}
+                      />
+                      <Route
+                        path="/notifications"
+                        element={<Notifications />}
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </TagProvider>
                 </ContentTypeProvider>
               </NotificationProvider>
             </AdminProvider>

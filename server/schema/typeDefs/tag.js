@@ -15,6 +15,7 @@ module.exports = gql`
     allTags: [String]
     getTag(name: String!): Tag
     listTags(category: String): [Tag]
+    searchTags(search: String, category: String, limit: Int): [Tag]
   }
 
   extend type Mutation {

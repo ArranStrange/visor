@@ -12,11 +12,9 @@ import {
 import { useQuery } from "@apollo/client";
 import { BROWSE_USER_LISTS } from "../graphql/queries/browseUserLists";
 import ListRow from "../components/lists/ListRow";
+import TagsList from "../components/ui/TagsList";
 import SearchIcon from "@mui/icons-material/Search";
-import {
-  GET_ALL_TAGS,
-  GET_ALL_TAGS_OPTIONS,
-} from "../graphql/queries/getAllTags";
+import { useTags } from "../context/TagContext";
 
 interface UserList {
   id: string;
@@ -71,6 +69,7 @@ const BrowseLists: React.FC = () => {
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const limit = 20;
+  const { tags, loading: tagsLoading, searchTags } = useTags();
 
   // Debounce search input
   React.useEffect(() => {
@@ -82,21 +81,14 @@ const BrowseLists: React.FC = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Load all tags (same as Search page)
-  const {
-    data: tagData,
-    loading: tagsLoading,
-    error: tagsError,
-  } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
-
-  const allTags =
-    tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
+  // Fetch all tags on mount
+  useEffect(() => {
+    searchTags();
+  }, [searchTags]);
 
   const activeTagDisplayName = useMemo(() => {
-    return (
-      allTags.find((tag: any) => tag.id === activeTagId)?.displayName || null
-    );
-  }, [activeTagId, allTags]);
+    return tags.find((tag) => tag.id === activeTagId)?.displayName || null;
+  }, [activeTagId, tags]);
 
   useEffect(() => {
     // When selecting a tag, drive the search term with the tag's display name
@@ -110,7 +102,7 @@ const BrowseLists: React.FC = () => {
     setActiveTagId(null);
   };
 
-  const handleTagClick = (tagId: string) => {
+  const handleTagClick = (tagId: string, _tagDisplayName: string) => {
     const newActive = activeTagId === tagId ? null : tagId;
     setActiveTagId(newActive);
     if (!newActive) {
@@ -119,7 +111,7 @@ const BrowseLists: React.FC = () => {
     }
   };
 
-  const { data, loading, error, fetchMore } = useQuery<BrowseUserListsData>(
+  const { data, loading, error } = useQuery<BrowseUserListsData>(
     BROWSE_USER_LISTS,
     {
       variables: {
@@ -169,64 +161,14 @@ const BrowseLists: React.FC = () => {
         }}
       />
 
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          mb: 2,
-          gap: 2,
-          mt: 2,
-        }}
-      >
-        <Box
-          onClick={handleClear}
-          sx={{
-            cursor: "pointer",
-            opacity: searchQuery || activeTagId ? 1 : 0.6,
-            transition: "opacity 0.2s",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            textTransform: "lowercase",
-            color: "text.secondary",
-          }}
-        >
-          all
-        </Box>
-
-        <Stack
-          direction="row"
-          spacing={2}
-          sx={{
-            overflowX: "auto",
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-            flex: 1,
-            scrollSnapType: "x mandatory",
-            "& > *": {
-              scrollSnapAlign: "start",
-            },
-          }}
-        >
-          {allTags.map((tag: any) => (
-            <Box
-              key={tag.id}
-              onClick={() => handleTagClick(tag.id)}
-              sx={{
-                cursor: "pointer",
-                fontWeight: activeTagId === tag.id ? 700 : 400,
-                textDecoration: activeTagId === tag.id ? "underline" : "none",
-                textUnderlineOffset: "4px",
-                opacity: activeTagId === tag.id ? 1 : 0.6,
-                transition: "opacity 0.2s",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                color: "text.secondary",
-              }}
-            >
-              {tag.displayName.toLowerCase()}
-            </Box>
-          ))}
-        </Stack>
+      <Box sx={{ mb: 2, mt: 2 }}>
+        <TagsList
+          tags={tags}
+          activeTagId={activeTagId}
+          onTagClick={handleTagClick}
+          onClear={handleClear}
+          isLoading={tagsLoading}
+        />
       </Box>
 
       {error && (

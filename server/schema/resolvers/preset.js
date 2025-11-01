@@ -451,11 +451,33 @@ const presetResolvers = {
         // Calculate pagination
         const skip = (page - 1) * limit;
 
+        // Build MongoDB query from filter
+        let query = {};
+
+        if (filter) {
+          // Convert filter to proper MongoDB query format
+          if (filter.tagId) {
+            // Convert tagId string to ObjectId and query tags array
+            const mongoose = require("mongoose");
+            const tagObjectId = mongoose.Types.ObjectId.isValid(filter.tagId)
+              ? new mongoose.Types.ObjectId(filter.tagId)
+              : filter.tagId;
+            query.tags = { $in: [tagObjectId] };
+          }
+
+          // Include other filter properties (like featured, etc.)
+          Object.keys(filter).forEach((key) => {
+            if (key !== "tagId") {
+              query[key] = filter[key];
+            }
+          });
+        }
+
         // Get total count
-        const totalCount = await Preset.countDocuments(filter || {});
+        const totalCount = await Preset.countDocuments(query);
 
         // Fetch paginated presets
-        const presets = await Preset.find(filter || {})
+        const presets = await Preset.find(query)
           .populate({ path: "creator", select: "id username avatar" })
           .populate({ path: "tags", select: "id name displayName" })
           .populate({ path: "filmSim", select: "id name slug" })
@@ -465,10 +487,27 @@ const presetResolvers = {
           .skip(skip)
           .limit(limit);
 
-        // Filter out presets without afterImage
-        const filteredPresets = presets.filter(
-          (preset) => preset.afterImage && preset.afterImage.url
-        );
+        // Filter out presets without afterImage and serialize properly
+        const filteredPresets = presets
+          .filter((preset) => preset.afterImage && preset.afterImage.url)
+          .map((preset) => {
+            const presetObj = preset.toObject();
+            return {
+              ...presetObj,
+              id: presetObj._id.toString(),
+              creator: presetObj.creator
+                ? {
+                    ...presetObj.creator,
+                    id:
+                      presetObj.creator._id?.toString() || presetObj.creator.id,
+                  }
+                : null,
+              tags: (presetObj.tags || []).map((tag) => ({
+                ...tag,
+                id: tag._id?.toString() || tag.id,
+              })),
+            };
+          });
 
         // Calculate pagination metadata
         const totalPages = Math.ceil(totalCount / limit);

@@ -90,13 +90,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
           results.push(
             ...paginatedPresets.presets
               .filter((p: any) => p && p.creator)
-              .filter((p: any) => {
-                // Apply tag filter if provided
-                if (filter?.tagId) {
-                  return p.tags?.some((tag: any) => tag.id === filter.tagId);
-                }
-                return true;
-              })
               .map((p: any) => ({
                 type: "preset" as const,
                 data: {
@@ -119,13 +112,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
           results.push(
             ...paginatedFilmSims.filmSims
               .filter((f: any) => f && f.creator)
-              .filter((f: any) => {
-                // Apply tag filter if provided
-                if (filter?.tagId) {
-                  return f.tags?.some((tag: any) => tag.id === filter.tagId);
-                }
-                return true;
-              })
               .map((f: any) => ({
                 type: "film" as const,
                 data: {
