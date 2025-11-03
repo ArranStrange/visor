@@ -97,6 +97,12 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       }
     }, [showOptions, isMobile]);
 
+    useEffect(() => {
+      if (showOptions) {
+        setIsHovered(true);
+      }
+    }, [showOptions]);
+
     const cardStyles = useMemo(
       () => ({
         position: "relative" as const,
