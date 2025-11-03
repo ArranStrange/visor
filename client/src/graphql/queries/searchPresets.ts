@@ -11,6 +11,9 @@ export const SEARCH_PRESETS = gql`
         afterImage {
           url
         }
+        beforeImage {
+          url
+        }
         creator {
           id
           username

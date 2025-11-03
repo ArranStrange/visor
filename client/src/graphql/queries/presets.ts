@@ -7,7 +7,12 @@ export const LIST_PRESETS = gql`
         id
         title
         slug
-        afterImage
+        afterImage {
+          url
+        }
+        beforeImage {
+          url
+        }
         tags {
           id
           name
