@@ -3,6 +3,8 @@ import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
+import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
+import { useMobileDetection } from "../../hooks/useMobileDetection";
 
 interface FeaturedHeroSectionProps {
   type: "preset" | "filmsim";
@@ -11,8 +13,9 @@ interface FeaturedHeroSectionProps {
 const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   const navigate = useNavigate();
   const { data, loading } = useQuery(GET_FEATURED_ITEMS);
+  const isMobile = useMobileDetection();
+  const [isHovered, setIsHovered] = React.useState(false);
 
-  // All hooks must be at the top, before any conditional returns
   const [currentIndex, setCurrentIndex] = React.useState(0);
   const touchStartX = React.useRef<number | null>(null);
   const isNavigating = React.useRef(false);
@@ -150,8 +153,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             display: "flex",
             justifyContent: "flex-end",
             alignItems: "center",
+            gap: 1,
           }}
-          onClick={() => navigate(`/profile/${item.creator.id}`)}
         >
           <Avatar
             src={item.creator.avatar}
@@ -162,9 +165,13 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               cursor: "pointer",
               boxShadow: 3,
             }}
+            onClick={() => navigate(`/profile/${item.creator.id}`)}
           >
             {item.creator.username.charAt(0).toUpperCase()}
           </Avatar>
+          <Typography variant="caption" color="text.secondary">
+            {type === "preset" ? "Featured Preset" : "Featured Film Sim"}
+          </Typography>
         </Box>
       </Box>
 
@@ -186,6 +193,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           },
         }}
         onClick={() => navigate(`/${type}/${item.slug}`)}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         onWheel={onWheel}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
@@ -210,12 +219,21 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         >
           {type === "preset" ? "Preset" : "Film Sim"}
         </Box>
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt={title}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        {type === "preset" && item.afterImage?.url && item.beforeImage?.url ? (
+          <AnimatedBeforeAfterSlider
+            beforeImage={item.beforeImage.url}
+            afterImage={item.afterImage.url}
+            isMobile={isMobile}
+            isHovered={isHovered}
           />
+        ) : (
+          imageUrl && (
+            <img
+              src={imageUrl}
+              alt={title}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )
         )}
 
         {/* Pagination dots overlay on image */}

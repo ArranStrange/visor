@@ -12,6 +12,9 @@ export const GET_FEATURED_ITEMS = gql`
         afterImage {
           url
         }
+        beforeImage {
+          url
+        }
         tags {
           id
           displayName
