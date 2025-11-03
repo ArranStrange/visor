@@ -1,5 +1,12 @@
 const getGraphQLEndpoint = () => {
-  if (typeof window !== "undefined") {
+  const isProduction = import.meta.env.PROD;
+  const isDevelopment = import.meta.env.DEV;
+
+  if (isProduction && import.meta.env.VITE_GRAPHQL_URI) {
+    return import.meta.env.VITE_GRAPHQL_URI;
+  }
+
+  if (isDevelopment && typeof window !== "undefined") {
     const hostname = window.location.hostname;
     const isMobile = hostname !== "localhost" && hostname !== "127.0.0.1";
 
@@ -14,6 +21,10 @@ const getGraphQLEndpoint = () => {
     if (isMobile) {
       return `http://${hostname}:4000/graphql`;
     }
+  }
+
+  if (import.meta.env.VITE_GRAPHQL_URI) {
+    return import.meta.env.VITE_GRAPHQL_URI;
   }
 
   return "http://localhost:4000/graphql";
