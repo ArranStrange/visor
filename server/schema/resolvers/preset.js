@@ -482,6 +482,7 @@ const presetResolvers = {
           .populate({ path: "tags", select: "id name displayName" })
           .populate({ path: "filmSim", select: "id name slug" })
           .populate({ path: "afterImage", select: "id url publicId" })
+          .populate({ path: "beforeImage", select: "id url publicId" })
           .populate({ path: "sampleImages", select: "id url caption" })
           .sort({ createdAt: -1 }) // Sort by newest first
           .skip(skip)

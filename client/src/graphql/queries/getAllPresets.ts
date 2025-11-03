@@ -22,6 +22,9 @@ export const GET_ALL_PRESETS = gql`
         afterImage {
           url
         }
+        beforeImage {
+          url
+        }
         featured
       }
       totalCount

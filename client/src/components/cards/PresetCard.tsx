@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
-import ImageOptimizer from "../media/ImageOptimizer";
+import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
 import {
   overlayButtonStyles,
   overlayAvatarStyles,
@@ -19,6 +19,7 @@ interface PresetCardProps {
   slug: string;
   title: string;
   afterImage?: any;
+  beforeImage?: any;
   tags: { displayName: string }[];
   creator?: {
     username: string;
@@ -30,18 +31,35 @@ interface PresetCardProps {
 }
 
 const PresetCard: React.FC<PresetCardProps> = memo(
-  ({ slug, title, afterImage, tags, creator, id }) => {
+  ({ slug, title, afterImage, beforeImage, tags, creator, id }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
     const [showOptions, setShowOptions] = React.useState(false);
+    const [isHovered, setIsHovered] = React.useState(false);
     const isMobile = useMobileDetection();
 
-    const imageUrl = useMemo(() => {
+    const afterImageUrl = useMemo(() => {
       if (!afterImage) return placeholderImage;
       if (typeof afterImage === "string") return afterImage;
       if (afterImage.url) return afterImage.url;
       return placeholderImage;
     }, [afterImage]);
+
+    const beforeImageUrl = useMemo(() => {
+      if (!beforeImage) return null;
+      if (typeof beforeImage === "string") return beforeImage;
+      // Check multiple possible structures
+      if (beforeImage.url) return beforeImage.url;
+      // Check if it's an object with nested url (GraphQL structure)
+      if (typeof beforeImage === "object" && "url" in beforeImage) {
+        return beforeImage.url || null;
+      }
+      console.warn(
+        "PresetCard: beforeImage has unexpected structure:",
+        beforeImage
+      );
+      return null;
+    }, [beforeImage]);
 
     const handleAddToList = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
@@ -88,17 +106,17 @@ const PresetCard: React.FC<PresetCardProps> = memo(
     );
 
     return (
-      <Card sx={cardStyles} onClick={handleCardClick}>
-        <ImageOptimizer
-          src={imageUrl}
-          alt={title}
-          aspectRatio="4:5"
-          loading="lazy"
-          style={{
-            height: "100%",
-            width: "100%",
-            objectFit: "cover",
-          }}
+      <Card
+        sx={cardStyles}
+        onClick={handleCardClick}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <AnimatedBeforeAfterSlider
+          beforeImage={beforeImageUrl || undefined}
+          afterImage={afterImageUrl}
+          isMobile={isMobile}
+          isHovered={isHovered}
         />
 
         <Box className="add-to-list-button" sx={overlayButtonStyles}>

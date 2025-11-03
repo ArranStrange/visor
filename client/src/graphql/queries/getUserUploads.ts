@@ -22,6 +22,9 @@ export const GET_USER_UPLOADS = gql`
         afterImage {
           url
         }
+        beforeImage {
+          url
+        }
         likes {
           id
         }
