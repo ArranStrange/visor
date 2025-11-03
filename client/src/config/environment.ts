@@ -1,10 +1,27 @@
-// Environment Configuration
-// This file centralizes environment-specific settings
+const getGraphQLEndpoint = () => {
+  if (typeof window !== "undefined") {
+    const hostname = window.location.hostname;
+    const isMobile = hostname !== "localhost" && hostname !== "127.0.0.1";
+
+    if (isMobile && import.meta.env.VITE_GRAPHQL_MOBILE_URI) {
+      return import.meta.env.VITE_GRAPHQL_MOBILE_URI;
+    }
+
+    if (!isMobile && import.meta.env.VITE_GRAPHQL_URI) {
+      return import.meta.env.VITE_GRAPHQL_URI;
+    }
+
+    if (isMobile) {
+      return `http://${hostname}:4000/graphql`;
+    }
+  }
+
+  return "http://localhost:4000/graphql";
+};
 
 export const ENV_CONFIG = {
   // API Configuration
-  GRAPHQL_ENDPOINT:
-    import.meta.env.VITE_GRAPHQL_ENDPOINT || "http://localhost:4000/graphql",
+  GRAPHQL_ENDPOINT: getGraphQLEndpoint(),
 
   // App Configuration
   APP_NAME: "VISOR",
@@ -21,14 +38,3 @@ export const ENV_CONFIG = {
   IS_DEVELOPMENT: import.meta.env.DEV,
   IS_PRODUCTION: import.meta.env.PROD,
 };
-
-// Environment Variables Documentation:
-//
-// VITE_GRAPHQL_ENDPOINT - Your GraphQL API endpoint
-// VITE_ENABLE_EMAIL_VERIFICATION - Set to "false" to disable email verification
-// VITE_CLOUDINARY_CLOUD_NAME - Your Cloudinary cloud name
-//
-// Example .env file:
-// VITE_GRAPHQL_ENDPOINT=https://your-api.com/graphql
-// VITE_ENABLE_EMAIL_VERIFICATION=true
-// VITE_CLOUDINARY_CLOUD_NAME=your-cloud-name

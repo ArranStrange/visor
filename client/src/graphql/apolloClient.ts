@@ -1,13 +1,10 @@
 import { ApolloClient, InMemoryCache, from, HttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
-
-// Use environment variable for GraphQL endpoint, fallback to localhost for development
-const GRAPHQL_ENDPOINT =
-  import.meta.env.VITE_GRAPHQL_URI || "http://localhost:4000/graphql";
+import { ENV_CONFIG } from "../config/environment";
 
 const httpLink = new HttpLink({
-  uri: GRAPHQL_ENDPOINT,
+  uri: ENV_CONFIG.GRAPHQL_ENDPOINT,
   credentials: "include",
 });
 
