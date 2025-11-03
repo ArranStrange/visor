@@ -75,6 +75,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
         if (isMobile) {
           if (!showOptions) {
             setShowOptions(true);
+            setIsHovered(true);
           } else {
             navigate(`/preset/${slug}`);
           }
@@ -90,6 +91,9 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           setShowOptions(false);
         }, 3000);
         return () => clearTimeout(timer);
+      }
+      if (isMobile && !showOptions) {
+        setIsHovered(false);
       }
     }, [showOptions, isMobile]);
 

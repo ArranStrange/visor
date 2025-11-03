@@ -18,7 +18,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
       beforeImage,
       afterImage,
       height,
-      isMobile = false,
+      isMobile: _isMobile = false,
       isHovered: externalIsHovered,
     }) => {
       const [internalHovered, setInternalHovered] = useState(false);
@@ -37,7 +37,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
         afterImageLoaded && (!hasBeforeImage || beforeImageLoaded);
 
       useEffect(() => {
-        if (!hasBeforeImage || isMobile || !imagesReady) {
+        if (!hasBeforeImage || !imagesReady) {
           setSliderPosition(0);
           return;
         }
@@ -60,7 +60,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
         } else {
           setSliderPosition(0);
         }
-      }, [isHovered, hasBeforeImage, isMobile, imagesReady]);
+      }, [isHovered, hasBeforeImage, imagesReady]);
 
       const handleMouseEnter = useCallback(
         (e: React.MouseEvent) => {
@@ -123,7 +123,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
               left: 0,
               clipPath: `inset(0 ${100 - sliderPosition}% 0 0)`,
               transition:
-                hasBeforeImage && !isMobile && imagesReady
+                hasBeforeImage && imagesReady
                   ? `clip-path ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`
                   : "none",
             }}
@@ -139,10 +139,9 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                 height: "100%",
                 backgroundColor: "white",
                 transform: "translateX(-50%)",
-                transition:
-                  !isMobile && imagesReady
-                    ? `left ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`
-                    : "none",
+                transition: imagesReady
+                  ? `left ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                  : "none",
                 "&::before": {
                   content: '""',
                   position: "absolute",
