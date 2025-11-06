@@ -186,6 +186,7 @@ module.exports = {
     getUserLists: async (_, { userId }) => {
       try {
         const lists = await UserList.find({ owner: userId })
+          .populate("owner", "id username avatar")
           .populate({
             path: "presets",
             select: "id title slug afterImage",
@@ -209,8 +210,9 @@ module.exports = {
             ...listObj,
             id: listObj._id.toString(),
             owner: {
-              id: listObj.owner.toString(),
+              id: listObj.owner._id.toString(),
               username: listObj.owner.username || "",
+              avatar: listObj.owner.avatar || null,
             },
             presets:
               listObj.presets?.map((preset) => ({

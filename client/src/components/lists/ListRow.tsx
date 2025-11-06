@@ -7,9 +7,12 @@ import {
   Stack,
   IconButton,
   Tooltip,
+  Chip,
 } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import TuneIcon from "@mui/icons-material/Tune";
+import CameraRollIcon from "@mui/icons-material/CameraRoll";
 import { gql, useMutation } from "@apollo/client";
 import { useAdmin } from "../../context/AdminContext";
 import { useNavigate } from "react-router-dom";
@@ -115,7 +118,7 @@ const ListRow: React.FC<ListRowProps> = ({
               fields: {
                 browseUserLists(existing) {
                   if (!existing?.lists) return existing;
-                  // Unfeature all other lists, feature this one
+
                   const lists = existing.lists.map((l: any) =>
                     l.id === id
                       ? { ...l, isFeatured: true }
@@ -125,7 +128,7 @@ const ListRow: React.FC<ListRowProps> = ({
                 },
                 getUserLists(existing) {
                   if (!existing) return existing;
-                  // Unfeature all other lists, feature this one
+
                   return existing.map((l: any) =>
                     l.id === id
                       ? { ...l, isFeatured: true }
@@ -276,6 +279,29 @@ const ListRow: React.FC<ListRowProps> = ({
                 aspectRatio="4:5"
                 loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+              <Chip
+                icon={isPreset ? <TuneIcon /> : <CameraRollIcon />}
+                label=""
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  left: 8,
+                  backgroundColor: "rgba(0, 0, 0, 0.7)",
+                  color: "#fff",
+                  height: 20,
+                  width: 20,
+                  minWidth: 20,
+                  "& .MuiChip-icon": {
+                    color: "#fff",
+                    fontSize: "0.875rem",
+                    margin: 0,
+                  },
+                  "& .MuiChip-label": {
+                    display: "none",
+                  },
+                }}
               />
             </Box>
           );
