@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Chip,
-  Avatar,
   IconButton,
   Tooltip,
   Menu,
@@ -134,14 +133,24 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   const linkedImage = getLinkedImage();
 
   return (
-    <Card sx={{ mb: 2 }}>
-      <CardContent>
-        <Box display="flex" alignItems="flex-start" gap={2}>
+    <Card sx={{ mb: 2, overflow: "hidden" }}>
+      <CardContent
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+        }}
+      >
+        <Box
+          display="flex"
+          alignItems="flex-start"
+          gap={{ xs: 1.5, sm: 2 }}
+          sx={{ width: "100%", minWidth: 0 }}
+        >
           {linkedImage && (
             <Box
               sx={{
-                width: 120,
-                height: 120,
+                width: { xs: 100, sm: 120 },
+                height: { xs: 100, sm: 120 },
                 borderRadius: 2,
                 overflow: "hidden",
                 flexShrink: 0,
@@ -164,42 +173,45 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               />
             </Box>
           )}
-          <Box flex={1}>
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
+          <Box flex={1} minWidth={0} sx={{ overflow: "hidden" }}>
+            <Box
+              display="flex"
+              alignItems="flex-start"
+              justifyContent="space-between"
+              gap={1}
+              mb={1}
+            >
               <Typography
                 variant="h6"
                 component="h3"
-                sx={{ cursor: "pointer" }}
+                sx={{
+                  cursor: "pointer",
+                  fontSize: { xs: "1rem", sm: "1.25rem" },
+                  flex: "1 1 auto",
+                  minWidth: 0,
+                  wordBreak: "break-word",
+                  overflowWrap: "break-word",
+                  lineHeight: 1.4,
+                }}
                 onClick={handleViewDiscussion}
               >
-                {discussion.title}
+                {discussion.title.replace(/^discussion:?\s*/i, "")}
               </Typography>
               {isAdmin && (
                 <Tooltip title="Admin options">
-                  <IconButton size="small" onClick={handleMenuOpen}>
+                  <IconButton
+                    size="small"
+                    onClick={handleMenuOpen}
+                    sx={{ flexShrink: 0 }}
+                  >
                     <MoreVertIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>
               )}
             </Box>
 
-            <Box display="flex" alignItems="center" gap={1} mb={1}>
-              <Avatar
-                src={discussion.createdBy.avatar}
-                sx={{ width: 20, height: 20 }}
-              >
-                {discussion.createdBy.username.charAt(0).toUpperCase()}
-              </Avatar>
-              <Typography variant="body2">
-                {discussion.createdBy.username}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {formatDate(discussion.createdAt)}
-              </Typography>
-            </Box>
-
             {discussion.linkedTo && (
-              <Box display="flex" alignItems="center" gap={1} mb={1}>
+              <Box mb={1}>
                 <Chip
                   icon={getDiscussionTypeIcon(discussion.linkedTo.type)}
                   label={getDiscussionTypeLabel(discussion.linkedTo.type)}
@@ -209,31 +221,83 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
                   sx={{
                     cursor: discussion.linkedTo.refId ? "pointer" : "default",
                     opacity: discussion.linkedTo.refId ? 1 : 0.7,
+                    flexShrink: 0,
                   }}
                 />
               </Box>
             )}
 
+            {discussion.posts &&
+              discussion.posts.length > 0 &&
+              discussion.posts[0] && (
+                <Box mb={1.5}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: "text.secondary",
+                      fontSize: { xs: "0.875rem", sm: "0.875rem" },
+                      lineHeight: 1.5,
+                      fontStyle: "italic",
+                      display: "-webkit-box",
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: "vertical",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                  >
+                    &ldquo;{discussion.posts[0].content}&rdquo;
+                  </Typography>
+                </Box>
+              )}
+
             <Box
               display="flex"
-              alignItems="center"
-              justifyContent="space-between"
+              flexDirection={{ xs: "column", sm: "row" }}
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              justifyContent={{ xs: "flex-start", sm: "space-between" }}
+              gap={{ xs: 1.5, sm: 2 }}
             >
-              <Box display="flex" alignItems="center" gap={2}>
-                <Typography variant="caption" color="text.secondary">
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={{ xs: 1, sm: 2 }}
+                flexWrap="wrap"
+                sx={{ width: { xs: "100%", sm: "auto" } }}
+              >
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ whiteSpace: "nowrap" }}
+                >
                   <ChatIcon sx={{ fontSize: 14, mr: 0.5 }} />
                   {discussion.posts.length} posts
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ whiteSpace: "nowrap" }}
+                >
                   <BookmarkIcon sx={{ fontSize: 14, mr: 0.5 }} />
                   {discussion.followers.length} followers
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{
+                    whiteSpace: { xs: "normal", sm: "nowrap" },
+                    fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                  }}
+                >
                   Last activity {formatDate(discussion.updatedAt)}
                 </Typography>
               </Box>
 
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={1}
+                sx={{ flexShrink: 0, width: { xs: "100%", sm: "auto" } }}
+              >
                 <Tooltip
                   title={
                     isUserFollowing(discussion, user) ? "Unfollow" : "Follow"
@@ -258,6 +322,12 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
                   size="small"
                   variant="outlined"
                   onClick={handleViewDiscussion}
+                  sx={{
+                    whiteSpace: "nowrap",
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    px: { xs: 1, sm: 2 },
+                    flex: { xs: 1, sm: "0 1 auto" },
+                  }}
                 >
                   View Discussion
                 </Button>
