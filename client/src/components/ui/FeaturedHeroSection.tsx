@@ -95,12 +95,12 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
       sx={{
         width: { xs: "100%", md: "70%" },
         mx: "auto",
-        height: "100vh",
+        height: { xs: "auto", md: "auto" },
         display: "flex",
         flexDirection: "column",
-        justifyContent: "center",
-        gap: { xs: 2, md: 3 },
-        py: { xs: 2, md: 4 },
+        justifyContent: { xs: "flex-start", md: "flex-start" },
+        gap: { xs: 1.5, md: 3 },
+        py: { xs: 1.5, md: 2 },
       }}
     >
       {/* Header Row: Title, Description, Avatar */}
@@ -119,7 +119,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           sx={{
             fontWeight: 900,
             letterSpacing: { xs: -0.5, md: -1 },
-            fontSize: { xs: "2rem", sm: "2.6rem", md: "4rem" },
+            fontSize: { xs: "1.75rem", sm: "2.2rem", md: "4rem" },
             lineHeight: 1.03,
             whiteSpace: "pre-wrap",
             color: "text.primary",
@@ -129,21 +129,28 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           {title}
         </Typography>
 
-        <Box sx={{ display: { xs: "none", md: "block" } }}>
-          {item.description && (
+        <Box
+          sx={{
+            display: { xs: "none", md: "block" },
+            gridColumn: { xs: "1 / -1", md: "auto" },
+            gridRow: { xs: "2", md: "auto" },
+            alignSelf: { xs: "start", md: "center" },
+          }}
+        >
+          {(item.description || item.notes) && (
             <Typography
               variant="body1"
               sx={{
                 color: (theme) => theme.palette.text.secondary,
                 display: "-webkit-box",
-                WebkitLineClamp: 3,
+                WebkitLineClamp: { xs: 2, md: 3 },
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
-                fontSize: { md: "0.88rem", lg: "0.96rem" },
+                fontSize: { xs: "0.85rem", md: "0.88rem", lg: "0.96rem" },
                 lineHeight: 1.55,
               }}
             >
-              {item.description}
+              {item.description || item.notes}
             </Typography>
           )}
         </Box>
@@ -154,14 +161,16 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             justifyContent: "flex-end",
             alignItems: "center",
             gap: 1,
+            gridColumn: { xs: "2", md: "auto" },
+            gridRow: { xs: "1", md: "auto" },
           }}
         >
           <Avatar
             src={item.creator.avatar}
             alt={item.creator.username}
             sx={{
-              width: { xs: 40, sm: 46 },
-              height: { xs: 40, sm: 46 },
+              width: { xs: 36, sm: 46 },
+              height: { xs: 36, sm: 46 },
               cursor: "pointer",
               boxShadow: 3,
             }}
@@ -169,19 +178,25 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           >
             {item.creator.username.charAt(0).toUpperCase()}
           </Avatar>
-          <Typography variant="caption" color="text.secondary">
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: "block" }}
+          >
             {type === "preset" ? "Featured Preset" : "Featured Film Sim"}
           </Typography>
         </Box>
       </Box>
 
-      {/* Image Area (uninterrupted) */}
+      {/* Image Area */}
       <Box
         sx={{
           position: "relative",
           width: "100%",
-          flex: 1,
-          minHeight: { xs: 300, md: 420 },
+          flex: { xs: "0 1 auto", md: "0 1 auto" },
+          minHeight: { xs: 250, md: 420 },
+          maxHeight: { xs: "50vh", md: 420 },
+          height: { xs: "auto", md: 420 },
           overflow: "hidden",
           borderRadius: { xs: 2, md: 3 },
           cursor: "pointer",
@@ -219,13 +234,31 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         >
           {type === "preset" ? "Preset" : "Film Sim"}
         </Box>
-        {type === "preset" && item.afterImage?.url && item.beforeImage?.url ? (
-          <AnimatedBeforeAfterSlider
-            beforeImage={item.beforeImage.url}
-            afterImage={item.afterImage.url}
-            isMobile={isMobile}
-            isHovered={isHovered}
-          />
+        {type === "preset" && item.afterImage?.url ? (
+          item.beforeImage?.url ? (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+              }}
+            >
+              <AnimatedBeforeAfterSlider
+                beforeImage={item.beforeImage.url}
+                afterImage={item.afterImage.url}
+                isMobile={isMobile}
+                isHovered={isHovered}
+              />
+            </Box>
+          ) : (
+            <img
+              src={item.afterImage.url}
+              alt={title}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )
         ) : (
           imageUrl && (
             <img
@@ -279,6 +312,27 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           </Box>
         )}
       </Box>
+
+      {/* Description below image on mobile */}
+      {(item.description || item.notes) && (
+        <Box
+          sx={{
+            display: { xs: "block", md: "none" },
+            px: { xs: 1.5, sm: 2, md: 0 },
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: (theme) => theme.palette.text.secondary,
+              fontSize: "0.85rem",
+              lineHeight: 1.55,
+            }}
+          >
+            {item.description || item.notes}
+          </Typography>
+        </Box>
+      )}
     </Box>
   );
 };
