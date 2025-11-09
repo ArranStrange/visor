@@ -64,6 +64,15 @@ node_modules/
 
 # dotenv environment variables file
 .env
+.env.development
+.env.production
+.env.test
+.env.staging
+.env.development.local
+.env.production.local
+.env.test.local
+.env.staging.local
+.env.local
 
 # SpecStory history and documentation
 .specstory/
