@@ -18,6 +18,25 @@ import { useAdmin } from "../../context/AdminContext";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
 
+const squareImageStyles = {
+  width: "100%",
+  aspectRatio: "1 / 1",
+  borderRadius: 2,
+  overflow: "hidden",
+  boxShadow: 3,
+} as const;
+
+type ListTile =
+  | { type: "info" }
+  | {
+      type: "image";
+      id: string;
+      itemType: "preset" | "filmsim";
+      src: string;
+      alt: string;
+      to: string;
+    };
+
 interface ListRowProps {
   id: string;
   name: string;
@@ -148,140 +167,175 @@ const ListRow: React.FC<ListRowProps> = ({
   };
   const totalItems = (presets?.length || 0) + (filmSims?.length || 0);
 
-  const items = useMemo(() => {
-    const presetItems = (presets || []).map((p) => ({
-      ...p,
-      type: "preset" as const,
-    }));
-    const filmSimItems = (filmSims || []).map((f) => ({
-      ...f,
-      type: "filmsim" as const,
-    }));
-    return [...presetItems, ...filmSimItems];
+  const tiles = useMemo<ListTile[]>(() => {
+    const imageTiles = [
+      ...(presets || []).map((p) => ({
+        type: "image" as const,
+        id: `preset-${p.id}`,
+        itemType: "preset" as const,
+        src: p.afterImage?.url || "/placeholder-image.jpg",
+        alt: p.title,
+        to: `/preset/${p.slug}`,
+      })),
+      ...(filmSims || []).map((f) => ({
+        type: "image" as const,
+        id: `filmsim-${f.id}`,
+        itemType: "filmsim" as const,
+        src: f.sampleImages?.[0]?.url || "/placeholder-image.jpg",
+        alt: f.name,
+        to: `/filmsim/${f.slug}`,
+      })),
+    ].slice(0, 3);
+
+    if (imageTiles.length === 0) {
+      return [{ type: "info" as const }];
+    }
+
+    const insertionIndex = Math.min(1, imageTiles.length);
+    return [
+      ...imageTiles.slice(0, insertionIndex),
+      { type: "info" as const },
+      ...imageTiles.slice(insertionIndex),
+    ];
   }, [presets, filmSims]);
 
   return (
-    <Box sx={{ mb: { xs: 3, sm: 4, md: 5 } }}>
-      <Stack
-        direction={{ xs: "row", sm: "row" }}
-        alignItems={{ xs: "center", sm: "center" }}
-        justifyContent="space-between"
-        sx={{ mb: { xs: 1.5, sm: 2 } }}
-      >
-        <Stack
-          direction="row"
-          alignItems="center"
-          spacing={1.25}
-          sx={{ minWidth: 0 }}
-        >
-          <Avatar
-            src={owner?.avatar}
-            alt={owner?.username}
-            sx={{
-              width: { xs: 28, sm: 32 },
-              height: { xs: 28, sm: 32 },
-              cursor: "pointer",
-            }}
-            onClick={() => navigate(`/profile/${owner.id}`)}
-          >
-            {owner?.username?.charAt(0)?.toUpperCase()}
-          </Avatar>
-          <Box sx={{ minWidth: 0 }}>
-            <Typography
-              variant="subtitle1"
-              noWrap
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: "0.95rem", sm: "1.1rem" },
-              }}
-            >
-              {name}
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              noWrap
-              sx={{ display: { xs: "none", sm: "block" } }}
-            >
-              {totalItems} {totalItems === 1 ? "item" : "items"} • by{" "}
-              {owner.username}
-            </Typography>
-          </Box>
-        </Stack>
-        <Stack direction="row" alignItems="center" spacing={1}>
-          {isAdmin && (
-            <Tooltip title={isFeatured ? "Unfeature" : "Feature"}>
-              <IconButton onClick={handleToggleFeatured} size="small">
-                {isFeatured ? <StarIcon color="warning" /> : <StarBorderIcon />}
-              </IconButton>
-            </Tooltip>
-          )}
-          <Button
-            variant="text"
-            size="small"
-            onClick={() => navigate(`/list/${id}`)}
-            sx={{ display: { xs: "none", sm: "inline-flex" } }}
-          >
-            View list
-          </Button>
-        </Stack>
-      </Stack>
-
-      {description && (
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ mb: 1.25, display: { xs: "none", sm: "block" } }}
-        >
-          {description}
-        </Typography>
-      )}
-
+    <Box sx={{ mb: { xs: 3, sm: 4, md: 5 }, py: { xs: 1.5, md: 2 } }}>
       <Box
         sx={{
-          display: "flex",
+          display: { xs: "grid", md: "flex" },
+          gridTemplateColumns: { xs: "repeat(2, 1fr)", md: "unset" },
           gap: { xs: 1.25, sm: 1.5, md: 2 },
-          overflowX: "auto",
+          justifyContent: { md: "flex-start" },
+          overflowX: { xs: "visible", md: "auto" },
           scrollbarWidth: "none",
           "&::-webkit-scrollbar": { display: "none" },
           pb: 1,
-          scrollSnapType: { xs: "x mandatory", sm: "none" },
+          mb: { xs: 1.5, md: 2 },
         }}
       >
-        {items.map((item) => {
-          const isPreset = item.type === "preset";
-          const to = isPreset
-            ? `/preset/${item.slug}`
-            : `/filmsim/${item.slug}`;
-          const src = isPreset
-            ? item.afterImage?.url || "/placeholder-image.jpg"
-            : item.sampleImages?.[0]?.url || "/placeholder-image.jpg";
+        {tiles.map((tile, idx) => {
+          const commonSx = {
+            flex: { xs: "0 0 auto", sm: "0 0 200px", md: "0 0 240px" },
+            ...squareImageStyles,
+          };
+
+          if (tile.type === "info") {
+            return (
+              <Box
+                key={`list-tile-info-${id}-${idx}`}
+                sx={{
+                  ...commonSx,
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  p: { xs: 1.5, sm: 2 },
+                  boxShadow: 2,
+                  gap: 1.25,
+                }}
+              >
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  spacing={1}
+                >
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Avatar
+                      src={owner?.avatar}
+                      alt={owner?.username}
+                      sx={{ width: 32, height: 32, cursor: "pointer" }}
+                      onClick={() => navigate(`/profile/${owner.id}`)}
+                    >
+                      {owner?.username?.charAt(0)?.toUpperCase()}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">
+                        {isFeatured ? "Featured List" : "User List"}
+                      </Typography>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        {owner.username}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  {isAdmin && (
+                    <Tooltip title={isFeatured ? "Unfeature" : "Feature"}>
+                      <IconButton onClick={handleToggleFeatured} size="small">
+                        {isFeatured ? (
+                          <StarIcon color="warning" />
+                        ) : (
+                          <StarBorderIcon />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Stack>
+
+                <Box sx={{ minHeight: 0 }}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 900, mb: 0.5, lineHeight: 1.15 }}
+                    noWrap
+                    title={name}
+                  >
+                    {name}
+                  </Typography>
+                  {description && (
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: (t) => t.palette.text.secondary,
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3 as any,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
+                      {description}
+                    </Typography>
+                  )}
+                </Box>
+
+                <Stack spacing={1}>
+                  <Typography variant="caption" color="text.secondary">
+                    {totalItems} {totalItems === 1 ? "item" : "items"}
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    size="small"
+                    onClick={() => navigate(`/list/${id}`)}
+                  >
+                    View List
+                  </Button>
+                </Stack>
+              </Box>
+            );
+          }
+
+          const icon =
+            tile.itemType === "preset" ? <TuneIcon /> : <CameraRollIcon />;
 
           return (
             <Box
-              key={`${item.type}-${item.id}`}
+              key={tile.id}
               sx={{
-                flex: { xs: "0 0 140px", sm: "0 0 180px", md: "0 0 220px" },
-                borderRadius: 1,
-                overflow: "hidden",
+                ...commonSx,
                 cursor: "pointer",
                 position: "relative",
-                boxShadow: 1,
                 transition: "transform .15s ease, box-shadow .15s ease",
-                "&:hover": { transform: "translateY(-2px)", boxShadow: 3 },
-                scrollSnapAlign: { xs: "start", sm: "unset" },
+                "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
               }}
-              onClick={() => navigate(to)}
+              onClick={() => navigate(tile.to)}
             >
               <ImageOptimizer
-                src={src}
-                alt={isPreset ? item.title : item.name}
-                aspectRatio="4:5"
+                src={tile.src}
+                alt={tile.alt}
                 loading="lazy"
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
               <Chip
-                icon={isPreset ? <TuneIcon /> : <CameraRollIcon />}
+                icon={icon}
                 label=""
                 size="small"
                 sx={{
