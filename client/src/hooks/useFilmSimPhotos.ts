@@ -38,7 +38,7 @@ export const useFilmSimPhotos = () => {
         setCurrentImageFeatured(true);
       }
     } catch (error) {
-      console.error("Error toggling featured photo status:", error);
+      // Error toggling featured photo status
     }
   };
 

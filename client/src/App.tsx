@@ -1,38 +1,40 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import apolloClient from "./graphql/apolloClient";
-import NavBar from "./components/layout/Navbar";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ProfilePage from "./pages/Profile";
+import apolloClient from "@gql/apolloClient";
+import NavBar from "components/layout/Navbar";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
-import { ContentTypeProvider } from "./context/ContentTypeFilter";
-import { AuthProvider } from "./context/AuthContext";
-import { NotificationProvider } from "./context/NotificationContext";
-import { AdminProvider } from "./context/AdminContext";
-import { TagProvider } from "./context/TagContext";
-import SearchView from "./pages/SearchView";
-import PresetDetailPage from "./pages/PresetDetail";
-import FilmSimPage from "./pages/FilmSimDetail";
-import UploadPage from "./pages/Upload";
-import UploadPreset from "./pages/UploadPreset";
-import UploadFilmSim from "./pages/UploadFilmSim";
-import NotFound from "./pages/NotFound";
-import MyLists from "./pages/MyLists";
-import ListDetail from "./pages/ListDetail";
-import BrowseLists from "./pages/BrowseLists";
-import { visorTheme } from "./theme/VISORTheme";
-import CreateList from "./pages/CreateList";
-import PublicProfile from "./pages/PublicProfile";
-import Discussions from "./pages/Discussions";
-import DiscussionDetail from "./pages/DiscussionDetail";
-import CreateDiscussion from "./pages/CreateDiscussion";
-import Notifications from "./pages/Notifications";
-import EmailVerification from "./pages/EmailVerification";
-import { ServiceContainer } from "./core/container/ServiceContainer";
+import { ContentTypeProvider } from "context/ContentTypeFilter";
+import { AuthProvider } from "context/AuthContext";
+import { NotificationProvider } from "context/NotificationContext";
+import { AdminProvider } from "context/AdminContext";
+import { TagProvider } from "context/TagContext";
+import { visorTheme } from "theme/VISORTheme";
+import { ServiceContainer } from "core/container/ServiceContainer";
 import { useNavigate } from "react-router-dom";
+
+// Route imports (SFG20-style route structure)
+import HomeRoute from "routes/home/home-route";
+import SearchRoute from "routes/search/search-route";
+import PresetDetailRoute from "routes/preset/preset-detail-route";
+import FilmSimDetailRoute from "routes/filmsim/filmsim-detail-route";
+import ProfileRoute from "routes/profile/profile-route";
+import PublicProfileRoute from "routes/profile/public-profile-route";
+import UploadRoute from "routes/upload/upload-route";
+import UploadPresetRoute from "routes/upload/upload-preset-route";
+import UploadFilmSimRoute from "routes/upload/upload-filmsim-route";
+import LoginRoute from "routes/auth/login-route";
+import RegisterRoute from "routes/auth/register-route";
+import EmailVerificationRoute from "routes/auth/email-verification-route";
+import MyListsRoute from "routes/lists/my-lists-route";
+import BrowseListsRoute from "routes/lists/browse-lists-route";
+import ListDetailRoute from "routes/lists/list-detail-route";
+import CreateListRoute from "routes/lists/create-list-route";
+import DiscussionsRoute from "routes/discussions/discussions-route";
+import DiscussionDetailRoute from "routes/discussions/discussion-detail-route";
+import CreateDiscussionRoute from "routes/discussions/create-discussion-route";
+import NotificationsRoute from "routes/notifications-route";
+import NotFoundRoute from "routes/not-found-route";
 
 // Initialize services at module level
 const container = ServiceContainer.getInstance();
@@ -64,48 +66,63 @@ function App() {
                   <TagProvider>
                     <NavBar />
                     <Routes>
-                      <Route path="/" element={<Home />} />
-                      <Route path="/search" element={<SearchView />} />
+                      <Route path="/" element={<HomeRoute />} />
+                      <Route path="/search" element={<SearchRoute />} />
                       <Route
                         path="/preset/:slug"
-                        element={<PresetDetailPage />}
+                        element={<PresetDetailRoute />}
                       />
-                      <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route
+                        path="/filmsim/:slug"
+                        element={<FilmSimDetailRoute />}
+                      />
+                      <Route path="/profile" element={<ProfileRoute />} />
                       <Route
                         path="/profile/:userId"
-                        element={<PublicProfile />}
+                        element={<PublicProfileRoute />}
                       />
-                      <Route path="/upload" element={<UploadPage />} />
-                      <Route path="/upload/preset" element={<UploadPreset />} />
+                      <Route path="/upload" element={<UploadRoute />} />
+                      <Route
+                        path="/upload/preset"
+                        element={<UploadPresetRoute />}
+                      />
                       <Route
                         path="/upload/filmsim"
-                        element={<UploadFilmSim />}
+                        element={<UploadFilmSimRoute />}
                       />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
+                      <Route path="/login" element={<LoginRoute />} />
+                      <Route path="/register" element={<RegisterRoute />} />
                       <Route
                         path="/verify-email"
-                        element={<EmailVerification />}
+                        element={<EmailVerificationRoute />}
                       />
-                      <Route path="/lists" element={<MyLists />} />
-                      <Route path="/browse-lists" element={<BrowseLists />} />
-                      <Route path="/list/:id" element={<ListDetail />} />
-                      <Route path="/create-list" element={<CreateList />} />
-                      <Route path="/discussions" element={<Discussions />} />
+                      <Route path="/lists" element={<MyListsRoute />} />
+                      <Route
+                        path="/browse-lists"
+                        element={<BrowseListsRoute />}
+                      />
+                      <Route path="/list/:id" element={<ListDetailRoute />} />
+                      <Route
+                        path="/create-list"
+                        element={<CreateListRoute />}
+                      />
+                      <Route
+                        path="/discussions"
+                        element={<DiscussionsRoute />}
+                      />
                       <Route
                         path="/discussions/new"
-                        element={<CreateDiscussion />}
+                        element={<CreateDiscussionRoute />}
                       />
                       <Route
                         path="/discussions/:discussionId"
-                        element={<DiscussionDetail />}
+                        element={<DiscussionDetailRoute />}
                       />
                       <Route
                         path="/notifications"
-                        element={<Notifications />}
+                        element={<NotificationsRoute />}
                       />
-                      <Route path="*" element={<NotFound />} />
+                      <Route path="*" element={<NotFoundRoute />} />
                     </Routes>
                   </TagProvider>
                 </ContentTypeProvider>

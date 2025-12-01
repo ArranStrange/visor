@@ -81,6 +81,13 @@ export const NavbarCenter = createSlot("NavbarCenter");
 export const NavbarUserMenuItems = createSlot("NavbarUserMenuItems");
 
 // ============================================================================
+// Breadcrumb Slots
+// ============================================================================
+
+/** Page breadcrumbs - appears below NavBar on all routes */
+export const PageBreadcrumbs = createSlot("PageBreadcrumbs");
+
+// ============================================================================
 // Search Slots
 // ============================================================================
 

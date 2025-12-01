@@ -1,25 +1,19 @@
 import React, { useEffect, memo, useCallback, useMemo } from "react";
-import {
-  Card,
-  Typography,
-  Box,
-  Chip,
-  Stack,
-  Avatar,
-  IconButton,
-} from "@mui/material";
+import { Card, Typography, Box, Chip, Stack, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
 import {
-  overlayButtonStyles,
   overlayAvatarStyles,
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
   getCardHoverStyles,
 } from "../../styles/cardOverlays";
+import {
+  FilmSimCardOverlay,
+  FilmSimCardFooter,
+} from "../../lib/slots/slot-definitions";
 
 interface FilmSimCardProps {
   id: string;
@@ -125,16 +119,13 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           }}
         />
 
-        <Box className="add-to-list-button" sx={overlayButtonStyles}>
-          <IconButton
-            className="floating"
-            onClick={handleAddToList}
-            onMouseDown={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </Box>
+        {/* Overlay actions - plugins can inject buttons/actions here */}
+        <FilmSimCardOverlay.Slot
+          id={id}
+          name={name}
+          slug={slug}
+          onAddToList={handleAddToList}
+        />
 
         {creator && (
           <Box
@@ -174,38 +165,48 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           <Typography variant="overlaySubtitle">Film Sim</Typography>
         </Box>
 
-        <Box
-          className="tags-container"
-          sx={{
-            ...overlayTagsContainerStyles,
-            p: 2,
-          }}
+        {/* Footer content - plugins can inject tags, actions, etc. */}
+        <FilmSimCardFooter.Slot
+          id={id}
+          name={name}
+          slug={slug}
+          tags={tags}
+          navigate={navigate}
         >
-          <Stack
-            direction="row"
-            gap={1}
-            flexWrap="wrap"
-            justifyContent="flex-start"
+          {/* Default tags display */}
+          <Box
+            className="tags-container"
+            sx={{
+              ...overlayTagsContainerStyles,
+              p: 2,
+            }}
           >
-            {(tags ?? [])
-              .slice(0, 3)
-              .reverse()
-              .map((tag, index) => (
-                <Chip
-                  key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
-                  variant="overlay"
-                  label={tag.displayName}
-                  size="small"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(
-                      `/search?tag=${encodeURIComponent(tag.displayName)}`
-                    );
-                  }}
-                />
-              ))}
-          </Stack>
-        </Box>
+            <Stack
+              direction="row"
+              gap={1}
+              flexWrap="wrap"
+              justifyContent="flex-start"
+            >
+              {(tags ?? [])
+                .slice(0, 3)
+                .reverse()
+                .map((tag, index) => (
+                  <Chip
+                    key={`${id}-tag-${index}-${tag.id ?? tag.displayName}`}
+                    variant="overlay"
+                    label={tag.displayName}
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(
+                        `/search?tag=${encodeURIComponent(tag.displayName)}`
+                      );
+                    }}
+                  />
+                ))}
+            </Stack>
+          </Box>
+        </FilmSimCardFooter.Slot>
 
         <AddToListDialog
           open={addToListOpen}

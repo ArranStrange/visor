@@ -1,17 +1,19 @@
 import React, { memo, useCallback, useMemo, useEffect } from "react";
-import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
+import { Card, Typography, Chip, Box, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
 import {
-  overlayButtonStyles,
   overlayAvatarStyles,
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
   getCardHoverStyles,
 } from "../../styles/cardOverlays";
+import {
+  PresetCardOverlay,
+  PresetCardFooter,
+} from "../../lib/slots/slot-definitions";
 
 const placeholderImage = "/placeholder-image.jpg";
 
@@ -129,16 +131,12 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           isHovered={isHovered}
         />
 
-        <Box className="add-to-list-button" sx={overlayButtonStyles}>
-          <IconButton
-            className="floating"
-            onClick={handleAddToList}
-            onMouseDown={(e) => e.stopPropagation()}
-            onMouseUp={(e) => e.stopPropagation()}
-          >
-            <AddIcon fontSize="small" />
-          </IconButton>
-        </Box>
+        {/* Card overlay actions - plugins can inject buttons here */}
+        <PresetCardOverlay.Slot
+          id={id || ""}
+          name={title}
+          onAddToList={handleAddToList}
+        />
 
         {creator && (
           <Box

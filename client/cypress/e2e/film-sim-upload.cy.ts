@@ -15,31 +15,11 @@ describe("Film Sim Upload and Delete", () => {
   };
 
   beforeEach(() => {
-    cy.visit("/login");
+    // Login as test user before each test
+    cy.loginAsTestUser();
   });
 
-  const performLogin = () => {
-    cy.window().then((win) => {
-      const token =
-        win.localStorage.getItem("authToken") ||
-        win.sessionStorage.getItem("authToken");
-      if (token) {
-        cy.visit("/");
-      } else {
-        cy.visit("/login");
-        cy.get('[data-cy="login-page"]').should("be.visible");
-        cy.get('[data-cy="login-email-input"]').type(
-          "arranstrange@googlemail.com"
-        );
-        cy.get('[data-cy="login-password-input"]').type("Admin1234!");
-        cy.get('[data-cy="login-submit-button"]').click();
-        cy.wait(5000);
-      }
-    });
-  };
-
   it("should upload a film simulation", () => {
-    performLogin();
     cy.get('[data-testid="upload-icon"]').click();
     cy.get('[data-cy="upload-filmsim-button"]').click();
     cy.wait(1000);

@@ -38,7 +38,7 @@ export const useFilmSimOperations = (
       });
       navigate("/");
     } catch (err) {
-      console.error("Error deleting film simulation:", err);
+      // Error deleting film simulation
     }
   };
 

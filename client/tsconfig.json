@@ -15,6 +15,26 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Path aliases (SFG20-style) */
+    "baseUrl": ".",
+    "paths": {
+      "lib/*": ["src/lib/*"],
+      "routes/*": ["src/routes/*"],
+      "plugins/*": ["src/plugins/*"],
+      "components/*": ["src/components/*"],
+      "hooks/*": ["src/hooks/*"],
+      "graphql/*": ["src/graphql/*"],
+      "context/*": ["src/context/*"],
+      "utils/*": ["src/utils/*"],
+      "types/*": ["src/types/*"],
+      "config/*": ["src/config/*"],
+      "theme/*": ["src/theme/*"],
+      "core/*": ["src/core/*"],
+      "styles/*": ["src/styles/*"],
+      "constants/*": ["src/constants/*"],
+      "@gql/*": ["src/graphql/*"]
+    },
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,

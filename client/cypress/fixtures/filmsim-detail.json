@@ -1,0 +1,104 @@
+{
+  "mockFilmSim": {
+    "_id": {
+      "$oid": "684a9f06b27aab78529a330e"
+    },
+    "id": "684a9f06b27aab78529a330e",
+    "name": "London Greyscale",
+    "slug": "london-greyscale",
+    "description": "A gritty black and white film sim with deep shadows, strong highlights, and heavy grain — perfect for moody city scenes and low-light street photography. Inspired by classic pushed film like Ilford HP5.",
+    "type": "custom-recipe",
+    "settings": {
+      "dynamicRange": 100,
+      "highlight": 2,
+      "shadow": 2,
+      "colour": -2,
+      "sharpness": 1,
+      "noiseReduction": -2,
+      "grainEffect": 2,
+      "clarity": 0,
+      "whiteBalance": "AUTO",
+      "wbShift": {
+        "r": 0,
+        "b": 0
+      },
+      "filmSimulation": "ACROS + R"
+    },
+    "toneCurve": {
+      "rgb": [],
+      "red": [],
+      "green": [],
+      "blue": []
+    },
+    "tags": [
+      {
+        "id": "684736daec0f6d24fed1b6b9",
+        "_id": {
+          "$oid": "684736daec0f6d24fed1b6b9"
+        },
+        "name": "black-and-white",
+        "displayName": "Black & White"
+      },
+      {
+        "id": "684a9ea68f53eb78d049866e",
+        "_id": {
+          "$oid": "684a9ea68f53eb78d049866e"
+        },
+        "name": "street-photography",
+        "displayName": "Street Photography"
+      },
+      {
+        "id": "684a9ea68f53eb78d049866f",
+        "_id": {
+          "$oid": "684a9ea68f53eb78d049866f"
+        },
+        "name": "high-contrast",
+        "displayName": "High Contrast"
+      }
+    ],
+    "sampleImages": [
+      {
+        "id": "684a9f06b27aab78529a3310",
+        "_id": {
+          "$oid": "684a9f06b27aab78529a3310"
+        },
+        "url": "cypress/fixtures/Film Sim Test Image.webp",
+        "caption": "London street scene in black and white",
+        "isFeaturedPhoto": true
+      },
+      {
+        "id": "684a9f06b27aab78529a3311",
+        "_id": {
+          "$oid": "684a9f06b27aab78529a3311"
+        },
+        "url": "https://via.placeholder.com/800x600",
+        "caption": "Urban architecture with strong contrast",
+        "isFeaturedPhoto": false
+      }
+    ],
+    "creator": {
+      "id": "6848094fb0de38f66d970ac9",
+      "_id": {
+        "$oid": "6848094fb0de38f66d970ac9"
+      },
+      "username": "testcreator",
+      "avatar": "https://via.placeholder.com/150",
+      "instagram": "@testcreator"
+    },
+    "recommendedPresets": [],
+    "compatibleCameras": ["X-Trans IV", "X-Trans V"],
+    "notes": "A moody, high-contrast black and white recipe inspired by classic street photography films like Ilford HP5 pushed to 1600. Designed for twilight city scenes, this sim emphasises deep shadows, sharp architectural detail, and gritty textures. Grain is set strong for a tactile, documentary feel, while highlights stay crisp without blowing out. Ideal for urban exploration, bridges, and low-light contrasty environments where you want atmosphere without softness.",
+    "comments": [],
+    "likes": 42,
+    "downloads": 128,
+    "isPublic": true,
+    "featured": false,
+    "createdAt": {
+      "$date": "2025-06-12T09:33:58.502Z"
+    },
+    "updatedAt": {
+      "$date": "2025-10-20T19:29:04.697Z"
+    },
+    "__v": 1
+  }
+}

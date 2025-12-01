@@ -2,16 +2,20 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { ApolloProvider } from "@apollo/client";
 import App from "./App.tsx";
-import apolloClient from "./graphql/apolloClient";
-import { setupErrorHandling } from "./utils/errorHandling";
+import apolloClient from "@gql/apolloClient";
+import { setupErrorHandling } from "utils/errorHandling";
+import { scanRuntimeFiles } from "lib/plugins/scanner";
 import "./index.css";
 
 setupErrorHandling();
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
-    <ApolloProvider client={apolloClient}>
-      <App />
-    </ApolloProvider>
-  </React.StrictMode>
-);
+// Scan and load all runtime plugin files
+scanRuntimeFiles().then(() => {
+  ReactDOM.createRoot(document.getElementById("root")!).render(
+    <React.StrictMode>
+      <ApolloProvider client={apolloClient}>
+        <App />
+      </ApolloProvider>
+    </React.StrictMode>
+  );
+});

@@ -78,13 +78,33 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         const results: ContentItem[] = [];
         let hasNextPage = false;
 
-        // Fetch presets with pagination
-        if (contentType === "all" || contentType === "presets") {
-          const paginatedPresets = await presetRepository.findPaginated(
-            page,
-            ITEMS_PER_PAGE,
-            filter
+        // Determine what to fetch based on contentType
+        const shouldFetchPresets =
+          contentType === "all" || contentType === "presets";
+        const shouldFetchFilms =
+          contentType === "all" || contentType === "films";
+
+        // Fetch data in parallel when both are needed, or sequentially when only one is needed
+        const fetchPromises: Promise<any>[] = [];
+
+        if (shouldFetchPresets) {
+          fetchPromises.push(
+            presetRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
           );
+        }
+
+        if (shouldFetchFilms) {
+          fetchPromises.push(
+            filmSimRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
+          );
+        }
+
+        // Execute all fetches in parallel
+        const fetchResults = await Promise.all(fetchPromises);
+
+        // Process preset results
+        if (shouldFetchPresets) {
+          const paginatedPresets = fetchResults[0];
           hasNextPage = paginatedPresets.hasNextPage;
 
           results.push(
@@ -100,13 +120,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
           );
         }
 
-        // Fetch film sims with pagination
-        if (contentType === "all" || contentType === "films") {
-          const paginatedFilmSims = await filmSimRepository.findPaginated(
-            page,
-            ITEMS_PER_PAGE,
-            filter
-          );
+        // Process film sim results
+        if (shouldFetchFilms) {
+          const filmResultIndex = shouldFetchPresets ? 1 : 0;
+          const paginatedFilmSims = fetchResults[filmResultIndex];
           hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
 
           results.push(
