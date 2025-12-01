@@ -26,7 +26,7 @@ interface ContentGridLoaderProps {
 const ITEMS_PER_PAGE = 20;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
-  contentType = "all",
+  contentType: contentTypeProp,
   filter,
   searchQuery,
   customData,
@@ -42,7 +42,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
   // Refs and external hooks
   const containerRef = useRef<HTMLDivElement>(null);
-  const { randomizeOrder } = useContentType();
+  const { randomizeOrder, contentType: contextContentType } = useContentType();
+
+  // Use prop if provided, otherwise fall back to context
+  const contentType = contentTypeProp ?? contextContentType;
 
   // Service hooks
   const presetRepository = usePresetRepository();

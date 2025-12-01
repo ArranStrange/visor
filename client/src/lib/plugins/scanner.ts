@@ -56,7 +56,6 @@ export async function scanRuntimeFiles(): Promise<void> {
     Object.keys(appModules).forEach((path) => {
       if (!scannedFiles.has(path)) {
         scannedFiles.add(path);
-        console.log(`Loaded app/startup file: ${path}`);
       }
     });
 
@@ -77,16 +76,8 @@ export async function scanRuntimeFiles(): Promise<void> {
             // Ignore errors
           }
         }
-        console.log(
-          `✅ Loaded runtime file: ${path}`,
-          Object.keys(module || {})
-        );
       }
     });
-
-    console.log(
-      `📦 Total runtime files loaded: ${Object.keys(runtimeModules).length}`
-    );
   } catch (error) {
     console.error("Error scanning runtime files:", error);
   }
@@ -111,7 +102,6 @@ export async function loadLazyPlugin(path: string): Promise<void> {
 
     if (lazyModules[path]) {
       await lazyModules[path]();
-      console.log(`Loaded lazy plugin: ${path}`);
     }
   } catch (error) {
     console.error(`Failed to load lazy plugin: ${path}`, error);

@@ -8,16 +8,7 @@ import {
   HomePageFeaturedSection,
 } from "lib/slots/slot-definitions";
 
-/**
- * Home Route
- * Main landing page of the application
- */
 export default function HomeRoute() {
-  // Debug: Log when component renders
-  React.useEffect(() => {
-    console.log("🏡 HomeRoute component mounted");
-  }, []);
-
   return (
     <Box>
       {/* Hero Section with Search */}

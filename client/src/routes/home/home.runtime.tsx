@@ -12,9 +12,6 @@ import {
   HomePageTile,
 } from "lib/slots/slot-definitions";
 
-// Register default featured sections
-console.log("🏠 home.runtime.tsx: Registering featured sections...");
-
 HomePageFeaturedSection.plug(
   <Box key="filmsim-section" sx={{ my: { xs: 2, md: 1 } }}>
     <FeaturedHeroSection type="filmsim" />
@@ -35,8 +32,6 @@ HomePageFeaturedSection.plug(
   </Box>,
   30
 );
-
-console.log("✅ home.runtime.tsx: All featured sections registered!");
 
 // Register default "Explore VISOR" button
 HomePageTile.plug(

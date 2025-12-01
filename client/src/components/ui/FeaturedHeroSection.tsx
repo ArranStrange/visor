@@ -2,9 +2,11 @@ import React from "react";
 import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
+import { GET_FEATURED_PRESETS } from "../../graphql/queries/getFeaturedPresets";
+import { GET_FEATURED_FILMSIMS } from "../../graphql/queries/getFeaturedFilmSims";
 import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { useContentType } from "../../context/ContentTypeFilter";
 
 interface FeaturedHeroSectionProps {
   type: "preset" | "filmsim";
@@ -12,7 +14,30 @@ interface FeaturedHeroSectionProps {
 
 const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
   const navigate = useNavigate();
-  const { data, loading } = useQuery(GET_FEATURED_ITEMS);
+  const { contentType } = useContentType();
+
+  // Only fetch what's needed based on type and contentType filter
+  const shouldFetchPresets =
+    type === "preset" && (contentType === "all" || contentType === "presets");
+  const shouldFetchFilms =
+    type === "filmsim" && (contentType === "all" || contentType === "films");
+
+  const { data: presetsData, loading: presetsLoading } = useQuery(
+    GET_FEATURED_PRESETS,
+    {
+      skip: !shouldFetchPresets,
+    }
+  );
+
+  const { data: filmsData, loading: filmsLoading } = useQuery(
+    GET_FEATURED_FILMSIMS,
+    {
+      skip: !shouldFetchFilms,
+    }
+  );
+
+  const loading = presetsLoading || filmsLoading;
+  const data = type === "preset" ? presetsData : filmsData;
   const isMobile = useMobileDetection();
   const [isHovered, setIsHovered] = React.useState(false);
 

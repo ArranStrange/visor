@@ -4,8 +4,8 @@ export const visorTheme = createTheme({
   palette: {
     mode: "dark",
     background: {
-      default: "#080808",
-      paper: "#0b0b0b",
+      default: "#030303",
+      paper: "#050505",
     },
     primary: {
       main: "#E0E0E0",
@@ -63,7 +63,7 @@ export const visorTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundColor: "#0c0c0c",
+          backgroundColor: "#050505",
           borderRadius: 20,
           boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
         },
@@ -136,7 +136,7 @@ export const visorTheme = createTheme({
     MuiTextField: {
       styleOverrides: {
         root: {
-          backgroundColor: "#141414",
+          backgroundColor: "#030303",
           borderRadius: 12,
         },
       },

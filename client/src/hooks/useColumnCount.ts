@@ -6,10 +6,7 @@ interface UseColumnCountProps {
   gap?: number;
 }
 
-export const useColumnCount = ({
-  minWidth = 200,
-  gap = 10,
-}: UseColumnCountProps = {}) => {
+export const useColumnCount = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(() => {
     if (typeof window !== "undefined") {

@@ -16,12 +16,11 @@ import {
   CircularProgress,
   Autocomplete,
 } from "@mui/material";
-import {
-  Add as AddIcon,
-} from "@mui/icons-material";
+import { Add as AddIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@apollo/client";
 import { useAuth } from "context/AuthContext";
+import { useContentType } from "context/ContentTypeFilter";
 import { CREATE_DISCUSSION } from "@gql/mutations/discussions";
 import { PageBreadcrumbs } from "lib/slots/slot-definitions";
 import CreateDiscussionBreadcrumb from "./create-discussion.runtime";
@@ -51,6 +50,7 @@ interface CreateDiscussionForm {
 const CreateDiscussion: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { contentType } = useContentType();
   const [form, setForm] = useState<CreateDiscussionForm>({
     title: "",
     linkedToType: "PRESET",
@@ -58,11 +58,32 @@ const CreateDiscussion: React.FC = () => {
   });
   const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  // Get presets and film sims for selection
-  const { data: presetsData, loading: presetsLoading } =
-    useQuery(GET_ALL_PRESETS);
-  const { data: filmSimsData, loading: filmSimsLoading } =
-    useQuery(GET_ALL_FILMSIMS);
+  // Conditionally fetch based on contentType context and form selection
+  // Fetch presets if: contentType allows it OR form type is PRESET (user might select it)
+  const shouldFetchPresets =
+    contentType === "all" ||
+    contentType === "presets" ||
+    form.linkedToType === "PRESET";
+
+  // Fetch films if: contentType allows it OR form type is FILMSIM (user might select it)
+  const shouldFetchFilms =
+    contentType === "all" ||
+    contentType === "films" ||
+    form.linkedToType === "FILMSIM";
+
+  const { data: presetsData, loading: presetsLoading } = useQuery(
+    GET_ALL_PRESETS,
+    {
+      skip: !shouldFetchPresets,
+    }
+  );
+
+  const { data: filmSimsData, loading: filmSimsLoading } = useQuery(
+    GET_ALL_FILMSIMS,
+    {
+      skip: !shouldFetchFilms,
+    }
+  );
 
   const [createDiscussion, { loading: creating }] =
     useMutation(CREATE_DISCUSSION);
@@ -161,7 +182,6 @@ const CreateDiscussion: React.FC = () => {
       <CreateDiscussionBreadcrumb />
       <PageBreadcrumbs.Slot />
       <Box py={4}>
-
         <Typography variant="h3" component="h1" gutterBottom>
           Start a Discussion
         </Typography>

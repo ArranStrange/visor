@@ -123,10 +123,6 @@ export function createSlot(name: string): SlotObject {
 
       // Notify listeners that the slot has changed
       notifySlotChange(name);
-
-      console.log(
-        `🔌 Plugged into slot "${name}" (priority: ${priority}, total items: ${items.length})`
-      );
     },
 
     usePlug(component: React.ReactElement, deps: React.DependencyList = []) {
@@ -163,14 +159,6 @@ export function createSlot(name: string): SlotObject {
     Slot: ({ Container, children, ...props }) => {
       const items = slot.useItems();
 
-      // Debug logging
-      React.useEffect(() => {
-        console.log(
-          `🎯 Slot "${name}" rendering with ${items.length} items:`,
-          items.map((i) => i.id)
-        );
-      }, [items.length, name]);
-
       // Filter items by condition if provided
       const filteredItems = items.filter((item) => {
         if (item.condition) {
@@ -206,9 +194,6 @@ export function createSlot(name: string): SlotObject {
       // Use state to track items and trigger re-renders
       const [items, setItems] = React.useState<SlotItem[]>(() => {
         const initialItems = slotRegistry.get(name) || [];
-        console.log(
-          `📦 useItems() initial state for "${name}": ${initialItems.length} items`
-        );
         return initialItems;
       });
 
@@ -216,9 +201,6 @@ export function createSlot(name: string): SlotObject {
       React.useEffect(() => {
         // Get initial items
         const currentItems = slotRegistry.get(name) || [];
-        console.log(
-          `🔄 useItems() effect for "${name}": ${currentItems.length} items in registry`
-        );
         setItems(currentItems);
 
         // Set up listener for changes
@@ -229,9 +211,9 @@ export function createSlot(name: string): SlotObject {
 
         const updateItems = () => {
           const newItems = [...(slotRegistry.get(name) || [])];
-          console.log(
-            `🔔 Slot "${name}" changed! Updating to ${newItems.length} items`
-          );
+          // console.log(
+          //   `Slot "${name}" changed! Updating to ${newItems.length} items`
+          // );
           setItems(newItems);
         };
 

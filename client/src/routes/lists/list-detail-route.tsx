@@ -109,13 +109,15 @@ const ListDetail: React.FC = () => {
     },
   });
 
-  // Fetch all presets and film sims to get complete data
+  const shouldFetchPresets = contentType === "all" || contentType === "presets";
+  const shouldFetchFilms = contentType === "all" || contentType === "films";
+
   const {
     data: presetsData,
     loading: presetsLoading,
     error: presetsError,
   } = useQuery(GET_ALL_PRESETS, {
-    skip: !listData?.getUserList,
+    skip: !listData?.getUserList || !shouldFetchPresets,
   });
 
   const {
@@ -123,7 +125,7 @@ const ListDetail: React.FC = () => {
     loading: filmSimsLoading,
     error: filmSimsError,
   } = useQuery(GET_ALL_FILMSIMS, {
-    skip: !listData?.getUserList,
+    skip: !listData?.getUserList || !shouldFetchFilms,
   });
 
   const [updateList] = useMutation(UPDATE_LIST, {

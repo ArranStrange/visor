@@ -9,7 +9,6 @@ import "./index.css";
 
 setupErrorHandling();
 
-// Scan and load all runtime plugin files
 scanRuntimeFiles().then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
