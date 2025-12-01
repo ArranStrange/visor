@@ -1,12 +1,19 @@
 import React from "react";
-import { Breadcrumbs, Link, Typography, Box, SxProps, Theme } from "@mui/material";
+import {
+  Breadcrumbs,
+  Link,
+  Typography,
+  Box,
+  SxProps,
+  Theme,
+} from "@mui/material";
 import { NavigateNext as NavigateNextIcon } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import { useMobileDetection } from "hooks/useMobileDetection";
 
 export interface BreadcrumbItem {
   label: string;
-  path?: string; // Optional - if not provided, renders as Typography (current page)
-  icon?: React.ReactNode; // Optional icon
+  path?: string;
 }
 
 export interface BreadcrumbProps {
@@ -15,19 +22,13 @@ export interface BreadcrumbProps {
   sx?: SxProps<Theme>;
 }
 
-/**
- * Breadcrumb Component
- * 
- * Displays a breadcrumb navigation trail using Material-UI components.
- * Items with paths are rendered as clickable links, items without paths
- * are rendered as Typography (current page).
- */
 const Breadcrumb: React.FC<BreadcrumbProps> = ({
   items,
-  separator = <NavigateNextIcon fontSize="small" />,
+  separator = <NavigateNextIcon sx={{ fontSize: "12px" }} />,
   sx,
 }) => {
   const navigate = useNavigate();
+  const isMobile = useMobileDetection();
 
   const handleClick = (
     e: React.MouseEvent<HTMLAnchorElement>,
@@ -36,6 +37,10 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
     e.preventDefault();
     navigate(path);
   };
+
+  if (isMobile) {
+    return null;
+  }
 
   return (
     <Box sx={{ mb: 2, ...sx }}>
@@ -52,6 +57,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 onClick={(e) => handleClick(e, item.path!)}
                 sx={{
                   display: "flex",
+                  fontSize: "12px",
                   alignItems: "center",
                   gap: 0.5,
                   textDecoration: "none",
@@ -60,7 +66,6 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
                   },
                 }}
               >
-                {item.icon}
                 {item.label}
               </Link>
             );
@@ -71,12 +76,12 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
               key={index}
               color="text.primary"
               sx={{
+                fontSize: "12px",
                 display: "flex",
                 alignItems: "center",
                 gap: 0.5,
               }}
             >
-              {item.icon}
               {item.label}
             </Typography>
           );
@@ -87,4 +92,3 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
 };
 
 export default Breadcrumb;
-
