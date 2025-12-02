@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useRef, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { usePresetRepository } from "../../core/hooks/useService";
 import { useFilmSimRepository } from "../../core/hooks/useService";
+import { useInfiniteLoad } from "../../hooks/useInfiniteLoad";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
@@ -23,7 +24,7 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType: contentTypeProp,
@@ -32,14 +33,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   customData,
   renderItem,
 }) => {
-  // State management - all hooks at the top level
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
   // Refs and external hooks
   const containerRef = useRef<HTMLDivElement>(null);
   const { randomizeOrder, contentType: contextContentType } = useContentType();
@@ -51,8 +44,12 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const presetRepository = usePresetRepository();
   const filmSimRepository = useFilmSimRepository();
 
-  const fetchContentData = useCallback(
-    async (page: number, append: boolean = false) => {
+  // Create fetch function for useInfiniteLoad
+  const fetchFn = useCallback(
+    async (
+      page: number
+    ): Promise<{ items: ContentItem[]; hasMore: boolean }> => {
+      // Handle customData case
       if (customData) {
         const shaped = customData.map((item: any) => {
           if (
@@ -65,119 +62,94 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
           }
           return { type: "preset" as const, data: item } as ContentItem;
         });
-        setContent(shaped);
-        setHasMore(false);
-        return;
+        return { items: shaped, hasMore: false };
       }
 
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setLoading(true);
+      const results: ContentItem[] = [];
+      let hasNextPage = false;
+
+      // Determine what to fetch based on contentType
+      const shouldFetchPresets =
+        contentType === "all" || contentType === "presets";
+      const shouldFetchFilms = contentType === "all" || contentType === "films";
+
+      // Fetch data in parallel when both are needed, or sequentially when only one is needed
+      const fetchPromises: Promise<any>[] = [];
+
+      if (shouldFetchPresets) {
+        fetchPromises.push(
+          presetRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
+        );
       }
-      setError(null);
 
-      try {
-        const results: ContentItem[] = [];
-        let hasNextPage = false;
-
-        // Determine what to fetch based on contentType
-        const shouldFetchPresets =
-          contentType === "all" || contentType === "presets";
-        const shouldFetchFilms =
-          contentType === "all" || contentType === "films";
-
-        // Fetch data in parallel when both are needed, or sequentially when only one is needed
-        const fetchPromises: Promise<any>[] = [];
-
-        if (shouldFetchPresets) {
-          fetchPromises.push(
-            presetRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
-          );
-        }
-
-        if (shouldFetchFilms) {
-          fetchPromises.push(
-            filmSimRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
-          );
-        }
-
-        // Execute all fetches in parallel
-        const fetchResults = await Promise.all(fetchPromises);
-
-        // Process preset results
-        if (shouldFetchPresets) {
-          const paginatedPresets = fetchResults[0];
-          hasNextPage = paginatedPresets.hasNextPage;
-
-          results.push(
-            ...paginatedPresets.presets
-              .filter((p: any) => p && p.creator)
-              .map((p: any) => ({
-                type: "preset" as const,
-                data: {
-                  ...p,
-                  tags: p.tags || [], // Ensure tags is always an array
-                },
-              }))
-          );
-        }
-
-        // Process film sim results
-        if (shouldFetchFilms) {
-          const filmResultIndex = shouldFetchPresets ? 1 : 0;
-          const paginatedFilmSims = fetchResults[filmResultIndex];
-          hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
-
-          results.push(
-            ...paginatedFilmSims.filmSims
-              .filter((f: any) => f && f.creator)
-              .map((f: any) => ({
-                type: "film" as const,
-                data: {
-                  ...f,
-                  title: f.name,
-                  thumbnail: f.sampleImages?.[0]?.url || "",
-                  tags: f.tags || [], // Ensure tags is always an array
-                },
-              }))
-          );
-        }
-
-        // Add BuyMeACoffee card only on first page
-        if (page === 1 && results.length > 0) {
-          const buyMeACoffeeCard: ContentItem = {
-            type: "buymeacoffee",
-            data: {
-              id: "buymeacoffee",
-              title: "Buy Me a Coffee",
-            },
-          };
-          results.splice(0, 0, buyMeACoffeeCard);
-        }
-
-        // Apply search filter
-        const filteredContent = searchQuery
-          ? results.filter((item) =>
-              item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          : results;
-
-        // Update content based on whether we're appending or replacing
-        if (append) {
-          setContent((prevContent) => [...prevContent, ...filteredContent]);
-        } else {
-          setContent(filteredContent);
-        }
-
-        setHasMore(hasNextPage);
-      } catch (err) {
-        console.error("Error fetching content:", err);
-        setError(err instanceof Error ? err.message : "Failed to load content");
-      } finally {
-        setLoading(false);
-        setIsLoadingMore(false);
+      if (shouldFetchFilms) {
+        fetchPromises.push(
+          filmSimRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
+        );
       }
+
+      // Execute all fetches in parallel
+      const fetchResults = await Promise.all(fetchPromises);
+
+      // Process preset results
+      if (shouldFetchPresets) {
+        const paginatedPresets = fetchResults[0];
+        hasNextPage = paginatedPresets.hasNextPage;
+
+        results.push(
+          ...paginatedPresets.presets
+            .filter((p: any) => p && p.creator)
+            .map((p: any) => ({
+              type: "preset" as const,
+              data: {
+                ...p,
+                tags: p.tags || [], // Ensure tags is always an array
+              },
+            }))
+        );
+      }
+
+      // Process film sim results
+      if (shouldFetchFilms) {
+        const filmResultIndex = shouldFetchPresets ? 1 : 0;
+        const paginatedFilmSims = fetchResults[filmResultIndex];
+        hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
+
+        results.push(
+          ...paginatedFilmSims.filmSims
+            .filter((f: any) => f && f.creator)
+            .map((f: any) => ({
+              type: "film" as const,
+              data: {
+                ...f,
+                title: f.name,
+                thumbnail: f.sampleImages?.[0]?.url || "",
+                tags: f.tags || [], // Ensure tags is always an array
+              },
+            }))
+        );
+      }
+
+      // Add BuyMeACoffee card only on first page
+      if (page === 1 && results.length > 0) {
+        const buyMeACoffeeCard: ContentItem = {
+          type: "buymeacoffee",
+          data: {
+            id: "buymeacoffee",
+            title: "Buy Me a Coffee",
+          },
+        };
+        results.splice(0, 0, buyMeACoffeeCard);
+      }
+
+      // Apply search filter
+      const filteredContent = searchQuery
+        ? results.filter((item) =>
+            item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+        : results;
+
+      return { items: filteredContent, hasMore: hasNextPage };
     },
     [
       contentType,
@@ -189,22 +161,13 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     ]
   );
 
-  // Fetch content on mount and when dependencies change
-  useEffect(() => {
-    setCurrentPage(1);
-    setHasMore(true);
-    setContent([]);
-    fetchContentData(1, false);
-  }, [contentType, filter, searchQuery]);
-
-  // Load more function
-  const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      fetchContentData(nextPage, true);
-    }
-  }, [currentPage, hasMore, isLoadingMore, fetchContentData]);
+  // Use infinite load hook
+  const { items, loading, isLoadingMore, hasMore, error, loadMore } =
+    useInfiniteLoad<ContentItem>({
+      fetchFn,
+      resetDeps: [contentType, filter, searchQuery],
+      initialLoad: true,
+    });
 
   // Error state
   if (error) {
@@ -216,7 +179,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   }
 
   // Empty state
-  if (!content.length && !loading) {
+  if (!items.length && !loading) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
         No content found. Try adjusting filters or search terms.
@@ -264,7 +227,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         isLoading={isLoadingMore}
         randomizeOrder={randomizeOrder}
       >
-        {content.map((item, index) => renderContentItem(item, index))}
+        {items.map((item, index) => renderContentItem(item, index))}
       </StaggeredGrid>
     </Box>
   );

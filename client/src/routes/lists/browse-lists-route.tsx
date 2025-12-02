@@ -9,8 +9,9 @@ import {
   Button,
   Stack,
 } from "@mui/material";
-import { useQuery } from "@apollo/client";
 import { BROWSE_USER_LISTS } from "@gql/queries/browseUserLists";
+import apolloClient from "@gql/apolloClient";
+import { useInfiniteLoad } from "../../hooks/useInfiniteLoad";
 import ListRow from "components/lists/ListRow";
 import TagsList from "components/ui/TagsList";
 import SearchIcon from "@mui/icons-material/Search";
@@ -69,7 +70,7 @@ const BrowseLists: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const limit = 20;
   const { tags, loading: tagsLoading, searchTags } = useTags();
 
@@ -77,7 +78,6 @@ const BrowseLists: React.FC = () => {
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); // Reset to first page on new search
     }, 500);
 
     return () => clearTimeout(timer);
@@ -113,27 +113,45 @@ const BrowseLists: React.FC = () => {
     }
   };
 
-  const { data, loading, error } = useQuery<BrowseUserListsData>(
-    BROWSE_USER_LISTS,
-    {
-      variables: {
-        search: debouncedSearch || undefined,
-        page,
-        limit,
-      },
-      fetchPolicy: "cache-and-network",
-    }
+  // Create fetch function for useInfiniteLoad
+  const fetchFn = useCallback(
+    async (page: number): Promise<{ items: UserList[]; hasMore: boolean }> => {
+      const { data } = await apolloClient.query<BrowseUserListsData>({
+        query: BROWSE_USER_LISTS,
+        variables: {
+          search: debouncedSearch || undefined,
+          page,
+          limit,
+        },
+        fetchPolicy: "network-only", // Don't use cache to ensure fresh data per page
+      });
+
+      // Store totalCount from first page
+      if (page === 1 && data?.browseUserLists?.totalCount) {
+        setTotalCount(data.browseUserLists.totalCount);
+      }
+
+      return {
+        items: data?.browseUserLists?.lists || [],
+        hasMore: data?.browseUserLists?.hasNextPage || false,
+      };
+    },
+    [debouncedSearch, limit]
   );
 
-  const handleLoadMore = useCallback(() => {
-    if (data?.browseUserLists.hasNextPage) {
-      setPage((prev) => prev + 1);
-    }
-  }, [data?.browseUserLists.hasNextPage]);
-
-  const lists = data?.browseUserLists.lists || [];
-  const totalCount = data?.browseUserLists.totalCount || 0;
-  const hasNextPage = data?.browseUserLists.hasNextPage || false;
+  // Use infinite load hook
+  const {
+    items: lists,
+    loading,
+    isLoadingMore,
+    hasMore,
+    error,
+    loadMore,
+  } = useInfiniteLoad<UserList>({
+    fetchFn,
+    resetDeps: [debouncedSearch],
+    initialLoad: true,
+  });
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
@@ -177,7 +195,7 @@ const BrowseLists: React.FC = () => {
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          Error loading lists: {error.message}
+          Error loading lists: {error}
         </Alert>
       )}
 
@@ -220,16 +238,20 @@ const BrowseLists: React.FC = () => {
             ))}
           </Box>
 
-          {hasNextPage && (
+          {hasMore && (
             <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
               <Button
                 variant="outlined"
-                onClick={handleLoadMore}
-                disabled={loading}
+                onClick={loadMore}
+                disabled={loading || isLoadingMore}
                 size="large"
                 sx={{ minWidth: 200 }}
               >
-                {loading ? <CircularProgress size={24} /> : "Load More Lists"}
+                {isLoadingMore ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  "Load More Lists"
+                )}
               </Button>
             </Stack>
           )}
