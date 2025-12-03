@@ -143,3 +143,34 @@ export const visorTheme = createTheme({
     },
   },
 });
+
+/**
+ * Reusable overlay style for TextField components
+ * Use with sx prop: sx={textFieldOverlayStyles}
+ */
+export const textFieldOverlayStyles = {
+  "& .MuiOutlinedInput-root": {
+    px: 1,
+    py: 1,
+    height: 50,
+    borderRadius: 2,
+    backgroundColor: "rgba(255,255,255,0.08)",
+    color: "white",
+    "& fieldset": {
+      borderColor: "rgba(255,255,255,0.2)",
+    },
+    "&:hover fieldset": {
+      borderColor: "rgba(255,255,255,0.3)",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "rgba(255,255,255,0.5)",
+    },
+  },
+  "& .MuiInputBase-input": {
+    color: "white",
+    "&::placeholder": {
+      color: "rgba(255,255,255,0.7)",
+      opacity: 1,
+    },
+  },
+};

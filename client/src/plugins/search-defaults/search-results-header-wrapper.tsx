@@ -1,26 +1,21 @@
-import React from "react";
-import { Box, InputBase, Divider } from "@mui/material";
+import { Box, Divider } from "@mui/material";
 import ContentTypeToggle from "components/ui/ContentTypeToggle";
+import DebouncedTextField from "components/ui/DebouncedTextField";
+import { textFieldOverlayStyles } from "theme/VISORTheme";
 
 export function SearchResultsHeaderWrapper({
   keyword,
-  onKeywordChange,
+  onDebouncedKeywordChange,
 }: any) {
   return (
     <>
-      <InputBase
+      <DebouncedTextField
         placeholder="Search presets, film sims, tags…"
         value={keyword}
-        onChange={(e) => onKeywordChange(e.target.value)}
+        onChange={onDebouncedKeywordChange}
+        debounceTime={600}
         fullWidth
-        sx={{
-          px: 2,
-          py: 1,
-          borderRadius: 2,
-          backgroundColor: "rgba(255,255,255,0.08)",
-          color: "white",
-          mb: 2,
-        }}
+        sx={{ mb: 2, ...textFieldOverlayStyles }}
       />
       <Box sx={{ mb: 2 }}>
         <ContentTypeToggle />
@@ -29,4 +24,3 @@ export function SearchResultsHeaderWrapper({
     </>
   );
 }
-

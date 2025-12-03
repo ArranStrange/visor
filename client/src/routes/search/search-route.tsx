@@ -15,9 +15,19 @@ import SearchBreadcrumb from "./search.runtime";
 const SearchView: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [keyword, setKeyword] = useState("");
+  const [debouncedKeyword, setDebouncedKeyword] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
   const { tags, loading: tagsLoading, searchTags } = useTags();
+
+  const handleKeywordChange = (value: string) => {
+    setKeyword(value);
+    // Debounced update is handled by DebouncedTextField
+  };
+
+  const handleDebouncedKeywordChange = (value: string) => {
+    setDebouncedKeyword(value);
+  };
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -28,6 +38,7 @@ const SearchView: React.FC = () => {
     const qParam = searchParams.get("q");
     if (qParam) {
       setKeyword(qParam);
+      setDebouncedKeyword(qParam);
     }
 
     const tagParam = searchParams.get("tag");
@@ -43,6 +54,7 @@ const SearchView: React.FC = () => {
 
   const handleClear = () => {
     setKeyword("");
+    setDebouncedKeyword("");
     setActiveTagId(null);
     setSearchParams({});
   };
@@ -65,7 +77,9 @@ const SearchView: React.FC = () => {
       {/* Search results header - plugins can inject search input and filters */}
       <SearchResultsHeader.Slot
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        debouncedKeyword={debouncedKeyword}
+        onKeywordChange={handleKeywordChange}
+        onDebouncedKeywordChange={handleDebouncedKeywordChange}
       />
 
       {/* Search filters - plugins can inject filter components */}
@@ -79,7 +93,7 @@ const SearchView: React.FC = () => {
 
       <ContentGridLoader
         contentType={contentType}
-        searchQuery={keyword}
+        searchQuery={debouncedKeyword}
         filter={activeTagId ? { tagId: activeTagId } : undefined}
       />
     </Container>
