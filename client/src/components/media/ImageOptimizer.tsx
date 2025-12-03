@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, memo } from "react";
-import { CloudinaryOptimizer } from "../../utils/cloudinary";
+import React, { memo } from "react";
+import { useImageLoader } from "../../hooks/useImageLoader";
 
 interface ImageProps {
   src: string;
@@ -25,115 +25,24 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
     loading = "lazy",
     lazy = true,
   }) => {
-    const [imageSrc, setImageSrc] = useState<string>("");
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [isInView, setIsInView] = useState(false);
-    const [showProgressive, setShowProgressive] = useState(false);
-    const imageRef = useRef<HTMLImageElement>(null);
-
-    const loadingMode =
-      loading === "progressive"
-        ? "progressive"
-        : lazy === false
-        ? "eager"
-        : "lazy";
-
-    useEffect(() => {
-      if (loadingMode === "eager") {
-        setIsInView(true);
-        return;
-      }
-
-      // Use a more efficient intersection observer with larger root margin
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            observer.disconnect();
-          }
-        },
-        { rootMargin: "100px" } // Increased from 50px for better performance
-      );
-
-      if (imageRef.current) {
-        observer.observe(imageRef.current);
-      }
-
-      return () => observer.disconnect();
-    }, [loadingMode]);
-
-    useEffect(() => {
-      if (!isInView || !src) return;
-
-      if (loadingMode === "progressive") {
-        const progressiveUrl = CloudinaryOptimizer.getProgressive(src);
-        setImageSrc(progressiveUrl);
-        setShowProgressive(true);
-
-        const fullImage = new Image();
-        fullImage.onload = () => {
-          const optimizedUrl = CloudinaryOptimizer.getThumbnail(
-            src,
-            aspectRatio
-          );
-          setImageSrc(optimizedUrl);
-          setShowProgressive(false);
-          setIsLoaded(true);
-          onLoad?.();
-        };
-        fullImage.onerror = () => {
-          setImageSrc(src);
-          setShowProgressive(false);
-          setIsLoaded(true);
-          onError?.();
-        };
-        fullImage.src = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
-      } else {
-        const optimizedUrl = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
-        setImageSrc(optimizedUrl);
-      }
-    }, [isInView, src, aspectRatio, loadingMode, onLoad, onError]);
-
-    const handleLoad = () => {
-      if (!isLoaded) {
-        setIsLoaded(true);
-        onLoad?.();
-      }
-    };
-
-    const handleError = () => {
-      if (imageSrc !== src) {
-        setImageSrc(src);
-      } else {
-        onError?.();
-      }
-    };
-
-    const progressiveStyles =
-      loadingMode === "progressive"
-        ? {
-            position: "absolute" as const,
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover" as const,
-            filter: showProgressive ? "blur(20px)" : "none",
-            transform: showProgressive ? "scale(1.1)" : "scale(1)",
-            transition: isLoaded
-              ? "filter 0.3s ease-out, transform 0.3s ease-out"
-              : "none",
-          }
-        : {};
-
-    const standardStyles =
-      loadingMode !== "progressive"
-        ? {
-            opacity: isLoaded ? 1 : 0.7,
-            filter: isLoaded ? "none" : "blur(8px)",
-            transition: "opacity 0.3s ease-in-out, filter 0.3s ease-in-out",
-          }
-        : {};
+    const {
+      imageRef,
+      imageSrc,
+      loadingMode,
+      handleLoad,
+      handleError,
+      progressiveStyles,
+      standardStyles,
+      needsProgressiveWrapper,
+    } = useImageLoader({
+      src,
+      aspectRatio,
+      loading,
+      lazy,
+      onLoad,
+      onError,
+      rootMargin: "100px", // Maintain current behavior
+    });
 
     const imageElement = (
       <img
@@ -152,7 +61,7 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
       />
     );
 
-    if (loadingMode === "progressive") {
+    if (needsProgressiveWrapper) {
       return (
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
           {imageElement}
