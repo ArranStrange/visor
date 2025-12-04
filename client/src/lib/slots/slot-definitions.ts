@@ -88,13 +88,13 @@ export const NavbarUserMenuItems = createSlot("NavbarUserMenuItems");
 export const PageBreadcrumbs = createSlot("PageBreadcrumbs");
 
 // ============================================================================
-// Search Slots
+// Explore Slots
 // ============================================================================
 
-/** Search page filters */
+/** Explore page filters */
 export const SearchFilters = createSlot("SearchFilters");
 
-/** Search page results header */
+/** Explore page results header */
 export const SearchResultsHeader = createSlot("SearchResultsHeader");
 
 // ============================================================================

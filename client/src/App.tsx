@@ -67,7 +67,7 @@ function App() {
                     <NavBar />
                     <Routes>
                       <Route path="/" element={<HomeRoute />} />
-                      <Route path="/search" element={<SearchRoute />} />
+                      <Route path="/explore" element={<SearchRoute />} />
                       <Route
                         path="/preset/:slug"
                         element={<PresetDetailRoute />}

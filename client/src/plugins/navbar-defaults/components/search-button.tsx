@@ -6,7 +6,7 @@ export function NavbarSearchButton() {
   const navigate = useNavigate();
 
   return (
-    <IconButton onClick={() => navigate("/search")} color="inherit">
+    <IconButton onClick={() => navigate("/explore")} color="inherit">
       <SearchIcon />
     </IconButton>
   );

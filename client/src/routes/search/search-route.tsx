@@ -74,7 +74,7 @@ const SearchView: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
       <SearchBreadcrumb />
       <PageBreadcrumbs.Slot />
-      {/* Search results header - plugins can inject search input and filters */}
+      {/* Explore results header - plugins can inject search input and filters */}
       <SearchResultsHeader.Slot
         keyword={keyword}
         debouncedKeyword={debouncedKeyword}
@@ -82,7 +82,7 @@ const SearchView: React.FC = () => {
         onDebouncedKeywordChange={handleDebouncedKeywordChange}
       />
 
-      {/* Search filters - plugins can inject filter components */}
+      {/* Explore filters - plugins can inject filter components */}
       <SearchFilters.Slot
         tags={tags}
         activeTagId={activeTagId}

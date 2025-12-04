@@ -24,7 +24,7 @@ const SearchHero: React.FC = () => {
     e.preventDefault();
     const trimmed = query.trim();
     if (trimmed.length === 0) return;
-    navigate(`/search?q=${encodeURIComponent(trimmed)}`);
+    navigate(`/explore?q=${encodeURIComponent(trimmed)}`);
   };
 
   return (
@@ -85,7 +85,7 @@ const SearchHero: React.FC = () => {
           }}
         >
           <Typography
-            onClick={() => navigate("/search")}
+            onClick={() => navigate("/explore")}
             sx={{
               cursor: "pointer",
               opacity: 0.8,
@@ -119,7 +119,7 @@ const SearchHero: React.FC = () => {
               <Typography
                 key={tag.id}
                 onClick={() =>
-                  navigate(`/search?tag=${encodeURIComponent(tag.displayName)}`)
+                  navigate(`/explore?tag=${encodeURIComponent(tag.displayName)}`)
                 }
                 sx={{
                   cursor: "pointer",

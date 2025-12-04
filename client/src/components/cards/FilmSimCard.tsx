@@ -199,7 +199,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
                     onClick={(e) => {
                       e.stopPropagation();
                       navigate(
-                        `/search?tag=${encodeURIComponent(tag.displayName)}`
+                        `/explore?tag=${encodeURIComponent(tag.displayName)}`
                       );
                     }}
                   />

@@ -7,7 +7,7 @@ export function ExploreButton() {
 
   return (
     <Button
-      onClick={() => navigate("/search")}
+      onClick={() => navigate("/explore")}
       startIcon={<SearchIcon />}
       sx={{
         textTransform: "none",

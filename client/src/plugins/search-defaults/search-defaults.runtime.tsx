@@ -1,15 +1,15 @@
 /**
- * Search Page Default Plugins
+ * Explore Page Default Plugins
  * 
- * This runtime file registers the default Search page sections.
+ * This runtime file registers the default Explore page sections.
  * Plugins can override or extend these by using different priorities.
  * 
  * NOTE: Wrapper files were removed as part of the wrapper removal refactoring.
- * This file needs to be updated to plug components directly once search components
+ * This file needs to be updated to plug components directly once explore components
  * are refactored to accept slot props directly.
  */
 
-// TODO: Refactor search components to accept slot props directly and plug them here
+// TODO: Refactor explore components to accept slot props directly and plug them here
 // import React from "react";
 // import {
 //   SearchFilters,

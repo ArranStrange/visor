@@ -15,7 +15,7 @@ export function PresetBreadcrumb() {
   const preset = data?.getPreset;
 
   const items = [
-    { label: "Search", path: "/search" },
+    { label: "Explore", path: "/explore" },
     { label: preset?.title || "Loading...", path: undefined },
   ];
 

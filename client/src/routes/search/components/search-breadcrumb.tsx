@@ -5,7 +5,7 @@ import Breadcrumb from "components/ui/Breadcrumb";
 export function SearchBreadcrumb() {
   const items = [
     { label: "Home", path: "/" },
-    { label: "Search", path: undefined },
+    { label: "Explore", path: undefined },
   ];
 
   PageBreadcrumbs.usePlug(<Breadcrumb items={items} />, []);

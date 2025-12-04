@@ -189,7 +189,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
                 onClick={(e) => {
                   e.stopPropagation();
                   navigate(
-                    `/search?tag=${encodeURIComponent(tag.displayName)}`
+                    `/explore?tag=${encodeURIComponent(tag.displayName)}`
                   );
                 }}
               />

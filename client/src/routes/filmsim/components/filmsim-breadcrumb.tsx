@@ -15,7 +15,7 @@ export function FilmSimBreadcrumb() {
   const filmSim = data?.getFilmSim;
 
   const items = [
-    { label: "Search", path: "/search" },
+    { label: "Explore", path: "/explore" },
     { label: filmSim?.name || "Loading...", path: undefined },
   ];
 

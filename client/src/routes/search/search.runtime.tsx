@@ -1,7 +1,7 @@
 /**
- * Search Route Runtime Plugin
+ * Explore Route Runtime Plugin
  *
- * Registers breadcrumb navigation for search page
+ * Registers breadcrumb navigation for explore page
  */
 
 import { SearchBreadcrumb } from "./components/search-breadcrumb";
