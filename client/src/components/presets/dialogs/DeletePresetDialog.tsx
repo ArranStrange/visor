@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,26 +7,86 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
+import {
+  PresetDeleteRequested,
+  PresetDeleteConfirmed,
+  DialogClose,
+} from "lib/events/event-definitions";
 
 interface DeletePresetDialogProps {
-  open: boolean;
-  presetTitle: string;
-  deleting: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
+  open?: boolean;
+  presetTitle?: string;
+  deleting?: boolean;
+  onClose?: () => void;
+  onConfirm?: () => void;
 }
 
 const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
-  open,
-  presetTitle,
-  deleting,
-  onClose,
-  onConfirm,
+  open: openProp,
+  presetTitle: presetTitleProp,
+  deleting: deletingProp,
+  onClose: onCloseProp,
+  onConfirm: onConfirmProp,
 }) => {
+  const [open, setOpen] = useState(openProp || false);
+  const [presetTitle, setPresetTitle] = useState(presetTitleProp || "");
+  const [deleting, setDeleting] = useState(deletingProp || false);
+  const [presetId, setPresetId] = useState<string | null>(null);
+
+  // Listen to PresetDeleteRequested event
+  PresetDeleteRequested.useEvent(
+    (data) => {
+      if (data?.preset) {
+        setPresetTitle(data.preset.title || "");
+        setPresetId(data.presetId || data.preset?.id || null);
+        setDeleting(false);
+        setOpen(true);
+      }
+    },
+    []
+  );
+
+  // Listen to DialogClose event
+  DialogClose.useEvent(
+    (data) => {
+      if (data?.dialogId === "delete-preset" || !data?.dialogId) {
+        setOpen(false);
+        if (onCloseProp) onCloseProp();
+      }
+    },
+    [onCloseProp]
+  );
+
+  // Sync with props if provided (backward compatibility)
+  useEffect(() => {
+    if (openProp !== undefined) setOpen(openProp);
+  }, [openProp]);
+
+  useEffect(() => {
+    if (presetTitleProp) setPresetTitle(presetTitleProp);
+  }, [presetTitleProp]);
+
+  useEffect(() => {
+    if (deletingProp !== undefined) setDeleting(deletingProp);
+  }, [deletingProp]);
+
+  const handleClose = () => {
+    setOpen(false);
+    DialogClose.raise({ dialogId: "delete-preset" });
+    if (onCloseProp) onCloseProp();
+  };
+
+  const handleConfirm = () => {
+    if (presetId) {
+      PresetDeleteConfirmed.raise({ presetId });
+      setDeleting(true);
+    }
+    if (onConfirmProp) onConfirmProp();
+  };
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       aria-labelledby="delete-dialog-title"
       aria-describedby="delete-dialog-description"
     >
@@ -39,9 +99,9 @@ const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
         </DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleClose}>Cancel</Button>
         <Button
-          onClick={onConfirm}
+          onClick={handleConfirm}
           color="error"
           variant="contained"
           disabled={deleting}

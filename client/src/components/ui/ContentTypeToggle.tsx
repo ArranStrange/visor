@@ -14,24 +14,13 @@ import CameraRollIcon from "@mui/icons-material/CameraRoll";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 const ContentTypeToggle: React.FC = () => {
-  const {
-    contentType,
-    setContentType,
-    randomizeOrder,
-    setRandomizeOrder,
-    triggerShuffle,
-  } = useContentType();
+  const { contentType, setContentType, triggerShuffle } = useContentType();
 
   const handleChange = (
     _: React.MouseEvent<HTMLElement>,
     newValue: "all" | "presets" | "films" | null
   ) => {
     if (newValue) setContentType(newValue);
-  };
-
-  const handleShuffleClick = () => {
-    setRandomizeOrder(!randomizeOrder);
-    triggerShuffle();
   };
 
   const options = [
@@ -94,27 +83,6 @@ const ContentTypeToggle: React.FC = () => {
           </Tooltip>
         ))}
       </ToggleButtonGroup>
-
-      <Tooltip
-        title={randomizeOrder ? "Disable Random Order" : "Enable Random Order"}
-      >
-        <IconButton
-          onClick={handleShuffleClick}
-          sx={{
-            position: "absolute",
-            right: 0,
-            backgroundColor: "transparent",
-            color: randomizeOrder ? "#ff9800" : "grey.600",
-            opacity: 0.7,
-            "&:hover": {
-              opacity: 1,
-            },
-          }}
-          size="small"
-        >
-          <ShuffleIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
     </Box>
   );
 };

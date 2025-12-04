@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { calculateColumnCount as calcColumnCount } from "../utils/gridUtils";
+import { calculateColumnCount as calcColumnCount } from "lib/utils/gridUtils";
 
 interface UseColumnCountProps {
   minWidth?: number;

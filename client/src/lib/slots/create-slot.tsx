@@ -1,6 +1,78 @@
 import React from "react";
 
 /**
+ * List of custom props that should not be passed to DOM elements
+ * These are application-specific props that components use but shouldn't reach the DOM
+ */
+const CUSTOM_PROPS = new Set([
+  "isOwner",
+  "isAdmin",
+  "currentUser",
+  "preset",
+  "filmSim",
+  "menuAnchorEl",
+  "menuOpen",
+  "itemType",
+  "itemId",
+]);
+
+/**
+ * List of component types that are known wrappers and should not receive custom props
+ * These components pass all props through to DOM elements
+ */
+const WRAPPER_COMPONENTS = new Set([
+  "Box",
+  "Container",
+  "Stack",
+  "Grid",
+  "Paper",
+]);
+
+/**
+ * Checks if a component is a wrapper that shouldn't receive custom props
+ */
+function isWrapperComponent(component: React.ReactElement): boolean {
+  const type = component.type;
+
+  // If it's a string, it's a DOM element
+  if (typeof type === "string") {
+    return true;
+  }
+
+  // If it's a function component, check its displayName
+  if (typeof type === "function") {
+    const displayName = (type as any).displayName || type.name;
+    return WRAPPER_COMPONENTS.has(displayName);
+  }
+
+  // For other types, be conservative and allow props
+  return false;
+}
+
+/**
+ * Filters out custom props that shouldn't be passed to DOM elements
+ * Only filters if the component is a known wrapper
+ */
+function filterCustomPropsForComponent(
+  props: Record<string, any>,
+  component: React.ReactElement
+): Record<string, any> {
+  // If component is a wrapper, filter out custom props
+  if (isWrapperComponent(component)) {
+    const filtered: Record<string, any> = {};
+    for (const key in props) {
+      if (!CUSTOM_PROPS.has(key)) {
+        filtered[key] = props[key];
+      }
+    }
+    return filtered;
+  }
+
+  // Otherwise, pass all props through (component will filter what it needs)
+  return props;
+}
+
+/**
  * Slot item stored in the slot registry
  */
 interface SlotItem {
@@ -169,10 +241,21 @@ export function createSlot(name: string): SlotObject {
 
       // Render components with props
       const renderedComponents = filteredItems.map((item) => {
+        // Filter custom props only for wrapper components
+        const filteredProps = filterCustomPropsForComponent(
+          props,
+          item.component
+        );
+
+        // Merge props: component's original props first, then filtered slot props
+        // This allows components to override slot props if needed
+        const mergedProps = {
+          ...item.component.props,
+          ...filteredProps,
+        };
         return React.cloneElement(item.component, {
           key: item.id,
-          ...props,
-          ...item.component.props,
+          ...mergedProps,
         });
       });
 
@@ -184,6 +267,11 @@ export function createSlot(name: string): SlotObject {
       );
 
       if (Container) {
+        // If Container is a string (DOM element type), don't pass custom props
+        if (typeof Container === "string") {
+          return React.createElement(Container, {}, content);
+        }
+        // If Container is a component, pass it as-is (components should filter their own props)
         return <Container>{content}</Container>;
       }
 

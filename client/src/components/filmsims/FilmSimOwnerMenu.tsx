@@ -4,25 +4,29 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 interface FilmSimOwnerMenuProps {
-  anchorEl: HTMLElement | null;
-  open: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  filmSim?: any;
+  isOwner?: boolean;
+  menuAnchorEl?: HTMLElement | null;
+  menuOpen?: boolean;
+  onMenuClose?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
 }
 
 const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
-  anchorEl,
-  open,
-  onClose,
-  onEdit,
-  onDelete,
+  isOwner = false,
+  menuAnchorEl,
+  menuOpen = false,
+  onMenuClose,
+  onEditClick,
+  onDeleteClick,
 }) => {
+  if (!isOwner) return null;
   return (
     <Menu
-      anchorEl={anchorEl}
-      open={open}
-      onClose={onClose}
+      anchorEl={menuAnchorEl || null}
+      open={menuOpen}
+      onClose={onMenuClose}
       PaperProps={{
         sx: {
           backgroundColor: "background.paper",
@@ -30,14 +34,14 @@ const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
         },
       }}
     >
-      <MenuItem onClick={onEdit}>
+      <MenuItem onClick={onEditClick}>
         <ListItemIcon>
           <EditIcon fontSize="small" />
         </ListItemIcon>
         <ListItemText primary="Edit" />
       </MenuItem>
       <MenuItem
-        onClick={onDelete}
+        onClick={onDeleteClick}
         data-cy="film-sim-delete-menu-item"
       >
         <ListItemIcon>

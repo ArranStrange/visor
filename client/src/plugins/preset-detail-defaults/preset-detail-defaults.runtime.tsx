@@ -6,81 +6,87 @@
  */
 
 import React from "react";
+import { Divider, Box } from "@mui/material";
 import {
   PresetDetailToolbar,
   PresetDetailSection,
 } from "lib/slots/slot-definitions";
-import { PresetHeaderWrapper } from "./preset-header-wrapper";
-import { PresetOwnerMenuWrapper } from "./preset-owner-menu-wrapper";
-import { AddToListButtonWrapper } from "./add-to-list-button-wrapper";
-import { PresetDescriptionWrapper } from "./preset-description-wrapper";
-import { PresetBeforeAfterWrapper } from "./preset-before-after-wrapper";
-import { PresetSettingsWrapper } from "./preset-settings-wrapper";
-import { PresetSampleImagesWrapper } from "./preset-sample-images-wrapper";
-import { PresetActionsWrapper } from "./preset-actions-wrapper";
-import { PresetCreatorNotesWrapper } from "./preset-creator-notes-wrapper";
-import { DiscussionThreadWrapper } from "./discussion-thread-wrapper";
-import { DividerWrapper } from "./divider-wrapper";
+import PresetHeader from "components/presets/PresetHeader";
+import PresetOwnerMenu from "components/presets/PresetOwnerMenu";
+import AddToListButton from "components/ui/AddToListButton";
+import PresetDescription from "components/presets/PresetDescription";
+import PresetBeforeAfter from "components/presets/PresetBeforeAfter";
+import XmpSettingsDisplay from "components/settings/XmpSettingsDisplay";
+import PresetSampleImages from "components/presets/PresetSampleImages";
+import PresetActions from "components/presets/PresetActions";
+import PresetCreatorNotes from "components/presets/PresetCreatorNotes";
+import DiscussionThread from "components/discussions/DiscussionThread";
 
 // Register default header and menu in toolbar
 PresetDetailToolbar.plug(
-  <PresetHeaderWrapper key="preset-header" />,
+  <PresetHeader key="preset-header" />,
   10
 );
 
 PresetDetailToolbar.plug(
-  <PresetOwnerMenuWrapper key="preset-owner-menu" />,
+  <PresetOwnerMenu key="preset-owner-menu" />,
   20
 );
 
 // Register default sections
 PresetDetailSection.plug(
-  <AddToListButtonWrapper key="add-to-list-button" />,
+  <AddToListButton key="add-to-list-button" />,
   5
 );
 
 PresetDetailSection.plug(
-  <PresetDescriptionWrapper key="preset-description" />,
+  <PresetDescription key="preset-description" />,
   10
 );
 
 PresetDetailSection.plug(
-  <DividerWrapper key="divider-1" my={3} />,
+  <Box key="divider-1" sx={{ my: 3 }}>
+    <Divider />
+  </Box>,
   15
 );
 
 PresetDetailSection.plug(
-  <PresetBeforeAfterWrapper key="preset-before-after" />,
+  <PresetBeforeAfter key="preset-before-after" />,
   20
 );
 
 PresetDetailSection.plug(
-  <PresetSettingsWrapper key="preset-settings" />,
+  <XmpSettingsDisplay key="preset-settings" />,
   25
 );
 
 PresetDetailSection.plug(
-  <DividerWrapper key="divider-2" my={3} />,
+  <Box key="divider-2" sx={{ my: 3 }}>
+    <Divider />
+  </Box>,
   30
 );
 
 PresetDetailSection.plug(
-  <PresetSampleImagesWrapper key="preset-sample-images" />,
+  <PresetSampleImages key="preset-sample-images" />,
   35
 );
 
 PresetDetailSection.plug(
-  <PresetActionsWrapper key="preset-actions" />,
+  <PresetActions key="preset-actions" />,
   40
 );
 
 PresetDetailSection.plug(
-  <PresetCreatorNotesWrapper key="preset-creator-notes" />,
+  <PresetCreatorNotes key="preset-creator-notes" />,
   45
 );
 
 PresetDetailSection.plug(
-  <DiscussionThreadWrapper key="discussion-thread" />,
+  <Box key="discussion-thread" mt={4}>
+    <DiscussionThread />
+  </Box>,
   50
 );
 

@@ -15,16 +15,18 @@ interface Creator {
   avatar?: string;
 }
 
-interface PresetCreatorNotesProps {
+interface Preset {
   notes?: string;
   creator?: Creator;
 }
 
-const PresetCreatorNotes: React.FC<PresetCreatorNotesProps> = ({
-  notes,
-  creator,
-}) => {
+interface PresetCreatorNotesProps {
+  preset: Preset;
+}
+
+const PresetCreatorNotes: React.FC<PresetCreatorNotesProps> = ({ preset }) => {
   const navigate = useNavigate();
+  const { notes, creator } = preset;
 
   if (!notes) {
     return null;

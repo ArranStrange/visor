@@ -10,22 +10,23 @@ import DiscussionPosts from "./DiscussionPosts";
 import DiscussionThreadEmptyState from "./DiscussionThreadEmptyState";
 
 interface DiscussionThreadProps {
-  itemId: string;
-  itemType: "preset" | "filmsim";
-  itemTitle: string;
+  preset?: { id: string; title: string };
+  filmSim?: { id: string; name: string };
   isEmbedded?: boolean;
   showPreviewOnly?: boolean;
   minimalHeader?: boolean;
 }
 
 const DiscussionThread: React.FC<DiscussionThreadProps> = ({
-  itemId,
-  itemType,
-  itemTitle,
+  preset,
+  filmSim,
   isEmbedded = true,
   showPreviewOnly = false,
   minimalHeader = false,
 }) => {
+  const itemId = preset?.id || filmSim?.id || "";
+  const itemType = preset ? "preset" : "filmsim";
+  const itemTitle = preset?.title || filmSim?.name || "";
   const {
     loading: discussionLoading,
     error: discussionError,

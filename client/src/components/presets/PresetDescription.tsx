@@ -6,15 +6,17 @@ interface Tag {
   displayName: string;
 }
 
-interface PresetDescriptionProps {
+interface Preset {
   description?: string;
-  tags: Tag[];
+  tags?: Tag[];
 }
 
-const PresetDescription: React.FC<PresetDescriptionProps> = ({
-  description,
-  tags,
-}) => {
+interface PresetDescriptionProps {
+  preset: Preset;
+}
+
+const PresetDescription: React.FC<PresetDescriptionProps> = ({ preset }) => {
+  const { description, tags = [] } = preset;
   return (
     <Box mb={3}>
       {description && (

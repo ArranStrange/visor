@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import { ApolloProvider } from "@apollo/client";
 import App from "./App.tsx";
 import apolloClient from "@gql/apolloClient";
-import { setupErrorHandling } from "utils/errorHandling";
+import { setupErrorHandling } from "lib/utils/errorHandling";
 import { scanRuntimeFiles } from "lib/plugins/scanner";
 import "./index.css";
 

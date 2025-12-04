@@ -6,17 +6,18 @@ interface Tag {
   displayName: string;
 }
 
-interface FilmSimDescriptionProps {
+interface FilmSim {
   description?: string;
   tags?: Tag[];
   compatibleCameras?: string[];
 }
 
-const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
-  description,
-  tags = [],
-  compatibleCameras = [],
-}) => {
+interface FilmSimDescriptionProps {
+  filmSim: FilmSim;
+}
+
+const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({ filmSim }) => {
+  const { description, tags = [], compatibleCameras = [] } = filmSim;
   return (
     <Box mb={2}>
       {description && (

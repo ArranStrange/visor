@@ -9,23 +9,29 @@ interface SampleImage {
   isFeaturedPhoto?: boolean;
 }
 
-interface PresetSampleImagesProps {
-  afterImage?: string;
-  presetTitle: string;
+interface Preset {
+  afterImage?: { url?: string };
+  title: string;
   sampleImages?: SampleImage[];
-  onImageClick: (url: string, imageId?: string, isFeatured?: boolean) => void;
+}
+
+interface PresetSampleImagesProps {
+  preset: Preset;
+  currentUser?: any;
+  onImageClick?: (url: string, imageId?: string, isFeatured?: boolean) => void;
   onAddPhotoClick?: () => void;
-  showAddButton?: boolean;
 }
 
 const PresetSampleImages: React.FC<PresetSampleImagesProps> = ({
-  afterImage,
-  presetTitle,
-  sampleImages = [],
+  preset,
+  currentUser,
   onImageClick,
   onAddPhotoClick,
-  showAddButton = false,
 }) => {
+  const afterImage = preset.afterImage?.url;
+  const presetTitle = preset.title;
+  const sampleImages = preset.sampleImages || [];
+  const showAddButton = !!currentUser;
   const hasImages = afterImage || sampleImages.length > 0;
 
   if (!hasImages && !showAddButton) {

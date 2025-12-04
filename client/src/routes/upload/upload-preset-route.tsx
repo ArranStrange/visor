@@ -19,7 +19,7 @@ import { usePresetUploadForm } from "hooks/usePresetUploadForm";
 import {
   buildSettingsForBackend,
   buildToneCurveForBackend,
-} from "utils/presetSettingsTransform";
+} from "lib/utils/presetSettingsTransform";
 
 const UPLOAD_PRESET = gql`
   mutation UploadPreset(

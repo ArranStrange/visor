@@ -12,6 +12,7 @@ import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
+import { FeaturedToggle, MenuOpen } from "lib/events/event-definitions";
 
 interface Creator {
   id: string;
@@ -20,26 +21,51 @@ interface Creator {
   instagram?: string;
 }
 
-interface FilmSimHeaderProps {
+interface FilmSim {
+  id?: string;
   creator?: Creator;
   name: string;
   featured: boolean;
-  isAdmin: boolean;
-  isOwner: boolean;
-  onFeaturedToggle: () => void;
-  onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
+}
+
+interface FilmSimHeaderProps {
+  filmSim: FilmSim;
+  isAdmin?: boolean;
+  isOwner?: boolean;
+  onFeaturedToggle?: () => void;
+  onMenuOpen?: (event: React.MouseEvent<HTMLElement>) => void;
 }
 
 const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
-  creator,
-  name,
-  featured,
-  isAdmin,
-  isOwner,
+  filmSim,
+  isAdmin = false,
+  isOwner = false,
   onFeaturedToggle,
   onMenuOpen,
 }) => {
   const navigate = useNavigate();
+  const { creator, name, featured } = filmSim;
+
+  const handleFeaturedToggle = () => {
+    // Raise event for featured toggle
+    FeaturedToggle.raise({
+      itemId: filmSim.id || "",
+      itemType: "filmsim",
+      featured: !featured,
+    });
+    // Also call prop callback for backward compatibility
+    if (onFeaturedToggle) onFeaturedToggle();
+  };
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    // Raise event for menu open
+    MenuOpen.raise({
+      anchorEl: event.currentTarget,
+      menuId: "filmsim-menu",
+    });
+    // Also call prop callback for backward compatibility
+    if (onMenuOpen) onMenuOpen(event);
+  };
 
   return (
     <>
@@ -81,7 +107,7 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
         </Typography>
         {isAdmin && (
           <IconButton
-            onClick={onFeaturedToggle}
+            onClick={handleFeaturedToggle}
             size="small"
             sx={{
               backgroundColor: featured
@@ -103,7 +129,7 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
         )}
         {isOwner && (
           <IconButton
-            onClick={onMenuOpen}
+            onClick={handleMenuOpen}
             size="small"
             sx={{
               backgroundColor: "rgba(255, 255, 255, 0.1)",

@@ -4,14 +4,16 @@ import DownloadIcon from "@mui/icons-material/Download";
 import { useNavigate } from "react-router-dom";
 
 interface PresetActionsProps {
-  isAuthenticated: boolean;
-  onDownload: () => void;
+  preset?: any;
+  currentUser?: any;
+  onDownload?: () => void;
 }
 
 const PresetActions: React.FC<PresetActionsProps> = ({
-  isAuthenticated,
+  currentUser,
   onDownload,
 }) => {
+  const isAuthenticated = !!currentUser;
   const navigate = useNavigate();
 
   return (

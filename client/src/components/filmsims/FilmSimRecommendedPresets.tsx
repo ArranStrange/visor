@@ -21,17 +21,22 @@ interface Preset {
   tags?: { id: string; displayName: string }[];
 }
 
+interface FilmSim {
+  recommendedPresets?: Preset[];
+}
+
 interface FilmSimRecommendedPresetsProps {
-  presets?: Preset[];
-  isOwner: boolean;
-  onManageClick: () => void;
+  filmSim: FilmSim;
+  isOwner?: boolean;
+  onRecommendedPresetsManage?: () => void;
 }
 
 const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
-  presets = [],
-  isOwner,
-  onManageClick,
+  filmSim,
+  isOwner = false,
+  onRecommendedPresetsManage,
 }) => {
+  const presets = filmSim.recommendedPresets || [];
   const navigate = useNavigate();
 
   return (
@@ -49,11 +54,11 @@ const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
           }}
         >
           <Typography variant="h6">Recommended Presets</Typography>
-          {isOwner && (
+          {isOwner && onRecommendedPresetsManage && (
             <div onClick={(e) => e.stopPropagation()}>
               <Box
                 component="span"
-                onClick={onManageClick}
+                onClick={onRecommendedPresetsManage}
                 sx={{
                   display: "inline-flex",
                   alignItems: "center",

@@ -37,7 +37,7 @@ import PostComposer from "components/discussions/PostComposer";
 import {
   useCreateNotification,
   createDiscussionReplyNotification,
-} from "utils/notificationUtils";
+} from "lib/utils/notificationUtils";
 
 const DiscussionDetail: React.FC = () => {
   const { discussionId } = useParams<{ discussionId: string }>();

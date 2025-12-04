@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { CloudinaryOptimizer } from "../utils/cloudinary";
+import { CloudinaryOptimizer } from "lib/utils/cloudinary";
 
 export const useCloudinary = (
   url: string,

@@ -1,9 +1,10 @@
 import React, { useRef, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { usePresetRepository } from "../../core/hooks/useService";
-import { useFilmSimRepository } from "../../core/hooks/useService";
 import { useInfiniteLoad } from "../../hooks/useInfiniteLoad";
+import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+import apolloClient from "@gql/apolloClient";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
@@ -24,7 +25,7 @@ interface ContentGridLoaderProps {
   renderItem?: (item: any) => React.ReactNode;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 3;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType: contentTypeProp,
@@ -35,16 +36,12 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 }) => {
   // Refs and external hooks
   const containerRef = useRef<HTMLDivElement>(null);
-  const { randomizeOrder, contentType: contextContentType } = useContentType();
+  const { contentType: contextContentType } = useContentType();
 
   // Use prop if provided, otherwise fall back to context
   const contentType = contentTypeProp ?? contextContentType;
 
-  // Service hooks
-  const presetRepository = usePresetRepository();
-  const filmSimRepository = useFilmSimRepository();
-
-  // Create fetch function for useInfiniteLoad
+  // Create fetch function for useInfiniteLoad using GraphQL queries directly
   const fetchFn = useCallback(
     async (
       page: number
@@ -73,18 +70,34 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         contentType === "all" || contentType === "presets";
       const shouldFetchFilms = contentType === "all" || contentType === "films";
 
-      // Fetch data in parallel when both are needed, or sequentially when only one is needed
+      // Fetch data in parallel using GraphQL queries directly
       const fetchPromises: Promise<any>[] = [];
 
       if (shouldFetchPresets) {
         fetchPromises.push(
-          presetRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
+          apolloClient.query({
+            query: GET_ALL_PRESETS,
+            variables: {
+              page,
+              limit: ITEMS_PER_PAGE,
+              filter,
+            },
+            fetchPolicy: "network-only",
+          })
         );
       }
 
       if (shouldFetchFilms) {
         fetchPromises.push(
-          filmSimRepository.findPaginated(page, ITEMS_PER_PAGE, filter)
+          apolloClient.query({
+            query: GET_ALL_FILMSIMS,
+            variables: {
+              page,
+              limit: ITEMS_PER_PAGE,
+              filter,
+            },
+            fetchPolicy: "network-only",
+          })
         );
       }
 
@@ -93,41 +106,45 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
       // Process preset results
       if (shouldFetchPresets) {
-        const paginatedPresets = fetchResults[0];
-        hasNextPage = paginatedPresets.hasNextPage;
+        const presetData = fetchResults[0].data?.listPresets;
+        if (presetData) {
+          hasNextPage = presetData.hasNextPage;
 
-        results.push(
-          ...paginatedPresets.presets
-            .filter((p: any) => p && p.creator)
-            .map((p: any) => ({
-              type: "preset" as const,
-              data: {
-                ...p,
-                tags: p.tags || [], // Ensure tags is always an array
-              },
-            }))
-        );
+          results.push(
+            ...presetData.presets
+              .filter((p: any) => p && p.creator)
+              .map((p: any) => ({
+                type: "preset" as const,
+                data: {
+                  ...p,
+                  tags: p.tags || [],
+                },
+              }))
+          );
+        }
       }
 
       // Process film sim results
       if (shouldFetchFilms) {
         const filmResultIndex = shouldFetchPresets ? 1 : 0;
-        const paginatedFilmSims = fetchResults[filmResultIndex];
-        hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
+        const filmData = fetchResults[filmResultIndex].data?.listFilmSims;
+        if (filmData) {
+          hasNextPage = hasNextPage || filmData.hasNextPage;
 
-        results.push(
-          ...paginatedFilmSims.filmSims
-            .filter((f: any) => f && f.creator)
-            .map((f: any) => ({
-              type: "film" as const,
-              data: {
-                ...f,
-                title: f.name,
-                thumbnail: f.sampleImages?.[0]?.url || "",
-                tags: f.tags || [], // Ensure tags is always an array
-              },
-            }))
-        );
+          results.push(
+            ...filmData.filmSims
+              .filter((f: any) => f && f.creator)
+              .map((f: any) => ({
+                type: "film" as const,
+                data: {
+                  ...f,
+                  title: f.name,
+                  thumbnail: f.sampleImages?.[0]?.url || "",
+                  tags: f.tags || [], // Ensure tags is always an array
+                },
+              }))
+          );
+        }
       }
 
       // Add BuyMeACoffee card only on first page
@@ -151,14 +168,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
       return { items: filteredContent, hasMore: hasNextPage };
     },
-    [
-      contentType,
-      filter,
-      searchQuery,
-      customData,
-      presetRepository,
-      filmSimRepository,
-    ]
+    [contentType, filter, searchQuery, customData]
   );
 
   // Use infinite load hook
@@ -225,7 +235,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         onLoadMore={loadMore}
         hasMore={hasMore}
         isLoading={isLoadingMore}
-        randomizeOrder={randomizeOrder}
+        // randomizeOrder={randomizeOrder}
       >
         {items.map((item, index) => renderContentItem(item, index))}
       </StaggeredGrid>

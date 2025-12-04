@@ -9,19 +9,25 @@ interface SampleImage {
   isFeaturedPhoto?: boolean;
 }
 
-interface FilmSimSampleImagesProps {
-  filmSimName: string;
+interface FilmSim {
+  name: string;
   sampleImages?: SampleImage[];
-  onImageClick: (url: string, imageId?: string, isFeatured?: boolean) => void;
-  showAddButton?: boolean;
+}
+
+interface FilmSimSampleImagesProps {
+  filmSim: FilmSim;
+  currentUser?: any;
+  onImageClick?: (url: string, imageId?: string, isFeatured?: boolean) => void;
 }
 
 const FilmSimSampleImages: React.FC<FilmSimSampleImagesProps> = ({
-  filmSimName,
-  sampleImages = [],
+  filmSim,
+  currentUser,
   onImageClick,
-  showAddButton = false,
 }) => {
+  const filmSimName = filmSim.name;
+  const sampleImages = filmSim.sampleImages || [];
+  const showAddButton = !!currentUser;
   const hasImages = sampleImages.length > 0;
 
   return (

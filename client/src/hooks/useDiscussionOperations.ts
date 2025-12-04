@@ -14,7 +14,7 @@ import { GET_DISCUSSION_BY_ITEM } from "../graphql/queries/discussions";
 import {
   useCreateNotification,
   createDiscussionReplyNotification,
-} from "../utils/notificationUtils";
+} from "lib/utils/notificationUtils";
 
 export const useDiscussionOperations = (
   itemId: string,

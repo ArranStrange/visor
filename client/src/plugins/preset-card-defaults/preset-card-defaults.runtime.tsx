@@ -7,7 +7,7 @@
 
 import React from "react";
 import { PresetCardOverlay } from "lib/slots/slot-definitions";
-import { AddToListButton } from "./add-to-list-button";
+import { AddToListButton } from "./components/add-to-list-button";
 
 // Register default "Add to List" button
 PresetCardOverlay.plug(

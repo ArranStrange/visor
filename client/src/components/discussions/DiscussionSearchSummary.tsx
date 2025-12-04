@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { DiscussionFilters as DiscussionFiltersType } from "../../types/discussionFilters";
 import { DiscussionTargetType } from "../../types/discussions";
-import { getDiscussionTypeLabel } from "../../utils/discussionIcons";
+import { getDiscussionTypeLabel } from "lib/utils/discussionIcons";
 
 interface DiscussionSearchSummaryProps {
   filters: DiscussionFiltersType;

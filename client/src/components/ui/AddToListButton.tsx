@@ -58,16 +58,23 @@ const ADD_TO_LIST = gql`
 `;
 
 interface AddToListButtonProps {
+  preset?: { id: string; title: string };
+  filmSim?: { id: string; name: string };
   presetId?: string;
   filmSimId?: string;
-  itemName: string;
+  itemName?: string;
 }
 
 const AddToListButton: React.FC<AddToListButtonProps> = ({
-  presetId,
-  filmSimId,
-  itemName,
+  preset,
+  filmSim,
+  presetId: presetIdProp,
+  filmSimId: filmSimIdProp,
+  itemName: itemNameProp,
 }) => {
+  const presetId = preset?.id || presetIdProp;
+  const filmSimId = filmSim?.id || filmSimIdProp;
+  const itemName = preset?.title || filmSim?.name || itemNameProp || "";
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [open, setOpen] = useState(false);

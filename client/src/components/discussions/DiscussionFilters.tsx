@@ -15,7 +15,7 @@ import {
   FilterList as FilterIcon,
 } from "@mui/icons-material";
 import { DiscussionFilters as DiscussionFiltersType } from "../../types/discussionFilters";
-import { getSortIcon } from "../../utils/discussionIcons";
+import { getSortIcon } from "lib/utils/discussionIcons";
 
 interface DiscussionFiltersProps {
   filters: DiscussionFiltersType;

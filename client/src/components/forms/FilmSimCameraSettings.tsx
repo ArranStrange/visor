@@ -21,8 +21,12 @@ interface FilmSimSettings {
   };
 }
 
+interface FilmSim {
+  settings?: FilmSimSettings;
+}
+
 interface FilmSimCameraSettingsProps {
-  settings: FilmSimSettings;
+  filmSim: FilmSim;
 }
 
 const formatSettingValue = (value: any) => {
@@ -32,8 +36,9 @@ const formatSettingValue = (value: any) => {
 };
 
 const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
-  settings,
+  filmSim,
 }) => {
+  const settings = filmSim.settings || {};
   const settingsList = [
     {
       key: "filmSimulation",

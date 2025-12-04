@@ -10,29 +10,29 @@ import {
   NavbarRight,
   NavbarUserMenuItems,
 } from "lib/slots/slot-definitions";
-import { NavbarLogo } from "./logo";
-import { NavbarSearchButton } from "./search-button";
-import { NavbarUploadButton } from "./upload-button";
-import { NavbarUserMenu } from "./user-menu";
-import { NavbarLoginButton } from "./login-button";
-import { AuthenticatedNotificationBell } from "./notification-bell";
-import { ProfileMenuItem } from "./menu-items/profile-menu-item";
-import { MyListsMenuItem } from "./menu-items/my-lists-menu-item";
-import { BrowseListsMenuItem } from "./menu-items/browse-lists-menu-item";
-import { DiscussionsMenuItem } from "./menu-items/discussions-menu-item";
-import { NotificationsMenuItem } from "./menu-items/notifications-menu-item";
-import { EmojiButton } from "./emoji-button";
+import { NavbarLogo } from "./components/logo";
+import { NavbarSearchButton } from "./components/search-button";
+import { NavbarUploadButton } from "./components/upload-button";
+import { NavbarUserMenu } from "./components/user-menu";
+import { NavbarLoginButton } from "./components/login-button";
+import { AuthenticatedNotificationBell } from "./components/notification-bell";
+import { ProfileMenuItem } from "./user-menu-items/profile-menu-item";
+import { MyListsMenuItem } from "./user-menu-items/my-lists-menu-item";
+import { BrowseListsMenuItem } from "./user-menu-items/browse-lists-menu-item";
+import { DiscussionsMenuItem } from "./user-menu-items/discussions-menu-item";
+import { NotificationsMenuItem } from "./user-menu-items/notifications-menu-item";
+import { EmojiButton } from "./components/emoji-button";
+import PlugTest from "./components/plug-test";
 
 // Register logo on left side
 NavbarLeft.plug(<NavbarLogo key="navbar-logo" />, 10);
 //Emoji Button for practice puttin in slots
 NavbarLeft.plug(<EmojiButton />, 20);
+NavbarLeft.plug(<PlugTest />, 30);
 
 // Register right side components
-// Search button (always visible)
 NavbarRight.plug(<NavbarSearchButton key="navbar-search" />, 10);
 
-// Notification bell (only when authenticated)
 NavbarRight.plug(
   <AuthenticatedNotificationBell key="navbar-notifications" />,
   30

@@ -15,15 +15,17 @@ interface Creator {
   avatar?: string;
 }
 
-interface FilmSimCreatorNotesProps {
+interface FilmSim {
   notes?: string;
   creator?: Creator;
 }
 
-const FilmSimCreatorNotes: React.FC<FilmSimCreatorNotesProps> = ({
-  notes,
-  creator,
-}) => {
+interface FilmSimCreatorNotesProps {
+  filmSim: FilmSim;
+}
+
+const FilmSimCreatorNotes: React.FC<FilmSimCreatorNotesProps> = ({ filmSim }) => {
+  const { notes, creator } = filmSim;
   const navigate = useNavigate();
 
   return (

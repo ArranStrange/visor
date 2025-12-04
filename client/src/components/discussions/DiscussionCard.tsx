@@ -30,9 +30,9 @@ import { User } from "../../types/discussions";
 import {
   getDiscussionTypeIcon,
   getDiscussionTypeLabel,
-} from "../../utils/discussionIcons";
-import { formatDate } from "../../utils/dateUtils";
-import { isUserFollowing } from "../../utils/discussionUtils";
+} from "lib/utils/discussionIcons";
+import { formatDate } from "lib/utils/dateUtils";
+import { isUserFollowing } from "lib/utils/discussionUtils";
 import { ADMIN_DELETE_DISCUSSION } from "../../graphql/mutations/adminMutations";
 import { GET_DISCUSSIONS } from "../../graphql/queries/discussions";
 

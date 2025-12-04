@@ -1,16 +1,16 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_PRESET_BY_SLUG } from "@gql/queries/getPresetBySlug";
 import { useAuth } from "context/AuthContext";
 import { useFeatured } from "hooks/useFeatured";
-import { downloadXMP, type PresetData } from "utils/xmpCompiler";
+import { downloadXMP, type PresetData } from "lib/utils/xmpCompiler";
 import EditPresetDialog from "components/presets/dialogs/EditPresetDialog";
 import DeletePresetDialog from "components/presets/dialogs/DeletePresetDialog";
 import AddPhotoDialog from "components/presets/dialogs/AddPhotoDialog";
@@ -22,13 +22,26 @@ import {
   PresetDetailSection,
   PageBreadcrumbs,
 } from "lib/slots/slot-definitions";
+import {
+  PresetEditRequested,
+  PresetDeleteRequested,
+  PresetSaved,
+  PresetDeleted,
+  MenuOpen,
+  MenuClose,
+  ImageClick,
+  AddPhotoDialogOpen,
+  DownloadRequested,
+  NavigateTo,
+} from "lib/events/event-definitions";
 import PresetBreadcrumb from "./preset-detail.runtime";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
+  const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const { isAdmin } = useFeatured();
-  const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
+  const { loading, error, data, refetch } = useQuery(GET_PRESET_BY_SLUG, {
     variables: { slug },
   });
 
@@ -74,43 +87,121 @@ const PresetDetails: React.FC = () => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setMenuAnchorEl(event.currentTarget);
-  };
+  // Listen to menu events
+  MenuOpen.useEvent(
+    (data) => {
+      if (data?.menuId === "preset-menu") {
+        setMenuAnchorEl(data.anchorEl);
+      }
+    },
+    []
+  );
 
-  const handleMenuClose = () => {
-    setMenuAnchorEl(null);
-  };
+  MenuClose.useEvent(
+    (data) => {
+      if (data?.menuId === "preset-menu") {
+        setMenuAnchorEl(null);
+      }
+    },
+    []
+  );
 
-  const handleDownloadXMP = () => {
-    if (!preset) return;
+  // Listen to preset edit/delete requests
+  PresetEditRequested.useEvent(
+    (data) => {
+      if (data?.presetId === preset?.id || data?.preset?.id === preset?.id) {
+        handleEdit();
+      }
+    },
+    [preset?.id]
+  );
 
-    const convertToneCurve = (curveData: any) => {
-      if (!curveData || !Array.isArray(curveData)) return undefined;
-      return curveData.map((point: any) => ({ x: point.x, y: point.y }));
-    };
+  PresetDeleteRequested.useEvent(
+    (data) => {
+      if (data?.presetId === preset?.id || data?.preset?.id === preset?.id) {
+        handleDelete();
+      }
+    },
+    [preset?.id]
+  );
 
-    const presetData: PresetData = {
-      title: preset.title,
-      description: preset.description || "",
-      settings: preset.settings || {},
-      toneCurve: {
-        rgb: convertToneCurve(preset.toneCurve?.rgb),
-        red: convertToneCurve(preset.toneCurve?.red),
-        green: convertToneCurve(preset.toneCurve?.green),
-        blue: convertToneCurve(preset.toneCurve?.blue),
-      },
-      whiteBalance: "Custom",
-      cameraProfile: "Adobe Standard",
-      profileName: "Adobe Standard",
-      version: "15.0",
-      processVersion: "15.0",
-      creator: preset.creator?.username || "VISOR",
-      dateCreated: preset.createdAt,
-    };
+  // Listen to preset saved/deleted events
+  PresetSaved.useEvent(
+    (data) => {
+      if (data?.presetId === preset?.id || data?.preset?.id === preset?.id) {
+        refetch();
+      }
+    },
+    [preset?.id, refetch]
+  );
 
-    downloadXMP(presetData);
-  };
+  PresetDeleted.useEvent(() => {
+    navigate("/");
+  }, [navigate]);
+
+  // Listen to image click events
+  ImageClick.useEvent(
+    (data) => {
+      if (preset?.id && data) {
+        handleImageClick(data.imageId, data.imageUrl, data.featured);
+      }
+    },
+    [preset?.id]
+  );
+
+  // Listen to add photo dialog open
+  AddPhotoDialogOpen.useEvent(
+    (data) => {
+      if (data?.itemType === "preset" && data?.itemId === preset?.id) {
+        setAddPhotoDialogOpen(true);
+      }
+    },
+    [preset?.id]
+  );
+
+  // Listen to download requests
+  DownloadRequested.useEvent(
+    (data) => {
+      if (data?.itemType === "preset" && data?.itemId === preset?.id && preset) {
+        const convertToneCurve = (curveData: any) => {
+          if (!curveData || !Array.isArray(curveData)) return undefined;
+          return curveData.map((point: any) => ({ x: point.x, y: point.y }));
+        };
+
+        const presetData: PresetData = {
+          title: preset.title,
+          description: preset.description || "",
+          settings: preset.settings || {},
+          toneCurve: {
+            rgb: convertToneCurve(preset.toneCurve?.rgb),
+            red: convertToneCurve(preset.toneCurve?.red),
+            green: convertToneCurve(preset.toneCurve?.green),
+            blue: convertToneCurve(preset.toneCurve?.blue),
+          },
+          whiteBalance: "Custom",
+          cameraProfile: "Adobe Standard",
+          profileName: "Adobe Standard",
+          version: "15.0",
+          processVersion: "15.0",
+          creator: preset.creator?.username || "VISOR",
+          dateCreated: preset.createdAt,
+        };
+
+        downloadXMP(presetData);
+      }
+    },
+    [preset]
+  );
+
+  // Listen to navigation events
+  NavigateTo.useEvent(
+    (data) => {
+      if (data?.path) {
+        navigate(data.path);
+      }
+    },
+    [navigate]
+  );
 
   if (loading) {
     return (
@@ -155,13 +246,8 @@ const PresetDetails: React.FC = () => {
         preset={preset}
         isOwner={!!isOwner}
         isAdmin={isAdmin}
-        onMenuOpen={handleMenuOpen}
-        onFeaturedToggle={handleToggleFeatured}
         menuAnchorEl={menuAnchorEl}
         menuOpen={menuOpen}
-        onMenuClose={handleMenuClose}
-        onEditClick={handleEdit}
-        onDeleteClick={handleDelete}
       />
 
       {/* Sections - plugins can inject content sections here */}
@@ -169,9 +255,6 @@ const PresetDetails: React.FC = () => {
         preset={preset}
         isOwner={!!isOwner}
         currentUser={currentUser}
-        onImageClick={handleImageClick}
-        onAddPhotoClick={() => setAddPhotoDialogOpen(true)}
-        onDownload={handleDownloadXMP}
       />
 
       <EditPresetDialog

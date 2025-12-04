@@ -4,25 +4,29 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 interface PresetOwnerMenuProps {
-  anchorEl: HTMLElement | null;
-  open: boolean;
-  onClose: () => void;
-  onEdit: () => void;
-  onDelete: () => void;
+  preset?: any;
+  isOwner?: boolean;
+  menuAnchorEl?: HTMLElement | null;
+  menuOpen?: boolean;
+  onMenuClose?: () => void;
+  onEditClick?: () => void;
+  onDeleteClick?: () => void;
 }
 
 const PresetOwnerMenu: React.FC<PresetOwnerMenuProps> = ({
-  anchorEl,
-  open,
-  onClose,
-  onEdit,
-  onDelete,
+  isOwner = false,
+  menuAnchorEl,
+  menuOpen = false,
+  onMenuClose,
+  onEditClick,
+  onDeleteClick,
 }) => {
+  if (!isOwner) return null;
   return (
     <Menu
-      anchorEl={anchorEl}
-      open={open}
-      onClose={onClose}
+      anchorEl={menuAnchorEl || null}
+      open={menuOpen}
+      onClose={onMenuClose}
       PaperProps={{
         sx: {
           backgroundColor: "background.paper",
@@ -30,13 +34,13 @@ const PresetOwnerMenu: React.FC<PresetOwnerMenuProps> = ({
         },
       }}
     >
-      <MenuItem onClick={onEdit}>
+      <MenuItem onClick={onEditClick}>
         <ListItemIcon>
           <EditIcon fontSize="small" />
         </ListItemIcon>
         <ListItemText primary="Edit" />
       </MenuItem>
-      <MenuItem onClick={onDelete}>
+      <MenuItem onClick={onDeleteClick}>
         <ListItemIcon>
           <DeleteIcon fontSize="small" color="error" />
         </ListItemIcon>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -14,6 +14,12 @@ import {
 import XmpParser from "../../settings/XmpParser";
 import XmpSettingsDisplay from "../../settings/XmpSettingsDisplay";
 import { ParsedSettings } from "../../../types/xmpSettings";
+import {
+  PresetEditRequested,
+  PresetSaveRequested,
+  DialogClose,
+  FormDataChange,
+} from "lib/events/event-definitions";
 
 interface EditFormData {
   title: string;
@@ -23,36 +29,144 @@ interface EditFormData {
 }
 
 interface EditPresetDialogProps {
-  open: boolean;
-  formData: EditFormData;
-  parsedSettings: ParsedSettings | null;
-  saveError: string | null;
-  saveSuccess: boolean;
-  updating: boolean;
-  currentSettings: any;
-  presetEffects: any;
-  onClose: () => void;
-  onFormDataChange: (data: EditFormData) => void;
-  onSettingsParsed: (settings: ParsedSettings) => void;
-  onSave: () => void;
+  open?: boolean;
+  formData?: EditFormData;
+  parsedSettings?: ParsedSettings | null;
+  saveError?: string | null;
+  saveSuccess?: boolean;
+  updating?: boolean;
+  currentSettings?: any;
+  presetEffects?: any;
+  onClose?: () => void;
+  onFormDataChange?: (data: EditFormData) => void;
+  onSettingsParsed?: (settings: ParsedSettings) => void;
+  onSave?: () => void;
 }
 
 const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
-  open,
-  formData,
-  parsedSettings,
-  saveError,
-  saveSuccess,
-  updating,
-  onClose,
-  onFormDataChange,
-  onSettingsParsed,
-  onSave,
+  open: openProp,
+  formData: formDataProp,
+  parsedSettings: parsedSettingsProp,
+  saveError: saveErrorProp,
+  saveSuccess: saveSuccessProp,
+  updating: updatingProp,
+  currentSettings,
+  presetEffects,
+  onClose: onCloseProp,
+  onFormDataChange: onFormDataChangeProp,
+  onSettingsParsed: onSettingsParsedProp,
+  onSave: onSaveProp,
 }) => {
+  const [open, setOpen] = useState(openProp || false);
+  const [formData, setFormData] = useState<EditFormData>(
+    formDataProp || {
+      title: "",
+      description: "",
+      notes: "",
+      tags: "",
+    }
+  );
+  const [parsedSettings, setParsedSettings] = useState<ParsedSettings | null>(
+    parsedSettingsProp || null
+  );
+  const [saveError, setSaveError] = useState<string | null>(saveErrorProp || null);
+  const [saveSuccess, setSaveSuccess] = useState(saveSuccessProp || false);
+  const [updating, setUpdating] = useState(updatingProp || false);
+  const [currentPreset, setCurrentPreset] = useState<any>(null);
+
+  // Listen to PresetEditRequested event
+  PresetEditRequested.useEvent(
+    (data) => {
+      if (data?.preset) {
+        const preset = data.preset;
+        setCurrentPreset(preset);
+        setFormData({
+          title: preset.title || "",
+          description: preset.description || "",
+          notes: preset.notes || "",
+          tags: preset.tags?.map((tag: any) => tag?.displayName || "Unknown").join(", ") || "",
+        });
+        setParsedSettings(null);
+        setSaveError(null);
+        setSaveSuccess(false);
+        setOpen(true);
+      }
+    },
+    []
+  );
+
+  // Listen to DialogClose event
+  DialogClose.useEvent(
+    (data) => {
+      if (data?.dialogId === "edit-preset" || !data?.dialogId) {
+        setOpen(false);
+        if (onCloseProp) onCloseProp();
+      }
+    },
+    [onCloseProp]
+  );
+
+  // Sync with props if provided (backward compatibility)
+  useEffect(() => {
+    if (openProp !== undefined) setOpen(openProp);
+  }, [openProp]);
+
+  useEffect(() => {
+    if (formDataProp) setFormData(formDataProp);
+  }, [formDataProp]);
+
+  useEffect(() => {
+    if (parsedSettingsProp !== undefined) setParsedSettings(parsedSettingsProp);
+  }, [parsedSettingsProp]);
+
+  useEffect(() => {
+    if (saveErrorProp !== undefined) setSaveError(saveErrorProp);
+  }, [saveErrorProp]);
+
+  useEffect(() => {
+    if (saveSuccessProp !== undefined) setSaveSuccess(saveSuccessProp);
+  }, [saveSuccessProp]);
+
+  useEffect(() => {
+    if (updatingProp !== undefined) setUpdating(updatingProp);
+  }, [updatingProp]);
+
+  const handleClose = () => {
+    setOpen(false);
+    DialogClose.raise({ dialogId: "edit-preset" });
+    if (onCloseProp) onCloseProp();
+  };
+
+  const handleFormDataChange = (newData: EditFormData) => {
+    setFormData(newData);
+    FormDataChange.raise({
+      field: "preset-edit",
+      value: newData,
+      formId: "edit-preset",
+    });
+    if (onFormDataChangeProp) onFormDataChangeProp(newData);
+  };
+
+  const handleSettingsParsed = (settings: ParsedSettings) => {
+    setParsedSettings(settings);
+    if (onSettingsParsedProp) onSettingsParsedProp(settings);
+  };
+
+  const handleSave = () => {
+    if (currentPreset) {
+      PresetSaveRequested.raise({
+        presetId: currentPreset.id,
+        preset: currentPreset,
+        formData,
+        parsedSettings,
+      });
+    }
+    if (onSaveProp) onSaveProp();
+  };
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       maxWidth="md"
       fullWidth
       fullScreen={window.innerWidth < 768}
@@ -75,7 +189,7 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
             fullWidth
             value={formData.title}
             onChange={(e) =>
-              onFormDataChange({ ...formData, title: e.target.value })
+              handleFormDataChange({ ...formData, title: e.target.value })
             }
           />
           <TextField
@@ -85,7 +199,7 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
             rows={3}
             value={formData.description}
             onChange={(e) =>
-              onFormDataChange({ ...formData, description: e.target.value })
+              handleFormDataChange({ ...formData, description: e.target.value })
             }
           />
           <TextField
@@ -95,7 +209,7 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
             rows={3}
             value={formData.notes}
             onChange={(e) =>
-              onFormDataChange({ ...formData, notes: e.target.value })
+              handleFormDataChange({ ...formData, notes: e.target.value })
             }
           />
           <TextField
@@ -103,7 +217,7 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
             fullWidth
             value={formData.tags}
             onChange={(e) =>
-              onFormDataChange({ ...formData, tags: e.target.value })
+              handleFormDataChange({ ...formData, tags: e.target.value })
             }
             placeholder="e.g., portrait, landscape, street"
           />
@@ -116,7 +230,7 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
               Upload a new XMP file to update the preset settings. This will
               overwrite the current settings.
             </Typography>
-            <XmpParser onSettingsParsed={onSettingsParsed} />
+            <XmpParser onSettingsParsed={handleSettingsParsed} />
             {parsedSettings && (
               <Alert severity="success" sx={{ mt: 2 }}>
                 XMP file parsed successfully! Settings will be updated when you
@@ -150,10 +264,10 @@ const EditPresetDialog: React.FC<EditPresetDialogProps> = ({
         </Stack>
       </DialogContent>
       <DialogActions sx={{ p: 2, pb: window.innerWidth < 768 ? 4 : 2 }}>
-        <Button onClick={onClose} disabled={updating}>
+        <Button onClick={handleClose} disabled={updating}>
           Cancel
         </Button>
-        <Button variant="contained" onClick={onSave} disabled={updating}>
+        <Button variant="contained" onClick={handleSave} disabled={updating}>
           {updating ? "Saving..." : "Save Changes"}
         </Button>
       </DialogActions>

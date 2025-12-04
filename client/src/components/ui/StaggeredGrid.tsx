@@ -1,11 +1,11 @@
 import React, { useMemo, memo, useEffect } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { useContentType } from "../../context/ContentTypeFilter";
+// import { useContentType } from "../../context/ContentTypeFilter";
 import { useColumnCount } from "../../hooks/useColumnCount";
-import { useShuffleOrder } from "../../hooks/useShuffleOrder";
+// import { useShuffleOrder } from "../../hooks/useShuffleOrder";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
-import { distributeItemsAcrossColumns } from "../../utils/gridUtils";
+import { distributeItemsAcrossColumns } from "lib/utils/gridUtils";
 
 interface StaggeredGridProps {
   children: React.ReactNode[];
@@ -29,12 +29,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = memo(
     hasMore = false,
     isLoading = false,
   }) => {
-    const { shuffleCounter } = useContentType();
-
-    const { containerRef, columnCount, refreshColumns } = useColumnCount({
-      minWidth,
-      gap,
-    });
+    const { containerRef, columnCount, refreshColumns } = useColumnCount();
 
     const { triggerRef, inView, loadMoreRef } = useInfiniteScroll({
       hasMore,
@@ -42,19 +37,27 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = memo(
       onLoadMore,
     });
 
-    const shuffledIndices = useShuffleOrder({
-      childrenLength: children.length,
-      randomizeOrder,
-      shuffleCounter,
-    });
+    // Commented out shuffle order to prevent reordering when loading more items
+    // const { shuffleCounter } = useContentType();
+    // const shuffledIndices = useShuffleOrder({
+    //   childrenLength: children.length,
+    //   randomizeOrder,
+    //   shuffleCounter,
+    // });
+
+    // Use sequential indices instead of shuffled
+    const sequentialIndices = useMemo(
+      () => Array.from({ length: children.length }, (_, i) => i),
+      [children.length]
+    );
 
     const columns = useMemo(() => {
       if (!children.length) {
         return Array.from({ length: columnCount }, () => []);
       }
 
-      return distributeItemsAcrossColumns(shuffledIndices, columnCount);
-    }, [shuffledIndices, columnCount, children.length]);
+      return distributeItemsAcrossColumns(sequentialIndices, columnCount);
+    }, [sequentialIndices, columnCount, children.length]);
 
     useEffect(() => {
       refreshColumns();

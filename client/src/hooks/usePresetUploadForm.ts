@@ -4,7 +4,7 @@ import {
   ImageInput,
   validatePresetImage,
   uploadPresetImageToCloudinary,
-} from "../utils/presetUploadUtils";
+} from "lib/utils/presetUploadUtils";
 
 export interface PresetUploadFormState {
   title: string;

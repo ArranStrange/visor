@@ -1,23 +1,24 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Box,
   Container,
   Typography,
-  InputBase,
   CircularProgress,
   Alert,
   Button,
   Stack,
+  InputAdornment,
 } from "@mui/material";
 import { BROWSE_USER_LISTS } from "@gql/queries/browseUserLists";
-import apolloClient from "@gql/apolloClient";
-import { useInfiniteLoad } from "../../hooks/useInfiniteLoad";
+import { useGraphQLInfiniteLoad } from "../../hooks/useGraphQLInfiniteLoad";
 import ListRow from "components/lists/ListRow";
 import TagsList from "components/ui/TagsList";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTags } from "context/TagContext";
 import { PageBreadcrumbs } from "lib/slots/slot-definitions";
 import BrowseListsBreadcrumb from "./browse-lists.runtime";
+import DebouncedTextField from "components/ui/DebouncedTextField";
+import { textFieldOverlayStyles } from "theme/VISORTheme";
 
 interface UserList {
   id: string;
@@ -70,18 +71,8 @@ const BrowseLists: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState(0);
   const limit = 20;
   const { tags, loading: tagsLoading, searchTags } = useTags();
-
-  // Debounce search input
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -113,33 +104,7 @@ const BrowseLists: React.FC = () => {
     }
   };
 
-  // Create fetch function for useInfiniteLoad
-  const fetchFn = useCallback(
-    async (page: number): Promise<{ items: UserList[]; hasMore: boolean }> => {
-      const { data } = await apolloClient.query<BrowseUserListsData>({
-        query: BROWSE_USER_LISTS,
-        variables: {
-          search: debouncedSearch || undefined,
-          page,
-          limit,
-        },
-        fetchPolicy: "network-only", // Don't use cache to ensure fresh data per page
-      });
-
-      // Store totalCount from first page
-      if (page === 1 && data?.browseUserLists?.totalCount) {
-        setTotalCount(data.browseUserLists.totalCount);
-      }
-
-      return {
-        items: data?.browseUserLists?.lists || [],
-        hasMore: data?.browseUserLists?.hasNextPage || false,
-      };
-    },
-    [debouncedSearch, limit]
-  );
-
-  // Use infinite load hook
+  // Use GraphQL infinite load hook
   const {
     items: lists,
     loading,
@@ -147,38 +112,44 @@ const BrowseLists: React.FC = () => {
     hasMore,
     error,
     loadMore,
-  } = useInfiniteLoad<UserList>({
-    fetchFn,
+    totalCount,
+  } = useGraphQLInfiniteLoad<BrowseUserListsData, UserList>({
+    query: BROWSE_USER_LISTS,
+    variables: {
+      search: debouncedSearch || undefined,
+    },
+    limit,
+    extractItems: (data) => data?.browseUserLists?.lists || [],
+    extractHasMore: (data) => data?.browseUserLists?.hasNextPage || false,
+    extractTotalCount: (data) => data?.browseUserLists?.totalCount,
     resetDeps: [debouncedSearch],
     initialLoad: true,
+    fetchPolicy: "network-only",
   });
 
   return (
     <Container maxWidth="lg" sx={{ py: 4, mb: 20 }}>
       <BrowseListsBreadcrumb />
       <PageBreadcrumbs.Slot />
-      <InputBase
+      <DebouncedTextField
         placeholder="Search presets, film sims, tags…"
         value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
+        onChange={(value) => {
+          setSearchQuery(value);
+          setDebouncedSearch(value);
+        }}
+        debounceTime={500}
         fullWidth
-        startAdornment={
-          <SearchIcon
-            sx={{
-              ml: 2,
-              mr: 1,
-              color: "text.secondary",
-            }}
-          />
-        }
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ color: "text.secondary" }} />
+            </InputAdornment>
+          ),
+        }}
         sx={{
-          px: 2,
-          py: 1.5,
+          ...textFieldOverlayStyles,
           borderRadius: 6,
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark"
-              ? "rgba(255,255,255,0.08)"
-              : "rgba(0,0,0,0.04)",
           transition: "all 0.2s",
         }}
       />

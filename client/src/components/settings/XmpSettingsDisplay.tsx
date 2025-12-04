@@ -4,14 +4,30 @@ import SettingSliderDisplay from "../forms/SettingSliderDisplay";
 import XmpSettingsAccordion from "./XmpSettingsAccordion";
 import { ParsedSettings } from "./XmpParser";
 import { XMP_SECTIONS } from "../../constants/xmpSettingsConfig";
+import { convertPresetSettingsToParsedSettings } from "../../lib/utils/presetDetailUtils";
+
+interface Preset {
+  settings?: any;
+  [key: string]: any;
+}
 
 interface XmpSettingsDisplayProps {
-  settings: ParsedSettings;
+  preset?: Preset;
+  settings?: ParsedSettings;
 }
 
 const XmpSettingsDisplay: React.FC<XmpSettingsDisplayProps> = ({
-  settings,
+  preset,
+  settings: settingsProp,
 }) => {
+  // If preset is provided, convert it; otherwise use settings directly
+  const settings = preset
+    ? preset.settings
+      ? convertPresetSettingsToParsedSettings(preset.settings, preset)
+      : null
+    : settingsProp;
+
+  if (!settings) return null;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -92,7 +108,13 @@ const XmpSettingsDisplay: React.FC<XmpSettingsDisplayProps> = ({
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        borderRadius: 1,
+        overflow: "hidden",
+        bgcolor: "background.default",
+      }}
+    >
       {XMP_SECTIONS.map((section) => (
         <XmpSettingsAccordion
           key={section.title}

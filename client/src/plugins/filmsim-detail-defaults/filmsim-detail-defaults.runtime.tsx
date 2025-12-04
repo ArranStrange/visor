@@ -5,67 +5,84 @@
  * Plugins can override or extend these by using different priorities.
  */
 
+import { Box, Divider } from "@mui/material";
 import {
   FilmSimDetailToolbar,
   FilmSimDetailSection,
 } from "lib/slots/slot-definitions";
-import { FilmSimHeaderWrapper } from "./filmsim-header-wrapper";
-import { FilmSimOwnerMenuWrapper } from "./filmsim-owner-menu-wrapper";
-import { AddToListButtonWrapper } from "./add-to-list-button-wrapper";
-import { FilmSimDescriptionWrapper } from "./filmsim-description-wrapper";
-import { FilmSimCameraSettingsWrapper } from "./filmsim-camera-settings-wrapper";
-import { FilmSimSampleImagesWrapper } from "./filmsim-sample-images-wrapper";
-import { FilmSimCreatorNotesWrapper } from "./filmsim-creator-notes-wrapper";
-import { FilmSimRecommendedPresetsWrapper } from "./filmsim-recommended-presets-wrapper";
-import { DiscussionThreadWrapper } from "./discussion-thread-wrapper";
-import { DividerWrapper } from "./divider-wrapper";
+import FilmSimHeader from "components/filmsims/FilmSimHeader";
+import FilmSimOwnerMenu from "components/filmsims/FilmSimOwnerMenu";
+import AddToListButton from "components/ui/AddToListButton";
+import FilmSimDescription from "components/filmsims/FilmSimDescription";
+import FilmSimCameraSettings from "components/forms/FilmSimCameraSettings";
+import FilmSimSampleImages from "components/filmsims/FilmSimSampleImages";
+import FilmSimCreatorNotes from "components/filmsims/FilmSimCreatorNotes";
+import FilmSimRecommendedPresets from "components/filmsims/FilmSimRecommendedPresets";
+import DiscussionThread from "components/discussions/DiscussionThread";
 
 // Register default header and menu in toolbar
-FilmSimDetailToolbar.plug(<FilmSimHeaderWrapper key="filmsim-header" />, 10);
+FilmSimDetailToolbar.plug(<FilmSimHeader key="filmsim-header" />, 10);
 
 FilmSimDetailToolbar.plug(
-  <FilmSimOwnerMenuWrapper key="filmsim-owner-menu" />,
+  <FilmSimOwnerMenu key="filmsim-owner-menu" />,
   20
 );
 
 // Register default sections
 FilmSimDetailSection.plug(
-  <AddToListButtonWrapper key="add-to-list-button" />,
+  <AddToListButton key="add-to-list-button" />,
   5
 );
 
 FilmSimDetailSection.plug(
-  <FilmSimDescriptionWrapper key="filmsim-description" />,
+  <FilmSimDescription key="filmsim-description" />,
   10
 );
 
-FilmSimDetailSection.plug(<DividerWrapper key="divider-1" my={3} />, 15);
+FilmSimDetailSection.plug(
+  <Box key="divider-1" sx={{ my: 3 }}>
+    <Divider />
+  </Box>,
+  15
+);
 
 FilmSimDetailSection.plug(
-  <FilmSimCameraSettingsWrapper key="filmsim-camera-settings" />,
+  <FilmSimCameraSettings key="filmsim-camera-settings" />,
   20
 );
 
-FilmSimDetailSection.plug(<DividerWrapper key="divider-2" my={2} />, 25);
+FilmSimDetailSection.plug(
+  <Box key="divider-2" sx={{ my: 2 }}>
+    <Divider />
+  </Box>,
+  25
+);
 
 FilmSimDetailSection.plug(
-  <FilmSimSampleImagesWrapper key="filmsim-sample-images" />,
+  <FilmSimSampleImages key="filmsim-sample-images" />,
   30
 );
 
 FilmSimDetailSection.plug(
-  <FilmSimCreatorNotesWrapper key="filmsim-creator-notes" />,
+  <FilmSimCreatorNotes key="filmsim-creator-notes" />,
   40
 );
 
 FilmSimDetailSection.plug(
-  <FilmSimRecommendedPresetsWrapper key="filmsim-recommended-presets" />,
+  <FilmSimRecommendedPresets key="filmsim-recommended-presets" />,
   50
 );
 
-FilmSimDetailSection.plug(<DividerWrapper key="divider-3" my={4} />, 55);
+FilmSimDetailSection.plug(
+  <Box key="divider-3" sx={{ my: 4 }}>
+    <Divider />
+  </Box>,
+  55
+);
 
 FilmSimDetailSection.plug(
-  <DiscussionThreadWrapper key="discussion-thread" />,
+  <Box key="discussion-thread" mt={4}>
+    <DiscussionThread />
+  </Box>,
   60
 );

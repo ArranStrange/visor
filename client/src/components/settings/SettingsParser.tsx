@@ -12,7 +12,7 @@ import {
   parseCropSettings,
   parseMetadataSettings,
   buildSettingsObject,
-} from "../../utils/xmpParserUtils";
+} from "lib/utils/xmpParserUtils";
 
 export class SettingsParser {
   static parseXmpContent(content: string): ParsedSettings {
