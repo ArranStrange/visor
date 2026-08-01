@@ -13,9 +13,28 @@ import {
   Stack,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { getSensorForCamera } from "../constants/fujifilmSensors";
+import {
+  FUJIFILM_CAMERAS,
+  normalizeCameraName,
+} from "../constants/fujifilmCameras";
+
+// Suggestions for the camera input; freeSolo still allows any other gear.
+const CAMERA_SUGGESTIONS = FUJIFILM_CAMERAS.map(
+  (camera) => `Fujifilm ${camera.name}`
+);
+
+// Hyphen/space-insensitive suggestion matching, so "xt5" finds "Fujifilm X-T5".
+const filterCameraSuggestions = (options: string[], inputValue: string) => {
+  const needle = normalizeCameraName(inputValue);
+  if (!needle) return options;
+  return options.filter((option) =>
+    normalizeCameraName(option).includes(needle)
+  );
+};
 import { useQuery, useMutation } from "@apollo/client";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -422,19 +441,30 @@ const Profile: React.FC = () => {
                     Cameras
                   </Typography>
                   <Box display="flex" gap={1} mb={2}>
-                    <TextField
+                    <Autocomplete
                       fullWidth
-                      value={newCamera}
-                      onChange={(e) => setNewCamera(e.target.value)}
+                      freeSolo
+                      options={CAMERA_SUGGESTIONS}
+                      filterOptions={(options, state) =>
+                        filterCameraSuggestions(options, state.inputValue)
+                      }
+                      inputValue={newCamera}
+                      onInputChange={(_, value) => setNewCamera(value)}
                       disabled={!isEditing}
-                      placeholder="Add a camera"
-                      InputProps={{
-                        startAdornment: (
-                          <CameraAltIcon
-                            sx={{ mr: 1, color: "text.secondary" }}
-                          />
-                        ),
-                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          placeholder="Add a camera"
+                          InputProps={{
+                            ...params.InputProps,
+                            startAdornment: (
+                              <CameraAltIcon
+                                sx={{ mr: 1, color: "text.secondary" }}
+                              />
+                            ),
+                          }}
+                        />
+                      )}
                     />
                     <Button
                       variant="contained"
