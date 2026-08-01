@@ -11,36 +11,6 @@ const httpLink = new HttpLink({
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
     graphQLErrors.forEach(({ message, locations, path }) => {
-      // Handle ObjectId serialization errors gracefully
-      if (
-        message.includes("ID cannot represent value") &&
-        message.includes("Buffer")
-      ) {
-        console.warn(
-          `[GraphQL warning]: ObjectId serialization issue at path: ${path}. This is a backend issue that needs to be fixed.`
-        );
-        return; // Don't treat this as a critical error
-      }
-
-      // Handle null field errors for required fields
-      if (message.includes("Cannot return null for non-nullable field")) {
-        console.warn(
-          `[GraphQL warning]: Null field error at path: ${path}. Some data may be missing or corrupted.`
-        );
-        return; // Don't treat this as a critical error
-      }
-
-      // Handle date serialization errors
-      if (
-        message.includes("String cannot represent value") &&
-        message.includes("createdAt")
-      ) {
-        console.warn(
-          `[GraphQL warning]: Date serialization issue at path: ${path}. Some dates may not be displaying correctly.`
-        );
-        return; // Don't treat this as a critical error
-      }
-
       console.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       );
@@ -64,10 +34,6 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
-      } else {
-        // console.log(
-        //   `[DEBUG] This appears to be an authorization or validation error`
-        // );
       }
     });
   }
@@ -78,15 +44,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 });
 
 const authLink = setContext((_, { headers }) => {
-  // get the authentication token from local storage if it exists
   const token = localStorage.getItem("visor_token");
 
-  // Debug: Log the token being sent
-  if (token) {
-    // Token exists
-  }
-
-  // return the headers to the context so httpLink can read them
   return {
     headers: {
       ...headers,
