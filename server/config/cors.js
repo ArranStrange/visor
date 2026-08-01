@@ -33,11 +33,12 @@ module.exports = {
         callback(null, false);
       }
     } else {
-      // In production, only allow specific origins
-      if (config.ALLOWED_ORIGINS.production.includes(origin)) {
+      if (!origin) {
+        callback(null, true);
+      } else if (config.ALLOWED_ORIGINS.production.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(null, false);
       }
     }
   },
