@@ -23,10 +23,8 @@ uploads/
 *.swo
 .DS_Store
 
-# Vite/React
-frontend/node_modules
-frontend/dist
+# Firebase deploy cache
+client/.firebase/
 
-# Backend
-backend/node_modules
-backend/dist
+# Gestalt orchestration state
+.gestalt/
