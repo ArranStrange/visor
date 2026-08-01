@@ -563,9 +563,24 @@ const presetResolvers = {
         throw error;
       }
     },
-    updatePreset: async (_, { id, input }) =>
-      await Preset.findByIdAndUpdate(id, input, { new: true }),
-    deletePreset: async (_, { id }) => !!(await Preset.findByIdAndDelete(id)),
+    updatePreset: async (_, { id, input }, { user }) => {
+      if (!user) throw new Error("You must be logged in to update a preset");
+      const preset = await Preset.findById(id);
+      if (!preset) throw new Error("Preset not found");
+      if (String(preset.creator) !== String(user._id) && !user.isAdmin) {
+        throw new Error("Not authorized to update this preset");
+      }
+      return await Preset.findByIdAndUpdate(id, input, { new: true });
+    },
+    deletePreset: async (_, { id }, { user }) => {
+      if (!user) throw new Error("You must be logged in to delete a preset");
+      const preset = await Preset.findById(id);
+      if (!preset) return false;
+      if (String(preset.creator) !== String(user._id) && !user.isAdmin) {
+        throw new Error("Not authorized to delete this preset");
+      }
+      return !!(await Preset.findByIdAndDelete(id));
+    },
     likePreset: async (_, { presetId }, { user }) => {
       const preset = await Preset.findById(presetId);
       if (!preset.likes.includes(user.id)) {

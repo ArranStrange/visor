@@ -7,6 +7,7 @@ import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
 import { useFeatured } from "./useFeatured";
 import { ParsedSettings } from "../types/xmpSettings";
 import { stripTypename } from "../utils/presetDetailUtils";
+import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
 
 interface EditFormData {
   title: string;
@@ -41,6 +42,7 @@ export const usePresetOperations = (preset: Preset) => {
   const [parsedSettings, setParsedSettings] = useState<ParsedSettings | null>(
     null
   );
+  const [xmpFile, setXmpFile] = useState<File | null>(null);
   const [editFormData, setEditFormData] = useState<EditFormData>({
     title: "",
     description: "",
@@ -87,12 +89,13 @@ export const usePresetOperations = (preset: Preset) => {
     }
   };
 
-  const handleSettingsParsed = (settings: ParsedSettings) => {
+  const handleSettingsParsed = (settings: ParsedSettings, file?: File) => {
     if (!settings || typeof settings !== "object") {
       console.error("Invalid settings format received from XMP parser");
       return;
     }
     setParsedSettings(settings);
+    if (file) setXmpFile(file);
   };
 
   const handleSavePreset = async () => {
@@ -142,6 +145,15 @@ export const usePresetOperations = (preset: Preset) => {
             blue: parsedSettings.toneCurve.blue || [],
           };
         }
+
+        // Store the new .xmp so settings stay re-derivable (best effort).
+        if (xmpFile) {
+          try {
+            updateInput.xmpUrl = await uploadXmpToCloudinary(xmpFile);
+          } catch (uploadError) {
+            console.error("Error uploading XMP file:", uploadError);
+          }
+        }
       } else {
         updateInput.settings = stripTypename(preset.settings);
         if (preset.toneCurve) {
@@ -149,7 +161,7 @@ export const usePresetOperations = (preset: Preset) => {
         }
       }
 
-      await updatePreset({
+      const result = await updatePreset({
         variables: {
           id: preset.id,
           input: updateInput,
@@ -162,14 +174,26 @@ export const usePresetOperations = (preset: Preset) => {
         ],
       });
 
+      // errorPolicy "all" means GraphQL errors resolve instead of throwing —
+      // without this check a failed save closed the dialog as a "success".
+      if (result.errors?.length) {
+        throw new Error(result.errors[0].message);
+      }
+      if (!result.data?.updatePreset) {
+        throw new Error("Update returned no data");
+      }
+
       setEditDialogOpen(false);
       setParsedSettings(null);
+      setXmpFile(null);
       setSaveSuccess(true);
       setSaveError(null);
     } catch (err) {
       console.error("Error updating preset:", err);
       setSaveError(
-        "An error occurred while updating the preset. Please try again later."
+        err instanceof Error && err.message
+          ? `Failed to update preset: ${err.message}`
+          : "An error occurred while updating the preset. Please try again later."
       );
     }
   };

@@ -506,6 +506,7 @@ const typeDefs = gql`
   input UpdatePresetInput {
     title: String
     description: String
+    xmpUrl: String
     settings: PresetSettingsInput
     toneCurve: ToneCurveInput
     notes: String
