@@ -8,8 +8,7 @@ const userSchema = new Schema(
     avatar: String,
     bio: String,
     email: { type: String, required: true, unique: true },
-    password: { type: String }, // Made optional for Firebase users
-    firebaseUid: { type: String, unique: true, sparse: true }, // Firebase UID
+    password: { type: String, required: true },
 
     // Email verification fields
     emailVerified: { type: Boolean, default: false },
@@ -34,16 +33,14 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-// Hash password before saving (only for non-Firebase users)
+// Hash password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password") || !this.password) return next();
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
 
-// Method to check password (only for non-Firebase users)
 userSchema.methods.comparePassword = async function (candidatePassword) {
-  if (!this.password) return false; // Firebase users don't have passwords
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
