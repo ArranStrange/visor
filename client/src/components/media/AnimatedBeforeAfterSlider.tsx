@@ -10,8 +10,8 @@ interface AnimatedBeforeAfterSliderProps {
   isHovered?: boolean;
 }
 
-const ANIMATION_DURATION = 600;
-const DISPLAY_DURATION = 400;
+const ANIMATION_DURATION = 500;
+const DISPLAY_DURATION = 300;
 
 const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
   memo(
@@ -130,18 +130,21 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
             }}
           />
 
-          {hasBeforeImage && isHovered && (
+          {hasBeforeImage && (
             <Box
               sx={{
                 position: "absolute",
                 top: 0,
                 left: `${sliderPosition}%`,
-                width: "2px",
+                width: "3px",
                 height: "100%",
                 backgroundColor: "white",
+                boxShadow: "0 0 8px rgba(255,255,255,0.7)",
                 transform: "translateX(-50%)",
+                opacity: isHovered ? 1 : 0,
+                pointerEvents: "none",
                 transition: imagesReady
-                  ? `left ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)`
+                  ? `left ${ANIMATION_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), opacity 150ms ease-in-out`
                   : "none",
                 "&::before": {
                   content: '""',
@@ -153,7 +156,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                   height: "20px",
                   backgroundColor: "white",
                   borderRadius: "50%",
-                  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                  boxShadow: "0 0 6px rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.3)",
                 },
               }}
             />
