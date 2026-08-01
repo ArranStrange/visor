@@ -57,7 +57,7 @@ const SearchHero: React.FC = () => {
               borderRadius: 6,
               backgroundColor: (t) =>
                 featuredPhoto
-                  ? "rgba(0,0,0,0.5)"
+                  ? "overlay.scrimStrong"
                   : t.palette.mode === "dark"
                   ? "rgba(255,255,255,0.06)"
                   : "rgba(0,0,0,0.04)",
@@ -67,7 +67,7 @@ const SearchHero: React.FC = () => {
               width: { xs: "100%", sm: "80%", md: 600 },
               height: { xs: 44, md: 50 },
               "& ::placeholder": {
-                color: featuredPhoto ? "rgba(255,255,255,0.7)" : "inherit",
+                color: featuredPhoto ? "overlay.whiteSoft" : "inherit",
                 opacity: 1,
               },
             }}

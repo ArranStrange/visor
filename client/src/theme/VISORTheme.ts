@@ -1,5 +1,18 @@
 import { createTheme } from "@mui/material/styles";
 
+// Overlay tokens for content rendered on top of photography.
+// Referenced in sx via palette paths, e.g. backgroundColor: "overlay.scrimSubtle".
+const overlay = {
+  scrimSubtle: "rgba(0, 0, 0, 0.15)",
+  scrimMedium: "rgba(0, 0, 0, 0.3)",
+  scrimStrong: "rgba(0, 0, 0, 0.5)",
+  scrimHeavy: "rgba(0, 0, 0, 0.7)",
+  white: "rgba(255, 255, 255, 0.9)",
+  whiteSoft: "rgba(255, 255, 255, 0.7)",
+  whiteHover: "rgba(255, 255, 255, 0.2)",
+  whiteBorder: "rgba(255, 255, 255, 0.1)",
+};
+
 export const visorTheme = createTheme({
   palette: {
     mode: "dark",
@@ -18,6 +31,7 @@ export const visorTheme = createTheme({
       secondary: "#aaaaaa",
     },
     divider: "#252525",
+    overlay,
   },
   typography: {
     fontFamily: `'Inter', 'Helvetica Neue', 'Arial', sans-serif`,
@@ -73,7 +87,7 @@ export const visorTheme = createTheme({
       styleOverrides: {
         root: {
           "&.floating": {
-            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backgroundColor: overlay.scrimHeavy,
             color: "white",
             width: 32,
             height: 32,
@@ -107,7 +121,7 @@ export const visorTheme = createTheme({
               color: "white",
             },
             "&:hover": {
-              backgroundColor: "rgba(255, 255, 255, 0.2)",
+              backgroundColor: overlay.whiteHover,
             },
           },
         },
@@ -118,7 +132,7 @@ export const visorTheme = createTheme({
         {
           props: { variant: "overlayTitle" },
           style: {
-            color: "rgba(255, 255, 255, 0.9)",
+            color: overlay.white,
             textShadow: "2px 2px 4px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           },
@@ -126,7 +140,7 @@ export const visorTheme = createTheme({
         {
           props: { variant: "overlaySubtitle" },
           style: {
-            color: "rgba(255, 255, 255, 0.9)",
+            color: overlay.white,
             textShadow: "1px 1px 2px rgba(0,0,0,0.7)",
             transition: "color 0.8s ease-in-out",
           },

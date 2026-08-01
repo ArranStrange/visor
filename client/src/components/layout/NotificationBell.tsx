@@ -131,7 +131,7 @@ const NotificationBell: React.FC = () => {
         transitionDuration={300}
         BackdropProps={{
           sx: {
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            backgroundColor: "overlay.scrimMedium",
           },
         }}
       >

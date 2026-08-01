@@ -323,7 +323,7 @@ const Profile: React.FC = () => {
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    bgcolor="rgba(0,0,0,0.5)"
+                    bgcolor="overlay.scrimStrong"
                     borderRadius="50%"
                   >
                     <CircularProgress size={40} />

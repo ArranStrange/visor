@@ -183,7 +183,7 @@ const ListCard: React.FC<ListCardProps> = memo(
           className="title-overlay"
           sx={{
             ...overlayTitleContainerStyles,
-            backgroundColor: "rgba(0, 0, 0, 0.15)",
+            backgroundColor: "overlay.scrimSubtle",
           }}
         >
           <Typography variant="overlayTitle" fontWeight="bold" noWrap>
@@ -202,7 +202,7 @@ const ListCard: React.FC<ListCardProps> = memo(
             <Typography
               variant="caption"
               sx={{
-                color: "rgba(255, 255, 255, 0.7)",
+                color: "overlay.whiteSoft",
                 display: "-webkit-box",
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
@@ -228,7 +228,7 @@ const ListCard: React.FC<ListCardProps> = memo(
             label="List"
             size="small"
             sx={{
-              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              backgroundColor: "overlay.scrimHeavy",
               color: "white",
               fontWeight: 600,
               fontSize: "0.7rem",

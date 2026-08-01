@@ -53,12 +53,12 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           position: "absolute",
           top: 8,
           right: 8,
-          bgcolor: "rgba(0,0,0,0.5)",
+          bgcolor: "overlay.scrimStrong",
           color: "white",
           opacity: 0,
           transition: "opacity 0.2s",
           "&:hover": {
-            bgcolor: "rgba(0,0,0,0.7)",
+            bgcolor: "overlay.scrimHeavy",
           },
         }}
       >

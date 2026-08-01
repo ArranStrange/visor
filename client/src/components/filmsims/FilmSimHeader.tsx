@@ -7,6 +7,7 @@ import {
   Button,
   IconButton,
 } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -83,19 +84,19 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
           <IconButton
             onClick={onFeaturedToggle}
             size="small"
-            sx={{
+            sx={(theme) => ({
               backgroundColor: featured
-                ? "rgba(255, 165, 38, 0.1)"
-                : "rgba(255, 255, 255, 0.1)",
+                ? alpha(theme.palette.secondary.main, 0.1)
+                : theme.palette.overlay.whiteBorder,
               "&:hover": {
                 backgroundColor: featured
-                  ? "rgba(255, 165, 38, 0.2)"
-                  : "rgba(255, 255, 255, 0.2)",
+                  ? alpha(theme.palette.secondary.main, 0.2)
+                  : theme.palette.overlay.whiteHover,
               },
-            }}
+            })}
           >
             {featured ? (
-              <StarIcon fontSize="small" sx={{ color: "#ffa726" }} />
+              <StarIcon fontSize="small" sx={{ color: "secondary.main" }} />
             ) : (
               <StarBorderIcon fontSize="small" />
             )}
@@ -106,8 +107,8 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
             onClick={onMenuOpen}
             size="small"
             sx={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.2)" },
+              backgroundColor: "overlay.whiteBorder",
+              "&:hover": { backgroundColor: "overlay.whiteHover" },
             }}
             data-cy="film-sim-menu-button"
           >

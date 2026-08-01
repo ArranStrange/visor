@@ -55,7 +55,7 @@ export const getCardHoverStyles = (showOptions: boolean) => ({
     opacity: 1,
   },
   "&:hover .title-overlay": {
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "overlay.scrimStrong",
   },
   "&:hover .creator-avatar": {
     opacity: 1,

@@ -51,8 +51,8 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
           right: 16,
           color: "white",
           zIndex: 10,
-          background: "rgba(0,0,0,0.3)",
-          "&:hover": { background: "rgba(0,0,0,0.5)" },
+          backgroundColor: "overlay.scrimMedium",
+          "&:hover": { backgroundColor: "overlay.scrimStrong" },
         }}
       >
         <CloseIcon />
@@ -64,10 +64,10 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
             position: "absolute",
             top: 16,
             right: 72,
-            color: isFeatured ? "#FFD700" : "white",
+            color: isFeatured ? "secondary.main" : "white",
             zIndex: 10,
-            background: "rgba(0,0,0,0.3)",
-            "&:hover": { background: "rgba(0,0,0,0.5)" },
+            backgroundColor: "overlay.scrimMedium",
+            "&:hover": { backgroundColor: "overlay.scrimStrong" },
           }}
         >
           {isFeatured ? <StarIcon /> : <StarBorderIcon />}

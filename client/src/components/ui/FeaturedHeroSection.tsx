@@ -249,7 +249,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               justifyContent: "center",
               gap: 1.25,
               pointerEvents: "auto",
-              backgroundColor: "rgba(0,0,0,0.7)",
+              backgroundColor: "overlay.scrimHeavy",
               py: 0.5,
               px: 1,
               borderRadius: 999,
@@ -268,10 +268,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                   borderRadius: "50%",
                   backgroundColor:
                     idx === currentIndex ? "#FFFFFF" : "transparent",
-                  border:
-                    idx === currentIndex
-                      ? "2px solid #FFFFFF"
-                      : "2px solid rgba(255,255,255,0.9)",
+                  border: "2px solid",
+                  borderColor: idx === currentIndex ? "#FFFFFF" : "overlay.white",
                   cursor: "pointer",
                   transition: "all .2s ease",
                 }}

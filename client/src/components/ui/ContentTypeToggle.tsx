@@ -104,7 +104,7 @@ const ContentTypeToggle: React.FC = () => {
             position: "absolute",
             right: 0,
             backgroundColor: "transparent",
-            color: randomizeOrder ? "#ff9800" : "grey.600",
+            color: randomizeOrder ? "secondary.main" : "grey.600",
             opacity: 0.7,
             "&:hover": {
               opacity: 1,

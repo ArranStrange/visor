@@ -6,6 +6,10 @@ import {
   ToggleButton,
 } from "@mui/material";
 import SettingSliderDisplay from "./SettingSliderDisplay";
+import {
+  COLOR_ORDER,
+  COLOR_MIXER_COLORS,
+} from "../../constants/xmpSettingsConfig";
 
 interface Setting {
   label: string;
@@ -26,39 +30,10 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
 }) => {
   const [selectedColor, setSelectedColor] = React.useState("blue");
 
-  const colorOrder = [
-    { key: "red", color: "#ff3b30" },
-    { key: "orange", color: "#ff9500" },
-    { key: "yellow", color: "#ffcc00" },
-    { key: "green", color: "#4cd964" },
-    { key: "aqua", color: "#5ac8fa" },
-    { key: "blue", color: "#007aff" },
-    { key: "purple", color: "#af52de" },
-    { key: "magenta", color: "#ff2d55" },
-  ];
+  const colorOrder = COLOR_ORDER;
 
-  const colorMixerColor = (key: string) => {
-    switch (key) {
-      case "red":
-        return "#b94a4a";
-      case "orange":
-        return "#b98a4a";
-      case "yellow":
-        return "#b9b84a";
-      case "green":
-        return "#4ab96b";
-      case "aqua":
-        return "#4ab9b9";
-      case "blue":
-        return "#4a6ab9";
-      case "purple":
-        return "#8a4ab9";
-      case "magenta":
-        return "#b94a8a";
-      default:
-        return "#888";
-    }
-  };
+  const colorMixerColor = (key: string) =>
+    COLOR_MIXER_COLORS[key as keyof typeof COLOR_MIXER_COLORS] ?? "#888";
 
   const isColorMixer = settings.some(
     (setting) =>

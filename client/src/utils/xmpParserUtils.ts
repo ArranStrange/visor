@@ -5,6 +5,25 @@ export const convertToDatabaseValue = (value: string): number => {
   return isNaN(num) ? 0 : Math.round(num * 100);
 };
 
+/**
+ * Read a crs:* setting from an rdf:Description.
+ *
+ * Lightroom writes XMP in two shapes: attribute form
+ * (crs:Contrast2012="+5" on the Description tag) and element form
+ * (<crs:Contrast2012>+5</crs:Contrast2012> as a child). Only reading
+ * attributes silently parsed element-form presets as all zeros.
+ */
+export const getCrsValue = (description: Element, name: string): string => {
+  const attr = description.getAttribute(`crs:${name}`);
+  if (attr !== null && attr !== "") return attr;
+
+  const el = description.getElementsByTagName(`crs:${name}`)[0];
+  const text = el?.textContent?.trim();
+  if (text) return text;
+
+  return "0";
+};
+
 export const parseToneCurve = (
   curveData: string
 ): Array<{ x: number; y: number }> => {
@@ -18,9 +37,7 @@ export const parseToneCurve = (
 export const parseBasicSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   return {
     version: getAttr("Version"),
@@ -36,9 +53,7 @@ export const parseBasicSettings = (
 export const parseExposureSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   return {
     exposure: convertToDatabaseValue(getAttr("Exposure2012")),
@@ -60,9 +75,7 @@ export const parseExposureSettings = (
 export const parseToneCurveSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   // Helper function to parse tone curve from XML element structure
   // Format: <crs:ToneCurvePV2012><rdf:Seq><rdf:li>x, y</rdf:li>...</rdf:Seq></crs:ToneCurvePV2012>
@@ -111,9 +124,7 @@ export const parseToneCurveSettings = (
 export const parseColorAdjustments = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   const colorAdjustments = {
     red: {
@@ -166,13 +177,10 @@ export const parseColorAdjustments = (
 export const parseAdvancedSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
-  const getBoolAttr = (name: string): boolean => {
-    return description.getAttribute(`crs:${name}`) === "True";
-  };
+  const getBoolAttr = (name: string): boolean =>
+    getCrsValue(description, name) === "True";
 
   return {
     splitToning: {
@@ -232,13 +240,10 @@ export const parseAdvancedSettings = (
 export const parseLensAndOpticsSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
-  const getBoolAttr = (name: string): boolean => {
-    return description.getAttribute(`crs:${name}`) === "True";
-  };
+  const getBoolAttr = (name: string): boolean =>
+    getCrsValue(description, name) === "True";
 
   return {
     lensCorrections: {
@@ -261,13 +266,10 @@ export const parseLensAndOpticsSettings = (
 export const parseTransformSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
-  const getBoolAttr = (name: string): boolean => {
-    return description.getAttribute(`crs:${name}`) === "True";
-  };
+  const getBoolAttr = (name: string): boolean =>
+    getCrsValue(description, name) === "True";
 
   return {
     transform: {
@@ -288,9 +290,7 @@ export const parseTransformSettings = (
 export const parseEffectsSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   return {
     effects: {
@@ -317,9 +317,7 @@ export const parseEffectsSettings = (
 export const parseCalibrationSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
   return {
     calibration: {
@@ -352,13 +350,10 @@ export const parseCalibrationSettings = (
 export const parseCropSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
-  const getBoolAttr = (name: string): boolean => {
-    return description.getAttribute(`crs:${name}`) === "True";
-  };
+  const getBoolAttr = (name: string): boolean =>
+    getCrsValue(description, name) === "True";
 
   return {
     crop: {
@@ -376,13 +371,10 @@ export const parseCropSettings = (
 export const parseMetadataSettings = (
   description: Element
 ): Partial<ParsedSettings> => {
-  const getAttr = (name: string): string => {
-    return description.getAttribute(`crs:${name}`) || "0";
-  };
+  const getAttr = (name: string): string => getCrsValue(description, name);
 
-  const getBoolAttr = (name: string): boolean => {
-    return description.getAttribute(`crs:${name}`) === "True";
-  };
+  const getBoolAttr = (name: string): boolean =>
+    getCrsValue(description, name) === "True";
 
   return {
     metadata: {
