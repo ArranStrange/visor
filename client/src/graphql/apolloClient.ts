@@ -100,10 +100,10 @@ const client = new ApolloClient({
   cache: new InMemoryCache(),
   defaultOptions: {
     watchQuery: {
-      fetchPolicy: "network-only",
-    },
-    query: {
-      fetchPolicy: "network-only",
+      // Render instantly from cache, then refresh from the network in the
+      // background — keeps data fresh without refetch-blocking navigation.
+      fetchPolicy: "cache-and-network",
+      nextFetchPolicy: "cache-first",
     },
     mutate: {
       errorPolicy: "all",

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { useApolloClient } from "@apollo/client";
 
 const TOKEN_KEY = "visor_token";
 const USER_KEY = "user";
@@ -52,16 +53,22 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(readStoredUser);
   const navigate = useNavigate();
+  const apolloClient = useApolloClient();
 
   const login = (token: string, userData: User) => {
     localStorage.setItem(TOKEN_KEY, token);
     localStorage.setItem(USER_KEY, JSON.stringify(userData));
     setUser(userData);
+    // Drop any data cached for the previous (or anonymous) session and
+    // refetch active queries with the new credentials.
+    apolloClient.resetStore().catch(() => {});
   };
 
   const logout = () => {
     clearStoredAuth();
     setUser(null);
+    // Wipe cached data so the next user can't see this session's queries.
+    apolloClient.clearStore().catch(() => {});
     navigate("/login");
   };
 
