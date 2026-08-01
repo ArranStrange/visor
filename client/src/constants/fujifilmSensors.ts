@@ -2,14 +2,19 @@
  * Canonical Fujifilm sensor generations for film sim compatibility.
  *
  * Film sims are tagged with the sensor generation(s) they were designed on
- * (stored in FilmSim.compatibleCameras today). This is the single source of
- * truth for the selectable generations, which cameras carry each sensor, and
- * which in-camera settings each generation supports — so the UI can
- * distinguish "not set" from "this sensor can't do this".
+ * (stored in FilmSim.compatibleSensors). This file defines the selectable
+ * generations and which in-camera settings each supports — so the UI can
+ * distinguish "not set" from "this sensor can't do this". Camera lists are
+ * derived from fujifilmCameras.ts, the camera → sensor source of truth.
  *
- * Camera lists verified against Fujifilm specs / Fuji X Weekly (2026).
  * Nuances are simplified per-generation; per-camera exceptions are noted.
  */
+
+import {
+  SensorKey,
+  camerasForSensor,
+  sensorKeyForCamera,
+} from "./fujifilmCameras";
 
 export interface SensorFeatures {
   /** Grain Effect (introduced with X-Trans III, X-Pro2). */
@@ -32,7 +37,7 @@ export interface SensorFeatures {
 
 export interface FujifilmSensor {
   /** Stable slug used in URLs, e.g. /search?sensor=x-trans-iii */
-  key: string;
+  key: SensorKey;
   /** Display label; matches the value stored on film sims. */
   label: string;
   cameras: string[];
@@ -43,8 +48,8 @@ export interface FujifilmSensor {
 export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   {
     key: "x-trans-i",
+    cameras: camerasForSensor("x-trans-i"),
     label: "X-Trans I",
-    cameras: ["X-Pro1", "X-E1", "X-M1"],
     features: {
       grainEffect: false,
       grainSize: false,
@@ -58,8 +63,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "x-trans-ii",
+    cameras: camerasForSensor("x-trans-ii"),
     label: "X-Trans II",
-    cameras: ["X100S", "X100T", "X-E2", "X-E2S", "X-T1", "X-T10", "X70"],
     features: {
       grainEffect: false,
       grainSize: false,
@@ -73,8 +78,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "x-trans-iii",
+    cameras: camerasForSensor("x-trans-iii"),
     label: "X-Trans III",
-    cameras: ["X-Pro2", "X-T2", "X-T20", "X100F", "X-E3", "X-H1"],
     features: {
       grainEffect: true,
       grainSize: false,
@@ -89,19 +94,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "x-trans-iv",
+    cameras: camerasForSensor("x-trans-iv"),
     label: "X-Trans IV",
-    cameras: [
-      "X-T3",
-      "X-T30",
-      "X-T30 II",
-      "X-Pro3",
-      "X100V",
-      "X-T4",
-      "X-S10",
-      "X-E4",
-      "X-S20",
-      "X-M5",
-    ],
     features: {
       grainEffect: true,
       grainSize: true,
@@ -117,8 +111,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "x-trans-v",
+    cameras: camerasForSensor("x-trans-v"),
     label: "X-Trans V",
-    cameras: ["X-H2", "X-H2S", "X-T5", "X-T50", "X100VI"],
     features: {
       grainEffect: true,
       grainSize: true,
@@ -133,8 +127,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "bayer",
+    cameras: camerasForSensor("bayer"),
     label: "Bayer",
-    cameras: ["X-T100", "X-T200", "X-A5", "X-A7", "XF10"],
     features: {
       grainEffect: false,
       grainSize: false,
@@ -149,8 +143,8 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
   {
     key: "gfx",
+    cameras: camerasForSensor("gfx"),
     label: "GFX",
-    cameras: ["GFX 50S", "GFX 50R", "GFX 50S II", "GFX 100", "GFX 100S", "GFX 100 II", "GFX 100S II"],
     features: {
       grainEffect: true,
       grainSize: true,
@@ -185,16 +179,8 @@ export const SENSOR_LABELS = FUJIFILM_SENSORS.map((s) => s.label);
 export const getSensorForCamera = (
   cameraName: string
 ): FujifilmSensor | undefined => {
-  const normalized = cameraName
-    .toLowerCase()
-    .replace(/^\s*fuji(film)?\s*/i, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  if (!normalized) return undefined;
-
-  return FUJIFILM_SENSORS.find((sensor) =>
-    sensor.cameras.some((camera) => camera.toLowerCase() === normalized)
-  );
+  const key = sensorKeyForCamera(cameraName);
+  return key ? getSensorByKey(key) : undefined;
 };
 
 /** The subset of recipe settings relevant to sensor compatibility checks. */
