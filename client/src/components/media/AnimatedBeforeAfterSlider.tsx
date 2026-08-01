@@ -12,6 +12,7 @@ interface AnimatedBeforeAfterSliderProps {
 
 const ANIMATION_DURATION = 500;
 const DISPLAY_DURATION = 300;
+const OVERLAY_WHITE = "rgba(255, 255, 255, 0.9)";
 
 const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
   memo(
@@ -138,8 +139,8 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                 left: `${sliderPosition}%`,
                 width: "3px",
                 height: "100%",
-                backgroundColor: "white",
-                boxShadow: "0 0 8px rgba(255,255,255,0.7)",
+                backgroundColor: OVERLAY_WHITE,
+                boxShadow: "0 0 8px rgba(255,255,255,0.5)",
                 transform: "translateX(-50%)",
                 opacity: isHovered ? 1 : 0,
                 pointerEvents: "none",
@@ -154,9 +155,10 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                   transform: "translate(-50%, -50%)",
                   width: "20px",
                   height: "20px",
-                  backgroundColor: "white",
+                  backgroundColor: OVERLAY_WHITE,
                   borderRadius: "50%",
-                  boxShadow: "0 0 6px rgba(255,255,255,0.5), 0 2px 6px rgba(0,0,0,0.3)",
+                  boxShadow:
+                    "0 0 6px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.3)",
                 },
               }}
             />
