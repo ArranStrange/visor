@@ -17,7 +17,10 @@ import {
   Alert,
   Autocomplete,
 } from "@mui/material";
-import { SENSOR_LABELS } from "../../constants/fujifilmSensors";
+import {
+  SENSOR_LABELS,
+  getSensorCompatibilityWarnings,
+} from "../../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
 import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
 
@@ -154,6 +157,14 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
                   <TextField {...params} placeholder="e.g. X-Trans IV" />
                 )}
               />
+              {getSensorCompatibilityWarnings(
+                formData.compatibleSensors,
+                formData.settings
+              ).map((warning) => (
+                <Alert key={warning} severity="warning" sx={{ mt: 1 }}>
+                  {warning}
+                </Alert>
+              ))}
             </Box>
 
             <FormControl fullWidth sx={{ mb: 2 }}>

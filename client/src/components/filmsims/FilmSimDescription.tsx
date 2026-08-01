@@ -1,6 +1,7 @@
 import React from "react";
-import { Box, Typography, Chip } from "@mui/material";
+import { Box, Typography, Chip, Tooltip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { getSensorByLabel } from "../../constants/fujifilmSensors";
 
 interface Tag {
   id: string;
@@ -47,17 +48,28 @@ const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
               variant="outlined"
             />
           ))}
-        {compatibleSensors.map((sensor) => (
-          <Chip
-            key={sensor}
-            label={sensor}
-            color="secondary"
-            clickable
-            onClick={() =>
-              navigate(`/search?sensor=${encodeURIComponent(sensor)}`)
-            }
-          />
-        ))}
+        {compatibleSensors.map((sensor) => {
+          const info = getSensorByLabel(sensor);
+          return (
+            <Tooltip
+              key={sensor}
+              title={
+                info
+                  ? `Works on: ${info.cameras.join(", ")} — click to see all ${sensor} film sims`
+                  : `See all ${sensor} film sims`
+              }
+            >
+              <Chip
+                label={sensor}
+                color="secondary"
+                clickable
+                onClick={() =>
+                  navigate(`/search?sensor=${encodeURIComponent(sensor)}`)
+                }
+              />
+            </Tooltip>
+          );
+        })}
       </Box>
     </Box>
   );

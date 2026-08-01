@@ -11,7 +11,10 @@ import {
   Alert,
   Autocomplete,
 } from "@mui/material";
-import { SENSOR_LABELS } from "../constants/fujifilmSensors";
+import {
+  SENSOR_LABELS,
+  getSensorCompatibilityWarnings,
+} from "../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
@@ -264,6 +267,15 @@ const UploadFilmSim: React.FC = () => {
                 />
               )}
             />
+
+            {getSensorCompatibilityWarnings(
+              formState.compatibleSensors,
+              formState.settings
+            ).map((warning) => (
+              <Alert key={warning} severity="warning">
+                {warning}
+              </Alert>
+            ))}
 
             <ImageUpload
               sampleImages={formState.sampleImages}

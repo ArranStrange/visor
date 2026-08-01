@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Container,
+  InputBase,
+  Divider,
+  Typography,
+} from "@mui/material";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useSearchParams } from "react-router-dom";
 import { getSensorByLabel } from "../constants/fujifilmSensors";
@@ -20,8 +27,9 @@ const SearchView: React.FC = () => {
   // Sensor filter (film sims only) — set by clicking a sensor chip on a
   // film sim detail page, e.g. /search?sensor=X-Trans III
   const sensorParam = searchParams.get("sensor");
+  const activeSensorInfo = sensorParam ? getSensorByLabel(sensorParam) : null;
   const activeSensor = sensorParam
-    ? getSensorByLabel(sensorParam)?.label ?? sensorParam
+    ? activeSensorInfo?.label ?? sensorParam
     : null;
 
   const clearSensor = () => {
@@ -96,13 +104,24 @@ const SearchView: React.FC = () => {
       </Box>
 
       {activeSensor ? (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-          <Chip
-            icon={<CameraAltIcon />}
-            label={`Film sims for ${activeSensor}`}
-            color="secondary"
-            onDelete={clearSensor}
-          />
+        <Box sx={{ mb: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Chip
+              icon={<CameraAltIcon />}
+              label={`Film sims for ${activeSensor}`}
+              color="secondary"
+              onDelete={clearSensor}
+            />
+          </Box>
+          {activeSensorInfo && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: "block", mt: 1 }}
+            >
+              Works on {activeSensorInfo.cameras.join(", ")}
+            </Typography>
+          )}
         </Box>
       ) : (
         <ContentTypeToggle />

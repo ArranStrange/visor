@@ -177,3 +177,61 @@ export const getSensorByKey = (key: string): FujifilmSensor | undefined =>
   FUJIFILM_SENSORS.find((s) => s.key === key);
 
 export const SENSOR_LABELS = FUJIFILM_SENSORS.map((s) => s.label);
+
+/** The subset of recipe settings relevant to sensor compatibility checks. */
+export interface RecipeCompatibilitySettings {
+  clarity?: number | null;
+  grainEffect?: string | null;
+  colorChromeEffect?: string | null;
+  colorChromeFxBlue?: string | null;
+  filmSimulation?: string | null;
+}
+
+/**
+ * Warn when a recipe uses settings a selected sensor generation doesn't
+ * support (e.g. Clarity on X-Trans III). Returns one message per affected
+ * sensor; empty array when everything is compatible.
+ */
+export const getSensorCompatibilityWarnings = (
+  sensorLabels: string[],
+  settings: RecipeCompatibilitySettings
+): string[] => {
+  const warnings: string[] = [];
+
+  for (const label of sensorLabels) {
+    const sensor = getSensorByLabel(label);
+    if (!sensor) continue;
+
+    const f = sensor.features;
+    const unsupported: string[] = [];
+
+    if (settings.clarity && !f.clarity) unsupported.push("Clarity");
+    if (settings.grainEffect && settings.grainEffect !== "OFF" && !f.grainEffect)
+      unsupported.push("Grain Effect");
+    if (
+      settings.colorChromeEffect &&
+      settings.colorChromeEffect !== "OFF" &&
+      !f.colorChromeEffect
+    )
+      unsupported.push("Color Chrome Effect");
+    if (
+      settings.colorChromeFxBlue &&
+      settings.colorChromeFxBlue !== "OFF" &&
+      !f.colorChromeFXBlue
+    )
+      unsupported.push("Color Chrome FX Blue");
+
+    const sim = (settings.filmSimulation || "").toUpperCase();
+    if (/CLASSIC[_\s-]?NEG/.test(sim) && !f.classicNegative)
+      unsupported.push("Classic Negative");
+    if (/NOSTALGIC/.test(sim) && !f.nostalgicNegative)
+      unsupported.push("Nostalgic Negative");
+    if (/REALA/.test(sim) && !f.realaAce) unsupported.push("Reala Ace");
+
+    if (unsupported.length) {
+      warnings.push(`${label} doesn't support: ${unsupported.join(", ")}`);
+    }
+  }
+
+  return warnings;
+};
