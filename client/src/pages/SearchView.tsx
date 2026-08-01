@@ -1,15 +1,10 @@
 import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Chip,
-  Container,
-  InputBase,
-  Divider,
-  Typography,
-} from "@mui/material";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
+import { useQuery } from "@apollo/client";
 import { getSensorByLabel } from "../constants/fujifilmSensors";
+import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
+import SensorProfileCard from "../components/filmsims/SensorProfileCard";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
@@ -36,6 +31,18 @@ const SearchView: React.FC = () => {
     searchParams.delete("sensor");
     setSearchParams(searchParams);
   };
+
+  // Lightweight count for the sensor profile card header.
+  const { data: sensorCountData } = useQuery(GET_ALL_FILMSIMS, {
+    variables: {
+      page: 1,
+      limit: 1,
+      filter: { compatibleSensors: activeSensor },
+    },
+    skip: !activeSensor,
+  });
+  const sensorFilmSimCount: number | null =
+    sensorCountData?.listFilmSims?.totalCount ?? null;
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -104,25 +111,21 @@ const SearchView: React.FC = () => {
       </Box>
 
       {activeSensor ? (
-        <Box sx={{ mb: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Chip
-              icon={<CameraAltIcon />}
-              label={`Film sims for ${activeSensor}`}
-              color="secondary"
-              onDelete={clearSensor}
-            />
-          </Box>
-          {activeSensorInfo && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", mt: 1 }}
-            >
-              Works on {activeSensorInfo.cameras.join(", ")}
-            </Typography>
-          )}
-        </Box>
+        activeSensorInfo ? (
+          <SensorProfileCard
+            sensor={activeSensorInfo}
+            filmSimCount={sensorFilmSimCount}
+            onClear={clearSensor}
+          />
+        ) : (
+          // Sensor value not in the canonical list (hand-edited URL) — plain
+          // filter chip without profile details.
+          <Chip
+            label={`Film sims for ${activeSensor}`}
+            color="secondary"
+            onDelete={clearSensor}
+          />
+        )
       ) : (
         <ContentTypeToggle />
       )}
