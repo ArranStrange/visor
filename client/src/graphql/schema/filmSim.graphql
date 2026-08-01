@@ -100,7 +100,7 @@ type FilmSim {
   thumbnail: String
   creator: User
   recommendedPresets: [Preset]
-  compatibleCameras: [String]
+  compatibleSensors: [String]
   notes: String
   comments: [Comment]
   likes: [User]
@@ -146,7 +146,7 @@ input CreateFilmSimInput {
   sampleImageIds: [ID!]
   notes: String
   recommendedPresetIds: [ID!]
-  compatibleCameras: [String!]
+  compatibleSensors: [String!]
 }
 
 # Mutations

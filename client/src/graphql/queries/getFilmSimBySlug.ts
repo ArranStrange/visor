@@ -8,7 +8,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
       slug
       description
       type
-      compatibleCameras
+      compatibleSensors
       notes
       creator {
         id

@@ -24,7 +24,7 @@ export interface FilmSimData {
   notes?: string;
   type?: string;
   tags?: { displayName: string }[];
-  compatibleCameras?: string[];
+  compatibleSensors?: string[];
   settings?: FilmSimSettings;
 }
 
@@ -33,7 +33,7 @@ export interface FormData {
   description: string;
   notes: string;
   tags: string;
-  compatibleCameras: string;
+  compatibleSensors: string[];
   settings: FilmSimSettings;
 }
 
@@ -62,7 +62,7 @@ const createFormDataFromFilmSim = (filmSim: FilmSimData): FormData => ({
       ?.filter((tag: any) => tag && tag.displayName)
       .map((tag) => tag?.displayName || "Unknown")
       .join(", ") || "",
-  compatibleCameras: filmSim.compatibleCameras?.join(", ") || "",
+  compatibleSensors: filmSim.compatibleSensors || [],
   settings: {
     ...getDefaultSettings(),
     ...filmSim.settings,
@@ -115,10 +115,7 @@ export const useFilmSimForm = (filmSim: FilmSimData) => {
       name: formData.name,
       description: formData.description,
       notes: formData.notes,
-      compatibleCameras: formData.compatibleCameras
-        .split(",")
-        .map((camera) => camera.trim())
-        .filter((camera) => camera),
+      compatibleSensors: formData.compatibleSensors,
       settings: {
         dynamicRange: formData.settings.dynamicRange,
         filmSimulation: formData.settings.filmSimulation,

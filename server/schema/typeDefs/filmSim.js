@@ -34,7 +34,8 @@ const typeDefs = gql`
     thumbnail: String
     creator: User
     recommendedPresets: [Preset]
-    compatibleCameras: [String]
+    compatibleSensors: [String]
+    compatibleCameras: [String] @deprecated(reason: "Use compatibleSensors")
     notes: String
     comments: [Comment]
     likes: [User]
@@ -74,6 +75,7 @@ const typeDefs = gql`
     sampleImageIds: [ID!]
     notes: String
     recommendedPresetIds: [ID!]
+    compatibleSensors: [String!]
     compatibleCameras: [String!]
   }
 
@@ -99,6 +101,7 @@ const typeDefs = gql`
       notes: String
       tags: [String!]!
       sampleImages: [SampleImageInput!]
+      compatibleSensors: [String!]
     ): FilmSim!
 
     createFilmSim(input: CreateFilmSimInput!): FilmSim

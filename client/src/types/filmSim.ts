@@ -26,6 +26,7 @@ export interface FilmSimFormState {
   description: string;
   tags: string[];
   tagInput: string;
+  compatibleSensors: string[];
   sampleImages: File[];
   uploadedImageUrls: SampleImageInput[];
   notes: string;

@@ -143,7 +143,7 @@ const FilmSimDetails: React.FC = () => {
       <FilmSimDescription
         description={filmSim.description}
         tags={filmSim.tags}
-        compatibleCameras={filmSim.compatibleCameras}
+        compatibleSensors={filmSim.compatibleSensors}
       />
 
       <Divider sx={{ my: 3 }} />

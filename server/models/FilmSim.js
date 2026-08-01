@@ -75,6 +75,10 @@ const filmSimSchema = new Schema(
       { type: mongoose.Schema.Types.ObjectId, ref: "Preset" },
     ],
 
+    // Sensor generations this recipe was designed for (e.g. "X-Trans III").
+    compatibleSensors: [String],
+
+    // Deprecated: superseded by compatibleSensors (held sensor names, not cameras).
     compatibleCameras: [String],
 
     notes: String,

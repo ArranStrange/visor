@@ -148,7 +148,7 @@ export interface CreateFilmSimInput {
   sampleImageIds?: string[];
   notes?: string;
   recommendedPresetIds?: string[];
-  compatibleCameras?: string[];
+  compatibleSensors?: string[];
 }
 
 export interface UploadPresetInput {

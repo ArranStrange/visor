@@ -26,7 +26,7 @@ export const UPDATE_FILMSIM = gql`
         colorChromeEffect
         colorChromeFxBlue
       }
-      compatibleCameras
+      compatibleSensors
       notes
       updatedAt
     }

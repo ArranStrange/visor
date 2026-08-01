@@ -15,7 +15,9 @@ import {
   Button,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from "@mui/material";
+import { SENSOR_LABELS } from "../../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
 import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
 
@@ -139,15 +141,18 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
 
             <Box>
               <Typography variant="subtitle1" gutterBottom>
-                Compatible Cameras (comma-separated)
+                Compatible Sensors
               </Typography>
-              <TextField
-                fullWidth
-                value={formData.compatibleCameras}
-                onChange={(e) =>
-                  handleInputChange("compatibleCameras", e.target.value)
+              <Autocomplete
+                multiple
+                options={SENSOR_LABELS}
+                value={formData.compatibleSensors}
+                onChange={(_, value) =>
+                  handleInputChange("compatibleSensors", value)
                 }
-                placeholder="e.g., X-T4, X-T5, X-H2"
+                renderInput={(params) => (
+                  <TextField {...params} placeholder="e.g. X-Trans IV" />
+                )}
               />
             </Box>
 

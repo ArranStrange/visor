@@ -9,7 +9,9 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Autocomplete,
 } from "@mui/material";
+import { SENSOR_LABELS } from "../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
 import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
@@ -32,6 +34,7 @@ const UPLOAD_FILM_SIM = gql`
     $notes: String
     $tags: [String!]!
     $sampleImages: [SampleImageInput!]
+    $compatibleSensors: [String!]
   ) {
     uploadFilmSim(
       name: $name
@@ -40,6 +43,7 @@ const UPLOAD_FILM_SIM = gql`
       notes: $notes
       tags: $tags
       sampleImages: $sampleImages
+      compatibleSensors: $compatibleSensors
     ) {
       id
       name
@@ -58,6 +62,7 @@ const UploadFilmSim: React.FC = () => {
     description: "",
     tags: [],
     tagInput: "",
+    compatibleSensors: [],
     sampleImages: [],
     uploadedImageUrls: [],
     notes: "",
@@ -130,6 +135,7 @@ const UploadFilmSim: React.FC = () => {
         },
         notes: formState.notes,
         tags: formState.tags.map((tag) => tag.toLowerCase()),
+        compatibleSensors: formState.compatibleSensors,
         sampleImages: formState.uploadedImageUrls.map((img) => ({
           publicId: img.publicId,
           url: img.url,
@@ -240,6 +246,23 @@ const UploadFilmSim: React.FC = () => {
                 }))
               }
               disabled={!user}
+            />
+
+            <Autocomplete
+              multiple
+              options={SENSOR_LABELS}
+              value={formState.compatibleSensors}
+              onChange={(_, value) =>
+                setFormState((prev) => ({ ...prev, compatibleSensors: value }))
+              }
+              disabled={!user}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Compatible Sensors"
+                  placeholder="e.g. X-Trans IV"
+                />
+              )}
             />
 
             <ImageUpload

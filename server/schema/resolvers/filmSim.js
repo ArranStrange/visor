@@ -34,6 +34,14 @@ const populateFilmSim = (query) => {
 };
 
 const filmSimResolvers = {
+  FilmSim: {
+    // Fall back to the deprecated compatibleCameras field (which historically
+    // held sensor names) for documents created before the rename.
+    compatibleSensors: (parent) =>
+      parent.compatibleSensors?.length
+        ? parent.compatibleSensors
+        : parent.compatibleCameras || [],
+  },
   Query: {
     getFilmSim: async (_, { slug }) => {
       try {
@@ -131,7 +139,7 @@ const filmSimResolvers = {
   Mutation: {
     uploadFilmSim: async (
       _,
-      { name, description, tags, settings, notes, sampleImages },
+      { name, description, tags, settings, notes, sampleImages, compatibleSensors },
       { user }
     ) => {
       if (!user) {
@@ -172,6 +180,7 @@ const filmSimResolvers = {
           name,
           slug,
           description,
+          compatibleSensors: compatibleSensors || [],
           type: "custom-recipe",
           settings: {
             dynamicRange: settings.dynamicRange || 100,

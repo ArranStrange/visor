@@ -9,13 +9,13 @@ interface Tag {
 interface FilmSimDescriptionProps {
   description?: string;
   tags?: Tag[];
-  compatibleCameras?: string[];
+  compatibleSensors?: string[];
 }
 
 const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
   description,
   tags = [],
-  compatibleCameras = [],
+  compatibleSensors = [],
 }) => {
   return (
     <Box mb={2}>
@@ -44,8 +44,8 @@ const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
               variant="outlined"
             />
           ))}
-        {compatibleCameras.map((camera) => (
-          <Chip key={camera} label={camera} color="secondary" />
+        {compatibleSensors.map((sensor) => (
+          <Chip key={sensor} label={sensor} color="secondary" />
         ))}
       </Box>
     </Box>
