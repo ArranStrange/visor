@@ -21,17 +21,14 @@ interface AdminProviderProps {
 }
 
 export const AdminProvider: React.FC<AdminProviderProps> = ({ children }) => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!authLoading) {
-      const adminStatus = user?.isAdmin || false;
-      setIsAdmin(adminStatus);
-      setLoading(false);
-    }
-  }, [user, authLoading]);
+    setIsAdmin(user?.isAdmin || false);
+    setLoading(false);
+  }, [user]);
 
   const value = {
     isAdmin,

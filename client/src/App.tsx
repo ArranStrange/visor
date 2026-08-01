@@ -1,6 +1,4 @@
-import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import apolloClient from "./graphql/apolloClient";
 import NavBar from "./components/layout/Navbar";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -31,33 +29,13 @@ import DiscussionDetail from "./pages/DiscussionDetail";
 import CreateDiscussion from "./pages/CreateDiscussion";
 import Notifications from "./pages/Notifications";
 import EmailVerification from "./pages/EmailVerification";
-import { ServiceContainer } from "./core/container/ServiceContainer";
-import { useNavigate } from "react-router-dom";
-
-// Initialize services at module level
-const container = ServiceContainer.getInstance();
-container.initialize(apolloClient);
-
-// Service container provider component
-const ServiceContainerProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
-  const navigate = useNavigate();
-
-  React.useEffect(() => {
-    container.setNavigationFunction(navigate);
-  }, [navigate]);
-
-  return <>{children}</>;
-};
 
 function App() {
   return (
     <ThemeProvider theme={visorTheme}>
       <CssBaseline />
       <Router>
-        <ServiceContainerProvider>
-          <AuthProvider>
+        <AuthProvider>
             <AdminProvider>
               <NotificationProvider>
                 <ContentTypeProvider>
@@ -111,8 +89,7 @@ function App() {
                 </ContentTypeProvider>
               </NotificationProvider>
             </AdminProvider>
-          </AuthProvider>
-        </ServiceContainerProvider>
+        </AuthProvider>
       </Router>
     </ThemeProvider>
   );

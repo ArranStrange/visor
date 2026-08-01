@@ -1,11 +1,8 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-} from "react";
-import { useAuthService } from "../core/hooks/useService";
+import React, { createContext, useContext, useState, ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
+
+const TOKEN_KEY = "visor_token";
+const USER_KEY = "user";
 
 interface User {
   id: string;
@@ -25,41 +22,61 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const clearStoredAuth = () => {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+};
+
+const readStoredUser = (): User | null => {
+  const userData = localStorage.getItem(USER_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
+
+  if (!userData || !token) {
+    clearStoredAuth();
+    return null;
+  }
+
+  try {
+    return JSON.parse(userData);
+  } catch (error) {
+    console.error("Error parsing stored user:", error);
+    clearStoredAuth();
+    return null;
+  }
+};
+
 interface AuthProviderProps {
   children: ReactNode;
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const authService = useAuthService();
-
-  useEffect(() => {
-    const currentUser = authService.getCurrentUser();
-    setUser(currentUser);
-  }, [authService]);
+  const [user, setUser] = useState<User | null>(readStoredUser);
+  const navigate = useNavigate();
 
   const login = (token: string, userData: User) => {
-    authService.login(token, userData);
+    localStorage.setItem(TOKEN_KEY, token);
+    localStorage.setItem(USER_KEY, JSON.stringify(userData));
     setUser(userData);
   };
 
   const logout = () => {
-    authService.logout();
+    clearStoredAuth();
     setUser(null);
+    navigate("/login");
   };
 
   const updateUser = (updates: Partial<User>) => {
-    authService.updateUser(updates);
-    if (user) {
-      setUser({ ...user, ...updates });
-    }
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...updates };
+      localStorage.setItem(USER_KEY, JSON.stringify(updated));
+      return updated;
+    });
   };
-
-  const isAuthenticated = authService.isAuthenticated();
 
   const value: AuthContextType = {
     user,
-    isAuthenticated,
+    isAuthenticated: !!user,
     login,
     logout,
     updateUser,

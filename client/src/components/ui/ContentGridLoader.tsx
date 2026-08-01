@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
+import { useApolloClient } from "@apollo/client";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { usePresetRepository } from "../../core/hooks/useService";
-import { useFilmSimRepository } from "../../core/hooks/useService";
+import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";
@@ -44,9 +45,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const { randomizeOrder } = useContentType();
 
-  // Service hooks
-  const presetRepository = usePresetRepository();
-  const filmSimRepository = useFilmSimRepository();
+  const apolloClient = useApolloClient();
 
   const fetchContentData = useCallback(
     async (page: number, append: boolean = false) => {
@@ -80,11 +79,16 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
         // Fetch presets with pagination
         if (contentType === "all" || contentType === "presets") {
-          const paginatedPresets = await presetRepository.findPaginated(
-            page,
-            ITEMS_PER_PAGE,
-            filter
-          );
+          const { data } = await apolloClient.query({
+            query: GET_ALL_PRESETS,
+            variables: { filter, page, limit: ITEMS_PER_PAGE },
+            fetchPolicy: "cache-first",
+            errorPolicy: "all",
+          });
+          const paginatedPresets = data?.listPresets || {
+            presets: [],
+            hasNextPage: false,
+          };
           hasNextPage = paginatedPresets.hasNextPage;
 
           results.push(
@@ -102,11 +106,16 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
 
         // Fetch film sims with pagination
         if (contentType === "all" || contentType === "films") {
-          const paginatedFilmSims = await filmSimRepository.findPaginated(
-            page,
-            ITEMS_PER_PAGE,
-            filter
-          );
+          const { data } = await apolloClient.query({
+            query: GET_ALL_FILMSIMS,
+            variables: { filter, page, limit: ITEMS_PER_PAGE },
+            fetchPolicy: "cache-first",
+            errorPolicy: "all",
+          });
+          const paginatedFilmSims = data?.listFilmSims || {
+            filmSims: [],
+            hasNextPage: false,
+          };
           hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
 
           results.push(
@@ -159,14 +168,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         setIsLoadingMore(false);
       }
     },
-    [
-      contentType,
-      filter,
-      searchQuery,
-      customData,
-      presetRepository,
-      filmSimRepository,
-    ]
+    [contentType, filter, searchQuery, customData, apolloClient]
   );
 
   // Fetch content on mount and when dependencies change
