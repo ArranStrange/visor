@@ -1,0 +1,8 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Server debug (node)" type="NodeJSConfigurationType" path-to-js-file="index.js" working-dir="$PROJECT_DIR$/server">
+    <envs>
+      <env name="NODE_ENV" value="development" />
+    </envs>
+    <method v="2" />
+  </configuration>
+</component>
