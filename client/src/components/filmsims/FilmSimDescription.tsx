@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Typography, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 interface Tag {
   id: string;
@@ -17,6 +18,8 @@ const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
   tags = [],
   compatibleSensors = [],
 }) => {
+  const navigate = useNavigate();
+
   return (
     <Box mb={2}>
       {description && (
@@ -45,7 +48,15 @@ const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
             />
           ))}
         {compatibleSensors.map((sensor) => (
-          <Chip key={sensor} label={sensor} color="secondary" />
+          <Chip
+            key={sensor}
+            label={sensor}
+            color="secondary"
+            clickable
+            onClick={() =>
+              navigate(`/search?sensor=${encodeURIComponent(sensor)}`)
+            }
+          />
         ))}
       </Box>
     </Box>

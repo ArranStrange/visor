@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Box, Container, InputBase, Divider } from "@mui/material";
+import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useSearchParams } from "react-router-dom";
+import { getSensorByLabel } from "../constants/fujifilmSensors";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
@@ -14,6 +16,18 @@ const SearchView: React.FC = () => {
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
   const { tags, loading: tagsLoading, searchTags } = useTags();
+
+  // Sensor filter (film sims only) — set by clicking a sensor chip on a
+  // film sim detail page, e.g. /search?sensor=X-Trans III
+  const sensorParam = searchParams.get("sensor");
+  const activeSensor = sensorParam
+    ? getSensorByLabel(sensorParam)?.label ?? sensorParam
+    : null;
+
+  const clearSensor = () => {
+    searchParams.delete("sensor");
+    setSearchParams(searchParams);
+  };
 
   // Fetch all tags on mount
   useEffect(() => {
@@ -81,13 +95,33 @@ const SearchView: React.FC = () => {
         />
       </Box>
 
-      <ContentTypeToggle />
+      {activeSensor ? (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+          <Chip
+            icon={<CameraAltIcon />}
+            label={`Film sims for ${activeSensor}`}
+            color="secondary"
+            onDelete={clearSensor}
+          />
+        </Box>
+      ) : (
+        <ContentTypeToggle />
+      )}
       <Divider sx={{ my: 2 }} />
 
       <ContentGridLoader
-        contentType={contentType}
+        contentType={activeSensor ? "films" : contentType}
         searchQuery={keyword}
-        filter={activeTagId ? { tagId: activeTagId } : undefined}
+        filter={
+          activeSensor
+            ? {
+                ...(activeTagId ? { tagId: activeTagId } : {}),
+                compatibleSensors: activeSensor,
+              }
+            : activeTagId
+            ? { tagId: activeTagId }
+            : undefined
+        }
       />
     </Container>
   );
