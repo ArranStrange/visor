@@ -75,16 +75,6 @@ const formatToneCurve = (curve: ToneCurvePoint[]): string => {
   return curve.map((point) => `${point.x} ${point.y}`).join(", ");
 };
 
-// Helper function to convert number to string with proper precision
-const formatNumber = (value: number | undefined): string => {
-  if (value === undefined || value === null) return "0";
-  return value.toString();
-};
-
-// Helper function to convert boolean to XMP format
-const formatBoolean = (value: boolean | undefined): string => {
-  return value ? "True" : "False";
-};
 
 export const compileXMP = (preset: PresetData): string => {
   const settings = preset.settings;
@@ -105,8 +95,8 @@ export const compileXMP = (preset: PresetData): string => {
       crs:Version="${preset.version || "15.0"}"
       crs:ProcessVersion="${preset.processVersion || "15.0"}"
       crs:WhiteBalance="${preset.whiteBalance || "Custom"}"
-      crs:Temperature="${formatNumber(settings.temp)}"
-      crs:Tint="${formatNumber(settings.tint)}"
+      crs:Temperature="${convertToXMPValue(settings.temp)}"
+      crs:Tint="${convertToXMPValue(settings.tint)}"
       crs:Exposure2012="${convertToXMPValue(settings.exposure)}"
       crs:Contrast2012="${convertToXMPValue(settings.contrast)}"
       crs:Highlights2012="${convertToXMPValue(settings.highlights)}"
@@ -173,168 +163,168 @@ export const compileXMP = (preset: PresetData): string => {
       }
       ${
         settings.colorAdjustments?.red
-          ? `crs:HueAdjustmentRed="${formatNumber(
+          ? `crs:HueAdjustmentRed="${convertToXMPValue(
               settings.colorAdjustments.red.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.red
-          ? `crs:SaturationAdjustmentRed="${formatNumber(
+          ? `crs:SaturationAdjustmentRed="${convertToXMPValue(
               settings.colorAdjustments.red.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.red
-          ? `crs:LuminanceAdjustmentRed="${formatNumber(
+          ? `crs:LuminanceAdjustmentRed="${convertToXMPValue(
               settings.colorAdjustments.red.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.orange
-          ? `crs:HueAdjustmentOrange="${formatNumber(
+          ? `crs:HueAdjustmentOrange="${convertToXMPValue(
               settings.colorAdjustments.orange.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.orange
-          ? `crs:SaturationAdjustmentOrange="${formatNumber(
+          ? `crs:SaturationAdjustmentOrange="${convertToXMPValue(
               settings.colorAdjustments.orange.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.orange
-          ? `crs:LuminanceAdjustmentOrange="${formatNumber(
+          ? `crs:LuminanceAdjustmentOrange="${convertToXMPValue(
               settings.colorAdjustments.orange.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.yellow
-          ? `crs:HueAdjustmentYellow="${formatNumber(
+          ? `crs:HueAdjustmentYellow="${convertToXMPValue(
               settings.colorAdjustments.yellow.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.yellow
-          ? `crs:SaturationAdjustmentYellow="${formatNumber(
+          ? `crs:SaturationAdjustmentYellow="${convertToXMPValue(
               settings.colorAdjustments.yellow.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.yellow
-          ? `crs:LuminanceAdjustmentYellow="${formatNumber(
+          ? `crs:LuminanceAdjustmentYellow="${convertToXMPValue(
               settings.colorAdjustments.yellow.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.green
-          ? `crs:HueAdjustmentGreen="${formatNumber(
+          ? `crs:HueAdjustmentGreen="${convertToXMPValue(
               settings.colorAdjustments.green.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.green
-          ? `crs:SaturationAdjustmentGreen="${formatNumber(
+          ? `crs:SaturationAdjustmentGreen="${convertToXMPValue(
               settings.colorAdjustments.green.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.green
-          ? `crs:LuminanceAdjustmentGreen="${formatNumber(
+          ? `crs:LuminanceAdjustmentGreen="${convertToXMPValue(
               settings.colorAdjustments.green.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.aqua
-          ? `crs:HueAdjustmentAqua="${formatNumber(
+          ? `crs:HueAdjustmentAqua="${convertToXMPValue(
               settings.colorAdjustments.aqua.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.aqua
-          ? `crs:SaturationAdjustmentAqua="${formatNumber(
+          ? `crs:SaturationAdjustmentAqua="${convertToXMPValue(
               settings.colorAdjustments.aqua.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.aqua
-          ? `crs:LuminanceAdjustmentAqua="${formatNumber(
+          ? `crs:LuminanceAdjustmentAqua="${convertToXMPValue(
               settings.colorAdjustments.aqua.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.blue
-          ? `crs:HueAdjustmentBlue="${formatNumber(
+          ? `crs:HueAdjustmentBlue="${convertToXMPValue(
               settings.colorAdjustments.blue.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.blue
-          ? `crs:SaturationAdjustmentBlue="${formatNumber(
+          ? `crs:SaturationAdjustmentBlue="${convertToXMPValue(
               settings.colorAdjustments.blue.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.blue
-          ? `crs:LuminanceAdjustmentBlue="${formatNumber(
+          ? `crs:LuminanceAdjustmentBlue="${convertToXMPValue(
               settings.colorAdjustments.blue.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.purple
-          ? `crs:HueAdjustmentPurple="${formatNumber(
+          ? `crs:HueAdjustmentPurple="${convertToXMPValue(
               settings.colorAdjustments.purple.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.purple
-          ? `crs:SaturationAdjustmentPurple="${formatNumber(
+          ? `crs:SaturationAdjustmentPurple="${convertToXMPValue(
               settings.colorAdjustments.purple.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.purple
-          ? `crs:LuminanceAdjustmentPurple="${formatNumber(
+          ? `crs:LuminanceAdjustmentPurple="${convertToXMPValue(
               settings.colorAdjustments.purple.luminance
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.magenta
-          ? `crs:HueAdjustmentMagenta="${formatNumber(
+          ? `crs:HueAdjustmentMagenta="${convertToXMPValue(
               settings.colorAdjustments.magenta.hue
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.magenta
-          ? `crs:SaturationAdjustmentMagenta="${formatNumber(
+          ? `crs:SaturationAdjustmentMagenta="${convertToXMPValue(
               settings.colorAdjustments.magenta.saturation
             )}"`
           : ""
       }
       ${
         settings.colorAdjustments?.magenta
-          ? `crs:LuminanceAdjustmentMagenta="${formatNumber(
+          ? `crs:LuminanceAdjustmentMagenta="${convertToXMPValue(
               settings.colorAdjustments.magenta.luminance
             )}"`
           : ""
