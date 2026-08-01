@@ -15,6 +15,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { getSensorForCamera } from "../constants/fujifilmSensors";
 import { useQuery, useMutation } from "@apollo/client";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -444,17 +445,34 @@ const Profile: React.FC = () => {
                     </Button>
                   </Box>
                   <Box display="flex" flexWrap="wrap" gap={1}>
-                    {formData.cameras.map((camera) => (
-                      <Chip
-                        key={camera}
-                        label={camera}
-                        onDelete={
-                          isEditing
-                            ? () => handleRemoveCamera(camera)
-                            : undefined
-                        }
-                      />
-                    ))}
+                    {formData.cameras.map((camera) => {
+                      const sensor = getSensorForCamera(camera);
+                      const clickable = !isEditing && !!sensor;
+                      return (
+                        <Chip
+                          key={camera}
+                          label={camera}
+                          color={clickable ? "secondary" : "default"}
+                          variant={clickable ? "outlined" : "filled"}
+                          clickable={clickable}
+                          onClick={
+                            clickable
+                              ? () =>
+                                  navigate(
+                                    `/search?sensor=${encodeURIComponent(
+                                      sensor.label
+                                    )}`
+                                  )
+                              : undefined
+                          }
+                          onDelete={
+                            isEditing
+                              ? () => handleRemoveCamera(camera)
+                              : undefined
+                          }
+                        />
+                      );
+                    })}
                   </Box>
                 </Box>
 

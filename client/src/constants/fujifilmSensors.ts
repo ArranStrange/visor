@@ -178,6 +178,25 @@ export const getSensorByKey = (key: string): FujifilmSensor | undefined =>
 
 export const SENSOR_LABELS = FUJIFILM_SENSORS.map((s) => s.label);
 
+/**
+ * Look up the sensor generation for a camera by name. Tolerant of the
+ * free-text names users put on their profiles ("Fujifilm X-E2", "fuji x100f").
+ */
+export const getSensorForCamera = (
+  cameraName: string
+): FujifilmSensor | undefined => {
+  const normalized = cameraName
+    .toLowerCase()
+    .replace(/^\s*fuji(film)?\s*/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!normalized) return undefined;
+
+  return FUJIFILM_SENSORS.find((sensor) =>
+    sensor.cameras.some((camera) => camera.toLowerCase() === normalized)
+  );
+};
+
 /** The subset of recipe settings relevant to sensor compatibility checks. */
 export interface RecipeCompatibilitySettings {
   clarity?: number | null;

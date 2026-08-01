@@ -20,6 +20,7 @@ import {
   AccordionDetails,
   IconButton,
   Snackbar,
+  Tooltip,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, gql } from "@apollo/client";
@@ -31,6 +32,7 @@ import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ListIcon from "@mui/icons-material/List";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ShareIcon from "@mui/icons-material/Share";
+import { getSensorForCamera } from "../constants/fujifilmSensors";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
@@ -368,21 +370,37 @@ const PublicProfile: React.FC = () => {
                     gap={1}
                     sx={{ justifyContent: { xs: "center", sm: "flex-start" } }}
                   >
-                    {user.cameras.map((camera: string) => (
-                      <Chip
-                        key={camera}
-                        label={camera}
-                        icon={<CameraAltIcon />}
-                        variant="outlined"
-                        sx={{
-                          borderColor: "orange.main",
-                          color: "orange.main",
-                          "& .MuiChip-icon": {
-                            color: "orange.main",
-                          },
-                        }}
-                      />
-                    ))}
+                    {user.cameras.map((camera: string) => {
+                      const sensor = getSensorForCamera(camera);
+                      return (
+                        <Tooltip
+                          key={camera}
+                          title={
+                            sensor
+                              ? `See film sims for ${sensor.label}`
+                              : ""
+                          }
+                        >
+                          <Chip
+                            label={camera}
+                            icon={<CameraAltIcon />}
+                            variant="outlined"
+                            color={sensor ? "secondary" : "default"}
+                            clickable={!!sensor}
+                            onClick={
+                              sensor
+                                ? () =>
+                                    navigate(
+                                      `/search?sensor=${encodeURIComponent(
+                                        sensor.label
+                                      )}`
+                                    )
+                                : undefined
+                            }
+                          />
+                        </Tooltip>
+                      );
+                    })}
                   </Box>
                 </Box>
               )}
