@@ -166,7 +166,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           className="title-container"
           sx={{
             ...overlayTitleContainerStyles,
-            backgroundColor: "rgba(0, 0, 0, 0.3)",
+            backgroundColor: "rgba(0, 0, 0, 0.15)",
           }}
         >
           <Typography variant="overlayTitle" fontWeight="bold">

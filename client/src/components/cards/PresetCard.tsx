@@ -164,7 +164,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           className="title-overlay"
           sx={{
             ...overlayTitleContainerStyles,
-            backgroundColor: "rgba(0, 0, 0, 0.4)",
+            backgroundColor: "rgba(0, 0, 0, 0.15)",
           }}
         >
           <Typography variant="overlayTitle" fontWeight="bold">
