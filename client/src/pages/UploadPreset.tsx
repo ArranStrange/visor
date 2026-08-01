@@ -18,6 +18,7 @@ import {
   buildSettingsForBackend,
   buildToneCurveForBackend,
 } from "../utils/presetSettingsTransform";
+import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
 
 const UPLOAD_PRESET = gql`
   mutation UploadPreset(
@@ -30,6 +31,7 @@ const UPLOAD_PRESET = gql`
     $beforeImage: ImageInput
     $afterImage: ImageInput
     $sampleImages: [ImageInput!]
+    $xmpUrl: String
   ) {
     uploadPreset(
       title: $title
@@ -41,6 +43,7 @@ const UPLOAD_PRESET = gql`
       beforeImage: $beforeImage
       afterImage: $afterImage
       sampleImages: $sampleImages
+      xmpUrl: $xmpUrl
     ) {
       id
       title
@@ -105,6 +108,16 @@ const UploadPreset: React.FC = () => {
 
       const { colorGrading, ...settingsWithoutColorGrading } = settings;
 
+      // Store the original .xmp so settings can always be re-derived.
+      let xmpUrl: string | null = null;
+      if (formState.xmpFile) {
+        try {
+          xmpUrl = await uploadXmpToCloudinary(formState.xmpFile);
+        } catch (error) {
+          console.error("Error uploading XMP file:", error);
+        }
+      }
+
       const result = await uploadPreset({
         variables: {
           title: formState.title,
@@ -117,6 +130,7 @@ const UploadPreset: React.FC = () => {
           beforeImage: formState.uploadedBeforeImage,
           afterImage: formState.uploadedAfterImage,
           sampleImages: [],
+          xmpUrl,
         },
       });
 

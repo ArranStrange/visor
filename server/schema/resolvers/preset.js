@@ -592,6 +592,7 @@ const presetResolvers = {
         beforeImage,
         afterImage,
         sampleImages,
+        xmpUrl,
 
         cameraProfileDigest,
         profileName,
@@ -685,6 +686,7 @@ const presetResolvers = {
         const preset = new Preset({
           title,
           description,
+          xmpUrl,
           settings: cleanSettings(settings),
           toneCurve: cleanToneCurve(toneCurve),
           notes,

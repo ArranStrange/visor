@@ -6,7 +6,7 @@ import FileUpload from "../ui/FileUpload";
 import StatusMessage from "../ui/StatusMessage";
 
 interface XmpParserProps {
-  onSettingsParsed: (settings: ParsedSettings) => void;
+  onSettingsParsed: (settings: ParsedSettings, file: File) => void;
 }
 
 const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
@@ -21,7 +21,7 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
       const content = e.target?.result as string;
       try {
         const settings = SettingsParser.parseXmpContent(content);
-        onSettingsParsed(settings);
+        onSettingsParsed(settings, file);
         setStatus({ type: "success", message: "Lightroom File Uploaded" });
       } catch {
         setStatus({

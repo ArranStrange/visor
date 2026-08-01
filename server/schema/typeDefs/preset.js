@@ -593,6 +593,7 @@ const typeDefs = gql`
       beforeImage: ImageInput
       afterImage: ImageInput
       sampleImages: [ImageInput!]
+      xmpUrl: String
 
       # New comprehensive settings
       cameraProfileDigest: String

@@ -42,6 +42,44 @@ export const validatePresetImage = (
   return { isValid: true };
 };
 
+/**
+ * Upload the original .xmp file to Cloudinary as a raw resource so preset
+ * settings can always be re-derived from the source file.
+ */
+export const uploadXmpToCloudinary = async (file: File): Promise<string> => {
+  const cloudName = ENV_CONFIG.CLOUDINARY_CLOUD_NAME;
+
+  if (!cloudName) {
+    throw new Error(
+      "Cloudinary cloud name is not configured. Please check your environment variables."
+    );
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", "PresetBeforeAndAfter");
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Failed to upload XMP to Cloudinary: ${
+        errorData.error?.message || "Unknown error"
+      }`
+    );
+  }
+
+  const data = await response.json();
+  return data.secure_url;
+};
+
 export const uploadPresetImageToCloudinary = async (
   file: File
 ): Promise<ImageInput> => {

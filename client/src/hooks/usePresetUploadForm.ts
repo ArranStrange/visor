@@ -15,6 +15,7 @@ export interface PresetUploadFormState {
   afterImage: File | null;
   notes: string;
   parsedSettings: ParsedSettings | null;
+  xmpFile: File | null;
   uploadedBeforeImage: ImageInput | null;
   uploadedAfterImage: ImageInput | null;
 }
@@ -34,7 +35,7 @@ export interface UsePresetUploadFormReturn {
   handleAfterImageChange: (
     e: React.ChangeEvent<HTMLInputElement>
   ) => Promise<void>;
-  handleSettingsParsed: (settings: ParsedSettings) => void;
+  handleSettingsParsed: (settings: ParsedSettings, file?: File) => void;
   updateTitle: (title: string) => void;
   updateDescription: (description: string) => void;
   updateTagInput: (tagInput: string) => void;
@@ -52,6 +53,7 @@ export const usePresetUploadForm = (): UsePresetUploadFormReturn => {
     afterImage: null,
     notes: "",
     parsedSettings: null,
+    xmpFile: null,
     uploadedBeforeImage: null,
     uploadedAfterImage: null,
   });
@@ -133,13 +135,20 @@ export const usePresetUploadForm = (): UsePresetUploadFormReturn => {
     []
   );
 
-  const handleSettingsParsed = useCallback((settings: ParsedSettings) => {
-    if (!settings || typeof settings !== "object") {
-      setError("Invalid settings format received from XMP parser");
-      return;
-    }
-    setFormState((prev) => ({ ...prev, parsedSettings: settings }));
-  }, []);
+  const handleSettingsParsed = useCallback(
+    (settings: ParsedSettings, file?: File) => {
+      if (!settings || typeof settings !== "object") {
+        setError("Invalid settings format received from XMP parser");
+        return;
+      }
+      setFormState((prev) => ({
+        ...prev,
+        parsedSettings: settings,
+        xmpFile: file ?? prev.xmpFile,
+      }));
+    },
+    []
+  );
 
   const updateTitle = useCallback((title: string) => {
     setFormState((prev) => ({ ...prev, title }));
