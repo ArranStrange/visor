@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Box } from "@mui/material";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface AnimatedBeforeAfterSliderProps {
   beforeImage?: string;
@@ -96,7 +97,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
         >
           <Box
             component="img"
-            src={afterImage}
+            src={optimizeImageUrl(afterImage, 800)}
             alt="After"
             onLoad={() => setAfterImageLoaded(true)}
             sx={{
@@ -111,7 +112,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
 
           <Box
             component="img"
-            src={beforeImage}
+            src={optimizeImageUrl(beforeImage, 800)}
             alt="Before"
             onLoad={() => setBeforeImageLoaded(true)}
             sx={{

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box } from "@mui/material";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface BeforeAfterSliderProps {
   beforeImage?: string;
@@ -95,7 +96,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     >
       <Box
         component="img"
-        src={afterImage || PLACEHOLDER_AFTER_IMAGE}
+        src={optimizeImageUrl(afterImage, 1200) || PLACEHOLDER_AFTER_IMAGE}
         alt="After"
         sx={{
           position: "absolute",
@@ -109,7 +110,7 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 
       <Box
         component="img"
-        src={beforeImage || PLACEHOLDER_BEFORE_IMAGE}
+        src={optimizeImageUrl(beforeImage, 1200) || PLACEHOLDER_BEFORE_IMAGE}
         alt="Before"
         sx={{
           position: "absolute",

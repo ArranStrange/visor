@@ -1,4 +1,5 @@
 import React from "react";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -157,7 +158,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           }}
         >
           <Avatar
-            src={item.creator.avatar}
+            src={optimizeImageUrl(item.creator.avatar, 100)}
             alt={item.creator.username}
             sx={{
               width: { xs: 40, sm: 46 },
@@ -229,7 +230,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         ) : (
           imageUrl && (
             <img
-              src={imageUrl}
+              src={optimizeImageUrl(imageUrl, 1600)}
               alt={title}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

@@ -1,4 +1,5 @@
 import React, { useEffect, memo, useCallback, useMemo } from "react";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 import {
   Card,
   Typography,
@@ -149,7 +150,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           >
             <Avatar
               variant="creator"
-              src={creator.avatar}
+              src={optimizeImageUrl(creator.avatar, 100)}
               alt={creator.username}
               sx={{
                 width: 32,

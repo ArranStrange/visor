@@ -56,7 +56,7 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
       onClick={handleClick}
     >
       <img
-        src="https://res.cloudinary.com/dw6klz9kg/image/upload/v1750860074/2025-04-19_10-56-48_000_eemmrr.jpg"
+        src="https://res.cloudinary.com/dw6klz9kg/image/upload/f_auto,q_auto,c_limit,w_800/v1750860074/2025-04-19_10-56-48_000_eemmrr.jpg"
         alt="Buy Me a Coffee"
         style={{
           position: "absolute",

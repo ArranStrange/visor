@@ -1,4 +1,5 @@
 import React, { memo, useCallback, useMemo, useEffect } from "react";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -147,7 +148,7 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           >
             <Avatar
               variant="creator"
-              src={creator.avatar}
+              src={optimizeImageUrl(creator.avatar, 100)}
               alt={creator.username}
               sx={{
                 width: 32,

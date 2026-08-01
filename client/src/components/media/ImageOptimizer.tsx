@@ -138,7 +138,10 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
     const imageElement = (
       <img
         ref={imageRef}
-        src={imageSrc}
+        // Only set src once a real URL is chosen — an empty src="" fires the
+        // browser error event, which would race handleError into swapping in
+        // the raw un-optimized URL.
+        src={imageSrc || undefined}
         alt={alt}
         className={className}
         style={{

@@ -126,3 +126,14 @@ export class CloudinaryOptimizer {
     };
   }
 }
+
+export const optimizeImageUrl = (
+  url: string | null | undefined,
+  width = 800
+): string | undefined => {
+  if (!url) return undefined;
+  if (!url.includes("res.cloudinary.com/") || !url.includes("/upload/v")) {
+    return url;
+  }
+  return url.replace("/upload/", `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+};
