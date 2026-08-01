@@ -18,6 +18,11 @@ const FEATURE_LABELS: Record<keyof SensorFeatures, string> = {
   realaAce: "Reala Ace",
 };
 
+// The card is intentionally inverted (light on the site's dark background)
+// so the sensor profile stands out as a distinct object.
+const INK = "grey.900";
+const INK_MUTED = "grey.700";
+
 interface SensorProfileCardProps {
   sensor: FujifilmSensor;
   filmSimCount?: number | null;
@@ -36,35 +41,37 @@ const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
   const unsupported = featureKeys.filter((key) => !sensor.features[key]);
 
   return (
-    <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 2 }}>
+    <Paper
+      sx={{
+        p: { xs: 2, md: 3 },
+        borderRadius: 2,
+        backgroundColor: "grey.100",
+        color: INK,
+      }}
+    >
       <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
         <CameraAltIcon color="secondary" sx={{ mt: 0.5 }} />
         <Box sx={{ flex: 1, minWidth: 0 }}>
           <Stack direction="row" alignItems="baseline" spacing={1.5}>
-            <Typography variant="h5" fontWeight={700}>
+            <Typography variant="h5" fontWeight={700} sx={{ color: INK }}>
               {sensor.label}
             </Typography>
             {typeof filmSimCount === "number" && (
-              <Typography variant="caption" color="text.secondary">
+              <Typography variant="caption" sx={{ color: INK_MUTED }}>
                 {filmSimCount} film sim{filmSimCount === 1 ? "" : "s"}
               </Typography>
             )}
           </Stack>
 
           {sensor.notes && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mt: 0.5 }}
-            >
+            <Typography variant="body2" sx={{ mt: 0.5, color: INK_MUTED }}>
               {sensor.notes}
             </Typography>
           )}
 
           <Typography
             variant="overline"
-            color="text.secondary"
-            sx={{ display: "block", mt: 1.5 }}
+            sx={{ display: "block", mt: 1.5, color: INK_MUTED }}
           >
             Works on
           </Typography>
@@ -75,6 +82,7 @@ const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
                 label={camera}
                 size="small"
                 variant="outlined"
+                sx={{ color: INK, borderColor: "grey.400" }}
               />
             ))}
           </Stack>
@@ -83,8 +91,7 @@ const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
             <>
               <Typography
                 variant="overline"
-                color="text.secondary"
-                sx={{ display: "block", mt: 1.5 }}
+                sx={{ display: "block", mt: 1.5, color: INK_MUTED }}
               >
                 Supports
               </Typography>
@@ -106,8 +113,7 @@ const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
           {unsupported.length > 0 && (
             <Typography
               variant="caption"
-              color="text.secondary"
-              sx={{ display: "block", mt: 1.5, opacity: 0.8 }}
+              sx={{ display: "block", mt: 1.5, color: INK_MUTED }}
             >
               Not available on this sensor:{" "}
               {unsupported.map((key) => FEATURE_LABELS[key]).join(", ")}
