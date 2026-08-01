@@ -1,14 +1,6 @@
 import React from "react";
-import {
-  Box,
-  Chip,
-  IconButton,
-  Paper,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Chip, Paper, Stack, Typography } from "@mui/material";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import CloseIcon from "@mui/icons-material/Close";
 import CheckIcon from "@mui/icons-material/Check";
 import {
   FujifilmSensor,
@@ -29,7 +21,6 @@ const FEATURE_LABELS: Record<keyof SensorFeatures, string> = {
 interface SensorProfileCardProps {
   sensor: FujifilmSensor;
   filmSimCount?: number | null;
-  onClear: () => void;
 }
 
 /**
@@ -39,7 +30,6 @@ interface SensorProfileCardProps {
 const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
   sensor,
   filmSimCount,
-  onClear,
 }) => {
   const featureKeys = Object.keys(FEATURE_LABELS) as (keyof SensorFeatures)[];
   const supported = featureKeys.filter((key) => sensor.features[key]);
@@ -124,14 +114,6 @@ const SensorProfileCard: React.FC<SensorProfileCardProps> = ({
             </Typography>
           )}
         </Box>
-
-        <IconButton
-          size="small"
-          onClick={onClear}
-          aria-label="Clear sensor filter"
-        >
-          <CloseIcon fontSize="small" />
-        </IconButton>
       </Box>
     </Paper>
   );

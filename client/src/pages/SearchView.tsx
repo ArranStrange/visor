@@ -115,7 +115,6 @@ const SearchView: React.FC = () => {
           <SensorProfileCard
             sensor={activeSensorInfo}
             filmSimCount={sensorFilmSimCount}
-            onClear={clearSensor}
           />
         ) : (
           // Sensor value not in the canonical list (hand-edited URL) — plain
