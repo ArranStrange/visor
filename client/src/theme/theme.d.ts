@@ -20,12 +20,23 @@ declare module "@mui/material/styles" {
     whiteBorder: string;
   }
 
+  interface SurfacePalette {
+    /** Raised card/panel background — one tonal step above paper. */
+    raised: string;
+    /** Hairline border for raised surfaces. */
+    border: string;
+    /** Outlines for chips/controls sitting on a raised surface. */
+    outline: string;
+  }
+
   interface Palette {
     overlay: OverlayPalette;
+    surface: SurfacePalette;
   }
 
   interface PaletteOptions {
     overlay?: OverlayPalette;
+    surface?: SurfacePalette;
   }
 
   interface TypographyVariants {

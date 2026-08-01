@@ -1,5 +1,14 @@
 import { createTheme } from "@mui/material/styles";
 
+// Tonal surface ladder for elevated, non-photo surfaces (cards, panels).
+// Depth comes from lighter greys, never white — photos stay the brightest
+// element on the page. Referenced via palette paths, e.g. "surface.raised".
+const surface = {
+  raised: "#1A1A1A",
+  border: "#2A2A2A",
+  outline: "#3A3A3A",
+};
+
 // Overlay tokens for content rendered on top of photography.
 // Referenced in sx via palette paths, e.g. backgroundColor: "overlay.scrimSubtle".
 const overlay = {
@@ -32,6 +41,7 @@ export const visorTheme = createTheme({
     },
     divider: "#252525",
     overlay,
+    surface,
   },
   typography: {
     fontFamily: `'Inter', 'Helvetica Neue', 'Arial', sans-serif`,
