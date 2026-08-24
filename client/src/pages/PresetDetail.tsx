@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_PRESET_BY_SLUG } from "../graphql/presets";
+import { ADD_PHOTO_TO_PRESET, GET_PRESET_BY_SLUG } from "../graphql/presets";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmpCompiler";
@@ -16,19 +16,19 @@ import { convertPresetSettingsToParsedSettings } from "../utils/presetDetailUtil
 import AddToListButton from "../components/ui/AddToListButton";
 import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
 import DiscussionThread from "../components/discussions/DiscussionThread";
-import PresetHeader from "../components/presets/PresetHeader";
+import DetailHeader from "../components/content/DetailHeader";
+import OwnerMenu from "../components/content/OwnerMenu";
+import DeleteContentDialog from "../components/content/DeleteContentDialog";
 import PresetDescription from "../components/presets/PresetDescription";
 import PresetBeforeAfter from "../components/presets/PresetBeforeAfter";
 import PresetSampleImages from "../components/presets/PresetSampleImages";
 import PresetActions from "../components/presets/PresetActions";
 import PresetCreatorNotes from "../components/presets/PresetCreatorNotes";
-import PresetOwnerMenu from "../components/presets/PresetOwnerMenu";
 import EditPresetDialog from "../components/presets/dialogs/EditPresetDialog";
-import DeletePresetDialog from "../components/presets/dialogs/DeletePresetDialog";
 import AddPhotoDialog from "../components/presets/dialogs/AddPhotoDialog";
 import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
 import { usePresetOperations } from "../hooks/usePresetOperations";
-import { usePresetPhotos } from "../hooks/usePresetPhotos";
+import { useContentPhotos } from "../hooks/useContentPhotos";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
@@ -75,7 +75,11 @@ const PresetDetails: React.FC = () => {
     handlePhotoUpload,
     handleImageClick,
     handleToggleFeaturedPhoto,
-  } = usePresetPhotos(preset?.id || "");
+  } = useContentPhotos({
+    contentId: preset?.id || "",
+    addPhotoMutation: ADD_PHOTO_TO_PRESET,
+    reloadOnFeaturedToggle: true,
+  });
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
@@ -156,7 +160,7 @@ const PresetDetails: React.FC = () => {
     <Container maxWidth="md" sx={{ my: 4, position: "relative" }}>
       <AddToListButton presetId={preset.id} itemName={preset.title} />
 
-      <PresetHeader
+      <DetailHeader
         creator={preset.creator}
         title={preset.title}
         featured={preset.featured}
@@ -167,7 +171,7 @@ const PresetDetails: React.FC = () => {
       />
 
       {isOwner && (
-        <PresetOwnerMenu
+        <OwnerMenu
           anchorEl={menuAnchorEl}
           open={menuOpen}
           onClose={handleMenuClose}
@@ -245,9 +249,10 @@ const PresetDetails: React.FC = () => {
         onSave={handleSavePreset}
       />
 
-      <DeletePresetDialog
+      <DeleteContentDialog
         open={deleteDialogOpen}
-        presetTitle={preset.title}
+        title="Delete Preset"
+        description={`Are you sure you want to delete "${preset.title}"? This action cannot be undone and will permanently remove the preset and all associated images from the database.`}
         deleting={deletingPreset}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeletePreset}

@@ -1,7 +1,6 @@
 import React from "react";
-import { Box, Typography, Chip, Tooltip } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { getSensorByLabel } from "../../constants/fujifilmSensors";
+import Description from "../content/Description";
+import SensorFilterChip from "./SensorFilterChip";
 
 interface Tag {
   id: string;
@@ -18,61 +17,12 @@ const FilmSimDescription: React.FC<FilmSimDescriptionProps> = ({
   description,
   tags = [],
   compatibleSensors = [],
-}) => {
-  const navigate = useNavigate();
-
-  return (
-    <Box mb={2}>
-      {description && (
-        <Typography variant="body1" color="text.secondary" mb={2}>
-          {description}
-        </Typography>
-      )}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 1,
-          mb: 2,
-          "& > *": {
-            marginBottom: 1,
-          },
-        }}
-      >
-        {tags
-          ?.filter((tag) => tag && tag.id)
-          .map((tag) => (
-            <Chip
-              key={tag.id}
-              label={tag?.displayName || "Unknown"}
-              variant="outlined"
-            />
-          ))}
-        {compatibleSensors.map((sensor) => {
-          const info = getSensorByLabel(sensor);
-          return (
-            <Tooltip
-              key={sensor}
-              title={
-                info
-                  ? `Works on: ${info.cameras.join(", ")} — click to see all ${sensor} film sims`
-                  : `See all ${sensor} film sims`
-              }
-            >
-              <Chip
-                label={sensor}
-                color="secondary"
-                clickable
-                onClick={() =>
-                  navigate(`/search?sensor=${encodeURIComponent(sensor)}`)
-                }
-              />
-            </Tooltip>
-          );
-        })}
-      </Box>
-    </Box>
-  );
-};
+}) => (
+  <Description description={description} tags={tags} mb={2}>
+    {compatibleSensors.map((sensor) => (
+      <SensorFilterChip key={sensor} sensor={sensor} />
+    ))}
+  </Description>
+);
 
 export default FilmSimDescription;

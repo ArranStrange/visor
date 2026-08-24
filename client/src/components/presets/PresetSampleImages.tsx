@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SampleImages, { SampleImageItem } from "../content/SampleImages";
 
 interface SampleImage {
   id: string;
@@ -26,7 +27,7 @@ const PresetSampleImages: React.FC<PresetSampleImagesProps> = ({
   onAddPhotoClick,
   showAddButton = false,
 }) => {
-  const hasImages = afterImage || sampleImages.length > 0;
+  const hasImages = !!afterImage || sampleImages.length > 0;
 
   if (!hasImages && !showAddButton) {
     return (
@@ -38,16 +39,31 @@ const PresetSampleImages: React.FC<PresetSampleImagesProps> = ({
     );
   }
 
+  const images: SampleImageItem[] = [
+    ...(afterImage
+      ? [
+          {
+            key: "after-image",
+            url: afterImage,
+            alt: `After applying ${presetTitle}`,
+          },
+        ]
+      : []),
+    ...sampleImages.map((image) => ({
+      key: image.id,
+      url: image.url,
+      alt: image.caption || `Sample image for ${presetTitle}`,
+      photoId: image.id,
+      isFeaturedPhoto: image.isFeaturedPhoto,
+    })),
+  ];
+
   return (
-    <Box sx={{ mt: 4, mb: 4 }}>
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={2}
-      >
-        <Typography variant="h6">Sample Images</Typography>
-        {showAddButton && onAddPhotoClick && (
+    <SampleImages
+      images={images}
+      onImageClick={onImageClick}
+      actionButton={
+        showAddButton && onAddPhotoClick ? (
           <Button
             variant="outlined"
             startIcon={<AddIcon />}
@@ -56,57 +72,9 @@ const PresetSampleImages: React.FC<PresetSampleImagesProps> = ({
           >
             Add Your Photo
           </Button>
-        )}
-      </Box>
-      {hasImages && (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr 1fr",
-              md: "1fr 1fr",
-              lg: "repeat(3, 1fr)",
-            },
-            gap: 2,
-          }}
-        >
-          {afterImage && (
-            <Box>
-              <img
-                src={afterImage}
-                alt={`After applying ${presetTitle}`}
-                style={{
-                  width: "100%",
-                  height: 200,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  objectFit: "cover",
-                }}
-                onClick={() => onImageClick(afterImage)}
-              />
-            </Box>
-          )}
-          {sampleImages.map((image) => (
-            <Box key={image.id}>
-              <img
-                src={image.url}
-                alt={image.caption || `Sample image for ${presetTitle}`}
-                style={{
-                  width: "100%",
-                  height: 200,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  objectFit: "cover",
-                }}
-                onClick={() =>
-                  onImageClick(image.url, image.id, image.isFeaturedPhoto)
-                }
-              />
-            </Box>
-          ))}
-        </Box>
-      )}
-    </Box>
+        ) : undefined
+      }
+    />
   );
 };
 

@@ -1,6 +1,7 @@
 import React from "react";
-import { Box, Typography, Button } from "@mui/material";
+import { Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import SampleImages, { SampleImageItem } from "../content/SampleImages";
 
 interface SampleImage {
   id: string;
@@ -22,18 +23,20 @@ const FilmSimSampleImages: React.FC<FilmSimSampleImagesProps> = ({
   onImageClick,
   showAddButton = false,
 }) => {
-  const hasImages = sampleImages.length > 0;
+  const images: SampleImageItem[] = sampleImages.map((image) => ({
+    key: image.id,
+    url: image.url,
+    alt: image.caption || `Sample image for ${filmSimName}`,
+    photoId: image.id,
+    isFeaturedPhoto: image.isFeaturedPhoto,
+  }));
 
   return (
-    <Box mt={4}>
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={1}
-      >
-        <Typography variant="h6">Sample Images</Typography>
-        {showAddButton && (
+    <SampleImages
+      images={images}
+      onImageClick={onImageClick}
+      actionButton={
+        showAddButton ? (
           <Button
             variant="outlined"
             startIcon={<AddIcon />}
@@ -43,45 +46,9 @@ const FilmSimSampleImages: React.FC<FilmSimSampleImagesProps> = ({
           >
             Add Photo
           </Button>
-        )}
-      </Box>
-      {hasImages ? (
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr 1fr",
-              md: "1fr 1fr",
-              lg: "repeat(3, 1fr)",
-            },
-            gap: 2,
-          }}
-        >
-          {sampleImages.map((image) => (
-            <Box key={image.id}>
-              <img
-                src={image.url}
-                alt={image.caption || `Sample image for ${filmSimName}`}
-                style={{
-                  width: "100%",
-                  height: 200,
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  objectFit: "cover",
-                }}
-                onClick={() =>
-                  onImageClick(image.url, image.id, image.isFeaturedPhoto)
-                }
-              />
-            </Box>
-          ))}
-        </Box>
-      ) : (
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-          No sample images yet.
-        </Typography>
-      )}
-    </Box>
+        ) : undefined
+      }
+    />
   );
 };
 

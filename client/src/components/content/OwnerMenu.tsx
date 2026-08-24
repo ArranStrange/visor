@@ -3,20 +3,22 @@ import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-interface FilmSimOwnerMenuProps {
+interface OwnerMenuProps {
   anchorEl: HTMLElement | null;
   open: boolean;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  deleteTestId?: string;
 }
 
-const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
+const OwnerMenu: React.FC<OwnerMenuProps> = ({
   anchorEl,
   open,
   onClose,
   onEdit,
   onDelete,
+  deleteTestId,
 }) => {
   return (
     <Menu
@@ -36,7 +38,7 @@ const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
         </ListItemIcon>
         <ListItemText primary="Edit" />
       </MenuItem>
-      <MenuItem onClick={onDelete} data-cy="film-sim-delete-menu-item">
+      <MenuItem onClick={onDelete} data-cy={deleteTestId}>
         <ListItemIcon>
           <DeleteIcon fontSize="small" color="error" />
         </ListItemIcon>
@@ -46,4 +48,4 @@ const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
   );
 };
 
-export default FilmSimOwnerMenu;
+export default OwnerMenu;

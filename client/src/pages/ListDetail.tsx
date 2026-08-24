@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
+import DeleteContentDialog from "../components/content/DeleteContentDialog";
 import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -37,6 +38,7 @@ const ListDetail: React.FC = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const {
     loading: listLoading,
@@ -83,7 +85,7 @@ const ListDetail: React.FC = () => {
     onError: (error) => setError(error.message),
   });
 
-  const [deleteList] = useMutation(DELETE_LIST, {
+  const [deleteList, { loading: deletingList }] = useMutation(DELETE_LIST, {
     onCompleted: () => navigate("/lists"),
     onError: (error) => setError(error.message),
   });
@@ -198,10 +200,12 @@ const ListDetail: React.FC = () => {
     });
   };
 
-  const handleDelete = () => {
-    if (window.confirm("Are you sure you want to delete this list?")) {
-      deleteList({ variables: { id } });
-    }
+  const handleDeleteClick = () => {
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    deleteList({ variables: { id } });
   };
 
   return (
@@ -318,7 +322,7 @@ const ListDetail: React.FC = () => {
               variant="outlined"
               color="error"
               startIcon={<DeleteIcon />}
-              onClick={handleDelete}
+              onClick={handleDeleteClick}
             >
               Delete List
             </Button>
@@ -330,6 +334,15 @@ const ListDetail: React.FC = () => {
           contentType={contentType}
         />
       </Stack>
+
+      <DeleteContentDialog
+        open={deleteDialogOpen}
+        title="Delete List"
+        description="Are you sure you want to delete this list? This action cannot be undone."
+        deleting={deletingList}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={handleDeleteConfirm}
+      />
     </Container>
   );
 };

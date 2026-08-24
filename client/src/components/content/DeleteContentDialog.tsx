@@ -8,20 +8,26 @@ import {
   Button,
 } from "@mui/material";
 
-interface DeletePresetDialogProps {
+interface DeleteContentDialogProps {
   open: boolean;
-  presetTitle: string;
-  deleting: boolean;
+  title: string;
+  description: React.ReactNode;
+  deleting?: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  dialogTestId?: string;
+  confirmTestId?: string;
 }
 
-const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
+const DeleteContentDialog: React.FC<DeleteContentDialogProps> = ({
   open,
-  presetTitle,
-  deleting,
+  title,
+  description,
+  deleting = false,
   onClose,
   onConfirm,
+  dialogTestId,
+  confirmTestId,
 }) => {
   return (
     <Dialog
@@ -29,13 +35,12 @@ const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
       onClose={onClose}
       aria-labelledby="delete-dialog-title"
       aria-describedby="delete-dialog-description"
+      data-cy={dialogTestId}
     >
-      <DialogTitle id="delete-dialog-title">Delete Preset</DialogTitle>
+      <DialogTitle id="delete-dialog-title">{title}</DialogTitle>
       <DialogContent>
         <DialogContentText id="delete-dialog-description">
-          Are you sure you want to delete "{presetTitle}"? This action cannot be
-          undone and will permanently remove the preset and all associated
-          images from the database.
+          {description}
         </DialogContentText>
       </DialogContent>
       <DialogActions>
@@ -45,6 +50,7 @@ const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
           color="error"
           variant="contained"
           disabled={deleting}
+          data-cy={confirmTestId}
         >
           {deleting ? "Deleting..." : "Delete"}
         </Button>
@@ -53,4 +59,4 @@ const DeletePresetDialog: React.FC<DeletePresetDialogProps> = ({
   );
 };
 
-export default DeletePresetDialog;
+export default DeleteContentDialog;

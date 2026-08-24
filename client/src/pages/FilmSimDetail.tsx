@@ -16,16 +16,16 @@ import DiscussionThread from "../components/discussions/DiscussionThread";
 import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
 import EditFilmSimDialog from "../components/dialogs/EditFilmSimDialog";
 import RecommendedPresetsManager from "../components/cards/RecommendedPresetsManager";
-import FilmSimHeader from "../components/filmsims/FilmSimHeader";
+import DetailHeader from "../components/content/DetailHeader";
+import OwnerMenu from "../components/content/OwnerMenu";
+import DeleteContentDialog from "../components/content/DeleteContentDialog";
 import FilmSimDescription from "../components/filmsims/FilmSimDescription";
 import FilmSimSampleImages from "../components/filmsims/FilmSimSampleImages";
 import FilmSimCreatorNotes from "../components/filmsims/FilmSimCreatorNotes";
 import FilmSimRecommendedPresets from "../components/filmsims/FilmSimRecommendedPresets";
-import FilmSimOwnerMenu from "../components/filmsims/FilmSimOwnerMenu";
-import DeleteFilmSimDialog from "../components/filmsims/dialogs/DeleteFilmSimDialog";
 import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
 import { useFilmSimOperations } from "../hooks/useFilmSimOperations";
-import { useFilmSimPhotos } from "../hooks/useFilmSimPhotos";
+import { useContentPhotos } from "../hooks/useContentPhotos";
 
 const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
@@ -56,7 +56,7 @@ const FilmSimDetails: React.FC = () => {
     currentImageFeatured,
     handleImageClick,
     handleToggleFeaturedPhoto,
-  } = useFilmSimPhotos();
+  } = useContentPhotos({ contentId: filmSim?.id || "" });
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [recommendedPresetsDialogOpen, setRecommendedPresetsDialogOpen] =
@@ -120,23 +120,25 @@ const FilmSimDetails: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 4, position: "relative" }}>
       <AddToListButton filmSimId={filmSim.id} itemName={filmSim.name} />
 
-      <FilmSimHeader
+      <DetailHeader
         creator={filmSim.creator}
-        name={filmSim.name}
+        title={filmSim.name}
         featured={filmSim.featured}
         isAdmin={isAdmin}
         isOwner={!!isOwner}
         onFeaturedToggle={handleToggleFeatured}
         onMenuOpen={handleMenuOpen}
+        menuButtonTestId="film-sim-menu-button"
       />
 
       {isOwner && (
-        <FilmSimOwnerMenu
+        <OwnerMenu
           anchorEl={menuAnchorEl}
           open={menuOpen}
           onClose={handleMenuClose}
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
+          deleteTestId="film-sim-delete-menu-item"
         />
       )}
 
@@ -185,12 +187,15 @@ const FilmSimDetails: React.FC = () => {
         onSuccess={refetch}
       />
 
-      <DeleteFilmSimDialog
+      <DeleteContentDialog
         open={deleteDialogOpen}
-        filmSimName={filmSim.name}
+        title="Delete Film Simulation"
+        description={`Are you sure you want to delete "${filmSim.name}"? This action cannot be undone and will permanently remove the film simulation and all associated images from the database.`}
         deleting={deletingFilmSim}
         onClose={() => setDeleteDialogOpen(false)}
         onConfirm={handleDeleteFilmSim}
+        dialogTestId="film-sim-delete-dialog"
+        confirmTestId="film-sim-delete-confirm-button"
       />
 
       <FullscreenImageDialog

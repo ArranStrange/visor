@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Typography, Chip } from "@mui/material";
+import Description from "../content/Description";
 
 interface Tag {
   id: string;
@@ -14,37 +14,13 @@ interface PresetDescriptionProps {
 const PresetDescription: React.FC<PresetDescriptionProps> = ({
   description,
   tags,
-}) => {
-  return (
-    <Box mb={3}>
-      {description && (
-        <Typography variant="body1" color="text.secondary" mb={2}>
-          {description}
-        </Typography>
-      )}
-      <Box
-        sx={{
-          display: "flex",
-          flexWrap: "wrap",
-          gap: 1,
-          mb: 2,
-          mt: 2,
-          "& > *": {
-            marginBottom: 1,
-          },
-        }}
-      >
-        {tags.map((tag) => (
-          <Chip
-            key={tag.id}
-            label={tag?.displayName || "Unknown"}
-            variant="outlined"
-            sx={{ color: "text.secondary", borderColor: "divider" }}
-          />
-        ))}
-      </Box>
-    </Box>
-  );
-};
+}) => (
+  <Description
+    description={description}
+    tags={tags}
+    tagChipSx={{ color: "text.secondary", borderColor: "divider" }}
+    mb={3}
+  />
+);
 
 export default PresetDescription;

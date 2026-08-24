@@ -21,24 +21,26 @@ interface Creator {
   instagram?: string;
 }
 
-interface FilmSimHeaderProps {
+interface DetailHeaderProps {
   creator?: Creator;
-  name: string;
+  title: string;
   featured: boolean;
   isAdmin: boolean;
   isOwner: boolean;
   onFeaturedToggle: () => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
+  menuButtonTestId?: string;
 }
 
-const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
+const DetailHeader: React.FC<DetailHeaderProps> = ({
   creator,
-  name,
+  title,
   featured,
   isAdmin,
   isOwner,
   onFeaturedToggle,
   onMenuOpen,
+  menuButtonTestId,
 }) => {
   const navigate = useNavigate();
 
@@ -77,8 +79,8 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
       )}
 
       <Box display="flex" alignItems="center" gap={2} mb={2}>
-        <Typography variant="h4" fontWeight={700}>
-          {name}
+        <Typography variant="h4" fontWeight="bold">
+          {title}
         </Typography>
         {isAdmin && (
           <IconButton
@@ -110,7 +112,7 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
               backgroundColor: "overlay.whiteBorder",
               "&:hover": { backgroundColor: "overlay.whiteHover" },
             }}
-            data-cy="film-sim-menu-button"
+            data-cy={menuButtonTestId}
           >
             <MoreVertIcon fontSize="small" />
           </IconButton>
@@ -120,4 +122,4 @@ const FilmSimHeader: React.FC<FilmSimHeaderProps> = ({
   );
 };
 
-export default FilmSimHeader;
+export default DetailHeader;
