@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  ReactNode,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { useApolloClient } from "@apollo/client";
 
@@ -55,39 +62,48 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
   const apolloClient = useApolloClient();
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(userData));
-    setUser(userData);
-    // Drop any data cached for the previous (or anonymous) session and
-    // refetch active queries with the new credentials.
-    apolloClient.resetStore().catch(() => {});
-  };
+  const login = useCallback(
+    function login(token: string, userData: User) {
+      localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem(USER_KEY, JSON.stringify(userData));
+      setUser(userData);
+      // Drop any data cached for the previous (or anonymous) session and
+      // refetch active queries with the new credentials.
+      apolloClient.resetStore().catch(() => {});
+    },
+    [apolloClient]
+  );
 
-  const logout = () => {
-    clearStoredAuth();
-    setUser(null);
-    // Wipe cached data so the next user can't see this session's queries.
-    apolloClient.clearStore().catch(() => {});
-    navigate("/login");
-  };
+  const logout = useCallback(
+    function logout() {
+      clearStoredAuth();
+      setUser(null);
+      // Wipe cached data so the next user can't see this session's queries.
+      apolloClient.clearStore().catch(() => {});
+      navigate("/login");
+    },
+    [apolloClient, navigate]
+  );
 
-  const updateUser = (updates: Partial<User>) => {
+  const updateUser = useCallback(function updateUser(updates: Partial<User>) {
     setUser((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, ...updates };
       localStorage.setItem(USER_KEY, JSON.stringify(updated));
       return updated;
     });
-  };
+  }, []);
 
-  const value: AuthContextType = {
-    user,
-    isAuthenticated: !!user,
-    login,
-    logout,
-    updateUser,
-  };
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      isAuthenticated: !!user,
+      login,
+      logout,
+      updateUser,
+    }),
+    [user, login, logout, updateUser]
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

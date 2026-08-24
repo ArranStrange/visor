@@ -1,4 +1,10 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 import { useLazyQuery } from "@apollo/client";
 import { SEARCH_TAGS } from "../graphql/tags";
 
@@ -60,19 +66,18 @@ export const TagProvider: React.FC<{ children: React.ReactNode }> = ({
     setTags([]);
   }, []);
 
-  return (
-    <TagContext.Provider
-      value={{
-        tags,
-        loading,
-        error: error as Error | undefined,
-        searchTags,
-        clearTags,
-      }}
-    >
-      {children}
-    </TagContext.Provider>
+  const value = useMemo<TagContextType>(
+    () => ({
+      tags,
+      loading,
+      error: error as Error | undefined,
+      searchTags,
+      clearTags,
+    }),
+    [tags, loading, error, searchTags, clearTags]
   );
+
+  return <TagContext.Provider value={value}>{children}</TagContext.Provider>;
 };
 
 export const useTags = (): TagContextType => {
