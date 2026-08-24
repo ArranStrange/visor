@@ -94,12 +94,12 @@ const EmailVerification: React.FC = () => {
   const getStatusIcon = () => {
     switch (verificationStatus) {
       case "success":
-        return <CheckCircle sx={{ fontSize: 64, color: "success.main" }} />;
+        return <CheckCircle sx={{ typography: "display", color: "success.main" }} />;
       case "error":
       case "expired":
-        return <Error sx={{ fontSize: 64, color: "error.main" }} />;
+        return <Error sx={{ typography: "display", color: "error.main" }} />;
       default:
-        return <Email sx={{ fontSize: 64, color: "primary.main" }} />;
+        return <Email sx={{ typography: "display", color: "primary.main" }} />;
     }
   };
 

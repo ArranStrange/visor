@@ -6,7 +6,7 @@ import {
   overlayAvatarStyles,
   overlayTitleContainerStyles,
   getCardHoverStyles,
-} from "../../styles/cardOverlays";
+} from "../../theme/cardOverlays";
 
 const placeholderImage = "/placeholder-image.jpg";
 
@@ -219,8 +219,8 @@ const ListCard: React.FC<ListCardProps> = memo(
           className="list-badge"
           sx={{
             position: "absolute",
-            top: 12,
-            right: 12,
+            top: (theme) => theme.spacing(1.5),
+            right: (theme) => theme.spacing(1.5),
             zIndex: 3,
           }}
         >
@@ -230,8 +230,8 @@ const ListCard: React.FC<ListCardProps> = memo(
             sx={{
               backgroundColor: "overlay.scrimHeavy",
               color: "white",
+              typography: "caption",
               fontWeight: 600,
-              fontSize: "0.7rem",
             }}
           />
         </Box>

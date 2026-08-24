@@ -96,6 +96,9 @@ export const visorTheme = createTheme({
   typography: {
     fontFamily: `'Inter', 'Helvetica Neue', 'Arial', sans-serif`,
     fontSize: 14,
+    display: {
+      fontSize: 64,
+    },
     h1: {
       fontWeight: 700,
       fontSize: "2rem",

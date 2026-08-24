@@ -203,7 +203,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         onTouchEnd={onTouchEnd}
       >
         {/* Type badge */}
-        <Box
+        <Typography
+          variant="caption"
           sx={{
             position: "absolute",
             top: 15,
@@ -214,14 +215,13 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             px: 1,
             py: 0.25,
             borderRadius: 1,
-            fontSize: 12,
             fontWeight: 700,
             textTransform: "uppercase",
             letterSpacing: 0.5,
           }}
         >
           {type === "preset" ? "Preset" : "Film Sim"}
-        </Box>
+        </Typography>
         {type === "preset" && item.afterImage?.url && item.beforeImage?.url ? (
           <AnimatedBeforeAfterSlider
             beforeImage={item.beforeImage.url}

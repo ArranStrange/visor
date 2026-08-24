@@ -46,11 +46,13 @@ declare module "@mui/material/styles" {
   }
 
   interface TypographyVariants {
+    display: React.CSSProperties;
     overlayTitle: React.CSSProperties;
     overlaySubtitle: React.CSSProperties;
   }
 
   interface TypographyVariantsOptions {
+    display?: React.CSSProperties;
     overlayTitle?: React.CSSProperties;
     overlaySubtitle?: React.CSSProperties;
   }
@@ -58,6 +60,7 @@ declare module "@mui/material/styles" {
 
 declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
+    display: true;
     overlayTitle: true;
     overlaySubtitle: true;
   }

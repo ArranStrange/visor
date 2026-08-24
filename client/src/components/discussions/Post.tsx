@@ -168,11 +168,11 @@ const Post: React.FC<PostProps> = ({
                     style={{
                       width: "100%",
                       minHeight: "80px",
-                      padding: "8px",
+                      padding: theme.spacing(1),
                       border: `1px solid ${theme.palette.text.secondary}`,
                       borderRadius: "4px",
                       fontFamily: "inherit",
-                      fontSize: "14px",
+                      fontSize: theme.typography.body2.fontSize,
                       resize: "vertical",
                     }}
                   />
@@ -181,7 +181,7 @@ const Post: React.FC<PostProps> = ({
                       onClick={handleEdit}
                       disabled={!editContent.trim()}
                       style={{
-                        padding: "4px 8px",
+                        padding: theme.spacing(0.5, 1),
                         backgroundColor: theme.palette.primary.main,
                         color: theme.palette.primary.contrastText,
                         border: "none",
@@ -197,7 +197,7 @@ const Post: React.FC<PostProps> = ({
                         setEditContent(post.content);
                       }}
                       style={{
-                        padding: "4px 8px",
+                        padding: theme.spacing(0.5, 1),
                         backgroundColor: theme.palette.text.disabled,
                         color: theme.palette.common.white,
                         border: "none",
@@ -217,9 +217,9 @@ const Post: React.FC<PostProps> = ({
                 {isLoggedIn && onReply && (
                   <Button
                     size="small"
-                    startIcon={<ReplyIcon sx={{ fontSize: 14 }} />}
+                    startIcon={<ReplyIcon sx={{ typography: "body2" }} />}
                     onClick={() => setIsReplying(!isReplying)}
-                    sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                    sx={{ textTransform: "none", typography: "caption" }}
                   >
                     Reply
                   </Button>

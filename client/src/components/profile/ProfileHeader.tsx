@@ -61,7 +61,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       )}
 
       {avatarError && (
-        <Alert severity="error" sx={{ width: "100%", fontSize: "0.75rem" }}>
+        <Alert severity="error" sx={{ width: "100%", typography: "caption" }}>
           {avatarError}
         </Alert>
       )}

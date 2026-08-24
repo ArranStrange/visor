@@ -68,8 +68,8 @@ const ContentTypeToggle: React.FC = () => {
                 textTransform: "none",
                 px: 3,
                 py: 1,
+                typography: "body2",
                 fontWeight: "medium",
-                fontSize: "0.9rem",
                 color: (theme) =>
                   contentType === value
                     ? theme.palette.primary.contrastText

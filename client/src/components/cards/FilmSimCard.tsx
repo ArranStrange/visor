@@ -20,7 +20,7 @@ import {
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
   getCardHoverStyles,
-} from "../../styles/cardOverlays";
+} from "../../theme/cardOverlays";
 
 interface FilmSimCardProps {
   id: string;

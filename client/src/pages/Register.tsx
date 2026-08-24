@@ -104,7 +104,7 @@ const Register: React.FC = () => {
     return (
       <Container maxWidth="sm" sx={{ mt: 10 }}>
         <Paper elevation={3} sx={{ p: 4, textAlign: "center" }}>
-          <Email sx={{ fontSize: 64, color: "primary.main", mb: 3 }} />
+          <Email sx={{ typography: "display", color: "primary.main", mb: 3 }} />
 
           <Typography
             variant="h4"

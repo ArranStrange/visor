@@ -171,7 +171,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: "0.875rem",
                     fontWeight: 500,
                   }}
                 >

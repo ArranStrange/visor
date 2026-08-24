@@ -2,8 +2,8 @@ import { SxProps, Theme } from "@mui/material/styles";
 
 export const overlayButtonStyles: SxProps<Theme> = {
   position: "absolute",
-  top: 12,
-  right: 12,
+  top: (theme) => theme.spacing(1.5),
+  right: (theme) => theme.spacing(1.5),
   zIndex: 10,
   opacity: 0,
   transition: "opacity 0.3s ease-in-out",
@@ -11,8 +11,8 @@ export const overlayButtonStyles: SxProps<Theme> = {
 
 export const overlayAvatarStyles: SxProps<Theme> = {
   position: "absolute",
-  top: 12,
-  left: 12,
+  top: (theme) => theme.spacing(1.5),
+  left: (theme) => theme.spacing(1.5),
   zIndex: 2,
   opacity: 0,
   transition: "opacity 0.3s ease-in-out",

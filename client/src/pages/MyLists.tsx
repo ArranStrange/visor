@@ -134,7 +134,7 @@ const MyLists: React.FC = () => {
           minHeight="400px"
           textAlign="center"
         >
-          <ListIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+          <ListIcon sx={{ typography: "display", color: "text.secondary", mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             No lists yet
           </Typography>

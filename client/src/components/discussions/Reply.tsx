@@ -116,19 +116,11 @@ const Reply: React.FC<ReplyProps> = ({
           <Typography variant="caption" fontWeight="bold">
             {reply.username}
           </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            fontSize="0.7rem"
-          >
+          <Typography variant="caption" color="text.secondary">
             {formatDate(reply.timestamp)}
           </Typography>
           {reply.isEdited && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              fontSize="0.7rem"
-            >
+            <Typography variant="caption" color="text.secondary">
               (edited)
             </Typography>
           )}
@@ -138,17 +130,13 @@ const Reply: React.FC<ReplyProps> = ({
               onClick={handleMenuOpen}
               sx={{ ml: "auto", p: 0.25 }}
             >
-              <MoreVertIcon sx={{ fontSize: 14 }} />
+              <MoreVertIcon sx={{ typography: "body2" }} />
             </IconButton>
           )}
         </Box>
 
         {!isEditing ? (
-          <Typography
-            variant="body2"
-            fontSize="0.875rem"
-            sx={{ whiteSpace: "pre-wrap" }}
-          >
+          <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
             {reply.content}
           </Typography>
         ) : (
