@@ -12,7 +12,7 @@ import {
   parseCropSettings,
   parseMetadataSettings,
   buildSettingsObject,
-} from "./xmpParserUtils";
+} from "./xmp-parser";
 
 export const parseXmpContent = (content: string): ParsedSettings => {
   const parser = new DOMParser();

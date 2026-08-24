@@ -11,7 +11,7 @@ import { useQuery } from "@apollo/client";
 import { ADD_PHOTO_TO_PRESET, GET_PRESET_BY_SLUG } from "../graphql/presets";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
-import { downloadXMP, type PresetData } from "../utils/xmpCompiler";
+import { downloadXMP, type PresetData } from "../utils/xmp-compiler";
 import { convertPresetSettingsToParsedSettings } from "../utils/presetDetailUtils";
 import AddToListButton from "../components/ui/AddToListButton";
 import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";

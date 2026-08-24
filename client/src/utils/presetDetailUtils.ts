@@ -1,5 +1,5 @@
 import { ParsedSettings } from "../types/xmpSettings";
-import { buildSettingsObject } from "./xmpParserUtils";
+import { buildSettingsObject } from "./xmp-parser";
 
 interface PresetSettings {
   [key: string]: any;
