@@ -18,11 +18,11 @@ const overlay = {
   scrimMedium: "rgba(0, 0, 0, 0.3)",
   scrimStrong: "rgba(0, 0, 0, 0.5)",
   scrimHeavy: "rgba(0, 0, 0, 0.7)",
+  scrimSolid: "rgba(0, 0, 0, 0.9)",
   white: "rgba(255, 255, 255, 0.9)",
   whiteSoft: "rgba(255, 255, 255, 0.7)",
   whiteHover: "rgba(255, 255, 255, 0.2)",
   whiteBorder: "rgba(255, 255, 255, 0.1)",
-  scrimSolid: "rgba(0,0,0,0.9)",
 };
 
 const floatingIconButtonStyles = {
@@ -98,6 +98,8 @@ export const visorTheme = createTheme({
     fontSize: 14,
     display: {
       fontSize: 64,
+      fontWeight: 300,
+      lineHeight: 1,
     },
     h1: {
       fontWeight: 700,
@@ -207,7 +209,7 @@ export const visorTheme = createTheme({
         {
           props: { variant: "creator" },
           style: {
-            backgroundColor: "rgba(0, 0, 0, 0.6)",
+            backgroundColor: overlay.scrimHeavy,
           },
         },
       ],
