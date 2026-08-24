@@ -44,16 +44,12 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
   };
 
   const uploadToCloudinary = async (file: File): Promise<UploadResult> => {
-    console.log("Starting Cloudinary upload for file:", file.name);
-
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", uploadPreset);
     formData.append("folder", folder);
 
     try {
-      console.log("Uploading to Cloudinary...");
-
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${
           import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
@@ -75,7 +71,6 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
       }
 
       const data = await response.json();
-      console.log("Cloudinary upload response:", data);
 
       const publicId = data.public_id;
       if (!publicId) {
@@ -99,7 +94,6 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
     setFileError(null);
 
     if (files.length === 0) {
-      console.log("No files selected");
       return;
     }
 
@@ -115,13 +109,11 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
     }
 
     if (validFiles.length === 0) {
-      console.log("No valid files after validation");
       return;
     }
 
     try {
       setIsUploading(true);
-      console.log("Starting upload process...");
 
       const uploadPromises = validFiles.map(async (file) => {
         const result = await uploadToCloudinary(file);
@@ -129,7 +121,6 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
       });
 
       const uploadedImages = await Promise.all(uploadPromises);
-      console.log("All images uploaded successfully:", uploadedImages);
 
       onSuccess(validFiles, uploadedImages);
     } catch (error) {

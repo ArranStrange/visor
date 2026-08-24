@@ -167,10 +167,6 @@ const ListDetail: React.FC = () => {
   const list = listData?.getUserList;
   const isOwner = currentUser?.id === list?.owner?.id;
 
-  // console.log("List data:", list);
-  // console.log("All presets:", presetsData?.listPresets);
-  // console.log("All film sims:", filmSimsData?.listFilmSims);
-
   // Create maps for quick lookup of full data
   const presetsMap = new Map(
     presetsData?.listPresets?.presets?.map((preset: any) => [
@@ -190,7 +186,6 @@ const ListDetail: React.FC = () => {
     ...(contentType === "all" || contentType === "presets"
       ? list?.presets?.map((preset: any) => {
           const fullPreset = presetsMap.get(preset.id);
-          // console.log("Processing preset:", preset.id, fullPreset);
           return {
             type: "preset" as const,
             data: fullPreset || {
@@ -210,7 +205,6 @@ const ListDetail: React.FC = () => {
     ...(contentType === "all" || contentType === "films"
       ? list?.filmSims?.map((filmSim: any) => {
           const fullFilmSim = filmSimsMap.get(filmSim.id) as any;
-          // console.log("Processing film sim:", filmSim.id, fullFilmSim);
           return {
             type: "film" as const,
             data: fullFilmSim

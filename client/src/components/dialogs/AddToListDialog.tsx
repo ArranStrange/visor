@@ -75,7 +75,6 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
-  // console.log("AddToListDialog - Current user:", currentUser);
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -116,13 +115,6 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 
   const handleAddToList = async (listId: string) => {
     try {
-      // console.log("Adding to list with params:", {
-      //   listId,
-      //   presetId: presetId || null,
-      //   filmSimId: filmSimId || null,
-      //   currentUser: currentUser,
-      // });
-
       if (!presetId && !filmSimId) {
         throw new Error("No item selected to add to list");
       }

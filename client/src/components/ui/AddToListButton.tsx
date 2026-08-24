@@ -87,7 +87,6 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
 
   const [addToList] = useMutation(ADD_TO_LIST, {
     onCompleted: (data) => {
-      console.log("Successfully added to list:", data);
       setSuccess("Added to list successfully!");
 
       refetch();
@@ -113,12 +112,6 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
 
   const handleAddToList = async (listId: string) => {
     try {
-      console.log("Adding to list:", {
-        listId,
-        presetId: presetId || null,
-        filmSimId: filmSimId || null,
-      });
-
       if (!presetId && !filmSimId) {
         throw new Error("No item selected to add to list");
       }

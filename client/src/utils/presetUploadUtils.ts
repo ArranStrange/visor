@@ -13,16 +13,6 @@ const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 export const validatePresetImage = (
   file: File
 ): { isValid: boolean; error?: string } => {
-  // Debug logging
-  console.log("File validation:", {
-    fileName: file.name,
-    fileSize: file.size,
-    fileSizeMB: (file.size / 1024 / 1024).toFixed(2),
-    maxSize: MAX_FILE_SIZE,
-    maxSizeMB: (MAX_FILE_SIZE / 1024 / 1024).toFixed(1),
-    isTooBig: file.size > MAX_FILE_SIZE,
-  });
-
   if (file.size > MAX_FILE_SIZE) {
     const fileSizeMB = (file.size / 1024 / 1024).toFixed(2);
     const maxSizeMB = (MAX_FILE_SIZE / 1024 / 1024).toFixed(1);

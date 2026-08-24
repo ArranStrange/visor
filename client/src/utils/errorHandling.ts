@@ -23,11 +23,4 @@ export const setupErrorHandling = (): void => {
       event.preventDefault();
     }
   });
-
-  const originalConsoleError = console.error;
-  console.error = (...args) => {
-    const message = args.join(" ");
-    if (isExtensionError(message)) return;
-    originalConsoleError.apply(console, args);
-  };
 };

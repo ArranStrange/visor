@@ -256,13 +256,13 @@ export const useDiscussionOperations = (
                 slug: discussion.linkedTo.preset.slug,
               }
             : discussion.linkedTo.filmSim
-            ? {
-                type: "FILMSIM",
-                id: discussion.linkedTo.filmSim.id,
-                title: discussion.linkedTo.filmSim.name,
-                slug: discussion.linkedTo.filmSim.slug,
-              }
-            : undefined;
+              ? {
+                  type: "FILMSIM",
+                  id: discussion.linkedTo.filmSim.id,
+                  title: discussion.linkedTo.filmSim.name,
+                  slug: discussion.linkedTo.filmSim.slug,
+                }
+              : undefined;
 
           await createDiscussionReplyNotification(
             createNotification,
@@ -304,9 +304,7 @@ export const useDiscussionOperations = (
         },
       });
 
-      if (result.data?.updatePost) {
-        console.log("Post updated successfully");
-      } else {
+      if (!result.data?.updatePost) {
         console.error("Failed to update post - no data returned");
       }
     } catch (error: any) {
@@ -351,40 +349,40 @@ export const useDiscussionOperations = (
         },
       });
 
-      if (result.data?.deletePost) {
-        console.log("Post deleted successfully");
-      } else if (result.errors && result.errors.length > 0) {
-        const firstError = result.errors[0];
-        let errorMessage = "Failed to delete post. Please try again.";
+      if (!result.data?.deletePost) {
+        if (result.errors && result.errors.length > 0) {
+          const firstError = result.errors[0];
+          let errorMessage = "Failed to delete post. Please try again.";
 
-        if (firstError.message) {
-          errorMessage = firstError.message;
-        }
-
-        if (firstError.extensions?.code) {
-          switch (firstError.extensions.code) {
-            case "UNAUTHENTICATED":
-              errorMessage = "You must be logged in to delete posts.";
-              break;
-            case "FORBIDDEN":
-              errorMessage = "You can only delete your own posts.";
-              break;
-            case "NOT_FOUND":
-              errorMessage =
-                "Post not found. It may have already been deleted.";
-              break;
-            case "INTERNAL_SERVER_ERROR":
-              errorMessage =
-                "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
-              break;
-            default:
-              errorMessage = firstError.message || errorMessage;
+          if (firstError.message) {
+            errorMessage = firstError.message;
           }
-        }
 
-        setDeleteError(errorMessage);
-      } else {
-        setDeleteError("Failed to delete post. Please try again.");
+          if (firstError.extensions?.code) {
+            switch (firstError.extensions.code) {
+              case "UNAUTHENTICATED":
+                errorMessage = "You must be logged in to delete posts.";
+                break;
+              case "FORBIDDEN":
+                errorMessage = "You can only delete your own posts.";
+                break;
+              case "NOT_FOUND":
+                errorMessage =
+                  "Post not found. It may have already been deleted.";
+                break;
+              case "INTERNAL_SERVER_ERROR":
+                errorMessage =
+                  "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
+                break;
+              default:
+                errorMessage = firstError.message || errorMessage;
+            }
+          }
+
+          setDeleteError(errorMessage);
+        } else {
+          setDeleteError("Failed to delete post. Please try again.");
+        }
       }
     } catch (error: any) {
       console.error("Delete post error:", error);

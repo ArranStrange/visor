@@ -45,11 +45,6 @@ const DiscussionDetail: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Debug logging - commented out to reduce console noise
-  // console.log("DiscussionDetail - discussionId:", discussionId);
-  // console.log("DiscussionDetail - discussionId type:", typeof discussionId);
-  // console.log("DiscussionDetail - discussionId is valid:", discussionId && discussionId !== "new");
-
   const {
     loading: discussionLoading,
     error: discussionError,
@@ -103,8 +98,6 @@ const DiscussionDetail: React.FC = () => {
             },
           });
         }
-      } else {
-        console.log("No createPost data returned from mutation");
       }
     },
   });
@@ -166,8 +159,6 @@ const DiscussionDetail: React.FC = () => {
       }
 
       if (data?.updatePost) {
-        console.log("Post updated successfully, updating cache");
-
         const existingDiscussion = cache.readQuery({
           query: GET_DISCUSSION,
           variables: { id: discussionId! },
@@ -208,15 +199,10 @@ const DiscussionDetail: React.FC = () => {
 
   const handleCreatePost = async (content: string) => {
     if (!discussionId || !content.trim()) {
-      console.log("Missing discussionId or content:", {
-        discussionId,
-        content,
-      });
       return;
     }
 
     if (!discussion) {
-      console.log("No discussion found for ID:", discussionId);
       return;
     }
 
@@ -241,13 +227,13 @@ const DiscussionDetail: React.FC = () => {
               slug: discussion.linkedTo.preset.slug,
             }
           : discussion.linkedTo.filmSim
-          ? {
-              type: "FILMSIM",
-              id: discussion.linkedTo.filmSim.id,
-              title: discussion.linkedTo.filmSim.name,
-              slug: discussion.linkedTo.filmSim.slug,
-            }
-          : undefined;
+            ? {
+                type: "FILMSIM",
+                id: discussion.linkedTo.filmSim.id,
+                title: discussion.linkedTo.filmSim.name,
+                slug: discussion.linkedTo.filmSim.slug,
+              }
+            : undefined;
 
         await createDiscussionReplyNotification(
           createNotification,
@@ -283,9 +269,7 @@ const DiscussionDetail: React.FC = () => {
         },
       });
 
-      if (result.data?.updatePost) {
-        console.log("Post updated successfully");
-      } else {
+      if (!result.data?.updatePost) {
         console.error("Failed to update post - no data returned");
       }
     } catch (error: any) {
@@ -371,7 +355,6 @@ const DiscussionDetail: React.FC = () => {
 
       if (result.data?.deletePost) {
         // Cache update is handled by the mutation
-        console.log("Post deleted successfully");
       } else if (result.errors && result.errors.length > 0) {
         console.error("Backend returned errors:", result.errors);
 

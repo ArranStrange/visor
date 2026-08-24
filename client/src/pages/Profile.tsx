@@ -81,7 +81,6 @@ const UPLOAD_AVATAR = gql`
 
 // Cloudinary upload function for profile pictures
 const uploadToCloudinary = async (file: File): Promise<string> => {
-  console.log("Uploading profile picture to Cloudinary...");
   const formData = new FormData();
   formData.append("file", file);
   formData.append("upload_preset", "ProfilePhotos");
@@ -109,7 +108,6 @@ const uploadToCloudinary = async (file: File): Promise<string> => {
     }
 
     const data = await response.json();
-    console.log("Cloudinary upload response:", data);
 
     return data.secure_url;
   } catch (error: any) {
@@ -156,10 +154,8 @@ const Profile: React.FC = () => {
     refetch,
   } = useQuery(GET_USER_PROFILE, {
     onCompleted: (data) => {
-      console.log("Profile data received:", data);
       if (data?.getCurrentUser) {
         const user = data.getCurrentUser;
-        console.log("User data:", user);
         setFormData({
           bio: user.bio || "",
           instagram: user.instagram || "",
@@ -171,7 +167,6 @@ const Profile: React.FC = () => {
 
   const [updateProfile] = useMutation(UPDATE_USER_PROFILE, {
     onCompleted: (data) => {
-      console.log("Profile update completed:", data);
       setSuccess("Profile updated successfully!");
       refetch();
       setTimeout(() => setSuccess(null), 3000);
@@ -213,7 +208,6 @@ const Profile: React.FC = () => {
         instagram: formData.instagram,
         cameras: formData.cameras,
       };
-      console.log("Sending profile update data:", inputData);
 
       await updateProfile({
         variables: {
@@ -244,7 +238,6 @@ const Profile: React.FC = () => {
 
       // Upload to Cloudinary first
       const cloudinaryUrl = await uploadToCloudinary(file);
-      console.log("Uploaded to Cloudinary:", cloudinaryUrl);
 
       // Then update the user's avatar in the database
       await updateProfile({

@@ -22,7 +22,6 @@ const Login: React.FC = () => {
 
   const [loginMutation, { loading }] = useMutation(LOGIN_USER, {
     onCompleted: (data) => {
-      console.log("Login response:", data);
       if (data?.login?.token) {
         if (data.login.user) {
           const userData = {
