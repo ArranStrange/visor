@@ -7,8 +7,9 @@
     "build": "vite build",
     "build:prod": "vite build --mode production",
     "preview": "vite preview",
-    "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
-    "format": "prettier --write .",
+    "lint": "eslint src",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src",
     "deploy": "npm run build:prod && firebase deploy --only hosting"
   },
   "dependencies": {
@@ -17,10 +18,7 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^7.1.1",
     "@mui/material": "^7.1.1",
-    "@types/crypto-js": "^4.2.2",
-    "@use-gesture/react": "^10.3.1",
     "apollo-upload-client": "^18.0.1",
-    "crypto-js": "^4.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.16.0",
     "graphql": "^16.11.0",
@@ -28,18 +26,22 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.16.0",
-    "react-router-dom": "^7.6.2",
-    "react-swipeable": "^7.0.2",
-    "slugify": "^1.6.6",
-    "uuid": "^11.1.0"
+    "react-router-dom": "^7.6.2"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.8",
+    "@eslint/js": "^10.0.1",
     "@types/react": "^18.2.14",
     "@types/react-dom": "^18.2.7",
     "@vitejs/plugin-react": "^4.5.1",
     "cypress": "^15.2.0",
+    "eslint": "^10.9.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.4",
+    "globals": "^17.11.0",
+    "prettier": "^3.9.6",
     "typescript": "^5.4.2",
+    "typescript-eslint": "^8.67.0",
     "vite": "^6.3.5"
   }
 }

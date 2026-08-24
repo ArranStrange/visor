@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node seed/seedData.js",
+    "lint": "eslint .",
     "deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
@@ -27,6 +28,9 @@
     "mongoose": "^8.0.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.9.0",
+    "globals": "^17.11.0",
     "nodemon": "^3.1.10"
   }
 }
