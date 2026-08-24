@@ -1,47 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Box,
   Typography,
-  Avatar,
-  TextField,
-  Button,
   Grid,
   Paper,
-  IconButton,
-  Chip,
-  Stack,
   CircularProgress,
   Alert,
-  Autocomplete,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { getSensorForCamera } from "../constants/fujifilmSensors";
-import {
-  FUJIFILM_CAMERAS,
-  normalizeCameraName,
-} from "../constants/fujifilmCameras";
-
-// Suggestions for the camera input; freeSolo still allows any other gear.
-const CAMERA_SUGGESTIONS = FUJIFILM_CAMERAS.map(
-  (camera) => `Fujifilm ${camera.name}`
-);
-
-// Hyphen/space-insensitive suggestion matching, so "xt5" finds "Fujifilm X-T5".
-const filterCameraSuggestions = (options: string[], inputValue: string) => {
-  const needle = normalizeCameraName(inputValue);
-  if (!needle) return options;
-  return options.filter((option) =>
-    normalizeCameraName(option).includes(needle)
-  );
-};
 import { useQuery, useMutation } from "@apollo/client";
-import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { useAuth } from "../context/AuthContext";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "../graphql/users";
+import ProfileHeader from "../components/profile/ProfileHeader";
+import ProfileEditForm from "../components/profile/ProfileEditForm";
 
 // File validation
 const validateProfileImage = (file: File): boolean => {
@@ -60,7 +32,6 @@ const validateProfileImage = (file: File): boolean => {
 };
 
 const Profile: React.FC = () => {
-  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     bio: "",
@@ -80,9 +51,9 @@ const Profile: React.FC = () => {
     data,
     refetch,
   } = useQuery(GET_USER_PROFILE, {
-    onCompleted: (data) => {
-      if (data?.getCurrentUser) {
-        const user = data.getCurrentUser;
+    onCompleted: (result) => {
+      if (result?.getCurrentUser) {
+        const user = result.getCurrentUser;
         setFormData({
           bio: user.bio || "",
           instagram: user.instagram || "",
@@ -93,14 +64,14 @@ const Profile: React.FC = () => {
   });
 
   const [updateProfile] = useMutation(UPDATE_USER_PROFILE, {
-    onCompleted: (data) => {
+    onCompleted: () => {
       setSuccess("Profile updated successfully!");
       refetch();
       setTimeout(() => setSuccess(null), 3000);
     },
-    onError: (error) => {
-      console.error("Profile update error:", error);
-      setError(error.message);
+    onError: (mutationError) => {
+      console.error("Profile update error:", mutationError);
+      setError(mutationError.message);
       setTimeout(() => setError(null), 3000);
     },
   });
@@ -146,17 +117,13 @@ const Profile: React.FC = () => {
     }
   };
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleAvatarChange = async (file: File) => {
     setAvatarError(null);
 
     if (!validateProfileImage(file)) {
       setAvatarError(
         "Please select a valid image file (JPEG, PNG, WebP) under 5MB"
       );
-      e.target.value = "";
       return;
     }
 
@@ -179,16 +146,15 @@ const Profile: React.FC = () => {
 
       // Update the AuthContext with the new avatar URL
       updateUser({ avatar: cloudinaryUrl });
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
+    } catch (uploadError) {
+      console.error("Error uploading avatar:", uploadError);
       setAvatarError("Failed to upload profile picture");
     } finally {
       setIsUploadingAvatar(false);
-      e.target.value = "";
     }
   };
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <Box
         display="flex"
@@ -241,217 +207,38 @@ const Profile: React.FC = () => {
         }}
       >
         <Grid container spacing={4}>
-          {/* Profile Picture Section */}
           <Grid component={undefined as any} item xs={12} md={4}>
-            <Box
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              gap={2}
+            <ProfileHeader
+              avatarUrl={user?.avatar}
+              avatarAlt={user?.username}
+              onAvatarChange={handleAvatarChange}
+              avatarUploading={isUploadingAvatar}
+              avatarError={avatarError}
             >
-              <Box position="relative">
-                <Avatar
-                  src={user?.avatar}
-                  alt={user?.username}
-                  sx={{ width: 150, height: 150 }}
-                />
-                {isUploadingAvatar && (
-                  <Box
-                    position="absolute"
-                    top={0}
-                    left={0}
-                    right={0}
-                    bottom={0}
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    bgcolor="overlay.scrimStrong"
-                    borderRadius="50%"
-                  >
-                    <CircularProgress size={40} />
-                  </Box>
-                )}
-              </Box>
-
-              <IconButton
-                color="primary"
-                component="label"
-                disabled={isUploadingAvatar}
-              >
-                <input
-                  hidden
-                  accept="image/*"
-                  type="file"
-                  onChange={handleAvatarUpload}
-                />
-                <PhotoCameraIcon />
-              </IconButton>
-
-              {avatarError && (
-                <Alert
-                  severity="error"
-                  sx={{ width: "100%", fontSize: "0.75rem" }}
-                >
-                  {avatarError}
-                </Alert>
-              )}
-
               <Typography variant="h5" fontWeight="bold">
                 {user?.username}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {user?.email}
               </Typography>
-            </Box>
+            </ProfileHeader>
           </Grid>
 
-          {/* Profile Information Section */}
           <Grid component={undefined as any} item xs={12} md={8}>
-            <Box component="form" onSubmit={handleSubmit}>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Bio
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={4}
-                    name="bio"
-                    value={formData.bio}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="Tell us about yourself..."
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Instagram
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleInputChange}
-                    disabled={!isEditing}
-                    placeholder="@username"
-                    InputProps={{
-                      startAdornment: (
-                        <InstagramIcon
-                          sx={{ mr: 1, color: "text.secondary" }}
-                        />
-                      ),
-                    }}
-                  />
-                </Box>
-
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    gutterBottom
-                  >
-                    Cameras
-                  </Typography>
-                  <Box display="flex" gap={1} mb={2}>
-                    <Autocomplete
-                      fullWidth
-                      freeSolo
-                      options={CAMERA_SUGGESTIONS}
-                      filterOptions={(options, state) =>
-                        filterCameraSuggestions(options, state.inputValue)
-                      }
-                      inputValue={newCamera}
-                      onInputChange={(_, value) => setNewCamera(value)}
-                      disabled={!isEditing}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          placeholder="Add a camera"
-                          InputProps={{
-                            ...params.InputProps,
-                            startAdornment: (
-                              <CameraAltIcon
-                                sx={{ mr: 1, color: "text.secondary" }}
-                              />
-                            ),
-                          }}
-                        />
-                      )}
-                    />
-                    <Button
-                      variant="contained"
-                      onClick={handleAddCamera}
-                      disabled={!isEditing || !newCamera.trim()}
-                    >
-                      Add
-                    </Button>
-                  </Box>
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {formData.cameras.map((camera) => {
-                      const sensor = getSensorForCamera(camera);
-                      const clickable = !isEditing && !!sensor;
-                      return (
-                        <Chip
-                          key={camera}
-                          label={camera}
-                          color={clickable ? "secondary" : "default"}
-                          variant={clickable ? "outlined" : "filled"}
-                          clickable={clickable}
-                          onClick={
-                            clickable
-                              ? () =>
-                                  navigate(
-                                    `/search?sensor=${encodeURIComponent(
-                                      sensor.label
-                                    )}`
-                                  )
-                              : undefined
-                          }
-                          onDelete={
-                            isEditing
-                              ? () => handleRemoveCamera(camera)
-                              : undefined
-                          }
-                        />
-                      );
-                    })}
-                  </Box>
-                </Box>
-
-                <Box display="flex" gap={2} justifyContent="flex-end">
-                  {isEditing ? (
-                    <>
-                      <Button
-                        variant="outlined"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" variant="contained">
-                        Save Changes
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit Profile
-                    </Button>
-                  )}
-                </Box>
-              </Stack>
-            </Box>
+            <ProfileEditForm
+              bio={formData.bio}
+              instagram={formData.instagram}
+              cameras={formData.cameras}
+              newCamera={newCamera}
+              isEditing={isEditing}
+              onFieldChange={handleInputChange}
+              onNewCameraChange={setNewCamera}
+              onAddCamera={handleAddCamera}
+              onRemoveCamera={handleRemoveCamera}
+              onSubmit={handleSubmit}
+              onStartEdit={() => setIsEditing(true)}
+              onCancelEdit={() => setIsEditing(false)}
+            />
           </Grid>
         </Grid>
       </Paper>
