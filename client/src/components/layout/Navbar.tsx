@@ -186,7 +186,8 @@ const NavBar: React.FC = () => {
                   elevation: 0,
                   sx: {
                     overflow: "visible",
-                    filter: "drop-shadow(0px 2px 8px rgba(0,0,0,0.32))",
+                    filter: (theme) =>
+                      `drop-shadow(0px 2px 8px ${theme.palette.overlay.scrimMedium})`,
                     mt: 1.5,
                     "& .MuiAvatar-root": {
                       width: 32,

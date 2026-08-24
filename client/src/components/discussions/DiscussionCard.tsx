@@ -223,11 +223,11 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
             >
               <Box display="flex" alignItems="center" gap={2}>
                 <Typography variant="caption" color="text.secondary">
-                  <ChatIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                  <ChatIcon sx={{ typography: "body2", mr: 0.5 }} />
                   {discussion.posts.length} posts
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  <BookmarkIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                  <BookmarkIcon sx={{ typography: "body2", mr: 0.5 }} />
                   {discussion.followers.length} followers
                 </Typography>
                 <Typography variant="caption" color="text.secondary">

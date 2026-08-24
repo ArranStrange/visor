@@ -123,7 +123,8 @@ const NotificationBell: React.FC = () => {
             minWidth: 350,
             maxWidth: 450,
             height: "100vh",
-            boxShadow: "-4px 0 20px rgba(0, 0, 0, 0.15)",
+            boxShadow: (theme) =>
+              `-4px 0 20px ${theme.palette.overlay.scrimSubtle}`,
             border: "none",
             borderRadius: 0,
           },

@@ -9,7 +9,9 @@ import SettingSliderDisplay from "./SettingSliderDisplay";
 import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,
+  COLOR_MIXER_HUE_SPECTRUM,
 } from "../../constants/xmpSettingsConfig";
+import { selectedBorderSx } from "../../utils/selectedBorderSx";
 
 interface Setting {
   label: string;
@@ -67,10 +69,7 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                     height: 24,
                     borderRadius: "50%",
                     background: color,
-                    border:
-                      selectedColor === key
-                        ? "2px solid #fff"
-                        : "2px solid #222",
+                    ...selectedBorderSx(selectedColor === key),
                   }}
                 />
               </ToggleButton>
@@ -94,7 +93,7 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
 
         const actualSpectrum =
           isColorMixer && setting.key === "hue"
-            ? "linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)"
+            ? COLOR_MIXER_HUE_SPECTRUM
             : isColorMixer && setting.key === "saturation"
               ? `linear-gradient(to right, #888, ${colorMixerColor(
                   selectedColor
@@ -172,7 +171,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                   variant="body2"
                   color="text.secondary"
                   sx={{
-                    fontSize: "0.875rem",
                     fontWeight: 500,
                   }}
                 >

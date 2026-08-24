@@ -11,7 +11,9 @@ const EmptyNotificationsState: React.FC<EmptyNotificationsStateProps> = ({
 }) => (
   <Card>
     <CardContent sx={{ textAlign: "center", py: 6 }}>
-      <NotificationsIcon sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+      <NotificationsIcon
+        sx={{ typography: "display", color: "text.secondary", mb: 2 }}
+      />
       <Typography variant="h6" color="text.secondary" gutterBottom>
         No notifications found
       </Typography>

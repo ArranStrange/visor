@@ -101,8 +101,10 @@ function ColorWheel({
             width: thumbSize,
             height: thumbSize,
             borderRadius: "50%",
-            border: "2px solid #fff",
-            boxShadow: "0 0 4px 2px rgba(0,0,0,0.5)",
+            border: "2px solid",
+            borderColor: "common.white",
+            boxShadow: (theme) =>
+              `0 0 4px 2px ${theme.palette.overlay.scrimStrong}`,
             background: hslColor(hue ?? 0, sat ?? 100, 0.5),
             pointerEvents: "none",
           }}
@@ -112,27 +114,27 @@ function ColorWheel({
   );
 }
 
-const CenteredSlider = styled(Slider)(() => ({
-  color: "#fff",
+const CenteredSlider = styled(Slider)(({ theme }) => ({
+  color: theme.palette.common.white,
   height: 4,
   padding: "13px 0",
   "& .MuiSlider-rail": {
-    backgroundColor: "#444",
+    backgroundColor: theme.palette.surface.outline,
     opacity: 1,
     height: 4,
     zIndex: 1,
   },
   "& .MuiSlider-track": {
-    backgroundColor: "#fff",
+    backgroundColor: theme.palette.common.white,
     height: 4,
     zIndex: 2,
   },
   "& .MuiSlider-thumb": {
     width: 16,
     height: 16,
-    backgroundColor: "#fff",
-    border: "2px solid #222",
-    boxShadow: "0 2px 8px 2px rgba(0,0,0,0.25)",
+    backgroundColor: theme.palette.common.white,
+    border: `2px solid ${theme.palette.surface.border}`,
+    boxShadow: `0 2px 8px 2px ${theme.palette.overlay.scrimMedium}`,
     zIndex: 3,
     position: "relative",
   },

@@ -1,5 +1,5 @@
 import React from "react";
-import { Dialog, Box, IconButton } from "@mui/material";
+import { Dialog, Box, IconButton, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -21,6 +21,8 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
   onClose,
   onFeaturedToggle,
 }) => {
+  const theme = useTheme();
+
   if (!imageUrl) return null;
 
   return (
@@ -31,7 +33,7 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
       fullWidth
       PaperProps={{
         sx: {
-          background: "rgba(0,0,0,0.95)",
+          background: "overlay.scrimSolid",
           boxShadow: 0,
           display: "flex",
           alignItems: "center",
@@ -85,8 +87,8 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
             maxWidth: "90vw",
             maxHeight: "80vh",
             borderRadius: 12,
-            boxShadow: "0 0 32px 0 rgba(0,0,0,0.7)",
-            background: "#111",
+            boxShadow: `0 0 32px 0 ${theme.palette.overlay.scrimHeavy}`,
+            background: theme.palette.surface.sunken,
           }}
         />
       </Box>

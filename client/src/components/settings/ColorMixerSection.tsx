@@ -4,8 +4,10 @@ import { ParsedSettings } from "../../types/xmpSettings";
 import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,
+  COLOR_MIXER_HUE_SPECTRUM,
   COLOR_MIXER_SETTINGS,
 } from "../../constants/xmpSettingsConfig";
+import { selectedBorderSx } from "../../utils/selectedBorderSx";
 
 interface ColorMixerSectionProps {
   settings: ParsedSettings;
@@ -27,7 +29,7 @@ const ColorMixerSection: React.FC<ColorMixerSectionProps> = ({
 
   const getColorMixerSpectrum = (key: string) => {
     if (key === "hue") {
-      return "linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)";
+      return COLOR_MIXER_HUE_SPECTRUM;
     }
     return `linear-gradient(to right, #888, ${
       COLOR_MIXER_COLORS[selectedColor as keyof typeof COLOR_MIXER_COLORS]
@@ -49,10 +51,9 @@ const ColorMixerSection: React.FC<ColorMixerSectionProps> = ({
               height: 24,
               borderRadius: "50%",
               background: color,
-              border:
-                selectedColor === key ? "2px solid #fff" : "2px solid #222",
               margin: 0.5,
               cursor: "pointer",
+              ...selectedBorderSx(selectedColor === key),
             }}
             onClick={() => setSelectedColor(key)}
           />

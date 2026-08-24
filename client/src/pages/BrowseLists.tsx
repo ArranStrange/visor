@@ -153,10 +153,7 @@ const BrowseLists: React.FC = () => {
           px: 2,
           py: 1.5,
           borderRadius: 6,
-          backgroundColor: (theme) =>
-            theme.palette.mode === "dark"
-              ? "rgba(255,255,255,0.08)"
-              : "rgba(0,0,0,0.04)",
+          backgroundColor: "action.hover",
           transition: "all 0.2s",
         }}
       />

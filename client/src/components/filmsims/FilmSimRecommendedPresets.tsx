@@ -51,8 +51,9 @@ const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
           <Typography variant="h6">Recommended Presets</Typography>
           {isOwner && (
             <div onClick={(e) => e.stopPropagation()}>
-              <Box
+              <Typography
                 component="span"
+                variant="body2"
                 onClick={onManageClick}
                 sx={{
                   display: "inline-flex",
@@ -64,7 +65,6 @@ const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
                   borderRadius: 1,
                   color: "primary.main",
                   cursor: "pointer",
-                  fontSize: "0.875rem",
                   "&:hover": {
                     backgroundColor: "primary.main",
                     color: "white",
@@ -73,7 +73,7 @@ const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
                 }}
               >
                 Manage
-              </Box>
+              </Typography>
             </div>
           )}
         </div>

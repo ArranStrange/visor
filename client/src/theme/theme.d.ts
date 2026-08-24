@@ -18,11 +18,17 @@ declare module "@mui/material/styles" {
     whiteHover: string;
     /** 10% white — hairline borders. */
     whiteBorder: string;
+    /** 90% black — near-solid hover fill for floating controls. */
+    scrimSolid: string;
   }
 
   interface SurfacePalette {
+    /** Recessed background for sections below the page plane. */
+    sunken: string;
     /** Raised card/panel background — one tonal step above paper. */
     raised: string;
+    /** Background for text-entry controls. */
+    input: string;
     /** Hairline border for raised surfaces. */
     border: string;
     /** Outlines for chips/controls sitting on a raised surface. */
@@ -40,11 +46,13 @@ declare module "@mui/material/styles" {
   }
 
   interface TypographyVariants {
+    display: React.CSSProperties;
     overlayTitle: React.CSSProperties;
     overlaySubtitle: React.CSSProperties;
   }
 
   interface TypographyVariantsOptions {
+    display?: React.CSSProperties;
     overlayTitle?: React.CSSProperties;
     overlaySubtitle?: React.CSSProperties;
   }
@@ -52,6 +60,7 @@ declare module "@mui/material/styles" {
 
 declare module "@mui/material/Typography" {
   interface TypographyPropsVariantOverrides {
+    display: true;
     overlayTitle: true;
     overlaySubtitle: true;
   }
@@ -66,5 +75,11 @@ declare module "@mui/material/Avatar" {
 declare module "@mui/material/Chip" {
   interface ChipPropsVariantOverrides {
     overlay: true;
+  }
+}
+
+declare module "@mui/material/IconButton" {
+  interface IconButtonOwnProps {
+    variant?: "floating";
   }
 }

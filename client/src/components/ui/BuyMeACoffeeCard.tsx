@@ -42,7 +42,8 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
         transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
         "&:hover": {
           transform: "translateY(-4px)",
-          boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
+          boxShadow: (theme) =>
+            `0 8px 25px ${theme.palette.overlay.scrimSubtle}`,
         },
         "&:hover .tags-container": {
           opacity: 1,
@@ -90,7 +91,8 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
           fontWeight="bold"
           sx={{
             color: "overlay.white",
-            textShadow: "2px 2px 8px rgba(0,0,0,0.7)",
+            textShadow: (theme) =>
+              `2px 2px 8px ${theme.palette.overlay.scrimHeavy}`,
             lineHeight: 1.2,
           }}
         >
@@ -100,7 +102,8 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
           variant="body2"
           sx={{
             color: "overlay.whiteSoft",
-            textShadow: "1px 1px 4px rgba(0,0,0,0.7)",
+            textShadow: (theme) =>
+              `1px 1px 4px ${theme.palette.overlay.scrimHeavy}`,
             lineHeight: 1.2,
           }}
         >

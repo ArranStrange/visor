@@ -25,8 +25,9 @@ const ListHeaderEdit: React.FC<ListHeaderEditProps> = ({
           variant="standard"
           sx={{
             "& .MuiInputBase-root": {
-              fontSize: "2rem",
-              fontWeight: "bold",
+              typography: "h1",
+              lineHeight: (theme) => theme.typography.body1.lineHeight,
+              letterSpacing: (theme) => theme.typography.body1.letterSpacing,
             },
           }}
         />

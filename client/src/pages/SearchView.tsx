@@ -94,7 +94,7 @@ const SearchView: React.FC = () => {
           px: 2,
           py: 1,
           borderRadius: 2,
-          backgroundColor: "rgba(255,255,255,0.08)",
+          backgroundColor: "action.hover",
           color: "white",
           mb: 2,
         }}

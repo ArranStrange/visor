@@ -12,7 +12,7 @@ import {
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
   getCardHoverStyles,
-} from "../../styles/cardOverlays";
+} from "../../theme/cardOverlays";
 
 const placeholderImage = "/placeholder-image.jpg";
 
