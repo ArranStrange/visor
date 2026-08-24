@@ -1,9 +1,8 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Box, CircularProgress } from "@mui/material";
 import NavBar from "./components/layout/Navbar";
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import ProfilePage from "./pages/Profile";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
@@ -11,24 +10,28 @@ import { ShuffleProvider } from "./context/ShuffleContext";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { TagProvider } from "./context/TagContext";
-import SearchView from "./pages/SearchView";
-import PresetDetailPage from "./pages/PresetDetail";
-import FilmSimPage from "./pages/FilmSimDetail";
-import UploadPage from "./pages/Upload";
-import UploadPreset from "./pages/UploadPreset";
-import UploadFilmSim from "./pages/upload-film-sim";
-import NotFound from "./pages/NotFound";
-import MyLists from "./pages/MyLists";
-import ListDetail from "./pages/list-detail";
-import BrowseLists from "./pages/BrowseLists";
 import { visorTheme } from "./theme/VISORTheme";
-import CreateList from "./pages/CreateList";
-import PublicProfile from "./pages/PublicProfile";
-import Discussions from "./pages/Discussions";
-import DiscussionDetail from "./pages/discussion-detail";
-import CreateDiscussion from "./pages/create-discussion";
-import Notifications from "./pages/notifications";
-import EmailVerification from "./pages/EmailVerification";
+
+const SearchView = lazy(() => import("./pages/SearchView"));
+const PresetDetailPage = lazy(() => import("./pages/PresetDetail"));
+const FilmSimPage = lazy(() => import("./pages/FilmSimDetail"));
+const ProfilePage = lazy(() => import("./pages/Profile"));
+const PublicProfile = lazy(() => import("./pages/PublicProfile"));
+const UploadPage = lazy(() => import("./pages/Upload"));
+const UploadPreset = lazy(() => import("./pages/UploadPreset"));
+const UploadFilmSim = lazy(() => import("./pages/upload-film-sim"));
+const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
+const EmailVerification = lazy(() => import("./pages/EmailVerification"));
+const MyLists = lazy(() => import("./pages/MyLists"));
+const BrowseLists = lazy(() => import("./pages/BrowseLists"));
+const ListDetail = lazy(() => import("./pages/list-detail"));
+const CreateList = lazy(() => import("./pages/CreateList"));
+const Discussions = lazy(() => import("./pages/Discussions"));
+const CreateDiscussion = lazy(() => import("./pages/create-discussion"));
+const DiscussionDetail = lazy(() => import("./pages/discussion-detail"));
+const Notifications = lazy(() => import("./pages/notifications"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
   return (
@@ -41,50 +44,66 @@ function App() {
               <ShuffleProvider>
                 <TagProvider>
                   <NavBar />
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/search" element={<SearchView />} />
-                    <Route
-                      path="/preset/:slug"
-                      element={<PresetDetailPage />}
-                    />
-                    <Route path="/filmsim/:slug" element={<FilmSimPage />} />
-                    <Route path="/profile" element={<ProfilePage />} />
-                    <Route
-                      path="/profile/:userId"
-                      element={<PublicProfile />}
-                    />
-                    <Route path="/upload" element={<UploadPage />} />
-                    <Route path="/upload/preset" element={<UploadPreset />} />
-                    <Route
-                      path="/upload/filmsim"
-                      element={<UploadFilmSim />}
-                    />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route
-                      path="/verify-email"
-                      element={<EmailVerification />}
-                    />
-                    <Route path="/lists" element={<MyLists />} />
-                    <Route path="/browse-lists" element={<BrowseLists />} />
-                    <Route path="/list/:id" element={<ListDetail />} />
-                    <Route path="/create-list" element={<CreateList />} />
-                    <Route path="/discussions" element={<Discussions />} />
-                    <Route
-                      path="/discussions/new"
-                      element={<CreateDiscussion />}
-                    />
-                    <Route
-                      path="/discussions/:discussionId"
-                      element={<DiscussionDetail />}
-                    />
-                    <Route
-                      path="/notifications"
-                      element={<Notifications />}
-                    />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
+                  <Suspense
+                    fallback={
+                      <Box
+                        sx={{
+                          minHeight: "100vh",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          backgroundColor: "background.default",
+                        }}
+                      >
+                        <CircularProgress aria-label="Loading page" />
+                      </Box>
+                    }
+                  >
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/search" element={<SearchView />} />
+                      <Route
+                        path="/preset/:slug"
+                        element={<PresetDetailPage />}
+                      />
+                      <Route path="/filmsim/:slug" element={<FilmSimPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route
+                        path="/profile/:userId"
+                        element={<PublicProfile />}
+                      />
+                      <Route path="/upload" element={<UploadPage />} />
+                      <Route path="/upload/preset" element={<UploadPreset />} />
+                      <Route
+                        path="/upload/filmsim"
+                        element={<UploadFilmSim />}
+                      />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route
+                        path="/verify-email"
+                        element={<EmailVerification />}
+                      />
+                      <Route path="/lists" element={<MyLists />} />
+                      <Route path="/browse-lists" element={<BrowseLists />} />
+                      <Route path="/list/:id" element={<ListDetail />} />
+                      <Route path="/create-list" element={<CreateList />} />
+                      <Route path="/discussions" element={<Discussions />} />
+                      <Route
+                        path="/discussions/new"
+                        element={<CreateDiscussion />}
+                      />
+                      <Route
+                        path="/discussions/:discussionId"
+                        element={<DiscussionDetail />}
+                      />
+                      <Route
+                        path="/notifications"
+                        element={<Notifications />}
+                      />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
                 </TagProvider>
               </ShuffleProvider>
             </ContentTypeProvider>
