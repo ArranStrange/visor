@@ -26,8 +26,6 @@ const ADD_PHOTO_TO_PRESET = gql`
 
 const cloudinaryConfig = {
   cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-  apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY,
-  apiSecret: import.meta.env.VITE_CLOUDINARY_API_SECRET,
 };
 
 const uploadToCloudinary = async (file: File): Promise<string> => {
