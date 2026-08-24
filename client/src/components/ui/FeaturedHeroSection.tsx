@@ -241,7 +241,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               [640, 1024, 1600]
             )}
             sizes="(max-width: 900px) 100vw, 70vw"
-            loading="lazy"
+            loading="eager"
             isMobile={isMobile}
             isHovered={isHovered}
           />
@@ -251,7 +251,7 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
               src={heroImageUrl}
               srcSet={getResponsiveImageSrcSet(imageUrl, [640, 1024, 1600])}
               sizes="(max-width: 900px) 100vw, 70vw"
-              loading="lazy"
+              loading="eager"
               alt={title}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
