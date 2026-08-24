@@ -61,10 +61,14 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
                   height: DOT_SIZE,
                   borderRadius: "50%",
                   bgcolor: getWBColor(r, b),
-                  border: isSelected ? "2px solid white" : "1px solid #222",
+                  border: isSelected ? "2px solid" : "1px solid",
+                  borderColor: isSelected ? "common.white" : "divider",
                   cursor: "pointer",
                   transition: "border 0.1s",
-                  boxShadow: isSelected ? "0 0 0 1px #000" : undefined,
+                  boxShadow: (theme) =>
+                    isSelected
+                      ? `0 0 0 1px ${theme.palette.common.black}`
+                      : undefined,
                 }}
               />
             );
@@ -79,7 +83,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
             top: 0,
             width: 1,
             height: "100%",
-            bgcolor: "rgba(0, 0, 0, 0.0)",
+            bgcolor: "transparent",
             zIndex: 3,
             pointerEvents: "none",
             transform: "translateX(-50%)",
@@ -92,7 +96,7 @@ const WhiteBalanceGrid: React.FC<WhiteBalanceGridProps> = ({
             left: 0,
             width: "100%",
             height: 1,
-            bgcolor: "rgba(0, 0, 0, 0.0)",
+            bgcolor: "transparent",
             zIndex: 3,
             pointerEvents: "none",
             transform: "translateY(-50%)",

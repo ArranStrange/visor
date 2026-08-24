@@ -33,9 +33,10 @@ const SearchHero: React.FC = () => {
           alt="VISOR logo"
           sx={{
             height: { xs: 33, md: 44 },
-            filter: featuredPhoto
-              ? "drop-shadow(0 2px 8px rgba(0,0,0,0.5))"
-              : "none",
+            filter: (theme) =>
+              featuredPhoto
+                ? `drop-shadow(0 2px 8px ${theme.palette.overlay.scrimStrong})`
+                : "none",
           }}
         />
         <Box
@@ -52,14 +53,11 @@ const SearchHero: React.FC = () => {
               px: 2.5,
               py: 2,
               borderRadius: 6,
-              backgroundColor: (t) =>
-                featuredPhoto
-                  ? "overlay.scrimStrong"
-                  : t.palette.mode === "dark"
-                    ? "rgba(255,255,255,0.06)"
-                    : "rgba(0,0,0,0.04)",
+              backgroundColor: featuredPhoto
+                ? "overlay.scrimStrong"
+                : "action.hover",
               backdropFilter: featuredPhoto ? "blur(10px)" : "none",
-              color: featuredPhoto ? "#fff" : "inherit",
+              color: featuredPhoto ? "overlay.white" : "inherit",
               fontSize: { xs: "1rem", md: "1.05rem" },
               width: { xs: "100%", sm: "80%", md: 600 },
               height: { xs: 44, md: 50 },
@@ -89,8 +87,11 @@ const SearchHero: React.FC = () => {
               transition: "opacity 0.2s",
               whiteSpace: "nowrap",
               flexShrink: 0,
-              color: featuredPhoto ? "#fff" : "inherit",
-              textShadow: featuredPhoto ? "0 1px 3px rgba(0,0,0,0.5)" : "none",
+              color: featuredPhoto ? "overlay.white" : "inherit",
+              textShadow: (theme) =>
+                featuredPhoto
+                  ? `0 1px 3px ${theme.palette.overlay.scrimStrong}`
+                  : "none",
               "&:hover": {
                 textDecoration: "underline",
                 textUnderlineOffset: "4px",
@@ -125,10 +126,11 @@ const SearchHero: React.FC = () => {
                   whiteSpace: "nowrap",
                   flexShrink: 0,
                   textTransform: "lowercase",
-                  color: featuredPhoto ? "#fff" : "inherit",
-                  textShadow: featuredPhoto
-                    ? "0 1px 3px rgba(0,0,0,0.5)"
-                    : "none",
+                  color: featuredPhoto ? "overlay.white" : "inherit",
+                  textShadow: (theme) =>
+                    featuredPhoto
+                      ? `0 1px 3px ${theme.palette.overlay.scrimStrong}`
+                      : "none",
                 }}
               >
                 {tag.displayName.toLowerCase()}

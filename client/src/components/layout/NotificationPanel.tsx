@@ -82,7 +82,7 @@ const NotificationPanel: React.FC = () => {
                   sx={{
                     backgroundColor: notif.read
                       ? "inherit"
-                      : "rgba(255,255,255,0.04)",
+                      : "action.hover",
                   }}
                 >
                   <ListItemText

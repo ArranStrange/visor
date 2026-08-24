@@ -4,6 +4,7 @@ import {
   Typography,
   ToggleButtonGroup,
   ToggleButton,
+  useTheme,
 } from "@mui/material";
 
 interface ToneCurveProps {
@@ -20,6 +21,7 @@ const ToneCurveChart: React.FC<{
   output: number[];
   stroke: string;
 }> = ({ input, output, stroke }) => {
+  const theme = useTheme();
   const points = input
     .map((x, i) => `${(x / 255) * 100},${100 - (output[i] / 255) * 100}`)
     .join(" ");
@@ -30,7 +32,7 @@ const ToneCurveChart: React.FC<{
       width="100%"
       height="200"
       preserveAspectRatio="none"
-      style={{ background: "#111", borderRadius: 8 }}
+      style={{ background: theme.palette.surface.sunken, borderRadius: 8 }}
     >
       <rect
         x="0"
@@ -38,7 +40,7 @@ const ToneCurveChart: React.FC<{
         width="100"
         height="100"
         fill="none"
-        stroke="#333"
+        stroke={theme.palette.surface.outline}
         strokeWidth="0.5"
       />
       <polyline fill="none" stroke={stroke} strokeWidth="2" points={points} />
@@ -47,6 +49,7 @@ const ToneCurveChart: React.FC<{
 };
 
 const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
+  const theme = useTheme();
   const [channel, setChannel] = useState("rgb");
 
   const input = [0, 64, 128, 192, 255];
@@ -55,13 +58,13 @@ const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
   const getStrokeColour = (ch: string) => {
     switch (ch) {
       case "red":
-        return "#f44336";
+        return theme.palette.error.main;
       case "green":
-        return "#4caf50";
+        return theme.palette.success.main;
       case "blue":
-        return "#2196f3";
+        return theme.palette.info.main;
       default:
-        return "#ccc";
+        return theme.palette.text.secondary;
     }
   };
 

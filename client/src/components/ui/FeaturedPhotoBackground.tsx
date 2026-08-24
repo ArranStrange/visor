@@ -42,8 +42,8 @@ const FeaturedPhotoBackground: React.FC = () => {
           bottom: 0,
           background: (t) =>
             t.palette.mode === "dark"
-              ? "linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)"
-              : "linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.6) 100%)",
+              ? `linear-gradient(180deg, ${t.palette.overlay.scrimMedium} 0%, ${t.palette.overlay.scrimHeavy} 100%)`
+              : `linear-gradient(180deg, ${t.palette.overlay.whiteHover} 0%, ${t.palette.overlay.whiteSoft} 100%)`,
           zIndex: 1,
         },
       }}

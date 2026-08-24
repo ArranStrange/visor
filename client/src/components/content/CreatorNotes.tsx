@@ -5,6 +5,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  useTheme,
 } from "@mui/material";
 import type { SxProps, Theme } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -35,6 +36,7 @@ const CreatorNotes: React.FC<CreatorNotesProps> = ({
   bodyVariant = "body2",
   sx,
 }) => {
+  const theme = useTheme();
   const navigate = useNavigate();
 
   if (!notes && !emptyFallback) {
@@ -74,7 +76,7 @@ const CreatorNotes: React.FC<CreatorNotesProps> = ({
                     height: 48,
                     borderRadius: "50%",
                     objectFit: "cover",
-                    border: "2px solid #eee",
+                    border: `2px solid ${theme.palette.text.primary}`,
                     cursor: "pointer",
                   }}
                   onClick={() => navigate(`/profile/${creator.id}`)}

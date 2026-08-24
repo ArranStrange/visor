@@ -70,7 +70,7 @@ const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
             top: 0,
             height: "100%",
             width: `${fillWidth}%`,
-            backgroundColor: "#fff",
+            backgroundColor: "common.white",
             left: `${fromCenter >= 0 ? center : center - fillWidth}%`,
             borderRadius: 3,
             opacity: spectrum ? 0.3 : 1,

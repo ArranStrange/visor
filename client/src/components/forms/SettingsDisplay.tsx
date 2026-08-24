@@ -67,10 +67,9 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                     height: 24,
                     borderRadius: "50%",
                     background: color,
-                    border:
-                      selectedColor === key
-                        ? "2px solid #fff"
-                        : "2px solid #222",
+                    border: "2px solid",
+                    borderColor:
+                      selectedColor === key ? "common.white" : "surface.border",
                   }}
                 />
               </ToggleButton>

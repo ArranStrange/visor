@@ -14,6 +14,7 @@ import {
   CircularProgress,
   Button,
   TextField,
+  useTheme,
 } from "@mui/material";
 import {
   MoreVert as MoreVertIcon,
@@ -55,6 +56,7 @@ const Post: React.FC<PostProps> = ({
   onDeleteReply,
   isDeleting,
 }) => {
+  const theme = useTheme();
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
@@ -167,7 +169,7 @@ const Post: React.FC<PostProps> = ({
                       width: "100%",
                       minHeight: "80px",
                       padding: "8px",
-                      border: "1px solid #ccc",
+                      border: `1px solid ${theme.palette.text.secondary}`,
                       borderRadius: "4px",
                       fontFamily: "inherit",
                       fontSize: "14px",
@@ -180,8 +182,8 @@ const Post: React.FC<PostProps> = ({
                       disabled={!editContent.trim()}
                       style={{
                         padding: "4px 8px",
-                        backgroundColor: "#1976d2",
-                        color: "white",
+                        backgroundColor: theme.palette.primary.main,
+                        color: theme.palette.primary.contrastText,
                         border: "none",
                         borderRadius: "4px",
                         cursor: "pointer",
@@ -196,8 +198,8 @@ const Post: React.FC<PostProps> = ({
                       }}
                       style={{
                         padding: "4px 8px",
-                        backgroundColor: "#666",
-                        color: "white",
+                        backgroundColor: theme.palette.text.disabled,
+                        color: theme.palette.common.white,
                         border: "none",
                         borderRadius: "4px",
                         cursor: "pointer",

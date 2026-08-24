@@ -143,7 +143,8 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             height: "40px",
             backgroundColor: "white",
             borderRadius: "50%",
-            boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+            boxShadow: (theme) =>
+              `0 2px 4px ${theme.palette.overlay.scrimSubtle}`,
           },
         }}
       />

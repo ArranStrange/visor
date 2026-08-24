@@ -186,11 +186,13 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           overflow: "hidden",
           borderRadius: { xs: 2, md: 3 },
           cursor: "pointer",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+          boxShadow: (theme) =>
+            `0 8px 30px ${theme.palette.overlay.scrimSubtle}`,
           transition: "transform .25s ease, box-shadow .25s ease",
           "&:hover": {
             transform: "translateY(-2px)",
-            boxShadow: "0 12px 36px rgba(0,0,0,0.18)",
+            boxShadow: (theme) =>
+              `0 12px 36px ${theme.palette.overlay.scrimSubtle}`,
           },
         }}
         onClick={() => navigate(`/${type}/${item.slug}`)}
@@ -207,8 +209,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
             top: 15,
             left: 15,
             zIndex: 2,
-            backgroundColor: "rgba(0,0,0,0.6)",
-            color: "#fff",
+            backgroundColor: "overlay.scrimHeavy",
+            color: "overlay.white",
             px: 1,
             py: 0.25,
             borderRadius: 1,
@@ -267,10 +269,9 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                   height: idx === currentIndex ? 12 : 10,
                   borderRadius: "50%",
                   backgroundColor:
-                    idx === currentIndex ? "#FFFFFF" : "transparent",
+                    idx === currentIndex ? "overlay.white" : "transparent",
                   border: "2px solid",
-                  borderColor:
-                    idx === currentIndex ? "#FFFFFF" : "overlay.white",
+                  borderColor: "overlay.white",
                   cursor: "pointer",
                   transition: "all .2s ease",
                 }}

@@ -148,7 +148,8 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
                   top: 6,
                   bottom: 6,
                   height: "auto",
-                  borderLeft: "1px solid #444",
+                  borderLeft: "1px solid",
+                  borderLeftColor: "surface.outline",
                   transform: "translateX(-50%)",
                   zIndex: 2,
                 }}
@@ -216,7 +217,8 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
                   top: 6,
                   bottom: 6,
                   height: "auto",
-                  borderLeft: "1px solid #444",
+                  borderLeft: "1px solid",
+                  borderLeftColor: "surface.outline",
                   transform: "translateX(-50%)",
                   zIndex: 2,
                 }}
@@ -272,7 +274,8 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
                   top: 6,
                   bottom: 6,
                   height: "auto",
-                  borderLeft: "1px solid #444",
+                  borderLeft: "1px solid",
+                  borderLeftColor: "surface.outline",
                   transform: "translateX(-50%)",
                   zIndex: 2,
                 }}

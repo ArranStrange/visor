@@ -142,7 +142,8 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                 width: "3px",
                 height: "100%",
                 backgroundColor: "overlay.white",
-                boxShadow: "0 0 8px rgba(255,255,255,0.5)",
+                boxShadow: (theme) =>
+                  `0 0 8px ${theme.palette.overlay.whiteSoft}`,
                 transform: "translateX(-50%)",
                 opacity: isHovered ? 1 : 0,
                 pointerEvents: "none",
@@ -159,8 +160,8 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
                   height: "20px",
                   backgroundColor: "overlay.white",
                   borderRadius: "50%",
-                  boxShadow:
-                    "0 0 6px rgba(255,255,255,0.4), 0 2px 6px rgba(0,0,0,0.3)",
+                  boxShadow: (theme) =>
+                    `0 0 6px ${theme.palette.overlay.whiteSoft}, 0 2px 6px ${theme.palette.overlay.scrimMedium}`,
                 },
               }}
             />
