@@ -179,9 +179,11 @@ export const useDiscussionOperations = (
     try {
       const result = await updatePost({
         variables: {
-          discussionId: discussion?.id || "",
-          postIndex: postIndex,
-          input: { content: content.trim() },
+          input: {
+            discussionId: discussion?.id || "",
+            postIndex: postIndex,
+            content: content.trim(),
+          },
         },
       });
 
