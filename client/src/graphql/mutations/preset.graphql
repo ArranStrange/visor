@@ -1,5 +1,0 @@
-createPreset(input: CreatePresetInput!): Preset
-updatePreset(id: ID!, input: UpdatePresetInput!): Preset
-deletePreset(id: ID!): Boolean
-likePreset(presetId: ID!): Boolean
-downloadPreset(presetId: ID!): Boolean

@@ -1,3 +1,0 @@
-createComment(input: CreateCommentInput!): Comment
-reactToComment(commentId: ID!, reaction: String!): Comment
-deleteComment(id: ID!): Boolean
