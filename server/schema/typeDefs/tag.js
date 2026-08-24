@@ -18,24 +18,4 @@ module.exports = gql`
     searchTags(search: String, category: String, limit: Int): [Tag]
   }
 
-  extend type Mutation {
-    createTag(input: CreateTagInput!): Tag
-    updateTag(id: ID!, input: UpdateTagInput!): Tag
-    deleteTag(id: ID!): Boolean
-  }
-
-  input CreateTagInput {
-    name: String!
-    displayName: String!
-    description: String
-    category: String!
-    relatedTagIds: [ID!]
-  }
-
-  input UpdateTagInput {
-    displayName: String
-    description: String
-    category: String
-    relatedTagIds: [ID!]
-  }
 `;

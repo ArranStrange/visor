@@ -58,6 +58,8 @@ module.exports = {
     const preset = await Preset.findById(id);
     if (!preset) throw new Error("Preset not found");
     requireOwnership(user, preset, "creator", {
+      // Admins could always edit presets (unlike film sims and lists).
+      allowAdmin: true,
       message: "Not authorized to update this preset",
     });
     return await Preset.findByIdAndUpdate(id, input, { new: true });
@@ -68,6 +70,7 @@ module.exports = {
     const preset = await Preset.findById(id);
     if (!preset) return false;
     requireOwnership(user, preset, "creator", {
+      allowAdmin: true,
       message: "Not authorized to delete this preset",
     });
     return !!(await Preset.findByIdAndDelete(id));
