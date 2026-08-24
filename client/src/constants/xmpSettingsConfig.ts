@@ -354,6 +354,10 @@ export const COLOR_MIXER_COLORS = {
   magenta: "#b94a8a",
 };
 
+/** Lightroom hue-wheel spectrum (XMP domain data — not theme UI chrome). */
+export const COLOR_MIXER_HUE_SPECTRUM =
+  "linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)";
+
 export const COLOR_MIXER_SETTINGS = [
   { key: "hue", label: "Hue" },
   { key: "saturation", label: "Saturation" },
