@@ -41,6 +41,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import { gql } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 // GraphQL query to get user profile
 const GET_USER_PROFILE = gql`
@@ -78,43 +79,6 @@ const UPLOAD_AVATAR = gql`
     uploadAvatar(file: $file)
   }
 `;
-
-// Cloudinary upload function for profile pictures
-const uploadToCloudinary = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "ProfilePhotos");
-  formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${
-        import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-      }/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Cloudinary upload error:", errorData);
-      throw new Error(
-        `Failed to upload image to Cloudinary: ${
-          errorData.error?.message || "Unknown error"
-        }`
-      );
-    }
-
-    const data = await response.json();
-
-    return data.secure_url;
-  } catch (error: any) {
-    console.error("Error uploading to Cloudinary:", error);
-    throw new Error(`Failed to upload image to Cloudinary: ${error.message}`);
-  }
-};
 
 // File validation
 const validateProfileImage = (file: File): boolean => {
@@ -237,7 +201,9 @@ const Profile: React.FC = () => {
       setIsUploadingAvatar(true);
 
       // Upload to Cloudinary first
-      const cloudinaryUrl = await uploadToCloudinary(file);
+      const { url: cloudinaryUrl } = await uploadToCloudinary(file, {
+        uploadPreset: "ProfilePhotos",
+      });
 
       // Then update the user's avatar in the database
       await updateProfile({

@@ -1,6 +1,4 @@
-/// <reference types="vite/client" />
-
-import { ENV_CONFIG } from "../config/environment";
+import { uploadToCloudinary } from "./cloudinary";
 
 export interface ImageInput {
   publicId: string;
@@ -37,78 +35,18 @@ export const validatePresetImage = (
  * settings can always be re-derived from the source file.
  */
 export const uploadXmpToCloudinary = async (file: File): Promise<string> => {
-  const cloudName = ENV_CONFIG.CLOUDINARY_CLOUD_NAME;
-
-  if (!cloudName) {
-    throw new Error(
-      "Cloudinary cloud name is not configured. Please check your environment variables."
-    );
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "PresetBeforeAndAfter");
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
-    {
-      method: "POST",
-      body: formData,
-    }
-  );
-
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(
-      `Failed to upload XMP to Cloudinary: ${
-        errorData.error?.message || "Unknown error"
-      }`
-    );
-  }
-
-  const data = await response.json();
-  return data.secure_url;
+  const { url } = await uploadToCloudinary(file, {
+    uploadPreset: "PresetBeforeAndAfter",
+    resourceType: "raw",
+  });
+  return url;
 };
 
 export const uploadPresetImageToCloudinary = async (
   file: File
 ): Promise<ImageInput> => {
-  const cloudName = ENV_CONFIG.CLOUDINARY_CLOUD_NAME;
-
-  if (!cloudName) {
-    throw new Error(
-      "Cloudinary cloud name is not configured. Please check your environment variables."
-    );
-  }
-
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "PresetBeforeAndAfter");
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `Failed to upload image to Cloudinary: ${
-          errorData.error?.message || "Unknown error"
-        }`
-      );
-    }
-
-    const data = await response.json();
-    return {
-      publicId: data.public_id,
-      url: data.secure_url,
-    };
-  } catch (error: any) {
-    throw new Error(`Failed to upload image to Cloudinary: ${error.message}`);
-  }
+  const { url, publicId } = await uploadToCloudinary(file, {
+    uploadPreset: "PresetBeforeAndAfter",
+  });
+  return { publicId: publicId ?? "", url };
 };

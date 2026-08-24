@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 interface UploadResult {
   publicId: string;
@@ -43,50 +44,6 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
     return { isValid: true };
   };
 
-  const uploadToCloudinary = async (file: File): Promise<UploadResult> => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", uploadPreset);
-    formData.append("folder", folder);
-
-    try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${
-          import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-        }/image/upload`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Cloudinary upload error:", errorData);
-        throw new Error(
-          `Failed to upload image to Cloudinary: ${
-            errorData.error?.message || "Unknown error"
-          }`
-        );
-      }
-
-      const data = await response.json();
-
-      const publicId = data.public_id;
-      if (!publicId) {
-        throw new Error("No public_id received from Cloudinary");
-      }
-
-      return {
-        publicId,
-        url: data.secure_url,
-      };
-    } catch (error) {
-      console.error("Error uploading to Cloudinary:", error);
-      throw error;
-    }
-  };
-
   const uploadImages = async (
     files: File[],
     onSuccess: (files: File[], urls: UploadResult[]) => void
@@ -116,8 +73,14 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
       setIsUploading(true);
 
       const uploadPromises = validFiles.map(async (file) => {
-        const result = await uploadToCloudinary(file);
-        return result;
+        const { url, publicId } = await uploadToCloudinary(file, {
+          uploadPreset,
+          folder,
+        });
+        if (!publicId) {
+          throw new Error("No public_id received from Cloudinary");
+        }
+        return { publicId, url };
       });
 
       const uploadedImages = await Promise.all(uploadPromises);

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Box, Typography } from "@mui/material";
-import { ParsedSettings } from "./XmpParser";
+import { ParsedSettings } from "../../types/xmpSettings";
 import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,

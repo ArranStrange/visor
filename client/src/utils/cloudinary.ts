@@ -1,3 +1,58 @@
+import { ENV_CONFIG } from "../config/environment";
+
+export interface CloudinaryUploadOptions {
+  uploadPreset: string;
+  folder?: string;
+  resourceType?: "image" | "raw";
+}
+
+export interface CloudinaryUploadResult {
+  url: string;
+  publicId?: string;
+}
+
+export const uploadToCloudinary = async (
+  file: File,
+  { uploadPreset, folder, resourceType = "image" }: CloudinaryUploadOptions
+): Promise<CloudinaryUploadResult> => {
+  const cloudName = ENV_CONFIG.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    throw new Error(
+      "Cloudinary cloud name is not configured. Please check your environment variables."
+    );
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("upload_preset", uploadPreset);
+  if (folder) {
+    formData.append("folder", folder);
+  }
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`,
+    {
+      method: "POST",
+      body: formData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(
+      `Failed to upload to Cloudinary: ${
+        errorData.error?.message || "Unknown error"
+      }`
+    );
+  }
+
+  const data = await response.json();
+  return {
+    url: data.secure_url,
+    publicId: data.public_id,
+  };
+};
+
 export class CloudinaryOptimizer {
   private static isCloudinaryUrl(url: string): boolean {
     return Boolean(url && url.includes("cloudinary.com"));

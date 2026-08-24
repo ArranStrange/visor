@@ -5,6 +5,7 @@ import {
   MAKE_FEATURED_PHOTO,
   REMOVE_FEATURED_PHOTO,
 } from "../graphql/mutations/makeFeaturedPhoto";
+import { uploadToCloudinary } from "../utils/cloudinary";
 
 const ADD_PHOTO_TO_PRESET = gql`
   mutation AddPhotoToPreset(
@@ -23,42 +24,6 @@ const ADD_PHOTO_TO_PRESET = gql`
     }
   }
 `;
-
-const cloudinaryConfig = {
-  cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
-};
-
-const uploadToCloudinary = async (file: File): Promise<string> => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", "PresetSamples");
-  formData.append("folder", "presets");
-
-  try {
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudinaryConfig.cloudName}/image/upload`,
-      {
-        method: "POST",
-        body: formData,
-      }
-    );
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `Failed to upload image to Cloudinary: ${
-          errorData.error?.message || "Unknown error"
-        }`
-      );
-    }
-
-    const data = await response.json();
-    return data.secure_url;
-  } catch (error) {
-    console.error("Error uploading to Cloudinary:", error);
-    throw error;
-  }
-};
 
 export const usePresetPhotos = (presetId: string) => {
   const [addPhotoToPreset, { loading: addingPhoto }] =
@@ -88,7 +53,10 @@ export const usePresetPhotos = (presetId: string) => {
     try {
       setUploadingPhoto(true);
 
-      const imageUrl = await uploadToCloudinary(photoFile);
+      const { url: imageUrl } = await uploadToCloudinary(photoFile, {
+        uploadPreset: "PresetSamples",
+        folder: "presets",
+      });
 
       await addPhotoToPreset({
         variables: {

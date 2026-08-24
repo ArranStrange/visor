@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 const getGraphQLEndpoint = () => {
   const isProduction = import.meta.env.PROD;
   const isDevelopment = import.meta.env.DEV;

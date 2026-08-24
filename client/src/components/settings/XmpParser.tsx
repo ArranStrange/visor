@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
 import { ParsedSettings } from "../../types/xmpSettings";
-import { SettingsParser } from "./SettingsParser";
+import { parseXmpContent } from "../../utils/settingsParser";
 import FileUpload from "../ui/FileUpload";
 import StatusMessage from "../ui/StatusMessage";
 
@@ -20,7 +20,7 @@ const XmpParser = ({ onSettingsParsed }: XmpParserProps) => {
     reader.onload = (e) => {
       const content = e.target?.result as string;
       try {
-        const settings = SettingsParser.parseXmpContent(content);
+        const settings = parseXmpContent(content);
         onSettingsParsed(settings, file);
         setStatus({ type: "success", message: "Lightroom File Uploaded" });
       } catch {
