@@ -119,7 +119,6 @@ const BrowseLists: React.FC = () => {
         page,
         limit,
       },
-      fetchPolicy: "cache-and-network",
     }
   );
 

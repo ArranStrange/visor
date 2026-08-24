@@ -7,7 +7,6 @@ import {
   Button,
   Card,
   CardContent,
-  CircularProgress,
   Breadcrumbs,
   Link,
 } from "@mui/material";
@@ -16,10 +15,8 @@ import {
   Add as AddIcon,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { CREATE_DISCUSSION } from "../../graphql/discussions";
-import { GET_ALL_PRESETS } from "../../graphql/presets";
-import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
 import DiscussionTypeSelect from "./DiscussionTypeSelect";
 import ItemAutocomplete, { LinkableItem } from "./ItemAutocomplete";
 import { DiscussionLinkedType } from "./discussionTypeLabels";
@@ -39,28 +36,11 @@ const CreateDiscussion: React.FC = () => {
   });
   const [selectedItem, setSelectedItem] = useState<LinkableItem | null>(null);
 
-  const { data: presetsData, loading: presetsLoading } =
-    useQuery(GET_ALL_PRESETS);
-  const { data: filmSimsData, loading: filmSimsLoading } =
-    useQuery(GET_ALL_FILMSIMS);
-
   const [createDiscussion, { loading: creating }] =
     useMutation(CREATE_DISCUSSION);
 
-  const availableItems = getAvailableItems();
-  const isLoading = presetsLoading || filmSimsLoading;
   const showItemSelection =
     form.linkedToType === "PRESET" || form.linkedToType === "FILMSIM";
-
-  if (presetsLoading || filmSimsLoading) {
-    return (
-      <Container maxWidth="lg">
-        <Box py={4} display="flex" justifyContent="center">
-          <CircularProgress />
-        </Box>
-      </Container>
-    );
-  }
 
   return (
     <Container maxWidth="lg">
@@ -69,7 +49,11 @@ const CreateDiscussion: React.FC = () => {
           separator={<NavigateNextIcon fontSize="small" />}
           sx={{ mb: 3 }}
         >
-          <Link color="inherit" href="/discussions" onClick={handleBackToDiscussions}>
+          <Link
+            color="inherit"
+            href="/discussions"
+            onClick={handleBackToDiscussions}
+          >
             Discussions
           </Link>
           <Typography color="text.primary">Create Discussion</Typography>
@@ -102,10 +86,9 @@ const CreateDiscussion: React.FC = () => {
 
               {showItemSelection && (
                 <ItemAutocomplete
+                  key={form.linkedToType}
                   linkedToType={form.linkedToType}
-                  items={availableItems}
                   selectedItem={selectedItem}
-                  isLoading={isLoading}
                   onChange={handleItemChange}
                 />
               )}
@@ -129,15 +112,6 @@ const CreateDiscussion: React.FC = () => {
       </Box>
     </Container>
   );
-
-  function getAvailableItems(): LinkableItem[] {
-    if (form.linkedToType === "PRESET") {
-      return presetsData?.listPresets?.presets || [];
-    } else if (form.linkedToType === "FILMSIM") {
-      return filmSimsData?.listFilmSims?.filmSims || [];
-    }
-    return [];
-  }
 
   function handleBackToDiscussions(e: React.MouseEvent) {
     e.preventDefault();

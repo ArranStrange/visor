@@ -12,7 +12,6 @@ export const GET_ALL_TAGS = gql`
 
 export const GET_ALL_TAGS_OPTIONS = {
   errorPolicy: "all" as const,
-  fetchPolicy: "cache-and-network" as const,
 };
 
 export const SEARCH_TAGS = gql`

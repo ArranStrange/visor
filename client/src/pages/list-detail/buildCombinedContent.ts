@@ -1,41 +1,55 @@
+import { GridContentData } from "../../components/ui/content-grid-data";
+
 type ContentTypeFilter = "all" | "presets" | "films";
 
 interface CombinedPresetItem {
   type: "preset";
-  data: any;
+  data: GridContentData;
 }
 
 interface CombinedFilmItem {
   type: "film";
-  data: any;
+  data: GridContentData;
 }
 
 export type CombinedContentItem = CombinedPresetItem | CombinedFilmItem;
+
+export interface UserListDetail {
+  id: string;
+  name: string;
+  description?: string | null;
+  isPublic?: boolean | null;
+  owner: { id: string; username: string };
+  presets: Array<GridContentData & { id: string }>;
+  filmSims: Array<GridContentData & { id: string }>;
+}
+
+export interface GetListData {
+  getUserList?: UserListDetail | null;
+}
 
 const PLACEHOLDER_IMAGE =
   "https://placehold.co/400x200/2a2a2a/ffffff?text=Loading...";
 
 export function buildCombinedContent(
-  list: any,
+  list: UserListDetail | null | undefined,
   contentType: ContentTypeFilter,
-  allPresets: any[],
-  allFilmSims: any[]
+  allPresets: GridContentData[],
+  allFilmSims: GridContentData[]
 ): CombinedContentItem[] {
-  const presetsMap = new Map<string, any>(
-    allPresets.map((preset) => [preset.id, preset])
-  );
-  const filmSimsMap = new Map<string, any>(
-    allFilmSims.map((filmSim) => [filmSim.id, filmSim])
-  );
+  const presetsMap = indexById(allPresets);
+  const filmSimsMap = indexById(allFilmSims);
 
   const presetItems: CombinedPresetItem[] =
     contentType === "all" || contentType === "presets"
-      ? (list?.presets || []).map((preset: any) => buildPresetItem(preset, presetsMap))
+      ? (list?.presets ?? []).map((preset) =>
+          buildPresetItem(preset, presetsMap)
+        )
       : [];
 
   const filmItems: CombinedFilmItem[] =
     contentType === "all" || contentType === "films"
-      ? (list?.filmSims || []).map((filmSim: any) =>
+      ? (list?.filmSims ?? []).map((filmSim) =>
           buildFilmItem(filmSim, filmSimsMap)
         )
       : [];
@@ -44,8 +58,8 @@ export function buildCombinedContent(
 }
 
 function buildPresetItem(
-  preset: any,
-  presetsMap: Map<string, any>
+  preset: GridContentData & { id: string },
+  presetsMap: Map<string, GridContentData>
 ): CombinedPresetItem {
   const fullPreset = presetsMap.get(preset.id);
   return {
@@ -53,7 +67,7 @@ function buildPresetItem(
     data: fullPreset || {
       ...preset,
       afterImage: {
-        url: preset?.afterImage?.url || PLACEHOLDER_IMAGE,
+        url: getImageUrl(preset.afterImage) || PLACEHOLDER_IMAGE,
       },
       tags: [],
       creator: { username: "Unknown" },
@@ -62,8 +76,8 @@ function buildPresetItem(
 }
 
 function buildFilmItem(
-  filmSim: any,
-  filmSimsMap: Map<string, any>
+  filmSim: GridContentData & { id: string },
+  filmSimsMap: Map<string, GridContentData>
 ): CombinedFilmItem {
   const fullFilmSim = filmSimsMap.get(filmSim.id);
   if (fullFilmSim) {
@@ -72,7 +86,7 @@ function buildFilmItem(
       data: {
         ...fullFilmSim,
         title: fullFilmSim.name,
-        thumbnail: fullFilmSim.sampleImages?.[0]?.url,
+        thumbnail: fullFilmSim.sampleImages?.[0]?.url ?? undefined,
         tags: fullFilmSim.tags || [],
         creator: fullFilmSim.creator || { username: "Unknown" },
       },
@@ -88,4 +102,17 @@ function buildFilmItem(
       creator: { username: "Unknown" },
     },
   };
+}
+
+function indexById(items: GridContentData[]) {
+  const indexedItems = new Map<string, GridContentData>();
+  items.forEach((item) => {
+    if (item.id) indexedItems.set(item.id, item);
+  });
+  return indexedItems;
+}
+
+function getImageUrl(image: GridContentData["afterImage"]) {
+  if (typeof image === "string") return image;
+  return image?.url;
 }

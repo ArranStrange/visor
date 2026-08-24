@@ -2,6 +2,7 @@ import { ApolloClient, InMemoryCache, from, HttpLink } from "@apollo/client";
 import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { ENV_CONFIG } from "../config/environment";
+import { paginationTypePolicies } from "./pagination-type-policies";
 
 const httpLink = new HttpLink({
   uri: ENV_CONFIG.GRAPHQL_ENDPOINT,
@@ -56,11 +57,14 @@ const authLink = setContext((_, { headers }) => {
 
 const client = new ApolloClient({
   link: from([errorLink, authLink, httpLink]),
-  cache: new InMemoryCache(),
+  cache: new InMemoryCache({
+    // listPresets/listFilmSims pages share cache entries by filter and page size.
+    typePolicies: paginationTypePolicies,
+  }),
   defaultOptions: {
     watchQuery: {
-      // Render instantly from cache, then refresh from the network in the
-      // background — keeps data fresh without refetch-blocking navigation.
+      // Query convention: watched reads refresh once with cache-and-network,
+      // then stay cache-first; mutations keep partial GraphQL error results.
       fetchPolicy: "cache-and-network",
       nextFetchPolicy: "cache-first",
     },

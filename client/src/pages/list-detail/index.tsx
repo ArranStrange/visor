@@ -7,10 +7,9 @@ import ContentGridLoader from "../../components/ui/ContentGridLoader";
 import DeleteContentDialog from "../../components/content/DeleteContentDialog";
 import { useAuth } from "../../context/AuthContext";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { GET_ALL_PRESETS } from "../../graphql/presets";
-import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
 import { GET_LIST, UPDATE_LIST, DELETE_LIST } from "../../graphql/lists";
-import { buildCombinedContent } from "./buildCombinedContent";
+import { buildCombinedContent, GetListData } from "./buildCombinedContent";
+import { useListContent } from "./use-list-content";
 import ListHeaderView from "./ListHeaderView";
 import ListHeaderEdit from "./ListHeaderEdit";
 import ListSummary from "./ListSummary";
@@ -22,6 +21,10 @@ interface ListFormData {
   name: string;
   description: string;
   isPublic: boolean;
+}
+
+interface GetListVariables {
+  id: string;
 }
 
 const ListDetail: React.FC = () => {
@@ -43,26 +46,12 @@ const ListDetail: React.FC = () => {
     loading: listLoading,
     error: queryError,
     data: listData,
-  } = useQuery(GET_LIST, {
-    variables: { id },
+  } = useQuery<GetListData, GetListVariables>(GET_LIST, {
+    variables: { id: id ?? "" },
+    skip: !id,
     onCompleted: handleListLoaded,
   });
-
-  const {
-    data: presetsData,
-    loading: presetsLoading,
-    error: presetsError,
-  } = useQuery(GET_ALL_PRESETS, {
-    skip: !listData?.getUserList,
-  });
-
-  const {
-    data: filmSimsData,
-    loading: filmSimsLoading,
-    error: filmSimsError,
-  } = useQuery(GET_ALL_FILMSIMS, {
-    skip: !listData?.getUserList,
-  });
+  const listContent = useListContent(listData?.getUserList);
 
   const [updateList] = useMutation(UPDATE_LIST, {
     onCompleted: handleUpdateCompleted,
@@ -74,19 +63,16 @@ const ListDetail: React.FC = () => {
     onError: (mutationError) => setError(mutationError.message),
   });
 
-  const isInitialLoad =
-    (listLoading && !listData) ||
-    (presetsLoading && !presetsData) ||
-    (filmSimsLoading && !filmSimsData);
+  const isInitialLoad = (listLoading && !listData) || listContent.loading;
 
   if (isInitialLoad) {
     return <ListDetailLoading />;
   }
 
-  if (queryError || presetsError || filmSimsError) {
+  if (queryError || listContent.error) {
     return (
       <ListDetailLoadError
-        message={queryError?.message || presetsError?.message || filmSimsError?.message}
+        message={queryError?.message || listContent.error?.message}
       />
     );
   }
@@ -97,8 +83,8 @@ const ListDetail: React.FC = () => {
   const combinedData = buildCombinedContent(
     list,
     contentType,
-    presetsData?.listPresets?.presets || [],
-    filmSimsData?.listFilmSims?.filmSims || []
+    listContent.presets,
+    listContent.filmSims
   );
 
   return (
@@ -112,7 +98,10 @@ const ListDetail: React.FC = () => {
         {renderHeader()}
         {renderMeta()}
 
-        <ContentGridLoader customData={combinedData} contentType={contentType} />
+        <ContentGridLoader
+          customData={combinedData}
+          contentType={contentType}
+        />
       </Stack>
 
       <DeleteContentDialog
@@ -139,7 +128,7 @@ const ListDetail: React.FC = () => {
     }
     return (
       <ListHeaderView
-        name={list?.name}
+        name={list?.name ?? ""}
         isPublic={!!list?.isPublic}
         isOwner={isOwner}
         onStartEdit={() => setIsEditing(true)}
@@ -169,13 +158,13 @@ const ListDetail: React.FC = () => {
     );
   }
 
-  function handleListLoaded(data: any) {
+  function handleListLoaded(data: GetListData) {
     const list = data?.getUserList;
     if (list) {
       setFormData({
         name: list.name,
         description: list.description || "",
-        isPublic: list.isPublic,
+        isPublic: Boolean(list.isPublic),
       });
     }
   }

@@ -7,8 +7,6 @@ export const GET_ALL_PRESETS = gql`
         id
         title
         slug
-        description
-        notes
         tags {
           id
           displayName
@@ -175,8 +173,8 @@ export const GET_PRESET_BY_SLUG = gql`
 `;
 
 export const SEARCH_PRESETS = gql`
-  query SearchPresets($query: String!) {
-    listPresets(filter: { title: $query }, limit: 100) {
+  query SearchPresets($query: String!, $page: Int!, $limit: Int!) {
+    listPresets(filter: { title: $query }, page: $page, limit: $limit) {
       presets {
         id
         title
@@ -195,6 +193,10 @@ export const SEARCH_PRESETS = gql`
           displayName
         }
       }
+      totalCount
+      hasNextPage
+      currentPage
+      totalPages
     }
   }
 `;
