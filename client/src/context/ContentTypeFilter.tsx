@@ -1,12 +1,16 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  ReactNode,
+} from "react";
 
 interface ContentTypeContextType {
   contentType: "all" | "presets" | "films";
   setContentType: (type: "all" | "presets" | "films") => void;
   randomizeOrder: boolean;
   setRandomizeOrder: (randomize: boolean) => void;
-  shuffleCounter: number;
-  triggerShuffle: () => void;
 }
 
 const ContentTypeContext = createContext<ContentTypeContextType | undefined>(
@@ -32,23 +36,19 @@ export const ContentTypeProvider: React.FC<ContentTypeProviderProps> = ({
     "all"
   );
   const [randomizeOrder, setRandomizeOrder] = useState(true);
-  const [shuffleCounter, setShuffleCounter] = useState(0);
 
-  const triggerShuffle = () => {
-    setShuffleCounter((prev) => prev + 1);
-  };
+  const value = useMemo(
+    () => ({
+      contentType,
+      setContentType,
+      randomizeOrder,
+      setRandomizeOrder,
+    }),
+    [contentType, randomizeOrder]
+  );
 
   return (
-    <ContentTypeContext.Provider
-      value={{
-        contentType,
-        setContentType,
-        randomizeOrder,
-        setRandomizeOrder,
-        shuffleCounter,
-        triggerShuffle,
-      }}
-    >
+    <ContentTypeContext.Provider value={value}>
       {children}
     </ContentTypeContext.Provider>
   );

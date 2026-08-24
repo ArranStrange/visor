@@ -7,6 +7,7 @@ import {
   IconButton,
 } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
+import { useShuffle } from "../../context/ShuffleContext";
 
 import DashboardCustomizeIcon from "@mui/icons-material/DashboardCustomize";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -14,13 +15,9 @@ import CameraRollIcon from "@mui/icons-material/CameraRoll";
 import ShuffleIcon from "@mui/icons-material/Shuffle";
 
 const ContentTypeToggle: React.FC = () => {
-  const {
-    contentType,
-    setContentType,
-    randomizeOrder,
-    setRandomizeOrder,
-    triggerShuffle,
-  } = useContentType();
+  const { contentType, setContentType, randomizeOrder, setRandomizeOrder } =
+    useContentType();
+  const { triggerShuffle } = useShuffle();
 
   const handleChange = (
     _: React.MouseEvent<HTMLElement>,

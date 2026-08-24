@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client";
-import { useAdmin } from "../context/AdminContext";
+import { useIsAdmin } from "./useIsAdmin";
 import {
   MAKE_PRESET_FEATURED,
   REMOVE_PRESET_FEATURED,
@@ -10,7 +10,7 @@ import {
 } from "../graphql/mutations/makeFilmSimFeatured";
 
 export const useFeatured = () => {
-  const { isAdmin } = useAdmin();
+  const isAdmin = useIsAdmin();
 
   const [makePresetFeatured] = useMutation(MAKE_PRESET_FEATURED, {
     refetchQueries: ["GetFeaturedItems", "ListPresets", "GetPresetBySlug"],

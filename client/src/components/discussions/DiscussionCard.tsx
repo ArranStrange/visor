@@ -25,7 +25,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";
-import { useAdmin } from "../../context/AdminContext";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { Discussion as DiscussionType } from "../../types/discussions";
 import { User } from "../../types/discussions";
 import {
@@ -55,7 +55,7 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
   onEdit,
 }) => {
   const navigate = useNavigate();
-  const { isAdmin } = useAdmin();
+  const isAdmin = useIsAdmin();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
     refetchQueries: [GET_DISCUSSIONS],

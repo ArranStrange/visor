@@ -7,9 +7,9 @@ import ProfilePage from "./pages/Profile";
 import { ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
+import { ShuffleProvider } from "./context/ShuffleContext";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
-import { AdminProvider } from "./context/AdminContext";
 import { TagProvider } from "./context/TagContext";
 import SearchView from "./pages/SearchView";
 import PresetDetailPage from "./pages/PresetDetail";
@@ -36,9 +36,9 @@ function App() {
       <CssBaseline />
       <Router>
         <AuthProvider>
-          <AdminProvider>
-            <NotificationProvider>
-              <ContentTypeProvider>
+          <NotificationProvider>
+            <ContentTypeProvider>
+              <ShuffleProvider>
                 <TagProvider>
                   <NavBar />
                   <Routes>
@@ -56,7 +56,10 @@ function App() {
                     />
                     <Route path="/upload" element={<UploadPage />} />
                     <Route path="/upload/preset" element={<UploadPreset />} />
-                    <Route path="/upload/filmsim" element={<UploadFilmSim />} />
+                    <Route
+                      path="/upload/filmsim"
+                      element={<UploadFilmSim />}
+                    />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
                     <Route
@@ -76,13 +79,16 @@ function App() {
                       path="/discussions/:discussionId"
                       element={<DiscussionDetail />}
                     />
-                    <Route path="/notifications" element={<Notifications />} />
+                    <Route
+                      path="/notifications"
+                      element={<Notifications />}
+                    />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </TagProvider>
-              </ContentTypeProvider>
-            </NotificationProvider>
-          </AdminProvider>
+              </ShuffleProvider>
+            </ContentTypeProvider>
+          </NotificationProvider>
         </AuthProvider>
       </Router>
     </ThemeProvider>

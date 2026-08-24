@@ -1,7 +1,7 @@
 import React, { useMemo, memo, useEffect } from "react";
 import { Box, CircularProgress } from "@mui/material";
 import { motion, AnimatePresence } from "framer-motion";
-import { useContentType } from "../../context/ContentTypeFilter";
+import { useShuffle } from "../../context/ShuffleContext";
 import { useColumnCount } from "../../hooks/useColumnCount";
 import { useShuffleOrder } from "../../hooks/useShuffleOrder";
 import { useInfiniteScroll } from "../../hooks/useInfiniteScroll";
@@ -29,7 +29,7 @@ const StaggeredGrid: React.FC<StaggeredGridProps> = memo(
     hasMore = false,
     isLoading = false,
   }) => {
-    const { shuffleCounter } = useContentType();
+    const { shuffleCounter } = useShuffle();
 
     const { containerRef, columnCount, refreshColumns } = useColumnCount({
       minWidth,

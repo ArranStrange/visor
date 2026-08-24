@@ -11,7 +11,7 @@ import {
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { gql, useMutation } from "@apollo/client";
-import { useAdmin } from "../../context/AdminContext";
+import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
 
@@ -63,7 +63,7 @@ const ListRow: React.FC<ListRowProps> = ({
   isFeatured,
 }) => {
   const navigate = useNavigate();
-  const { isAdmin } = useAdmin();
+  const isAdmin = useIsAdmin();
   const [featureList] = useMutation(FEATURE_LIST, {
     optimisticResponse: {
       featureUserList: { __typename: "UserList", id, isFeatured: true },
