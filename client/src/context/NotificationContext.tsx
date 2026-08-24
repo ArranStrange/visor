@@ -1,8 +1,9 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
-  useState,
   useEffect,
+  useMemo,
   ReactNode,
 } from "react";
 import { useQuery, useMutation } from "@apollo/client";
@@ -13,13 +14,25 @@ import {
   MARK_NOTIFICATION_READ,
   MARK_ALL_NOTIFICATIONS_READ,
 } from "../graphql/notifications";
-import { Notification, NotificationConnection } from "../types/notifications";
+import { Notification } from "../types/notifications";
+import {
+  markAllNotificationsReadInCache,
+  markNotificationReadInCache,
+  NOTIFICATIONS_LIMIT,
+  NOTIFICATIONS_PAGE,
+  NotificationsQueryData,
+  NotificationsQueryVariables,
+  UnreadNotificationsQueryData,
+  UnreadNotificationsQueryVariables,
+} from "./notification-cache";
+
+const POLL_INTERVAL = 30000;
 
 interface NotificationContextType {
   unreadCount: number;
   notifications: Notification[];
   loading: boolean;
-  error: any;
+  error: Error | undefined;
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   refetchNotifications: () => void;
@@ -48,112 +61,174 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({
   children,
 }) => {
   const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const userId = user?.id;
 
   // Query for unread count
   const {
     data: unreadData,
     loading: unreadLoading,
     error: unreadError,
-    refetch: refetchUnreadCount,
-  } = useQuery(GET_UNREAD_NOTIFICATIONS_COUNT, {
-    variables: { userId: user?.id },
-    skip: !user?.id,
-    pollInterval: 30000, // Poll every 30 seconds
-  });
+    refetch: refetchUnreadCountQuery,
+    startPolling,
+    stopPolling,
+  } = useQuery<UnreadNotificationsQueryData, UnreadNotificationsQueryVariables>(
+    GET_UNREAD_NOTIFICATIONS_COUNT,
+    {
+      variables: { userId: userId ?? "" },
+      skip: !userId,
+    }
+  );
 
   // Query for notifications
   const {
     data: notificationsData,
     loading: notificationsLoading,
     error: notificationsError,
-    refetch: refetchNotifications,
-  } = useQuery(GET_NOTIFICATIONS, {
-    variables: {
-      userId: user?.id,
-      page: 1,
-      limit: 50,
-    },
-    skip: !user?.id,
-  });
+    refetch: refetchNotificationsQuery,
+  } = useQuery<NotificationsQueryData, NotificationsQueryVariables>(
+    GET_NOTIFICATIONS,
+    {
+      variables: {
+        userId: userId ?? "",
+        page: NOTIFICATIONS_PAGE,
+        limit: NOTIFICATIONS_LIMIT,
+      },
+      skip: !userId,
+    }
+  );
 
   // Mutations
   const [markAsReadMutation] = useMutation(MARK_NOTIFICATION_READ);
   const [markAllAsReadMutation] = useMutation(MARK_ALL_NOTIFICATIONS_READ);
 
-  // Update unread count when data changes
-  useEffect(() => {
-    if (unreadData?.getUnreadNotificationsCount !== undefined) {
-      setUnreadCount(unreadData.getUnreadNotificationsCount);
-    }
-  }, [unreadData]);
+  const unreadCount = useMemo(
+    () => unreadData?.getUnreadNotificationsCount ?? 0,
+    [unreadData?.getUnreadNotificationsCount]
+  );
+  const notifications = useMemo(
+    () => notificationsData?.getNotifications?.notifications ?? [],
+    [notificationsData?.getNotifications?.notifications]
+  );
 
-  // Update notifications when data changes
-  useEffect(() => {
-    if (notificationsData?.getNotifications?.notifications) {
-      setNotifications(notificationsData.getNotifications.notifications);
-    }
-  }, [notificationsData]);
+  const handleVisibilityChange = useCallback(
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        stopPolling();
+        return;
+      }
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await markAsReadMutation({
-        variables: {
-          input: { notificationId },
-        },
+      startPolling(POLL_INTERVAL);
+    },
+    [startPolling, stopPolling]
+  );
+
+  useEffect(
+    function managePolling() {
+      if (!userId) return;
+
+      handleVisibilityChange();
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+
+      return () => {
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange
+        );
+        stopPolling();
+      };
+    },
+    [handleVisibilityChange, stopPolling, userId]
+  );
+
+  const refetchNotifications = useCallback(
+    function refetchNotifications() {
+      void refetchNotificationsQuery().catch((error) => {
+        console.error("Error refetching notifications:", error);
       });
+    },
+    [refetchNotificationsQuery]
+  );
 
-      // Update local state
-      setNotifications((prev) =>
-        prev.map((notification) =>
-          notification.id === notificationId
-            ? { ...notification, isRead: true }
-            : notification
-        )
-      );
-
-      // Refetch unread count
-      refetchUnreadCount();
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!user?.id) return;
-
-    try {
-      await markAllAsReadMutation({
-        variables: {
-          input: { userId: user.id },
-        },
+  const refetchUnreadCount = useCallback(
+    function refetchUnreadCount() {
+      void refetchUnreadCountQuery().catch((error) => {
+        console.error("Error refetching unread notification count:", error);
       });
+    },
+    [refetchUnreadCountQuery]
+  );
 
-      // Update local state
-      setNotifications((prev) =>
-        prev.map((notification) => ({ ...notification, isRead: true }))
-      );
-      setUnreadCount(0);
+  const markAsRead = useCallback(
+    async function markAsRead(notificationId: string) {
+      try {
+        await markAsReadMutation({
+          variables: {
+            input: { notificationId },
+          },
+          update(cache) {
+            if (userId) {
+              markNotificationReadInCache(cache, userId, notificationId);
+            }
+          },
+        });
 
-      // Refetch data
-      refetchNotifications();
-      refetchUnreadCount();
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
-    }
-  };
+        // Refetch unread count
+        refetchUnreadCount();
+      } catch (error) {
+        console.error("Error marking notification as read:", error);
+      }
+    },
+    [markAsReadMutation, refetchUnreadCount, userId]
+  );
 
-  const value: NotificationContextType = {
-    unreadCount,
-    notifications,
-    loading: unreadLoading || notificationsLoading,
-    error: unreadError || notificationsError,
-    markAsRead,
-    markAllAsRead,
-    refetchNotifications,
-    refetchUnreadCount,
-  };
+  const markAllAsRead = useCallback(
+    async function markAllAsRead() {
+      if (!userId) return;
+
+      try {
+        await markAllAsReadMutation({
+          variables: {
+            input: { userId },
+          },
+          update(cache) {
+            markAllNotificationsReadInCache(cache, userId);
+          },
+        });
+
+        // Refetch data
+        refetchNotifications();
+        refetchUnreadCount();
+      } catch (error) {
+        console.error("Error marking all notifications as read:", error);
+      }
+    },
+    [markAllAsReadMutation, refetchNotifications, refetchUnreadCount, userId]
+  );
+
+  const value = useMemo<NotificationContextType>(
+    () => ({
+      unreadCount,
+      notifications,
+      loading: unreadLoading || notificationsLoading,
+      error: unreadError || notificationsError,
+      markAsRead,
+      markAllAsRead,
+      refetchNotifications,
+      refetchUnreadCount,
+    }),
+    [
+      unreadCount,
+      notifications,
+      unreadLoading,
+      notificationsLoading,
+      unreadError,
+      notificationsError,
+      markAsRead,
+      markAllAsRead,
+      refetchNotifications,
+      refetchUnreadCount,
+    ]
+  );
 
   return (
     <NotificationContext.Provider value={value}>
