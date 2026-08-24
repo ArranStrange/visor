@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 
 interface UseInfiniteScrollProps {
@@ -12,8 +12,6 @@ export const useInfiniteScroll = ({
   isLoading,
   onLoadMore,
 }: UseInfiniteScrollProps) => {
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
   const { ref: triggerRef, inView } = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -25,26 +23,14 @@ export const useInfiniteScroll = ({
   });
 
   useEffect(() => {
-    if (
-      loadMoreInView &&
-      hasMore &&
-      !isLoading &&
-      !isLoadingMore &&
-      onLoadMore
-    ) {
-      setIsLoadingMore(true);
-
-      setTimeout(() => {
-        onLoadMore();
-        setIsLoadingMore(false);
-      }, 100);
+    if (loadMoreInView && hasMore && !isLoading && onLoadMore) {
+      onLoadMore();
     }
-  }, [loadMoreInView, hasMore, isLoading, isLoadingMore, onLoadMore]);
+  }, [loadMoreInView, hasMore, isLoading, onLoadMore]);
 
   return {
     triggerRef,
     inView,
     loadMoreRef,
-    isLoadingMore,
   };
 };

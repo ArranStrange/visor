@@ -46,7 +46,6 @@ export const TagProvider: React.FC<{ children: React.ReactNode }> = ({
       );
       setTags(validTags);
     },
-    fetchPolicy: "cache-and-network",
   });
 
   const searchTags = useCallback(

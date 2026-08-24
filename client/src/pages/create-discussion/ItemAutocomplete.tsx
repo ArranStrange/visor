@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import { useQuery } from "@apollo/client";
 import {
   FormControl,
   TextField,
@@ -7,7 +8,12 @@ import {
   Typography,
   Box,
 } from "@mui/material";
-import { DiscussionLinkedType, getDiscussionTypeLabel } from "./discussionTypeLabels";
+import {
+  DiscussionLinkedType,
+  getDiscussionTypeLabel,
+} from "./discussionTypeLabels";
+import { SEARCH_PRESETS } from "../../graphql/presets";
+import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
 
 export interface LinkableItem {
   id: string;
@@ -18,19 +24,58 @@ export interface LinkableItem {
 
 interface ItemAutocompleteProps {
   linkedToType: DiscussionLinkedType;
-  items: LinkableItem[];
   selectedItem: LinkableItem | null;
-  isLoading: boolean;
   onChange: (item: LinkableItem | null) => void;
 }
 
+interface SearchPresetsData {
+  listPresets: { presets: LinkableItem[] };
+}
+
+interface SearchPresetsVariables {
+  query: string;
+  page: number;
+  limit: number;
+}
+
+interface ListFilmSimsData {
+  listFilmSims: { filmSims: LinkableItem[] };
+}
+
+interface ListFilmSimsVariables {
+  page: number;
+  limit: number;
+}
+
+const PICKER_PAGE_SIZE = 20;
+
 const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
   linkedToType,
-  items,
   selectedItem,
-  isLoading,
   onChange,
 }) => {
+  const [inputValue, setInputValue] = useState("");
+  const searchQuery = inputValue.trim();
+  const shouldSearch = searchQuery.length >= 2;
+  const presetQuery = useQuery<SearchPresetsData, SearchPresetsVariables>(
+    SEARCH_PRESETS,
+    {
+      variables: { query: searchQuery, page: 1, limit: PICKER_PAGE_SIZE },
+      skip: linkedToType !== "PRESET" || !shouldSearch,
+    }
+  );
+  const filmSimQuery = useQuery<ListFilmSimsData, ListFilmSimsVariables>(
+    GET_ALL_FILMSIMS,
+    {
+      variables: { page: 1, limit: PICKER_PAGE_SIZE },
+      skip: linkedToType !== "FILMSIM",
+    }
+  );
+  const items = getAvailableItems();
+  const isLoading =
+    (presetQuery.loading && !presetQuery.data) ||
+    (filmSimQuery.loading && !filmSimQuery.data);
+
   return (
     <>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
@@ -42,42 +87,40 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
         <Autocomplete
           value={selectedItem}
           onChange={handleChange}
+          inputValue={inputValue}
+          onInputChange={handleInputChange}
           options={items}
           getOptionLabel={getOptionLabel}
           loading={isLoading}
-          filterOptions={filterOptions}
+          filterOptions={keepServerResults}
           renderInput={renderInput}
           renderOption={renderOption}
-          noOptionsText="No items found"
+          noOptionsText={
+            shouldSearch ? "No items found" : "Type at least 2 characters"
+          }
           loadingText="Loading items..."
         />
       </FormControl>
     </>
   );
 
-  function handleChange(_event: React.SyntheticEvent, newValue: LinkableItem | null) {
+  function handleChange(
+    _event: React.SyntheticEvent,
+    newValue: LinkableItem | null
+  ) {
     onChange(newValue);
+  }
+
+  function handleInputChange(_event: React.SyntheticEvent, value: string) {
+    setInputValue(value);
   }
 
   function getOptionLabel(option: LinkableItem): string {
     return option.title || option.name || "";
   }
 
-  function filterOptions(
-    options: LinkableItem[],
-    { inputValue }: { inputValue: string }
-  ): LinkableItem[] {
-    if (!inputValue) {
-      return options.slice(0, 20);
-    }
-
-    const searchTerm = inputValue.toLowerCase();
-    const filtered = options.filter((option) => {
-      const title = (option.title || option.name || "").toLowerCase();
-      return title.includes(searchTerm);
-    });
-
-    return filtered.slice(0, 50);
+  function keepServerResults(options: LinkableItem[]) {
+    return options;
   }
 
   function renderInput(params: React.ComponentProps<typeof TextField>) {
@@ -89,7 +132,9 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
           ...params.InputProps,
           endAdornment: (
             <>
-              {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
+              {isLoading ? (
+                <CircularProgress color="inherit" size={20} />
+              ) : null}
               {params.InputProps?.endAdornment}
             </>
           ),
@@ -113,6 +158,18 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
           )}
         </Box>
       </li>
+    );
+  }
+
+  function getAvailableItems() {
+    if (!shouldSearch) return [];
+    if (linkedToType === "PRESET") {
+      return presetQuery.data?.listPresets.presets ?? [];
+    }
+
+    const normalizedQuery = searchQuery.toLowerCase();
+    return (filmSimQuery.data?.listFilmSims.filmSims ?? []).filter((item) =>
+      (item.name ?? "").toLowerCase().includes(normalizedQuery)
     );
   }
 };

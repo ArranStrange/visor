@@ -26,7 +26,6 @@ interface FilmSimCardProps {
   id: string;
   name: string;
   slug: string;
-  description: string;
   thumbnail: string;
   featured?: boolean;
   tags?: Array<{

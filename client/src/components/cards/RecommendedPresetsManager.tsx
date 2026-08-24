@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useQuery, useMutation } from "@apollo/client";
 import { ADD_RECOMMENDED_PRESET } from "../../graphql/filmSims";
-import { GET_ALL_PRESETS } from "../../graphql/presets";
+import { SEARCH_PRESETS } from "../../graphql/presets";
 import { usePresetSearch } from "../../hooks/usePresetSearch";
 import PresetSearchItem from "./PresetSearchItem";
 import CurrentPresetsList from "./CurrentPresetsList";
@@ -40,6 +40,21 @@ interface RecommendedPresetsManagerProps {
   }>;
 }
 
+type RecommendedPreset =
+  RecommendedPresetsManagerProps["currentRecommendedPresets"][number];
+
+interface SearchPresetsData {
+  listPresets: { presets: RecommendedPreset[] };
+}
+
+interface SearchPresetsVariables {
+  query: string;
+  page: number;
+  limit: number;
+}
+
+const PICKER_PAGE_SIZE = 20;
+
 const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
   open,
   onClose,
@@ -48,21 +63,24 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
   currentRecommendedPresets,
 }) => {
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
-
-  const { data: presetData, loading: searchLoading } =
-    useQuery(GET_ALL_PRESETS);
-  const allPresets = presetData?.listPresets?.presets || [];
-
-  const {
-    searchQuery,
-    setSearchQuery,
-    searchResults,
-    hasResults,
-    shouldShowResults,
-  } = usePresetSearch({
-    allPresets,
-    currentRecommendedPresets,
-  });
+  const { searchQuery, setSearchQuery, shouldShowResults } = usePresetSearch();
+  const presetQuery = useQuery<SearchPresetsData, SearchPresetsVariables>(
+    SEARCH_PRESETS,
+    {
+      variables: {
+        query: searchQuery.trim(),
+        page: 1,
+        limit: PICKER_PAGE_SIZE,
+      },
+      skip: !open || !shouldShowResults,
+    }
+  );
+  const searchResults = excludeCurrentPresets(
+    presetQuery.data?.listPresets.presets ?? [],
+    currentRecommendedPresets
+  );
+  const hasResults = searchResults.length > 0;
+  const searchLoading = presetQuery.loading && !presetQuery.data;
 
   const [addRecommendedPreset, { loading: addingPreset }] = useMutation(
     ADD_RECOMMENDED_PRESET,
@@ -187,5 +205,13 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
     </Dialog>
   );
 };
+
+function excludeCurrentPresets(
+  presets: RecommendedPreset[],
+  currentPresets: RecommendedPreset[]
+) {
+  const currentIds = new Set(currentPresets.map(({ id }) => id));
+  return presets.filter(({ id }) => !currentIds.has(id));
+}
 
 export default RecommendedPresetsManager;

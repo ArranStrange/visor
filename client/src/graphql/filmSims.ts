@@ -7,8 +7,6 @@ export const GET_ALL_FILMSIMS = gql`
         id
         name
         slug
-        description
-        notes
         tags {
           id
           displayName

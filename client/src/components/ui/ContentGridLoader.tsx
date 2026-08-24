@@ -1,27 +1,28 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useCallback } from "react";
+import { NetworkStatus, useQuery } from "@apollo/client";
 import { Alert, Box } from "@mui/material";
-import { useApolloClient } from "@apollo/client";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { GET_ALL_PRESETS } from "../../graphql/presets";
 import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
-
-import PresetCard from "../cards/PresetCard";
-import FilmSimCard from "../cards/FilmSimCard";
-import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import StaggeredGrid from "./StaggeredGrid";
-
-// Content type interfaces
-interface ContentItem {
-  type: "preset" | "film" | "buymeacoffee";
-  data: any;
-}
+import { ContentGridItem } from "./content-grid-item";
+import { fetchNextContentPages } from "./content-grid-pagination";
+import {
+  buildGridContent,
+  GridContentData,
+  GridContentType,
+  GridFilter,
+  PaginatedFilmSimsData,
+  PaginatedListVariables,
+  PaginatedPresetsData,
+} from "./content-grid-data";
 
 interface ContentGridLoaderProps {
-  contentType?: "all" | "presets" | "films";
-  filter?: Record<string, any>;
+  contentType?: GridContentType;
+  filter?: GridFilter;
   searchQuery?: string;
-  customData?: Array<any>;
-  renderItem?: (item: any) => React.ReactNode;
+  customData?: readonly unknown[];
+  renderItem?: (item: GridContentData) => React.ReactNode;
 }
 
 const ITEMS_PER_PAGE = 20;
@@ -33,172 +34,78 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   customData,
   renderItem,
 }) => {
-  // State management - all hooks at the top level
-  const [content, setContent] = useState<ContentItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  // Refs and external hooks
-  const containerRef = useRef<HTMLDivElement>(null);
   const { randomizeOrder } = useContentType();
+  const hasCustomData = customData !== undefined;
+  const loadPresets = !hasCustomData && contentType !== "films";
+  const loadFilmSims = !hasCustomData && contentType !== "presets";
+  const variables = { page: 1, limit: ITEMS_PER_PAGE, filter };
 
-  const apolloClient = useApolloClient();
-
-  const fetchContentData = useCallback(
-    async (page: number, append: boolean = false) => {
-      if (customData) {
-        const shaped = customData.map((item: any) => {
-          if (
-            item &&
-            typeof item === "object" &&
-            "type" in item &&
-            "data" in item
-          ) {
-            return item as ContentItem;
-          }
-          return { type: "preset" as const, data: item } as ContentItem;
-        });
-        setContent(shaped);
-        setHasMore(false);
-        return;
-      }
-
-      if (append) {
-        setIsLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
-
-      try {
-        const results: ContentItem[] = [];
-        let hasNextPage = false;
-
-        // Fetch presets with pagination
-        if (contentType === "all" || contentType === "presets") {
-          const { data } = await apolloClient.query({
-            query: GET_ALL_PRESETS,
-            variables: { filter, page, limit: ITEMS_PER_PAGE },
-            fetchPolicy: "cache-first",
-            errorPolicy: "all",
-          });
-          const paginatedPresets = data?.listPresets || {
-            presets: [],
-            hasNextPage: false,
-          };
-          hasNextPage = paginatedPresets.hasNextPage;
-
-          results.push(
-            ...paginatedPresets.presets
-              .filter((p: any) => p && p.creator)
-              .map((p: any) => ({
-                type: "preset" as const,
-                data: {
-                  ...p,
-                  tags: p.tags || [], // Ensure tags is always an array
-                },
-              }))
-          );
-        }
-
-        // Fetch film sims with pagination
-        if (contentType === "all" || contentType === "films") {
-          const { data } = await apolloClient.query({
-            query: GET_ALL_FILMSIMS,
-            variables: { filter, page, limit: ITEMS_PER_PAGE },
-            fetchPolicy: "cache-first",
-            errorPolicy: "all",
-          });
-          const paginatedFilmSims = data?.listFilmSims || {
-            filmSims: [],
-            hasNextPage: false,
-          };
-          hasNextPage = hasNextPage || paginatedFilmSims.hasNextPage;
-
-          results.push(
-            ...paginatedFilmSims.filmSims
-              .filter((f: any) => f && f.creator)
-              .map((f: any) => ({
-                type: "film" as const,
-                data: {
-                  ...f,
-                  title: f.name,
-                  thumbnail: f.sampleImages?.[0]?.url || "",
-                  tags: f.tags || [], // Ensure tags is always an array
-                },
-              }))
-          );
-        }
-
-        // Add BuyMeACoffee card only on first page
-        if (page === 1 && results.length > 0) {
-          const buyMeACoffeeCard: ContentItem = {
-            type: "buymeacoffee",
-            data: {
-              id: "buymeacoffee",
-              title: "Buy Me a Coffee",
-            },
-          };
-          results.splice(0, 0, buyMeACoffeeCard);
-        }
-
-        // Apply search filter
-        const filteredContent = searchQuery
-          ? results.filter((item) =>
-              item.data.title?.toLowerCase().includes(searchQuery.toLowerCase())
-            )
-          : results;
-
-        // Update content based on whether we're appending or replacing
-        if (append) {
-          setContent((prevContent) => [...prevContent, ...filteredContent]);
-        } else {
-          setContent(filteredContent);
-        }
-
-        setHasMore(hasNextPage);
-      } catch (err) {
-        console.error("Error fetching content:", err);
-        setError(err instanceof Error ? err.message : "Failed to load content");
-      } finally {
-        setLoading(false);
-        setIsLoadingMore(false);
-      }
-    },
-    [contentType, filter, searchQuery, customData, apolloClient]
+  const presetQuery = useQuery<PaginatedPresetsData, PaginatedListVariables>(
+    GET_ALL_PRESETS,
+    {
+      variables,
+      skip: !loadPresets,
+      notifyOnNetworkStatusChange: true,
+    }
+  );
+  const filmSimQuery = useQuery<PaginatedFilmSimsData, PaginatedListVariables>(
+    GET_ALL_FILMSIMS,
+    {
+      variables,
+      skip: !loadFilmSims,
+      notifyOnNetworkStatusChange: true,
+    }
   );
 
-  // Fetch content on mount and when dependencies change
-  useEffect(() => {
-    setCurrentPage(1);
-    setHasMore(true);
-    setContent([]);
-    fetchContentData(1, false);
-  }, [contentType, filter, searchQuery]);
+  const content = buildGridContent({
+    contentType,
+    customData,
+    presetData: presetQuery.data,
+    filmSimData: filmSimQuery.data,
+    searchQuery,
+  });
+  const isLoadingMore =
+    presetQuery.networkStatus === NetworkStatus.fetchMore ||
+    filmSimQuery.networkStatus === NetworkStatus.fetchMore;
+  const loadMore = useCallback(
+    () =>
+      fetchNextContentPages({
+        filter,
+        isLoading: isLoadingMore,
+        presets: presetQuery.data?.listPresets,
+        filmSims: filmSimQuery.data?.listFilmSims,
+        fetchMorePresets: presetQuery.fetchMore,
+        fetchMoreFilmSims: filmSimQuery.fetchMore,
+      }),
+    [
+      filter,
+      presetQuery.data?.listPresets,
+      presetQuery.fetchMore,
+      filmSimQuery.data?.listFilmSims,
+      filmSimQuery.fetchMore,
+      isLoadingMore,
+    ]
+  );
+  const initialLoading =
+    (loadPresets && presetQuery.loading && !presetQuery.data) ||
+    (loadFilmSims && filmSimQuery.loading && !filmSimQuery.data);
+  const hasMore =
+    !hasCustomData &&
+    Boolean(
+      presetQuery.data?.listPresets.hasNextPage ||
+      filmSimQuery.data?.listFilmSims.hasNextPage
+    );
+  const error = presetQuery.error ?? filmSimQuery.error;
 
-  // Load more function
-  const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore) {
-      const nextPage = currentPage + 1;
-      setCurrentPage(nextPage);
-      fetchContentData(nextPage, true);
-    }
-  }, [currentPage, hasMore, isLoadingMore, fetchContentData]);
-
-  // Error state
-  if (error) {
+  if (error && !content.length) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
-        {error}
+        {error.message}
       </Alert>
     );
   }
 
-  // Empty state
-  if (!content.length && !loading) {
+  if (!content.length && !initialLoading) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
         No content found. Try adjusting filters or search terms.
@@ -206,50 +113,25 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     );
   }
 
-  // Render content
-  const renderContentItem = (item: ContentItem, index: number) => {
-    if (renderItem) {
-      return (
-        <React.Fragment key={`${item.type}-${item.data.id}-${index}`}>
-          {renderItem(item.data)}
-        </React.Fragment>
-      );
-    }
-
-    if (item.type === "preset") {
-      return (
-        <PresetCard key={`preset-${item.data.id}-${index}`} {...item.data} />
-      );
-    }
-
-    if (item.type === "buymeacoffee") {
-      return <BuyMeACoffeeCard key={`buymeacoffee-${index}`} />;
-    }
-
-    return <FilmSimCard key={`film-${item.data.id}-${index}`} {...item.data} />;
-  };
-
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        width: "100%",
-        maxWidth: "100vw",
-        overflow: "hidden",
-      }}
-    >
+    <Box sx={{ width: "100%", maxWidth: "100vw", overflow: "hidden" }}>
       <StaggeredGrid
         key={`grid-${contentType}`}
-        loading={false}
+        loading={initialLoading}
         onLoadMore={loadMore}
         hasMore={hasMore}
         isLoading={isLoadingMore}
         randomizeOrder={randomizeOrder}
       >
-        {content.map((item, index) => renderContentItem(item, index))}
+        {content.map(renderContentItem)}
       </StaggeredGrid>
     </Box>
   );
+
+  function renderContentItem(item: (typeof content)[number]) {
+    const key = `${item.type}-${item.data.id ?? item.data.slug ?? item.data.title}`;
+    return <ContentGridItem key={key} item={item} renderItem={renderItem} />;
+  }
 };
 
 export default ContentGridLoader;
