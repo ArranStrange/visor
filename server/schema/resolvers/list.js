@@ -3,6 +3,9 @@ const UserList = require("../../models/UserList");
 const Preset = require("../../models/Preset");
 const FilmSim = require("../../models/FilmSim");
 const Tag = require("../../models/Tag");
+const { createLogger } = require("../../utils/logger");
+
+const logger = createLogger("resolvers:list");
 
 module.exports = {
   Query: {
@@ -58,7 +61,7 @@ module.exports = {
           };
         });
       } catch (e) {
-        console.error("Error fetching featured lists:", e);
+        logger.error("Error fetching featured lists", e);
         throw new Error("Failed to fetch featured lists");
       }
     },
@@ -178,7 +181,7 @@ module.exports = {
           hasPreviousPage: page > 1,
         };
       } catch (error) {
-        console.error("Error browsing user lists:", error);
+        logger.error("Error browsing user lists", error);
         throw new Error("Failed to browse user lists: " + error.message);
       }
     },
@@ -230,7 +233,7 @@ module.exports = {
           };
         });
       } catch (error) {
-        console.error("Error getting user lists:", error);
+        logger.error("Error getting user lists", error);
         throw new Error("Failed to get user lists: " + error.message);
       }
     },
@@ -285,7 +288,7 @@ module.exports = {
             })) || [],
         };
       } catch (error) {
-        console.error("Error getting user list:", error);
+        logger.error("Error getting user list", error);
         throw new Error("Failed to get user list: " + error.message);
       }
     },
@@ -320,7 +323,7 @@ module.exports = {
           filmSims: [],
         };
       } catch (error) {
-        console.error("Error creating user list:", error);
+        logger.error("Error creating user list", error);
         throw new Error("Failed to create user list: " + error.message);
       }
     },
@@ -345,7 +348,7 @@ module.exports = {
         await UserList.findByIdAndDelete(id);
         return true;
       } catch (error) {
-        console.error("Error deleting user list:", error);
+        logger.error("Error deleting user list", error);
         throw error;
       }
     },
@@ -432,7 +435,7 @@ module.exports = {
             })) || [],
         };
       } catch (error) {
-        console.error("Error removing item from list:", error);
+        logger.error("Error removing item from list", error);
         throw error;
       }
     },
@@ -512,18 +515,12 @@ module.exports = {
             })) || [],
         };
       } catch (error) {
-        console.error("Error adding to list:", error);
+        logger.error("Error adding to list", error);
         throw error;
       }
     },
 
     updateUserList: async (_, { id, input }, { user }) => {
-      console.log("updateUserList called with:", {
-        id,
-        input,
-        userId: user?._id,
-      });
-
       if (!user) {
         throw new Error("You must be logged in to update a list");
       }
@@ -552,8 +549,6 @@ module.exports = {
       if (!updatedList) {
         throw new Error("Failed to update list");
       }
-
-      console.log("List updated successfully:", updatedList);
 
       return {
         id: updatedList._id.toString(),

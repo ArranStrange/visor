@@ -9,6 +9,9 @@ const corsOptions = require("./config/cors");
 const authMiddleware = require("./middleware/auth");
 const { typeDefs, resolvers } = require("./schema");
 const { validateMongoURI, maskCredentials } = require("./utils/validation");
+const { createLogger } = require("./utils/logger");
+
+const logger = createLogger("server");
 
 validateMongoURI(config.MONGO_URI);
 
@@ -39,19 +42,19 @@ const startServer = async () => {
     await server.start();
     server.applyMiddleware({ app, path: "/graphql", cors: false });
 
-    console.log("Connecting to MongoDB:", maskCredentials(config.MONGO_URI));
+    logger.info(`Connecting to MongoDB: ${maskCredentials(config.MONGO_URI)}`);
     await mongoose.connect(config.MONGO_URI);
-    console.log("MongoDB connected");
+    logger.info("MongoDB connected");
 
     app.listen(config.PORT, "0.0.0.0", () => {
-      console.log(`Server running in ${config.NODE_ENV} mode`);
-      console.log(`Server running at ${config.RENDER_URL}`);
-      console.log(
+      logger.info(`Server running in ${config.NODE_ENV} mode`);
+      logger.info(`Server running at ${config.RENDER_URL}`);
+      logger.info(
         `GraphQL endpoint: ${config.RENDER_URL}${server.graphqlPath}`
       );
     });
   } catch (error) {
-    console.error("Failed to start server:", error);
+    logger.error("Failed to start server", error);
     process.exit(1);
   }
 };

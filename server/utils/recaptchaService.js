@@ -1,9 +1,12 @@
 const axios = require("axios");
+const { createLogger } = require("./logger");
+
+const logger = createLogger("recaptcha");
 
 class ReCAPTCHAService {
   static async verifyToken(token, remoteip = null) {
     // TEMPORARILY DISABLED - Always return success
-    console.log("reCAPTCHA temporarily disabled - allowing all tokens");
+    logger.warn("reCAPTCHA temporarily disabled - allowing all tokens");
     return {
       success: true,
       message: "reCAPTCHA temporarily disabled",

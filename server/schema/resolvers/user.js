@@ -13,6 +13,9 @@ const Preset = require("../../models/Preset");
 const FilmSim = require("../../models/FilmSim");
 const EmailService = require("../../utils/emailService");
 const ReCAPTCHAService = require("../../utils/recaptchaService");
+const { createLogger } = require("../../utils/logger");
+
+const logger = createLogger("resolvers:user");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -97,7 +100,7 @@ module.exports = {
           id: userObj._id.toString(),
         };
       } catch (error) {
-        console.error("Error getting current user:", error);
+        logger.error("Error getting current user", error);
         throw new AuthenticationError("Failed to get current user");
       }
     },
@@ -116,7 +119,7 @@ module.exports = {
           id: user._id.toString(),
         }));
       } catch (error) {
-        console.error("Error searching users:", error);
+        logger.error("Error searching users", error);
         throw new Error("Failed to search users");
       }
     },
@@ -205,10 +208,7 @@ module.exports = {
         );
 
         if (!emailResult.success) {
-          console.error(
-            "Failed to send verification email:",
-            emailResult.message
-          );
+          logger.warn(`Failed to send verification email: ${emailResult.message}`);
         }
 
         return {
@@ -229,8 +229,7 @@ module.exports = {
         ) {
           throw error;
         }
-        console.error("Registration error:", error);
-        console.error("Error stack:", error.stack);
+        logger.error("Registration error", error);
         throw new Error("An error occurred during registration");
       }
     },
@@ -256,7 +255,7 @@ module.exports = {
         await user.save();
 
         EmailService.sendWelcomeEmail(user.email, user.username).catch(
-          (error) => console.error("Failed to send welcome email:", error)
+          (error) => logger.error("Failed to send welcome email", error)
         );
 
         return {
@@ -269,7 +268,7 @@ module.exports = {
           },
         };
       } catch (error) {
-        console.error("Email verification error:", error);
+        logger.error("Email verification error", error);
         return {
           success: false,
           message: "An error occurred during email verification",
@@ -312,7 +311,7 @@ module.exports = {
             : "Failed to send verification email. Please try again later.",
         };
       } catch (error) {
-        console.error("Resend verification email error:", error);
+        logger.error("Resend verification email error", error);
         return {
           success: false,
           message: "An error occurred while sending verification email",
@@ -355,7 +354,7 @@ module.exports = {
           id: userObj._id.toString(),
         };
       } catch (error) {
-        console.error("Error updating profile:", error);
+        logger.error("Error updating profile", error);
         throw new Error("Failed to update profile");
       }
     },
@@ -380,7 +379,7 @@ module.exports = {
 
         return avatarPath;
       } catch (error) {
-        console.error("Error uploading avatar:", error);
+        logger.error("Error uploading avatar", error);
         throw new Error("Failed to upload avatar");
       }
     },

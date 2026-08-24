@@ -1,4 +1,7 @@
 const mongoose = require("mongoose");
+const { createLogger } = require("./logger");
+
+const logger = createLogger("serialization");
 
 /**
  * Serialize a MongoDB document to ensure all ObjectIds are converted to strings
@@ -131,13 +134,9 @@ const serializePost = (post) => {
     serialized.reactions = serializeReactions(serialized.reactions);
   }
 
-  // Debug: Check for date serialization issues
+  // Check for date serialization issues
   if (serialized.createdAt && typeof serialized.createdAt === "object") {
-    console.log("⚠️ Post has invalid createdAt field:", {
-      postId: serialized.id,
-      createdAt: serialized.createdAt,
-      createdAtType: typeof serialized.createdAt,
-    });
+    logger.warn(`Post has invalid createdAt field (postId: ${serialized.id})`);
   }
 
   return serialized;

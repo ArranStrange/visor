@@ -9,6 +9,9 @@ const {
   ValidationError,
   UserInputError,
 } = require("../../utils/errors");
+const { createLogger } = require("../../utils/logger");
+
+const logger = createLogger("resolvers:preset");
 
 const formatToneCurvePoints = (arr) =>
   (arr || []).map(({ x, y }) => ({
@@ -18,7 +21,6 @@ const formatToneCurvePoints = (arr) =>
 
 const cleanSettings = (settings) => {
   if (!settings) return {};
-  console.log("uploadPreset called");
 
   const { colorGrading, ...settingsWithoutColorGrading } = settings;
 
@@ -441,7 +443,7 @@ const presetResolvers = {
           })),
         };
       } catch (error) {
-        console.error("Error in getPreset:", error);
+        logger.error("Error in getPreset", error);
         throw error;
       }
     },
@@ -524,7 +526,7 @@ const presetResolvers = {
           totalPages,
         };
       } catch (error) {
-        console.error("Error listing presets:", error);
+        logger.error("Error listing presets", error);
         throw new Error("Failed to list presets: " + error.message);
       }
     },
@@ -554,12 +556,10 @@ const presetResolvers = {
               }
             : undefined,
         };
-        console.log("Received toneCurve input:", input.toneCurve);
-        console.log("Processed toneCurve:", presetData.toneCurve);
         const preset = await Preset.create(presetData);
         return preset;
       } catch (error) {
-        console.error("Error creating preset:", error);
+        logger.error("Error creating preset", error);
         throw error;
       }
     },
@@ -631,15 +631,12 @@ const presetResolvers = {
       },
       { user }
     ) => {
-      console.log("Starting preset upload with user:", user?._id);
-
       if (!user) {
-        console.error("No user found in context");
+        logger.error("No user found in context");
         throw new Error("You must be logged in to upload a preset");
       }
 
       try {
-        console.log("Creating tags for:", tags);
         const tagDocuments = await Promise.all(
           tags.map(async (tagName) => {
             try {
@@ -653,24 +650,17 @@ const presetResolvers = {
               );
               return tag._id;
             } catch (error) {
-              console.error("Error creating tag:", tagName, error);
+              logger.error(`Error creating tag: ${tagName}`, error);
               throw error;
             }
           })
         );
-        console.log("Tags created successfully:", tagDocuments);
 
         const baseSlug = title.toLowerCase().replace(/\s+/g, "-");
         let slug = baseSlug;
         while (await Preset.findOne({ slug })) {
           slug = `${baseSlug}-${Date.now()}`;
         }
-        console.log("Generated slug:", slug);
-
-        console.log(
-          "Creating preset with settings:",
-          JSON.stringify(settings, null, 2)
-        );
 
         const colorGradingFromSettings =
           settings && settings.colorGrading ? settings.colorGrading : null;
@@ -711,12 +701,9 @@ const presetResolvers = {
           ...comprehensiveSettings,
         });
 
-        console.log("Saving preset...");
         await preset.save();
-        console.log("Preset saved successfully:", preset._id);
 
         if (beforeImage) {
-          console.log("Creating before image document...");
           try {
             const beforeImageDoc = new Image({
               url: beforeImage.url,
@@ -728,15 +715,13 @@ const presetResolvers = {
             });
             await beforeImageDoc.save();
             preset.beforeImage = beforeImageDoc._id;
-            console.log("Before image saved successfully:", beforeImageDoc._id);
           } catch (error) {
-            console.error("Error saving before image:", error);
+            logger.error("Error saving before image", error);
             throw error;
           }
         }
 
         if (afterImage) {
-          console.log("Creating after image document...");
           try {
             const afterImageDoc = new Image({
               url: afterImage.url,
@@ -748,15 +733,13 @@ const presetResolvers = {
             });
             await afterImageDoc.save();
             preset.afterImage = afterImageDoc._id;
-            console.log("After image saved successfully:", afterImageDoc._id);
           } catch (error) {
-            console.error("Error saving after image:", error);
+            logger.error("Error saving after image", error);
             throw error;
           }
         }
 
         if (sampleImages && sampleImages.length > 0) {
-          console.log("Creating sample image documents...");
           try {
             const sampleImageDocs = await Promise.all(
               sampleImages.map(async (image) => {
@@ -772,20 +755,13 @@ const presetResolvers = {
               })
             );
             preset.sampleImages = sampleImageDocs;
-            console.log("Sample images saved successfully:", sampleImageDocs);
           } catch (error) {
-            console.error("Error saving sample images:", error);
+            logger.error("Error saving sample images", error);
             throw error;
           }
         }
 
-        console.log("Saving preset with image references...");
         await preset.save();
-        console.log("Preset saved with image references");
-
-        console.log("Fetching final preset with populated fields...");
-
-        console.log("Preset ID:", preset._id);
 
         const finalPreset = await Preset.findById(preset._id)
           .populate("creator")
@@ -794,11 +770,9 @@ const presetResolvers = {
           .populate("afterImage")
           .populate("sampleImages");
 
-        console.log("Final preset:", finalPreset);
         if (!finalPreset) {
           throw new Error("Preset not found after save");
         }
-        console.log("Preset upload completed successfully");
 
         try {
           const discussion = new Discussion({
@@ -813,20 +787,16 @@ const presetResolvers = {
           });
 
           await discussion.save();
-          console.log(
-            "Discussion created successfully for preset:",
-            discussion._id
-          );
         } catch (discussionError) {
-          console.error(
-            "Error creating discussion for preset:",
+          logger.error(
+            "Error creating discussion for preset",
             discussionError
           );
         }
 
         return finalPreset;
       } catch (error) {
-        console.error("Error in uploadPreset resolver:", error);
+        logger.error("Error in uploadPreset resolver", error);
         throw new Error(`Failed to upload preset: ${error.message}`);
       }
     },
@@ -859,7 +829,7 @@ const presetResolvers = {
 
         return preset;
       } catch (error) {
-        console.error("Make preset featured error:", error);
+        logger.error("Make preset featured error", error);
         throw new Error("Failed to feature preset");
       }
     },
@@ -886,7 +856,7 @@ const presetResolvers = {
 
         return preset;
       } catch (error) {
-        console.error("Remove preset featured error:", error);
+        logger.error("Remove preset featured error", error);
         throw new Error("Failed to remove featured status");
       }
     },

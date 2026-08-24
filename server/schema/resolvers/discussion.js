@@ -8,6 +8,9 @@ const {
   AuthenticationError,
   UserInputError,
 } = require("apollo-server-express");
+const { createLogger } = require("../../utils/logger");
+
+const logger = createLogger("resolvers:discussion");
 
 const discussionResolvers = {
   Query: {
@@ -68,7 +71,7 @@ const discussionResolvers = {
           hasPreviousPage: page > 1,
         };
       } catch (error) {
-        console.error("Error in getDiscussions:", error);
+        logger.error("Error in getDiscussions", error);
         throw new Error("Failed to fetch discussions");
       }
     },
@@ -128,7 +131,7 @@ const discussionResolvers = {
           hasPreviousPage: page > 1,
         };
       } catch (error) {
-        console.error("Error in searchDiscussions:", error);
+        logger.error("Error in searchDiscussions", error);
         throw new Error("Failed to search discussions");
       }
     },
@@ -210,7 +213,7 @@ const discussionResolvers = {
           .populate("createdBy", "id username avatar")
           .populate("followers", "id username avatar");
       } catch (error) {
-        console.error("Error in createDiscussion:", error);
+        logger.error("Error in createDiscussion", error);
         if (error.name === "ValidationError") {
           throw new Error(`Validation error: ${error.message}`);
         }
@@ -355,7 +358,7 @@ const discussionResolvers = {
         // Return the created post (it's now part of the discussion)
         return newPost;
       } catch (error) {
-        console.error("Error in createPost:", error);
+        logger.error("Error in createPost", error);
 
         if (error.name === "AuthenticationError") {
           throw error;
@@ -373,7 +376,7 @@ const discussionResolvers = {
           throw error;
         }
 
-        console.error("Database error in createPost:", error);
+        logger.error("Database error in createPost", error);
         throw new Error(`Database error: ${error.message}`);
       }
     },
@@ -417,7 +420,7 @@ const discussionResolvers = {
         // Return the updated post
         return discussion.posts[postIndex];
       } catch (error) {
-        console.error("Error in updatePost:", error);
+        logger.error("Error in updatePost", error);
 
         if (error.name === "AuthenticationError") {
           throw error;
@@ -435,7 +438,7 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        console.error("Database error in updatePost:", error);
+        logger.error("Database error in updatePost", error);
         throw new Error(`Database error: ${error.message}`);
       }
     },
@@ -470,7 +473,7 @@ const discussionResolvers = {
 
         return true;
       } catch (error) {
-        console.error("Error in deletePost:", error);
+        logger.error("Error in deletePost", error);
 
         if (error.name === "AuthenticationError") {
           throw error;
@@ -488,7 +491,7 @@ const discussionResolvers = {
           throw new Error(`Validation error: ${error.message}`);
         }
 
-        console.error("Database error in deletePost:", error);
+        logger.error("Database error in deletePost", error);
         throw new Error(`Database error: ${error.message}`);
       }
     },
@@ -530,7 +533,7 @@ const discussionResolvers = {
 
         return newReply;
       } catch (error) {
-        console.error("Error in createReply:", error);
+        logger.error("Error in createReply", error);
         throw new Error(`Failed to create reply: ${error.message}`);
       }
     },
@@ -574,7 +577,7 @@ const discussionResolvers = {
 
         return reply;
       } catch (error) {
-        console.error("Error in updateReply:", error);
+        logger.error("Error in updateReply", error);
         throw new Error(`Failed to update reply: ${error.message}`);
       }
     },
@@ -617,7 +620,7 @@ const discussionResolvers = {
 
         return true;
       } catch (error) {
-        console.error("Error in deleteReply:", error);
+        logger.error("Error in deleteReply", error);
         throw new Error(`Failed to delete reply: ${error.message}`);
       }
     },

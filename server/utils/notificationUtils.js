@@ -1,6 +1,9 @@
 const Notification = require("../models/Notification");
 const Discussion = require("../models/Discussion");
 const User = require("../models/User");
+const { createLogger } = require("./logger");
+
+const logger = createLogger("notifications");
 
 // Helper function to create notifications for discussion replies
 const createDiscussionNotifications = async (post, discussion, senderId) => {
@@ -63,7 +66,7 @@ const createDiscussionNotifications = async (post, discussion, senderId) => {
 
     return notifications;
   } catch (error) {
-    console.error("Error creating discussion notifications:", error);
+    logger.error("Error creating discussion notifications", error);
     throw error;
   }
 };
@@ -103,7 +106,7 @@ const createMentionNotifications = async (post, senderId) => {
 
     return notifications;
   } catch (error) {
-    console.error("Error creating mention notifications:", error);
+    logger.error("Error creating mention notifications", error);
     throw error;
   }
 };
@@ -130,7 +133,7 @@ const createPostNotifications = async (post, discussion, senderId) => {
       total: discussionNotifications.length + mentionNotifications.length,
     };
   } catch (error) {
-    console.error("Error creating post notifications:", error);
+    logger.error("Error creating post notifications", error);
     throw error;
   }
 };
@@ -161,7 +164,7 @@ const createFollowNotification = async (followerId, followedId) => {
     await notification.save();
     return notification;
   } catch (error) {
-    console.error("Error creating follow notification:", error);
+    logger.error("Error creating follow notification", error);
     throw error;
   }
 };
@@ -200,7 +203,7 @@ const createLikeNotification = async (likerId, postId, discussionId) => {
     await notification.save();
     return notification;
   } catch (error) {
-    console.error("Error creating like notification:", error);
+    logger.error("Error creating like notification", error);
     throw error;
   }
 };

@@ -4,6 +4,9 @@ const Tag = require("../../models/Tag");
 const Image = require("../../models/Image");
 const Discussion = require("../../models/Discussion");
 const Preset = require("../../models/Preset");
+const { createLogger } = require("../../utils/logger");
+
+const logger = createLogger("resolvers:filmSim");
 
 const populateFilmSim = (query) => {
   return query
@@ -53,7 +56,7 @@ const filmSimResolvers = {
 
         return filmSim;
       } catch (error) {
-        console.error("Error in getFilmSim:", error);
+        logger.error("Error in getFilmSim", error);
         throw error;
       }
     },
@@ -130,7 +133,7 @@ const filmSimResolvers = {
           totalPages,
         };
       } catch (error) {
-        console.error("Error listing film simulations:", error);
+        logger.error("Error listing film simulations", error);
         throw new Error("Failed to list film simulations: " + error.message);
       }
     },
@@ -149,12 +152,6 @@ const filmSimResolvers = {
       }
 
       try {
-        console.log("Starting film simulation upload process...");
-        console.log(
-          "Received sample images:",
-          JSON.stringify(sampleImages, null, 2)
-        );
-
         const tagIds = await Promise.all(
           tags.map(async (tagName) => {
             const existingTag = await Tag.findOneAndUpdate(
@@ -169,7 +166,6 @@ const filmSimResolvers = {
             return existingTag._id;
           })
         );
-        console.log("Processed tags:", tagIds);
 
         const slug = name
           .toLowerCase()
@@ -202,19 +198,12 @@ const filmSimResolvers = {
           creator: user._id,
         };
 
-        console.log(
-          "Creating film simulation with data:",
-          JSON.stringify(filmSimData, null, 2)
-        );
         const filmSim = await FilmSim.create(filmSimData);
-        console.log("Successfully created film simulation:", filmSim._id);
 
         let sampleImageIds = [];
         if (sampleImages && sampleImages.length > 0) {
-          console.log("Processing sample images...");
           const images = await Promise.all(
             sampleImages.map(async (image) => {
-              console.log("Creating image document for:", image.url);
               const imageDoc = await Image.create({
                 url: image.url,
                 publicId: image.publicId,
@@ -224,12 +213,10 @@ const filmSimResolvers = {
                   item: filmSim._id,
                 },
               });
-              console.log("Created image document:", imageDoc._id);
               return imageDoc._id;
             })
           );
           sampleImageIds = images.map((img) => img._id);
-          console.log("Created sample image IDs:", sampleImageIds);
 
           filmSim.sampleImages = sampleImageIds;
           await filmSim.save();
@@ -247,13 +234,9 @@ const filmSimResolvers = {
             });
 
             await discussion.save();
-            console.log(
-              "Discussion created successfully for film sim:",
-              discussion._id
-            );
           } catch (discussionError) {
-            console.error(
-              "Error creating discussion for film sim:",
+            logger.error(
+              "Error creating discussion for film sim",
               discussionError
             );
           }
@@ -261,12 +244,7 @@ const filmSimResolvers = {
 
         return filmSim;
       } catch (error) {
-        console.error("Error uploading film simulation:", error);
-        console.error("Error details:", {
-          message: error.message,
-          stack: error.stack,
-          name: error.name,
-        });
+        logger.error("Error uploading film simulation", error);
         throw new Error("Failed to upload film simulation: " + error.message);
       }
     },
@@ -290,7 +268,7 @@ const filmSimResolvers = {
 
         return filmSim;
       } catch (error) {
-        console.error("Create film simulation error:", error);
+        logger.error("Create film simulation error", error);
         throw error;
       }
     },
@@ -318,7 +296,7 @@ const filmSimResolvers = {
 
         return updatedFilmSim;
       } catch (error) {
-        console.error("Update film simulation error:", error);
+        logger.error("Update film simulation error", error);
         throw error;
       }
     },
@@ -341,7 +319,7 @@ const filmSimResolvers = {
         await FilmSim.findByIdAndDelete(id);
         return true;
       } catch (error) {
-        console.error("Delete film simulation error:", error);
+        logger.error("Delete film simulation error", error);
         throw error;
       }
     },
@@ -373,7 +351,7 @@ const filmSimResolvers = {
 
         return populatedFilmSim.comments[populatedFilmSim.comments.length - 1];
       } catch (error) {
-        console.error("Add comment error:", error);
+        logger.error("Add comment error", error);
         throw error;
       }
     },
@@ -409,7 +387,7 @@ const filmSimResolvers = {
 
         return populatedFilmSim.comments.id(commentId);
       } catch (error) {
-        console.error("Update comment error:", error);
+        logger.error("Update comment error", error);
         throw error;
       }
     },
@@ -438,7 +416,7 @@ const filmSimResolvers = {
         await filmSim.save();
         return true;
       } catch (error) {
-        console.error("Delete comment error:", error);
+        logger.error("Delete comment error", error);
         throw error;
       }
     },
@@ -474,7 +452,7 @@ const filmSimResolvers = {
 
         return await populateFilmSim(FilmSim.findById(filmSimId));
       } catch (error) {
-        console.error("Add recommended preset error:", error);
+        logger.error("Add recommended preset error", error);
         throw error;
       }
     },
@@ -506,7 +484,7 @@ const filmSimResolvers = {
 
         return await populateFilmSim(FilmSim.findById(filmSimId));
       } catch (error) {
-        console.error("Remove recommended preset error:", error);
+        logger.error("Remove recommended preset error", error);
         throw error;
       }
     },
@@ -539,7 +517,7 @@ const filmSimResolvers = {
 
         return filmSim;
       } catch (error) {
-        console.error("Make film sim featured error:", error);
+        logger.error("Make film sim featured error", error);
         throw new Error("Failed to feature film sim");
       }
     },
@@ -566,7 +544,7 @@ const filmSimResolvers = {
 
         return filmSim;
       } catch (error) {
-        console.error("Remove film sim featured error:", error);
+        logger.error("Remove film sim featured error", error);
         throw new Error("Failed to remove featured status");
       }
     },

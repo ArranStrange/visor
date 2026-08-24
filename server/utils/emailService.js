@@ -1,4 +1,7 @@
 const sgMail = require("@sendgrid/mail");
+const { createLogger } = require("./logger");
+
+const logger = createLogger("email-service");
 
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const FROM_EMAIL = process.env.FROM_EMAIL || "noreply@visor.com";
@@ -12,7 +15,7 @@ if (SENDGRID_API_KEY) {
 class EmailService {
   static async sendVerificationEmail(email, username, token) {
     if (!SENDGRID_API_KEY) {
-      console.warn("SendGrid API key not configured.");
+      logger.warn("SendGrid API key not configured.");
       return { success: false, message: "Email service not configured" };
     }
 
@@ -132,10 +135,9 @@ class EmailService {
 
       const response = await sgMail.send(msg);
 
-      console.log(`Verification email sent to ${email}`, {
-        messageId: response[0]?.headers["x-message-id"],
-        statusCode: response[0]?.statusCode,
-      });
+      logger.info(
+        `Verification email sent to ${email} (messageId: ${response[0]?.headers["x-message-id"]})`
+      );
 
       return {
         success: true,
@@ -143,14 +145,12 @@ class EmailService {
         messageId: response[0]?.headers["x-message-id"],
       };
     } catch (error) {
-      console.error("Error sending verification email:", error);
+      logger.error("Error sending verification email", error);
 
       if (error.response) {
-        const { body } = error.response;
-        console.error("SendGrid API Error:", {
-          statusCode: error.code,
-          errors: body?.errors,
-          message: body?.message,
+        logger.error("SendGrid API Error", {
+          code: error.code,
+          errors: error.response.body?.errors,
         });
 
         if (error.code === 403) {
@@ -171,7 +171,7 @@ class EmailService {
 
   static async sendWelcomeEmail(email, username) {
     if (!SENDGRID_API_KEY) {
-      console.warn("SendGrid API key not configured. Skipping email send.");
+      logger.warn("SendGrid API key not configured. Skipping email send.");
       return { success: false, message: "Email service not configured" };
     }
 
@@ -258,10 +258,9 @@ class EmailService {
 
       const response = await sgMail.send(msg);
 
-      console.log(`Welcome email sent to ${email}`, {
-        messageId: response[0]?.headers["x-message-id"],
-        statusCode: response[0]?.statusCode,
-      });
+      logger.info(
+        `Welcome email sent to ${email} (messageId: ${response[0]?.headers["x-message-id"]})`
+      );
 
       return {
         success: true,
@@ -269,7 +268,7 @@ class EmailService {
         messageId: response[0]?.headers["x-message-id"],
       };
     } catch (error) {
-      console.error("Error sending welcome email:", error);
+      logger.error("Error sending welcome email", error);
       return { success: false, message: "Failed to send welcome email" };
     }
   }

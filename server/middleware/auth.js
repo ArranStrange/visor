@@ -1,6 +1,9 @@
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/jwt");
 const User = require("../models/User");
+const { createLogger } = require("../utils/logger");
+
+const logger = createLogger("auth");
 
 const authMiddleware = async (req, res, next) => {
   const authHeader = req.headers.authorization || "";
@@ -32,7 +35,7 @@ const authMiddleware = async (req, res, next) => {
       id: user._id,
     };
   } catch (err) {
-    console.error("Authentication error:", err.message);
+    logger.error("Authentication error", err);
     req.user = null;
   }
 
