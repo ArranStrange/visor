@@ -21,24 +21,16 @@ import { useQuery, useMutation } from "@apollo/client";
 import { useParams, useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { useAuth } from "../context/AuthContext";
-import { GET_DISCUSSION } from "../graphql/queries/discussions";
 import {
-  CREATE_POST,
-  DELETE_POST,
-  UPDATE_POST,
-} from "../graphql/mutations/discussions";
-import {
+  GET_DISCUSSION,
   CREATE_REPLY,
   UPDATE_REPLY,
   DELETE_REPLY,
-} from "../graphql/mutations/replyMutations";
+} from "../graphql/discussions";
 import { DiscussionPost } from "../types/discussions";
 import Post from "../components/discussions/Post";
 import PostComposer from "../components/discussions/PostComposer";
-import {
-  useCreateNotification,
-  createDiscussionReplyNotification,
-} from "../utils/notificationUtils";
+import { useDiscussionOperations } from "../hooks/useDiscussionOperations";
 
 const DiscussionDetail: React.FC = () => {
   const { discussionId } = useParams<{ discussionId: string }>();
@@ -59,79 +51,16 @@ const DiscussionDetail: React.FC = () => {
 
   const posts = discussion?.posts || [];
 
-  const createNotification = useCreateNotification();
-  const [createPost] = useMutation(CREATE_POST, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Mutation had errors:", errors);
-        return;
-      }
+  const itemType: "preset" | "filmsim" =
+    discussion?.linkedTo?.type === "FILMSIM" ? "filmsim" : "preset";
+  const itemId = discussion?.linkedTo?.refId || "";
+  const itemTitle = discussion?.title || "";
 
-      if (data?.createPost) {
-        const existingDiscussion = cache.readQuery({
-          query: GET_DISCUSSION,
-          variables: { id: discussionId! },
-        }) as any;
-
-        if (existingDiscussion?.getDiscussion) {
-          const newPost = {
-            userId: data.createPost.userId,
-            username: data.createPost.username,
-            avatar: data.createPost.avatar,
-            content: data.createPost.content,
-            timestamp: data.createPost.timestamp,
-            isEdited: data.createPost.isEdited,
-            editedAt: data.createPost.editedAt,
-          };
-
-          cache.writeQuery({
-            query: GET_DISCUSSION,
-            variables: { id: discussionId! },
-            data: {
-              getDiscussion: {
-                ...existingDiscussion.getDiscussion,
-                posts: [
-                  ...(existingDiscussion.getDiscussion.posts || []),
-                  newPost,
-                ],
-              },
-            },
-          });
-        }
-      }
-    },
-  });
-
-  const [deletePost] = useMutation(DELETE_POST, {
-    update: (cache, { data, errors }, { variables }) => {
-      if (errors) {
-        console.error("Delete post mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.deletePost) {
-        // Use cache.modify to safely update the posts array
-        const postIndexToRemove = variables?.postIndex;
-
-        if (postIndexToRemove !== undefined && postIndexToRemove >= 0) {
-          cache.modify({
-            id: cache.identify({
-              __typename: "Discussion",
-              id: variables?.discussionId,
-            }),
-            fields: {
-              posts(existingPosts = []) {
-                // Create a new array without the deleted post
-                return existingPosts.filter(
-                  (_: any, index: number) => index !== postIndexToRemove
-                );
-              },
-            },
-          });
-        }
-      }
-    },
-  });
+  const { handleCreatePost, handleEdit, handleDelete } =
+    useDiscussionOperations(itemId, itemType, itemTitle, discussion ?? null, {
+      query: GET_DISCUSSION,
+      variables: { id: discussionId! },
+    });
 
   const [createReply] = useMutation(CREATE_REPLY, {
     refetchQueries: [
@@ -150,141 +79,6 @@ const DiscussionDetail: React.FC = () => {
       { query: GET_DISCUSSION, variables: { id: discussionId! } },
     ],
   });
-
-  const [updatePost] = useMutation(UPDATE_POST, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Update post mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.updatePost) {
-        const existingDiscussion = cache.readQuery({
-          query: GET_DISCUSSION,
-          variables: { id: discussionId! },
-        }) as any;
-
-        if (existingDiscussion?.getDiscussion) {
-          const updatedPosts = (
-            existingDiscussion.getDiscussion.posts || []
-          ).map((post: any) => {
-            if (
-              post.userId === data.updatePost.userId &&
-              post.timestamp === data.updatePost.timestamp
-            ) {
-              return {
-                ...post,
-                content: data.updatePost.content,
-                isEdited: data.updatePost.isEdited,
-                editedAt: data.updatePost.editedAt,
-              };
-            }
-            return post;
-          });
-
-          cache.writeQuery({
-            query: GET_DISCUSSION,
-            variables: { id: discussionId! },
-            data: {
-              getDiscussion: {
-                ...existingDiscussion.getDiscussion,
-                posts: updatedPosts,
-              },
-            },
-          });
-        }
-      }
-    },
-  });
-
-  const handleCreatePost = async (content: string) => {
-    if (!discussionId || !content.trim()) {
-      return;
-    }
-
-    if (!discussion) {
-      return;
-    }
-
-    try {
-      const input = {
-        discussionId,
-        content: content.trim(),
-      };
-
-      const result = await createPost({
-        variables: {
-          input,
-        },
-      });
-
-      if (result.data?.createPost && discussion) {
-        const linkedItem = discussion.linkedTo.preset
-          ? {
-              type: "PRESET",
-              id: discussion.linkedTo.preset.id,
-              title: discussion.linkedTo.preset.title,
-              slug: discussion.linkedTo.preset.slug,
-            }
-          : discussion.linkedTo.filmSim
-            ? {
-                type: "FILMSIM",
-                id: discussion.linkedTo.filmSim.id,
-                title: discussion.linkedTo.filmSim.name,
-                slug: discussion.linkedTo.filmSim.slug,
-              }
-            : undefined;
-
-        await createDiscussionReplyNotification(
-          createNotification,
-          result.data.createPost,
-          discussion,
-          linkedItem
-        );
-      }
-    } catch (error: any) {
-      console.error("Failed to create post:", error);
-      console.error("Error details:", {
-        message: error.message,
-        graphQLErrors: error.graphQLErrors,
-        networkError: error.networkError,
-      });
-    }
-  };
-
-  const handleEdit = async (postIndex: number, content: string) => {
-    const postToEdit = posts[postIndex];
-
-    if (!postToEdit) {
-      console.error("Post not found. Please refresh the page and try again.");
-      return;
-    }
-
-    try {
-      const result = await updatePost({
-        variables: {
-          discussionId: discussionId!,
-          postIndex: postIndex,
-          input: { content: content.trim() },
-        },
-      });
-
-      if (!result.data?.updatePost) {
-        console.error("Failed to update post - no data returned");
-      }
-    } catch (error: any) {
-      console.error("Error updating post:", error);
-
-      let errorMessage = "Failed to update post. Please try again.";
-      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      console.error("Update post error:", errorMessage);
-    }
-  };
 
   const handleReply = async (postIndex: number, content: string) => {
     try {
@@ -334,81 +128,6 @@ const DiscussionDetail: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to delete reply:", error);
-    }
-  };
-
-  const handleDelete = async (postIndex: number) => {
-    const postToDelete = posts[postIndex];
-
-    if (!postToDelete) {
-      console.error("Post not found. Please refresh the page and try again.");
-      return;
-    }
-
-    try {
-      const result = await deletePost({
-        variables: {
-          discussionId: discussionId!,
-          postIndex: postIndex,
-        },
-      });
-
-      if (result.data?.deletePost) {
-        // Cache update is handled by the mutation
-      } else if (result.errors && result.errors.length > 0) {
-        console.error("Backend returned errors:", result.errors);
-
-        const firstError = result.errors[0];
-        let errorMessage = "Failed to delete post. Please try again.";
-
-        if (firstError.message) {
-          errorMessage = firstError.message;
-        }
-
-        if (firstError.extensions?.code) {
-          switch (firstError.extensions.code) {
-            case "UNAUTHENTICATED":
-              errorMessage = "You must be logged in to delete posts.";
-              break;
-            case "FORBIDDEN":
-              errorMessage = "You can only delete your own posts.";
-              break;
-            case "NOT_FOUND":
-              errorMessage =
-                "Post not found. It may have already been deleted.";
-              break;
-            case "INTERNAL_SERVER_ERROR":
-              console.error(
-                "Backend server error - check server logs for details"
-              );
-              errorMessage =
-                "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
-              break;
-            default:
-              errorMessage = firstError.message || errorMessage;
-          }
-        }
-
-        console.error("Delete post error:", errorMessage);
-      } else {
-        console.error("Failed to delete post - no data returned");
-      }
-    } catch (error: any) {
-      console.error("Error deleting post:", error);
-      console.error("Error details:", {
-        message: error.message,
-        graphQLErrors: error.graphQLErrors,
-        networkError: error.networkError,
-      });
-
-      let errorMessage = "Failed to delete post. Please try again.";
-      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-
-      console.error("Delete post error:", errorMessage);
     }
   };
 

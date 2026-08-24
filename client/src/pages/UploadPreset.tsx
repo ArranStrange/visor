@@ -9,7 +9,6 @@ import {
   Alert,
 } from "@mui/material";
 import { useMutation } from "@apollo/client";
-import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import PresetUploadForm from "../components/forms/PresetUploadForm";
@@ -19,38 +18,7 @@ import {
   buildToneCurveForBackend,
 } from "../utils/presetSettingsTransform";
 import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
-
-const UPLOAD_PRESET = gql`
-  mutation UploadPreset(
-    $title: String!
-    $description: String
-    $settings: PresetSettingsInput!
-    $toneCurve: ToneCurveInput
-    $notes: String
-    $tags: [String!]!
-    $beforeImage: ImageInput
-    $afterImage: ImageInput
-    $sampleImages: [ImageInput!]
-    $xmpUrl: String
-  ) {
-    uploadPreset(
-      title: $title
-      description: $description
-      settings: $settings
-      toneCurve: $toneCurve
-      notes: $notes
-      tags: $tags
-      beforeImage: $beforeImage
-      afterImage: $afterImage
-      sampleImages: $sampleImages
-      xmpUrl: $xmpUrl
-    ) {
-      id
-      title
-      slug
-    }
-  }
-`;
+import { UPLOAD_PRESET } from "../graphql/presets";
 
 const UploadPreset: React.FC = () => {
   const navigate = useNavigate();

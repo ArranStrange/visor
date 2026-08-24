@@ -1,7 +1,7 @@
 import React from "react";
 import { Box } from "@mui/material";
 import { useQuery } from "@apollo/client";
-import { GET_FEATURED_PHOTO } from "../../graphql/queries/getFeaturedPhoto";
+import { GET_FEATURED_PHOTO } from "../../graphql/featured";
 
 const FeaturedPhotoBackground: React.FC = () => {
   const { data: featuredPhotoData } = useQuery(GET_FEATURED_PHOTO);

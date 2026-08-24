@@ -76,3 +76,38 @@ export const GET_FEATURED_ITEMS = gql`
     }
   }
 `;
+
+export const GET_FEATURED_PHOTO = gql`
+  query GetFeaturedPhoto {
+    getFeaturedPhoto {
+      id
+      url
+      caption
+      isFeaturedPhoto
+      uploader {
+        id
+        username
+      }
+    }
+  }
+`;
+
+export const MAKE_FEATURED_PHOTO = gql`
+  mutation MakeFeaturedPhoto($imageId: ID!) {
+    makeFeaturedPhoto(imageId: $imageId) {
+      id
+      url
+      isFeaturedPhoto
+    }
+  }
+`;
+
+export const REMOVE_FEATURED_PHOTO = gql`
+  mutation RemoveFeaturedPhoto($imageId: ID!) {
+    removeFeaturedPhoto(imageId: $imageId) {
+      id
+      url
+      isFeaturedPhoto
+    }
+  }
+`;

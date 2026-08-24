@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { DELETE_PRESET } from "../graphql/mutations/deletePreset";
-import { UPDATE_PRESET } from "../graphql/mutations/updatePreset";
-import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
+import {
+  DELETE_PRESET,
+  UPDATE_PRESET,
+  GET_PRESET_BY_SLUG,
+} from "../graphql/presets";
 import { useFeatured } from "./useFeatured";
 import { ParsedSettings } from "../types/xmpSettings";
 import { stripTypename } from "../utils/presetDetailUtils";

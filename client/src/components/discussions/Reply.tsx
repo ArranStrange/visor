@@ -20,8 +20,10 @@ import { formatDistanceToNow } from "date-fns";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";
 import { DiscussionReply as ReplyType } from "../../types/discussions";
-import { ADMIN_DELETE_REPLY } from "../../graphql/mutations/adminMutations";
-import { GET_DISCUSSION } from "../../graphql/queries/discussions";
+import {
+  ADMIN_DELETE_REPLY,
+  GET_DISCUSSION,
+} from "../../graphql/discussions";
 
 interface ReplyProps {
   reply: ReplyType;

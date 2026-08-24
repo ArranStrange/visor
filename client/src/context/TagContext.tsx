@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from "react";
 import { useLazyQuery } from "@apollo/client";
-import { SEARCH_TAGS } from "../graphql/queries/searchTags";
+import { SEARCH_TAGS } from "../graphql/tags";
 
 export interface Tag {
   id: string;

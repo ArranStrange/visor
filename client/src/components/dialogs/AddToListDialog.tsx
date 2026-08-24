@@ -17,46 +17,10 @@ import {
   Alert,
   Box,
 } from "@mui/material";
-import { gql } from "@apollo/client";
-
-const GET_USER_LISTS = gql`
-  query GetUserLists($userId: ID!) {
-    getUserLists(userId: $userId) {
-      id
-      name
-      description
-      isPublic
-      owner {
-        id
-      }
-      presets {
-        id
-        title
-        slug
-      }
-      filmSims {
-        id
-        name
-        slug
-      }
-    }
-  }
-`;
-
-const ADD_TO_LIST = gql`
-  mutation AddToUserList($listId: ID!, $presetIds: [ID!], $filmSimIds: [ID!]) {
-    addToUserList(
-      listId: $listId
-      presetIds: $presetIds
-      filmSimIds: $filmSimIds
-    ) {
-      id
-      name
-      description
-      isPublic
-    }
-  }
-`;
+import {
+  GET_USER_LISTS_FOR_ADD_DIALOG as GET_USER_LISTS,
+  ADD_TO_LIST,
+} from "../../graphql/lists";
 
 interface AddToListDialogProps {
   open: boolean;

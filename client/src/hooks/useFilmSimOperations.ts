@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
-import { DELETE_FILMSIM } from "../graphql/mutations/deleteFilmSim";
+import { DELETE_FILMSIM } from "../graphql/filmSims";
 import { useFeatured } from "./useFeatured";
 
 interface FilmSim {

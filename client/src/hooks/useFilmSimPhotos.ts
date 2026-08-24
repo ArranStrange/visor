@@ -3,7 +3,7 @@ import { useMutation } from "@apollo/client";
 import {
   MAKE_FEATURED_PHOTO,
   REMOVE_FEATURED_PHOTO,
-} from "../graphql/mutations/makeFeaturedPhoto";
+} from "../graphql/featured";
 
 export const useFilmSimPhotos = () => {
   const [makeFeaturedPhoto] = useMutation(MAKE_FEATURED_PHOTO);

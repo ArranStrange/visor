@@ -37,8 +37,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
-import { GET_NOTIFICATIONS } from "../graphql/queries/notifications";
-import { DELETE_NOTIFICATION } from "../graphql/mutations/notifications";
+import { GET_NOTIFICATIONS, DELETE_NOTIFICATION } from "../graphql/notifications";
 import { Notification, NotificationType } from "../types/notifications";
 
 const Notifications: React.FC = () => {

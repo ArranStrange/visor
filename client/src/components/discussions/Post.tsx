@@ -26,8 +26,7 @@ import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";
 import { DiscussionPost as PostType } from "../../types/discussions";
 import Reply from "./Reply";
-import { ADMIN_DELETE_POST } from "../../graphql/mutations/adminMutations";
-import { GET_DISCUSSION } from "../../graphql/queries/discussions";
+import { ADMIN_DELETE_POST, GET_DISCUSSION } from "../../graphql/discussions";
 
 interface PostProps {
   post: PostType;

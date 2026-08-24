@@ -15,8 +15,8 @@ import {
   Alert,
 } from "@mui/material";
 import { useQuery, useMutation } from "@apollo/client";
-import { ADD_RECOMMENDED_PRESET } from "../../graphql/mutations/addRecommendedPreset";
-import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
+import { ADD_RECOMMENDED_PRESET } from "../../graphql/filmSims";
+import { GET_ALL_PRESETS } from "../../graphql/presets";
 import { usePresetSearch } from "../../hooks/usePresetSearch";
 import PresetSearchItem from "./PresetSearchItem";
 import CurrentPresetsList from "./CurrentPresetsList";

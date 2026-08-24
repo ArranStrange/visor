@@ -39,46 +39,9 @@ import { useQuery, useMutation } from "@apollo/client";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
-import { gql } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { uploadToCloudinary } from "../utils/cloudinary";
-
-// GraphQL query to get user profile
-const GET_USER_PROFILE = gql`
-  query GetUserProfile {
-    getCurrentUser {
-      id
-      username
-      email
-      avatar
-      bio
-      instagram
-      cameras
-    }
-  }
-`;
-
-// GraphQL mutation to update user profile
-const UPDATE_USER_PROFILE = gql`
-  mutation UpdateUserProfile($input: JSON!) {
-    updateProfile(input: $input) {
-      id
-      username
-      email
-      avatar
-      bio
-      instagram
-      cameras
-    }
-  }
-`;
-
-// GraphQL mutation to upload avatar
-const UPLOAD_AVATAR = gql`
-  mutation UploadAvatar($file: Upload!) {
-    uploadAvatar(file: $file)
-  }
-`;
+import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "../graphql/users";
 
 // File validation
 const validateProfileImage = (file: File): boolean => {

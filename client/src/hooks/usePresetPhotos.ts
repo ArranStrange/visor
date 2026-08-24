@@ -1,29 +1,8 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
-import { gql } from "@apollo/client";
-import {
-  MAKE_FEATURED_PHOTO,
-  REMOVE_FEATURED_PHOTO,
-} from "../graphql/mutations/makeFeaturedPhoto";
+import { ADD_PHOTO_TO_PRESET } from "../graphql/presets";
+import { MAKE_FEATURED_PHOTO, REMOVE_FEATURED_PHOTO } from "../graphql/featured";
 import { uploadToCloudinary } from "../utils/cloudinary";
-
-const ADD_PHOTO_TO_PRESET = gql`
-  mutation AddPhotoToPreset(
-    $presetId: ID!
-    $imageUrl: String!
-    $caption: String
-  ) {
-    addPhotoToPreset(
-      presetId: $presetId
-      imageUrl: $imageUrl
-      caption: $caption
-    ) {
-      id
-      url
-      caption
-    }
-  }
-`;
 
 export const usePresetPhotos = (presetId: string) => {
   const [addPhotoToPreset, { loading: addingPhoto }] =

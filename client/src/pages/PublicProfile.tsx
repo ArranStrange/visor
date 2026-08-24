@@ -23,8 +23,9 @@ import {
   Tooltip,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, gql } from "@apollo/client";
-import { GET_USER_UPLOADS } from "../graphql/queries/getUserUploads";
+import { useQuery } from "@apollo/client";
+import { GET_USER_UPLOADS } from "../graphql/users";
+import { GET_USER_LISTS_FOR_PUBLIC_PROFILE as GET_USER_LISTS } from "../graphql/lists";
 import { useAuth } from "../context/AuthContext";
 import EditIcon from "@mui/icons-material/Edit";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -38,34 +39,6 @@ import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useContentType } from "../context/ContentTypeFilter";
 import PresetCard from "../components/cards/PresetCard";
 import FilmSimCard from "../components/cards/FilmSimCard";
-
-const GET_USER_LISTS = gql`
-  query GetUserLists($userId: ID!) {
-    getUserLists(userId: $userId) {
-      id
-      name
-      description
-      isPublic
-      createdAt
-      presets {
-        id
-        title
-        slug
-        afterImage {
-          url
-        }
-      }
-      filmSims {
-        id
-        name
-        slug
-        sampleImages {
-          url
-        }
-      }
-    }
-  }
-`;
 
 const PublicProfile: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();

@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { LOGIN_USER } from "../graphql/mutations/login";
+import { LOGIN_USER } from "../graphql/users";
 import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {

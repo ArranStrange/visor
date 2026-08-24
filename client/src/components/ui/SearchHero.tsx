@@ -2,11 +2,8 @@ import React from "react";
 import { Box, Container, InputBase, Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import {
-  GET_ALL_TAGS,
-  GET_ALL_TAGS_OPTIONS,
-} from "../../graphql/queries/getAllTags";
-import { GET_FEATURED_PHOTO } from "../../graphql/queries/getFeaturedPhoto";
+import { GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS } from "../../graphql/tags";
+import { GET_FEATURED_PHOTO } from "../../graphql/featured";
 
 const SearchHero: React.FC = () => {
   const navigate = useNavigate();

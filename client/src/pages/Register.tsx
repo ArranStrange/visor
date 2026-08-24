@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { REGISTER_USER } from "../graphql/mutations/register";
+import { REGISTER_USER } from "../graphql/users";
 import { Email } from "@mui/icons-material";
 
 const Register: React.FC = () => {

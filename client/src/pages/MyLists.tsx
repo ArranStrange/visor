@@ -9,11 +9,11 @@ import {
   Alert,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { gql } from "@apollo/client";
 import ListIcon from "@mui/icons-material/List";
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "../context/AuthContext";
 import ListRow from "../components/lists/ListRow";
+import { GET_USER_LISTS } from "../graphql/lists";
 
 interface UserList {
   id: string;
@@ -45,41 +45,6 @@ interface UserList {
   createdAt?: string;
   updatedAt?: string;
 }
-
-const GET_USER_LISTS = gql`
-  query GetUserLists($userId: ID!) {
-    getUserLists(userId: $userId) {
-      id
-      name
-      description
-      isPublic
-      isFeatured
-      owner {
-        id
-        username
-        avatar
-      }
-      presets {
-        id
-        title
-        slug
-        afterImage {
-          url
-        }
-      }
-      filmSims {
-        id
-        name
-        slug
-        sampleImages {
-          url
-        }
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`;
 
 const MyLists: React.FC = () => {
   const navigate = useNavigate();

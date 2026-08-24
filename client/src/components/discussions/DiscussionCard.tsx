@@ -34,8 +34,10 @@ import {
 } from "../../utils/discussionIcons";
 import { formatDate } from "../../utils/dateUtils";
 import { isUserFollowing } from "../../utils/discussionUtils";
-import { ADMIN_DELETE_DISCUSSION } from "../../graphql/mutations/adminMutations";
-import { GET_DISCUSSIONS } from "../../graphql/queries/discussions";
+import {
+  ADMIN_DELETE_DISCUSSION,
+  GET_DISCUSSIONS,
+} from "../../graphql/discussions";
 
 interface DiscussionCardProps {
   discussion: DiscussionType;

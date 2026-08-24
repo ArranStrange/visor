@@ -16,7 +16,6 @@ import {
   getSensorCompatibilityWarnings,
 } from "../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
-import { gql } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -28,32 +27,7 @@ import ImageUpload from "../components/media/ImageUpload";
 
 import { FilmSimFormState, FilmSimSettings } from "../types/filmSim";
 import { DEFAULT_FILM_SIM_SETTINGS } from "../constants/filmSimConfig";
-
-const UPLOAD_FILM_SIM = gql`
-  mutation UploadFilmSim(
-    $name: String!
-    $description: String
-    $settings: FilmSimSettingsInput!
-    $notes: String
-    $tags: [String!]!
-    $sampleImages: [SampleImageInput!]
-    $compatibleSensors: [String!]
-  ) {
-    uploadFilmSim(
-      name: $name
-      description: $description
-      settings: $settings
-      notes: $notes
-      tags: $tags
-      sampleImages: $sampleImages
-      compatibleSensors: $compatibleSensors
-    ) {
-      id
-      name
-      slug
-    }
-  }
-`;
+import { UPLOAD_FILM_SIM } from "../graphql/filmSims";
 
 const UploadFilmSim: React.FC = () => {
   const { user } = useAuth();

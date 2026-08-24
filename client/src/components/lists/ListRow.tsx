@@ -10,10 +10,11 @@ import {
 } from "@mui/material";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
-import { gql, useMutation } from "@apollo/client";
+import { useMutation } from "@apollo/client";
 import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
+import { FEATURE_LIST, UNFEATURE_LIST } from "../../graphql/lists";
 
 interface ListRowProps {
   id: string;
@@ -34,24 +35,6 @@ interface ListRowProps {
     sampleImages?: Array<{ id?: string; url: string }>;
   }>;
 }
-
-const FEATURE_LIST = gql`
-  mutation FeatureUserList($id: ID!) {
-    featureUserList(id: $id) {
-      id
-      isFeatured
-    }
-  }
-`;
-
-const UNFEATURE_LIST = gql`
-  mutation UnfeatureUserList($id: ID!) {
-    unfeatureUserList(id: $id) {
-      id
-      isFeatured
-    }
-  }
-`;
 
 const ListRow: React.FC<ListRowProps> = ({
   id,

@@ -22,7 +22,7 @@ import {
   getSensorCompatibilityWarnings,
 } from "../../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
-import { UPDATE_FILMSIM } from "../../graphql/mutations/updateFilmSim";
+import { UPDATE_FILMSIM } from "../../graphql/filmSims";
 
 import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
 import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";

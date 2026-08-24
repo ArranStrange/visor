@@ -3,7 +3,7 @@ import { optimizeImageUrl } from "../../utils/cloudinary";
 import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
+import { GET_FEATURED_ITEMS } from "../../graphql/featured";
 import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
 import { useMobileDetection } from "../../hooks/useMobileDetection";
 

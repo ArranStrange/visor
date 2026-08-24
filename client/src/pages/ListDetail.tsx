@@ -14,65 +14,15 @@ import {
   Chip,
   Stack,
 } from "@mui/material";
-import { gql } from "@apollo/client";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
 import { useAuth } from "../context/AuthContext";
 import { useContentType } from "../context/ContentTypeFilter";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
-
-const GET_LIST = gql`
-  query GetList($id: ID!) {
-    getUserList(id: $id) {
-      id
-      name
-      description
-      isPublic
-      owner {
-        id
-        username
-      }
-      presets {
-        id
-        title
-        slug
-        afterImage {
-          url
-        }
-      }
-      filmSims {
-        id
-        name
-        slug
-        sampleImages {
-          url
-        }
-      }
-      createdAt
-      updatedAt
-    }
-  }
-`;
-
-const UPDATE_LIST = gql`
-  mutation UpdateList($id: ID!, $input: UpdateUserListInput!) {
-    updateUserList(id: $id, input: $input) {
-      id
-      name
-      description
-      isPublic
-    }
-  }
-`;
-
-const DELETE_LIST = gql`
-  mutation DeleteList($id: ID!) {
-    deleteUserList(id: $id)
-  }
-`;
+import { GET_ALL_PRESETS } from "../graphql/presets";
+import { GET_ALL_FILMSIMS } from "../graphql/filmSims";
+import { GET_LIST, UPDATE_LIST, DELETE_LIST } from "../graphql/lists";
 
 const ListDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();

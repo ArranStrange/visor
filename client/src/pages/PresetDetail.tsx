@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_PRESET_BY_SLUG } from "../graphql/queries/getPresetBySlug";
+import { GET_PRESET_BY_SLUG } from "../graphql/presets";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmpCompiler";

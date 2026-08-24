@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Typography, Avatar, Button, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FEATURED_ITEMS } from "../../graphql/queries/getFeaturedItems";
+import { GET_FEATURED_ITEMS } from "../../graphql/featured";
 
 const squareImageStyles = {
   width: "100%",

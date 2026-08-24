@@ -1,5 +1,5 @@
 import { useMutation } from "@apollo/client";
-import { CREATE_NOTIFICATION } from "../graphql/mutations/notifications";
+import { CREATE_NOTIFICATION } from "../graphql/notifications";
 import {
   NotificationType,
   CreateNotificationInput,

@@ -11,10 +11,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import {
-  VERIFY_EMAIL,
-  RESEND_VERIFICATION_EMAIL,
-} from "../graphql/mutations/register";
+import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from "../graphql/users";
 import { CheckCircle, Email, Error } from "@mui/icons-material";
 
 const EmailVerification: React.FC = () => {

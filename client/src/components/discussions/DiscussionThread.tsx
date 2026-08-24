@@ -2,7 +2,7 @@ import React from "react";
 import { Box, Alert, CircularProgress, Card, CardContent } from "@mui/material";
 import { useQuery } from "@apollo/client";
 import { Discussion as DiscussionType } from "../../types/discussions";
-import { GET_DISCUSSION_BY_ITEM } from "../../graphql/queries/discussions";
+import { GET_DISCUSSION_BY_ITEM } from "../../graphql/discussions";
 import { useDiscussionOperations } from "../../hooks/useDiscussionOperations";
 import DiscussionHeader from "./DiscussionHeader";
 import DiscussionComposer from "./DiscussionComposer";

@@ -25,9 +25,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
-import { CREATE_DISCUSSION } from "../graphql/mutations/discussions";
-import { GET_ALL_PRESETS } from "../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
+import { CREATE_DISCUSSION } from "../graphql/discussions";
+import { GET_ALL_PRESETS } from "../graphql/presets";
+import { GET_ALL_FILMSIMS } from "../graphql/filmSims";
 
 interface CreateDiscussionForm {
   title: string;

@@ -5,12 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { Discussion as DiscussionType } from "../../types/discussions";
 import { DiscussionFilters as DiscussionFiltersType } from "../../types/discussionFilters";
-import { GET_DISCUSSIONS } from "../../graphql/queries/discussions";
 import {
+  GET_DISCUSSIONS,
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
-} from "../../graphql/mutations/discussions";
-import { ADMIN_DELETE_DISCUSSION } from "../../graphql/mutations/adminMutations";
+  ADMIN_DELETE_DISCUSSION,
+} from "../../graphql/discussions";
 import DiscussionFiltersComponent from "./DiscussionFilters";
 import DiscussionCard from "./DiscussionCard";
 import DiscussionEmptyState from "./DiscussionEmptyState";

@@ -3,7 +3,7 @@ import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { getSensorByLabel } from "../constants/fujifilmSensors";
-import { GET_ALL_FILMSIMS } from "../graphql/queries/getAllFilmSims";
+import { GET_ALL_FILMSIMS } from "../graphql/filmSims";
 import SensorProfileCard from "../components/filmsims/SensorProfileCard";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";

@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Alert, Box } from "@mui/material";
 import { useApolloClient } from "@apollo/client";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { GET_ALL_PRESETS } from "../../graphql/queries/getAllPresets";
-import { GET_ALL_FILMSIMS } from "../../graphql/queries/getAllFilmSims";
+import { GET_ALL_PRESETS } from "../../graphql/presets";
+import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
 
 import PresetCard from "../cards/PresetCard";
 import FilmSimCard from "../cards/FilmSimCard";

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@apollo/client";
+import type { DocumentNode } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { Discussion as DiscussionType } from "../types/discussions";
 import {
@@ -9,186 +10,66 @@ import {
   UPDATE_POST,
   CREATE_POST,
   CREATE_DISCUSSION,
-} from "../graphql/mutations/discussions";
-import { GET_DISCUSSION_BY_ITEM } from "../graphql/queries/discussions";
+  GET_DISCUSSION_BY_ITEM,
+} from "../graphql/discussions";
 import {
   useCreateNotification,
   createDiscussionReplyNotification,
 } from "../utils/notificationUtils";
 
+interface DiscussionQueryRef {
+  query: DocumentNode;
+  variables: Record<string, unknown>;
+}
+
 export const useDiscussionOperations = (
   itemId: string,
   itemType: "preset" | "filmsim",
   itemTitle: string,
-  discussion: DiscussionType | null
+  discussion: DiscussionType | null,
+  // Optional override for which query to refetch after createPost/deletePost/updatePost.
+  // Defaults to GET_DISCUSSION_BY_ITEM (itemType/itemId), used when a page addresses
+  // the discussion by id instead (e.g. DiscussionDetail via GET_DISCUSSION).
+  postsQueryRef?: DiscussionQueryRef
 ) => {
   const { user } = useAuth();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const createNotification = useCreateNotification();
 
+  const itemQueryRef: DiscussionQueryRef = {
+    query: GET_DISCUSSION_BY_ITEM,
+    variables: {
+      type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
+      refId: itemId,
+    },
+  };
+  const postsRefetchQuery = postsQueryRef ?? itemQueryRef;
+
   const [followDiscussion] = useMutation(FOLLOW_DISCUSSION, {
-    refetchQueries: [
-      {
-        query: GET_DISCUSSION_BY_ITEM,
-        variables: {
-          type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-          refId: itemId,
-        },
-      },
-    ],
+    refetchQueries: [itemQueryRef],
   });
 
   const [unfollowDiscussion] = useMutation(UNFOLLOW_DISCUSSION, {
-    refetchQueries: [
-      {
-        query: GET_DISCUSSION_BY_ITEM,
-        variables: {
-          type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-          refId: itemId,
-        },
-      },
-    ],
+    refetchQueries: [itemQueryRef],
   });
 
   const [createPost, { loading: creatingPost }] = useMutation(CREATE_POST, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.createPost && discussion) {
-        const existingDiscussion = cache.readQuery({
-          query: GET_DISCUSSION_BY_ITEM,
-          variables: {
-            type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-            refId: itemId,
-          },
-        }) as any;
-
-        if (existingDiscussion?.getDiscussionByLinkedItem) {
-          const newPost = {
-            userId: data.createPost.userId,
-            username: data.createPost.username,
-            avatar: data.createPost.avatar,
-            content: data.createPost.content,
-            timestamp: data.createPost.timestamp,
-            isEdited: data.createPost.isEdited,
-            editedAt: data.createPost.editedAt,
-          };
-
-          cache.writeQuery({
-            query: GET_DISCUSSION_BY_ITEM,
-            variables: {
-              type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-              refId: itemId,
-            },
-            data: {
-              getDiscussionByLinkedItem: {
-                ...existingDiscussion.getDiscussionByLinkedItem,
-                posts: [
-                  ...(existingDiscussion.getDiscussionByLinkedItem.posts || []),
-                  newPost,
-                ],
-              },
-            },
-          });
-        }
-      }
-    },
+    refetchQueries: [postsRefetchQuery],
+    awaitRefetchQueries: true,
   });
 
   const [createDiscussion] = useMutation(CREATE_DISCUSSION, {
-    refetchQueries: [
-      {
-        query: GET_DISCUSSION_BY_ITEM,
-        variables: {
-          type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-          refId: itemId,
-        },
-      },
-    ],
+    refetchQueries: [itemQueryRef],
   });
 
   const [deletePost] = useMutation(DELETE_POST, {
-    update: (cache, { data, errors }, { variables }) => {
-      if (errors) {
-        console.error("Delete post mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.deletePost) {
-        const postIndexToRemove = variables?.postIndex;
-
-        if (postIndexToRemove !== undefined && postIndexToRemove >= 0) {
-          cache.modify({
-            id: cache.identify({
-              __typename: "Discussion",
-              id: variables?.discussionId,
-            }),
-            fields: {
-              posts(existingPosts = []) {
-                return existingPosts.filter(
-                  (_: any, index: number) => index !== postIndexToRemove
-                );
-              },
-            },
-          });
-        }
-      }
-    },
+    refetchQueries: [postsRefetchQuery],
+    awaitRefetchQueries: true,
   });
 
   const [updatePost] = useMutation(UPDATE_POST, {
-    update: (cache, { data, errors }) => {
-      if (errors) {
-        console.error("Update post mutation had errors:", errors);
-        return;
-      }
-
-      if (data?.updatePost) {
-        const existingDiscussion = cache.readQuery({
-          query: GET_DISCUSSION_BY_ITEM,
-          variables: {
-            type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-            refId: itemId,
-          },
-        }) as any;
-
-        if (existingDiscussion?.getDiscussionByLinkedItem) {
-          const updatedPosts = (
-            existingDiscussion.getDiscussionByLinkedItem.posts || []
-          ).map((post: any) => {
-            if (
-              post.userId === data.updatePost.userId &&
-              post.timestamp === data.updatePost.timestamp
-            ) {
-              return {
-                ...post,
-                content: data.updatePost.content,
-                isEdited: data.updatePost.isEdited,
-                editedAt: data.updatePost.editedAt,
-              };
-            }
-            return post;
-          });
-
-          cache.writeQuery({
-            query: GET_DISCUSSION_BY_ITEM,
-            variables: {
-              type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
-              refId: itemId,
-            },
-            data: {
-              getDiscussionByLinkedItem: {
-                ...existingDiscussion.getDiscussionByLinkedItem,
-                posts: updatedPosts,
-              },
-            },
-          });
-        }
-      }
-    },
+    refetchQueries: [postsRefetchQuery],
+    awaitRefetchQueries: true,
   });
 
   const isUserFollowing = (discussion: DiscussionType): boolean => {

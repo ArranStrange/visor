@@ -10,7 +10,7 @@ import {
   Stack,
 } from "@mui/material";
 import { useQuery } from "@apollo/client";
-import { BROWSE_USER_LISTS } from "../graphql/queries/browseUserLists";
+import { BROWSE_USER_LISTS } from "../graphql/lists";
 import ListRow from "../components/lists/ListRow";
 import TagsList from "../components/ui/TagsList";
 import SearchIcon from "@mui/icons-material/Search";

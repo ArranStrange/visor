@@ -14,23 +14,8 @@ import {
   Alert,
   CircularProgress,
 } from "@mui/material";
-import { gql } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
-
-const CREATE_LIST = gql`
-  mutation CreateList($input: CreateUserListInput!) {
-    createUserList(input: $input) {
-      id
-      name
-      description
-      isPublic
-      owner {
-        id
-        username
-      }
-    }
-  }
-`;
+import { CREATE_LIST } from "../graphql/lists";
 
 const CreateList: React.FC = () => {
   const navigate = useNavigate();

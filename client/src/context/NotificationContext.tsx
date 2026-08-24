@@ -10,11 +10,9 @@ import { useAuth } from "./AuthContext";
 import {
   GET_UNREAD_NOTIFICATIONS_COUNT,
   GET_NOTIFICATIONS,
-} from "../graphql/queries/notifications";
-import {
   MARK_NOTIFICATION_READ,
   MARK_ALL_NOTIFICATIONS_READ,
-} from "../graphql/mutations/notifications";
+} from "../graphql/notifications";
 import { Notification, NotificationConnection } from "../types/notifications";
 
 interface NotificationContextType {

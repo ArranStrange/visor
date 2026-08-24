@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FILMSIM_BY_SLUG } from "../graphql/queries/getFilmSimBySlug";
+import { GET_FILMSIM_BY_SLUG } from "../graphql/filmSims";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import AddToListButton from "../components/ui/AddToListButton";
