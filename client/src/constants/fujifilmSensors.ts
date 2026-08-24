@@ -160,9 +160,7 @@ export const FUJIFILM_SENSORS: FujifilmSensor[] = [
   },
 ];
 
-export const getSensorByLabel = (
-  label: string
-): FujifilmSensor | undefined =>
+export const getSensorByLabel = (label: string): FujifilmSensor | undefined =>
   FUJIFILM_SENSORS.find(
     (s) => s.label.toLowerCase() === label.trim().toLowerCase()
   );
@@ -211,7 +209,11 @@ export const getSensorCompatibilityWarnings = (
     const unsupported: string[] = [];
 
     if (settings.clarity && !f.clarity) unsupported.push("Clarity");
-    if (settings.grainEffect && settings.grainEffect !== "OFF" && !f.grainEffect)
+    if (
+      settings.grainEffect &&
+      settings.grainEffect !== "OFF" &&
+      !f.grainEffect
+    )
       unsupported.push("Grain Effect");
     if (
       settings.colorChromeEffect &&

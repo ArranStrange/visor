@@ -289,8 +289,8 @@ const Notifications: React.FC = () => {
                 {filter === "unread"
                   ? "You have no unread notifications"
                   : filter === "read"
-                  ? "You have no read notifications"
-                  : "You have no notifications yet"}
+                    ? "You have no read notifications"
+                    : "You have no notifications yet"}
               </Typography>
             </CardContent>
           </Card>

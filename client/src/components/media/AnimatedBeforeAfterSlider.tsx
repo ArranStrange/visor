@@ -50,9 +50,12 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
             setSliderPosition(0);
           }, ANIMATION_DURATION + DISPLAY_DURATION);
 
-          const slideOffTimer = setTimeout(() => {
-            setSliderPosition(-5);
-          }, ANIMATION_DURATION + DISPLAY_DURATION + ANIMATION_DURATION);
+          const slideOffTimer = setTimeout(
+            () => {
+              setSliderPosition(-5);
+            },
+            ANIMATION_DURATION + DISPLAY_DURATION + ANIMATION_DURATION
+          );
 
           return () => {
             clearTimeout(returnTimer);

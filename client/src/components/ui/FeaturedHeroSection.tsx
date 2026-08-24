@@ -269,7 +269,8 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
                   backgroundColor:
                     idx === currentIndex ? "#FFFFFF" : "transparent",
                   border: "2px solid",
-                  borderColor: idx === currentIndex ? "#FFFFFF" : "overlay.white",
+                  borderColor:
+                    idx === currentIndex ? "#FFFFFF" : "overlay.white",
                   cursor: "pointer",
                   transition: "all .2s ease",
                 }}

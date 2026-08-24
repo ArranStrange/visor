@@ -96,14 +96,14 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
           isColorMixer && setting.key === "hue"
             ? "linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)"
             : isColorMixer && setting.key === "saturation"
-            ? `linear-gradient(to right, #888, ${colorMixerColor(
-                selectedColor
-              )}, #888)`
-            : isColorMixer && setting.key === "luminance"
-            ? `linear-gradient(to right, #222, ${colorMixerColor(
-                selectedColor
-              )}, #fff)`
-            : setting.spectrum;
+              ? `linear-gradient(to right, #888, ${colorMixerColor(
+                  selectedColor
+                )}, #888)`
+              : isColorMixer && setting.key === "luminance"
+                ? `linear-gradient(to right, #222, ${colorMixerColor(
+                    selectedColor
+                  )}, #fff)`
+                : setting.spectrum;
 
         return (
           <Box key={`${setting.key}-${index}`}>
@@ -149,7 +149,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                 </Typography>
               </Box>
 
-
               <Box
                 sx={{
                   flex: 1,
@@ -162,7 +161,6 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
                   spectrum={actualSpectrum}
                 />
               </Box>
-
 
               <Box
                 sx={{

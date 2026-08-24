@@ -45,8 +45,8 @@ export class CloudinaryOptimizer {
       aspectRatio === "3:4"
         ? { width: 300, height: 400 }
         : aspectRatio === "2:3"
-        ? { width: 300, height: 450 }
-        : { width: 300, height: 375 }; // 4:5 ratio
+          ? { width: 300, height: 450 }
+          : { width: 300, height: 375 }; // 4:5 ratio
 
     return this.optimize(url, {
       ...dimensions,

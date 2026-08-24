@@ -35,8 +35,8 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
       loading === "progressive"
         ? "progressive"
         : lazy === false
-        ? "eager"
-        : "lazy";
+          ? "eager"
+          : "lazy";
 
     useEffect(() => {
       if (loadingMode === "eager") {

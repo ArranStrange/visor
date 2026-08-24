@@ -104,9 +104,7 @@ export const normalizeCameraName = (name: string): string =>
     .replace(/[\s-]+/g, "");
 
 export const camerasForSensor = (sensorKey: SensorKey): string[] =>
-  FUJIFILM_CAMERAS.filter((c) => c.sensorKey === sensorKey).map(
-    (c) => c.name
-  );
+  FUJIFILM_CAMERAS.filter((c) => c.sensorKey === sensorKey).map((c) => c.name);
 
 export const sensorKeyForCamera = (
   cameraName: string

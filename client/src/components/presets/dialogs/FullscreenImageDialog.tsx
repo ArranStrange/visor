@@ -1,9 +1,5 @@
 import React from "react";
-import {
-  Dialog,
-  Box,
-  IconButton,
-} from "@mui/material";
+import { Dialog, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
@@ -99,4 +95,3 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
 };
 
 export default FullscreenImageDialog;
-

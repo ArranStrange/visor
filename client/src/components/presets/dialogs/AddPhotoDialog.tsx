@@ -106,4 +106,3 @@ const AddPhotoDialog: React.FC<AddPhotoDialogProps> = ({
 };
 
 export default AddPhotoDialog;
-

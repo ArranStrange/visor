@@ -68,9 +68,9 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
         discussion.linkedTo.preset?.slug
           ? `/preset/${discussion.linkedTo.preset.slug}`
           : discussion.linkedTo.type === "FILMSIM" &&
-            discussion.linkedTo.filmSim?.slug
-          ? `/filmsim/${discussion.linkedTo.filmSim.slug}`
-          : null;
+              discussion.linkedTo.filmSim?.slug
+            ? `/filmsim/${discussion.linkedTo.filmSim.slug}`
+            : null;
       if (path) {
         navigate(path);
       }

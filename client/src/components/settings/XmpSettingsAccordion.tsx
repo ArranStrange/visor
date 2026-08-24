@@ -39,8 +39,8 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
       const fullPath = path
         ? `${path}.${key}`
         : basePath
-        ? `${basePath}.${key}`
-        : key;
+          ? `${basePath}.${key}`
+          : key;
       const value = getNestedValue(settings, fullPath) || 0;
       const processedValue = divider !== 1 ? value / divider : value;
 
@@ -202,8 +202,8 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
         return section.subsections
           ? renderSubsections()
           : section.settings
-          ? renderSettings(section.settings)
-          : null;
+            ? renderSettings(section.settings)
+            : null;
     }
   };
 

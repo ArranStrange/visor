@@ -36,10 +36,7 @@ const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
         </ListItemIcon>
         <ListItemText primary="Edit" />
       </MenuItem>
-      <MenuItem
-        onClick={onDelete}
-        data-cy="film-sim-delete-menu-item"
-      >
+      <MenuItem onClick={onDelete} data-cy="film-sim-delete-menu-item">
         <ListItemIcon>
           <DeleteIcon fontSize="small" color="error" />
         </ListItemIcon>
@@ -50,4 +47,3 @@ const FilmSimOwnerMenu: React.FC<FilmSimOwnerMenuProps> = ({
 };
 
 export default FilmSimOwnerMenu;
-

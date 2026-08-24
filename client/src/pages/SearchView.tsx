@@ -24,7 +24,7 @@ const SearchView: React.FC = () => {
   const sensorParam = searchParams.get("sensor");
   const activeSensorInfo = sensorParam ? getSensorByLabel(sensorParam) : null;
   const activeSensor = sensorParam
-    ? activeSensorInfo?.label ?? sensorParam
+    ? (activeSensorInfo?.label ?? sensorParam)
     : null;
 
   const clearSensor = () => {
@@ -140,8 +140,8 @@ const SearchView: React.FC = () => {
                 compatibleSensors: activeSensor,
               }
             : activeTagId
-            ? { tagId: activeTagId }
-            : undefined
+              ? { tagId: activeTagId }
+              : undefined
         }
       />
     </Container>

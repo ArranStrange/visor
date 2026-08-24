@@ -75,7 +75,6 @@ const formatToneCurve = (curve: ToneCurvePoint[]): string => {
   return curve.map((point) => `${point.x} ${point.y}`).join(", ");
 };
 
-
 export const compileXMP = (preset: PresetData): string => {
   const settings = preset.settings;
   const toneCurve = preset.toneCurve;

@@ -376,9 +376,7 @@ const PublicProfile: React.FC = () => {
                         <Tooltip
                           key={camera}
                           title={
-                            sensor
-                              ? `See film sims for ${sensor.label}`
-                              : ""
+                            sensor ? `See film sims for ${sensor.label}` : ""
                           }
                         >
                           <Chip

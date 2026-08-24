@@ -59,8 +59,8 @@ const SearchHero: React.FC = () => {
                 featuredPhoto
                   ? "overlay.scrimStrong"
                   : t.palette.mode === "dark"
-                  ? "rgba(255,255,255,0.06)"
-                  : "rgba(0,0,0,0.04)",
+                    ? "rgba(255,255,255,0.06)"
+                    : "rgba(0,0,0,0.04)",
               backdropFilter: featuredPhoto ? "blur(10px)" : "none",
               color: featuredPhoto ? "#fff" : "inherit",
               fontSize: { xs: "1rem", md: "1.05rem" },
