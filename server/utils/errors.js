@@ -1,24 +1,16 @@
-class AuthenticationError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "AuthenticationError";
-    this.code = "AUTHENTICATION_ERROR";
-  }
-}
+const {
+  AuthenticationError,
+  UserInputError,
+  ApolloError,
+} = require("apollo-server-express");
 
-class ValidationError extends Error {
+// Backed by Apollo's error classes so extensions.code survives to the
+// client (UNAUTHENTICATED / BAD_USER_INPUT), which the discussion UI
+// branches on. ValidationError keeps its custom code.
+class ValidationError extends ApolloError {
   constructor(message) {
-    super(message);
+    super(message, "VALIDATION_ERROR");
     this.name = "ValidationError";
-    this.code = "VALIDATION_ERROR";
-  }
-}
-
-class UserInputError extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "UserInputError";
-    this.code = "USER_INPUT_ERROR";
   }
 }
 
