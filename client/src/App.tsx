@@ -16,18 +16,18 @@ import PresetDetailPage from "./pages/PresetDetail";
 import FilmSimPage from "./pages/FilmSimDetail";
 import UploadPage from "./pages/Upload";
 import UploadPreset from "./pages/UploadPreset";
-import UploadFilmSim from "./pages/UploadFilmSim";
+import UploadFilmSim from "./pages/upload-film-sim";
 import NotFound from "./pages/NotFound";
 import MyLists from "./pages/MyLists";
-import ListDetail from "./pages/ListDetail";
+import ListDetail from "./pages/list-detail";
 import BrowseLists from "./pages/BrowseLists";
 import { visorTheme } from "./theme/VISORTheme";
 import CreateList from "./pages/CreateList";
 import PublicProfile from "./pages/PublicProfile";
 import Discussions from "./pages/Discussions";
-import DiscussionDetail from "./pages/DiscussionDetail";
-import CreateDiscussion from "./pages/CreateDiscussion";
-import Notifications from "./pages/Notifications";
+import DiscussionDetail from "./pages/discussion-detail";
+import CreateDiscussion from "./pages/create-discussion";
+import Notifications from "./pages/notifications";
 import EmailVerification from "./pages/EmailVerification";
 
 function App() {
