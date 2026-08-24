@@ -40,6 +40,7 @@ function createPaginatedFieldPolicy<TKey extends string>(itemsKey: TKey) {
     // A count query (limit 1) must not overwrite a browse query (limit 20).
     keyArgs: ["filter", "limit"],
     merge: createPageMerge(itemsKey),
+    read: createPageRead(itemsKey),
   };
 }
 
@@ -64,6 +65,23 @@ function createPageMerge<TKey extends string>(itemsKey: TKey) {
       ...existing,
       ...incoming,
       [itemsKey]: mergedItems,
+    };
+  };
+}
+
+function createPageRead<TKey extends string>(itemsKey: TKey) {
+  return (existing: Readonly<PaginatedConnection<TKey>> | undefined) => {
+    if (!existing) return existing;
+
+    // Out-of-order arrival (page 3 before page 2) leaves holes in the
+    // slot array; compact at read so the UI never sees undefined items,
+    // while the sparse slots stay intact in the cache for later merges.
+    const items = existing[itemsKey];
+    if (!items?.includes(undefined as unknown as CacheItem)) return existing;
+
+    return {
+      ...existing,
+      [itemsKey]: items.filter((item) => item !== undefined),
     };
   };
 }

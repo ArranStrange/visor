@@ -28,8 +28,13 @@ interface ItemAutocompleteProps {
   onChange: (item: LinkableItem | null) => void;
 }
 
+interface PaginatedPage {
+  hasNextPage: boolean;
+  currentPage: number;
+}
+
 interface SearchPresetsData {
-  listPresets: { presets: LinkableItem[] };
+  listPresets: PaginatedPage & { presets: LinkableItem[] };
 }
 
 interface SearchPresetsVariables {
@@ -39,7 +44,7 @@ interface SearchPresetsVariables {
 }
 
 interface ListFilmSimsData {
-  listFilmSims: { filmSims: LinkableItem[] };
+  listFilmSims: PaginatedPage & { filmSims: LinkableItem[] };
 }
 
 interface ListFilmSimsVariables {
@@ -95,6 +100,7 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
           filterOptions={keepServerResults}
           renderInput={renderInput}
           renderOption={renderOption}
+          ListboxProps={{ onScroll: handleListboxScroll }}
           noOptionsText={
             shouldSearch ? "No items found" : "Type at least 2 characters"
           }
@@ -121,6 +127,28 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
 
   function keepServerResults(options: LinkableItem[]) {
     return options;
+  }
+
+  function handleListboxScroll(event: React.UIEvent<HTMLUListElement>) {
+    const listbox = event.currentTarget;
+    const nearBottom =
+      listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 40;
+    if (!nearBottom) return;
+
+    if (linkedToType === "PRESET") {
+      const pageInfo = presetQuery.data?.listPresets;
+      if (!pageInfo?.hasNextPage || presetQuery.loading) return;
+      presetQuery.fetchMore({
+        variables: { page: pageInfo.currentPage + 1 },
+      });
+      return;
+    }
+
+    const pageInfo = filmSimQuery.data?.listFilmSims;
+    if (!pageInfo?.hasNextPage || filmSimQuery.loading) return;
+    filmSimQuery.fetchMore({
+      variables: { page: pageInfo.currentPage + 1 },
+    });
   }
 
   function renderInput(params: React.ComponentProps<typeof TextField>) {
