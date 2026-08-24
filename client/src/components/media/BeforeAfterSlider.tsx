@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Box } from "@mui/material";
-import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface BeforeAfterSliderProps {
   beforeImage?: string;
   afterImage?: string;
+  beforeImageSrcSet?: string;
+  afterImageSrcSet?: string;
+  sizes?: string;
+  loading?: "lazy" | "eager";
   height?: number;
 }
 
@@ -17,6 +20,10 @@ const PLACEHOLDER_AFTER_IMAGE =
 const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   beforeImage,
   afterImage,
+  beforeImageSrcSet,
+  afterImageSrcSet,
+  sizes,
+  loading = "lazy",
   height = 400,
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -96,7 +103,10 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     >
       <Box
         component="img"
-        src={optimizeImageUrl(afterImage, 1200) || PLACEHOLDER_AFTER_IMAGE}
+        src={afterImage || PLACEHOLDER_AFTER_IMAGE}
+        srcSet={afterImageSrcSet}
+        sizes={afterImageSrcSet ? sizes : undefined}
+        loading={loading}
         alt="After"
         sx={{
           position: "absolute",
@@ -110,7 +120,10 @@ const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
 
       <Box
         component="img"
-        src={optimizeImageUrl(beforeImage, 1200) || PLACEHOLDER_BEFORE_IMAGE}
+        src={beforeImage || PLACEHOLDER_BEFORE_IMAGE}
+        srcSet={beforeImageSrcSet}
+        sizes={beforeImageSrcSet ? sizes : undefined}
+        loading={loading}
         alt="Before"
         sx={{
           position: "absolute",

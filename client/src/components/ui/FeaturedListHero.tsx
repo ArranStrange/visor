@@ -3,6 +3,10 @@ import { Box, Typography, Avatar, Button, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_FEATURED_ITEMS } from "../../graphql/featured";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 
 const squareImageStyles = {
   width: "100%",
@@ -66,8 +70,11 @@ const FeaturedListHero: React.FC = () => {
                   sx={{ ...commonSx, boxShadow: 2 }}
                 >
                   <img
-                    src={tile.src}
+                    src={optimizeImageUrl(tile.src, 600)}
+                    srcSet={getResponsiveImageSrcSet(tile.src, [240, 480, 600])}
                     alt={`${list.name} ${idx + 1}`}
+                    loading="lazy"
+                    sizes="(max-width: 600px) 50vw, 240px"
                     style={{
                       width: "100%",
                       height: "100%",
@@ -93,7 +100,7 @@ const FeaturedListHero: React.FC = () => {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <Avatar
-                    src={list.owner?.avatar}
+                    src={optimizeImageUrl(list.owner?.avatar, 100)}
                     alt={list.owner?.username}
                     sx={{ width: 28, height: 28, cursor: "pointer" }}
                     onClick={() => navigate(`/profile/${list.owner?.id}`)}

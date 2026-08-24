@@ -3,6 +3,10 @@ import { Dialog, Box, IconButton, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../../utils/cloudinary";
 
 interface FullscreenImageDialogProps {
   open: boolean;
@@ -81,7 +85,9 @@ const FullscreenImageDialog: React.FC<FullscreenImageDialogProps> = ({
         }}
       >
         <img
-          src={imageUrl}
+          src={optimizeImageUrl(imageUrl, 2048)}
+          srcSet={getResponsiveImageSrcSet(imageUrl, [1024, 1600, 2048])}
+          sizes="90vw"
           alt="Full size sample"
           style={{
             maxWidth: "90vw",

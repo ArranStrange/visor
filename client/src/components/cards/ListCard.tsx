@@ -2,6 +2,7 @@ import React, { memo, useCallback, useMemo } from "react";
 import { Card, Typography, Box, Avatar, Stack, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 import {
   overlayAvatarStyles,
   overlayTitleContainerStyles,
@@ -168,7 +169,7 @@ const ListCard: React.FC<ListCardProps> = memo(
         >
           <Avatar
             variant="creator"
-            src={owner.avatar}
+            src={optimizeImageUrl(owner.avatar, 100)}
             alt={owner.username}
             sx={{
               width: 32,

@@ -1,5 +1,8 @@
 import React from "react";
-import { optimizeImageUrl } from "../../utils/cloudinary";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 import { Box, Typography, Avatar } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
@@ -46,6 +49,9 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
           .filter(Boolean);
 
   const imageUrl = images[currentIndex] || "";
+  const heroBeforeImageUrl = optimizeImageUrl(item.beforeImage?.url, 1600);
+  const heroAfterImageUrl = optimizeImageUrl(item.afterImage?.url, 1600);
+  const heroImageUrl = optimizeImageUrl(imageUrl, 1600);
 
   const goNext = () => {
     if (images.length < 2) return;
@@ -224,15 +230,28 @@ const FeaturedHeroSection: React.FC<FeaturedHeroSectionProps> = ({ type }) => {
         </Typography>
         {type === "preset" && item.afterImage?.url && item.beforeImage?.url ? (
           <AnimatedBeforeAfterSlider
-            beforeImage={item.beforeImage.url}
-            afterImage={item.afterImage.url}
+            beforeImage={heroBeforeImageUrl}
+            afterImage={heroAfterImageUrl}
+            beforeImageSrcSet={getResponsiveImageSrcSet(
+              item.beforeImage.url,
+              [640, 1024, 1600]
+            )}
+            afterImageSrcSet={getResponsiveImageSrcSet(
+              item.afterImage.url,
+              [640, 1024, 1600]
+            )}
+            sizes="(max-width: 900px) 100vw, 70vw"
+            loading="lazy"
             isMobile={isMobile}
             isHovered={isHovered}
           />
         ) : (
           imageUrl && (
             <img
-              src={optimizeImageUrl(imageUrl, 1600)}
+              src={heroImageUrl}
+              srcSet={getResponsiveImageSrcSet(imageUrl, [640, 1024, 1600])}
+              sizes="(max-width: 900px) 100vw, 70vw"
+              loading="lazy"
               alt={title}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />

@@ -1,5 +1,9 @@
 import React from "react";
 import { Box } from "@mui/material";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 
 interface SampleImageTileProps {
   url: string;
@@ -19,7 +23,10 @@ const SampleImageTile: React.FC<SampleImageTileProps> = ({
   return (
     <Box>
       <img
-        src={url}
+        src={optimizeImageUrl(url, 800)}
+        srcSet={getResponsiveImageSrcSet(url, [300, 600, 800])}
+        sizes="(max-width: 900px) 50vw, 33vw"
+        loading="lazy"
         alt={alt}
         style={{
           width: "100%",

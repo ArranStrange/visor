@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { Box } from "@mui/material";
-import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface AnimatedBeforeAfterSliderProps {
   beforeImage?: string;
   afterImage?: string;
+  beforeImageSrcSet?: string;
+  afterImageSrcSet?: string;
+  sizes?: string;
+  loading?: "lazy" | "eager";
   height?: number;
   isMobile?: boolean;
   isHovered?: boolean;
@@ -18,6 +21,10 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
     ({
       beforeImage,
       afterImage,
+      beforeImageSrcSet,
+      afterImageSrcSet,
+      sizes,
+      loading = "lazy",
       height,
       isMobile: _isMobile = false,
       isHovered: externalIsHovered,
@@ -100,7 +107,10 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
         >
           <Box
             component="img"
-            src={optimizeImageUrl(afterImage, 800)}
+            src={afterImage}
+            srcSet={afterImageSrcSet}
+            sizes={afterImageSrcSet ? sizes : undefined}
+            loading={loading}
             alt="After"
             onLoad={() => setAfterImageLoaded(true)}
             sx={{
@@ -115,7 +125,10 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
 
           <Box
             component="img"
-            src={optimizeImageUrl(beforeImage, 800)}
+            src={beforeImage}
+            srcSet={beforeImageSrcSet}
+            sizes={beforeImageSrcSet ? sizes : undefined}
+            loading={loading}
             alt="Before"
             onLoad={() => setBeforeImageLoaded(true)}
             sx={{

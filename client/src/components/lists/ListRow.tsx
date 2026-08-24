@@ -15,6 +15,7 @@ import { useIsAdmin } from "../../hooks/useIsAdmin";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
 import { FEATURE_LIST, UNFEATURE_LIST } from "../../graphql/lists";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface ListRowProps {
   id: string;
@@ -155,7 +156,7 @@ const ListRow: React.FC<ListRowProps> = ({
           sx={{ minWidth: 0 }}
         >
           <Avatar
-            src={owner?.avatar}
+            src={optimizeImageUrl(owner?.avatar, 100)}
             alt={owner?.username}
             sx={{
               width: { xs: 28, sm: 32 },

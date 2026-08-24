@@ -8,6 +8,7 @@ import {
   Box,
   Chip,
 } from "@mui/material";
+import { optimizeImageUrl } from "../../utils/cloudinary";
 
 interface Preset {
   id: string;
@@ -33,9 +34,10 @@ const PresetSearchItem: React.FC<PresetSearchItemProps> = ({
     <ListItemButton selected={isSelected} onClick={() => onSelect(preset.id)}>
       <ListItemAvatar>
         <Avatar
-          src={preset.afterImage?.url}
+          src={optimizeImageUrl(preset.afterImage?.url, 100)}
           alt={preset.title}
           variant="rounded"
+          slotProps={{ img: { loading: "lazy" } }}
         />
       </ListItemAvatar>
       <ListItemText

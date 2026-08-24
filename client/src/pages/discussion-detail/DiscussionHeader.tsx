@@ -16,6 +16,10 @@ import {
 } from "@mui/icons-material";
 import { formatDistanceToNow } from "date-fns";
 import { Discussion } from "../../types/discussions";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 
 interface DiscussionHeaderProps {
   discussion: Discussion;
@@ -58,7 +62,10 @@ const DiscussionHeader: React.FC<DiscussionHeaderProps> = ({
                 onClick={onNavigateToLinkedItem}
               >
                 <img
-                  src={linkedImage}
+                  src={optimizeImageUrl(linkedImage, 480)}
+                  srcSet={getResponsiveImageSrcSet(linkedImage, [240, 480])}
+                  sizes="120px"
+                  loading="lazy"
                   alt={
                     discussion.linkedTo.preset?.title ||
                     discussion.linkedTo.filmSim?.name ||

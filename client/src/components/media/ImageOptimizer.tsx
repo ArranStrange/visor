@@ -1,15 +1,16 @@
 import React, { useState, useRef, useEffect, memo } from "react";
-import { CloudinaryOptimizer } from "../../utils/cloudinary";
+import { useCloudinary } from "../../hooks/useCloudinary";
 
 interface ImageProps {
   src: string;
   alt: string;
-  aspectRatio?: "3:4" | "2:3" | "4:5";
+  aspectRatio?: "1:1" | "3:4" | "2:3" | "4:5";
   className?: string;
   style?: React.CSSProperties;
   onLoad?: () => void;
   onError?: () => void;
   loading?: "lazy" | "eager" | "progressive";
+  sizes?: string;
   lazy?: boolean; // For backward compatibility
 }
 
@@ -23,6 +24,7 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
     onLoad,
     onError,
     loading = "lazy",
+    sizes = "(max-width: 600px) 200px, (max-width: 1200px) 300px, 400px",
     lazy = true,
   }) => {
     const [imageSrc, setImageSrc] = useState<string>("");
@@ -30,6 +32,7 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
     const [isInView, setIsInView] = useState(false);
     const [showProgressive, setShowProgressive] = useState(false);
     const imageRef = useRef<HTMLImageElement>(null);
+    const optimizedUrls = useCloudinary(src, aspectRatio);
 
     const loadingMode =
       loading === "progressive"
@@ -66,16 +69,13 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
       if (!isInView || !src) return;
 
       if (loadingMode === "progressive") {
-        const progressiveUrl = CloudinaryOptimizer.getProgressive(src);
+        const progressiveUrl = optimizedUrls?.progressive || src;
         setImageSrc(progressiveUrl);
         setShowProgressive(true);
 
         const fullImage = new Image();
         fullImage.onload = () => {
-          const optimizedUrl = CloudinaryOptimizer.getThumbnail(
-            src,
-            aspectRatio
-          );
+          const optimizedUrl = optimizedUrls?.thumbnail || src;
           setImageSrc(optimizedUrl);
           setShowProgressive(false);
           setIsLoaded(true);
@@ -87,12 +87,12 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
           setIsLoaded(true);
           onError?.();
         };
-        fullImage.src = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
+        fullImage.src = optimizedUrls?.thumbnail || src;
       } else {
-        const optimizedUrl = CloudinaryOptimizer.getThumbnail(src, aspectRatio);
+        const optimizedUrl = optimizedUrls?.thumbnail || src;
         setImageSrc(optimizedUrl);
       }
-    }, [isInView, src, aspectRatio, loadingMode, onLoad, onError]);
+    }, [isInView, src, loadingMode, onLoad, onError, optimizedUrls]);
 
     const handleLoad = () => {
       if (!isLoaded) {
@@ -142,6 +142,8 @@ const ImageOptimizer: React.FC<ImageProps> = memo(
         // browser error event, which would race handleError into swapping in
         // the raw un-optimized URL.
         src={imageSrc || undefined}
+        srcSet={isInView ? optimizedUrls?.srcSet : undefined}
+        sizes={isInView && optimizedUrls?.srcSet ? sizes : undefined}
         alt={alt}
         className={className}
         style={{
