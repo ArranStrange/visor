@@ -38,6 +38,10 @@ import {
   ADMIN_DELETE_DISCUSSION,
   GET_DISCUSSIONS,
 } from "../../graphql/discussions";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 
 interface DiscussionCardProps {
   discussion: DiscussionType;
@@ -152,7 +156,10 @@ const DiscussionCard: React.FC<DiscussionCardProps> = ({
               onClick={handleChipClick}
             >
               <img
-                src={linkedImage}
+                src={optimizeImageUrl(linkedImage, 480)}
+                srcSet={getResponsiveImageSrcSet(linkedImage, [240, 480])}
+                sizes="120px"
+                loading="lazy"
                 alt={
                   discussion.linkedTo.preset?.title ||
                   discussion.linkedTo.filmSim?.name ||

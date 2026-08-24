@@ -1,5 +1,8 @@
 import React, { memo, useCallback, useMemo, useEffect } from "react";
-import { optimizeImageUrl } from "../../utils/cloudinary";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
@@ -16,11 +19,15 @@ import {
 
 const placeholderImage = "/placeholder-image.jpg";
 
+interface PresetImage {
+  url?: string | null;
+}
+
 interface PresetCardProps {
   slug: string;
   title: string;
-  afterImage?: any;
-  beforeImage?: any;
+  afterImage?: string | PresetImage | null;
+  beforeImage?: string | PresetImage | null;
   tags: { displayName: string }[];
   creator?: {
     username: string;
@@ -61,6 +68,18 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       );
       return null;
     }, [beforeImage]);
+
+    const optimizedAfterImageUrl =
+      optimizeImageUrl(afterImageUrl, 800) || afterImageUrl;
+    const optimizedBeforeImageUrl = optimizeImageUrl(beforeImageUrl, 800);
+    const afterImageSrcSet = getResponsiveImageSrcSet(
+      afterImageUrl,
+      [300, 600, 800]
+    );
+    const beforeImageSrcSet = getResponsiveImageSrcSet(
+      beforeImageUrl,
+      [300, 600, 800]
+    );
 
     const handleAddToList = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
@@ -118,15 +137,19 @@ const PresetCard: React.FC<PresetCardProps> = memo(
         onMouseLeave={() => setIsHovered(false)}
       >
         <AnimatedBeforeAfterSlider
-          beforeImage={beforeImageUrl || undefined}
-          afterImage={afterImageUrl}
+          beforeImage={optimizedBeforeImageUrl}
+          afterImage={optimizedAfterImageUrl}
+          beforeImageSrcSet={beforeImageSrcSet}
+          afterImageSrcSet={afterImageSrcSet}
+          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          loading="lazy"
           isMobile={isMobile}
           isHovered={isHovered}
         />
 
         <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
-            className="floating"
+            variant="floating"
             onClick={handleAddToList}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}

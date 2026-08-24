@@ -11,6 +11,18 @@ export interface CloudinaryUploadResult {
   publicId?: string;
 }
 
+type CloudinaryAspectRatio = "1:1" | "3:4" | "2:3" | "4:5";
+
+const THUMBNAIL_DIMENSIONS: Record<
+  CloudinaryAspectRatio,
+  { width: number; height: number }
+> = {
+  "1:1": { width: 300, height: 300 },
+  "3:4": { width: 300, height: 400 },
+  "2:3": { width: 300, height: 450 },
+  "4:5": { width: 300, height: 375 },
+};
+
 export const uploadToCloudinary = async (
   file: File,
   { uploadPreset, folder, resourceType = "image" }: CloudinaryUploadOptions
@@ -94,14 +106,9 @@ export class CloudinaryOptimizer {
 
   static getThumbnail(
     url: string,
-    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
+    aspectRatio: CloudinaryAspectRatio = "3:4"
   ): string {
-    const dimensions =
-      aspectRatio === "3:4"
-        ? { width: 300, height: 400 }
-        : aspectRatio === "2:3"
-          ? { width: 300, height: 450 }
-          : { width: 300, height: 375 }; // 4:5 ratio
+    const dimensions = THUMBNAIL_DIMENSIONS[aspectRatio];
 
     return this.optimize(url, {
       ...dimensions,
@@ -122,7 +129,7 @@ export class CloudinaryOptimizer {
 
   static getResponsiveSrcSet(
     url: string,
-    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
+    aspectRatio: CloudinaryAspectRatio = "3:4"
   ): {
     mobile: string;
     tablet: string;
@@ -134,7 +141,17 @@ export class CloudinaryOptimizer {
       quality: "auto" as const,
     };
 
-    if (aspectRatio === "3:4") {
+    if (aspectRatio === "1:1") {
+      return {
+        mobile: this.optimize(url, { ...baseOptions, width: 200, height: 200 }),
+        tablet: this.optimize(url, { ...baseOptions, width: 300, height: 300 }),
+        desktop: this.optimize(url, {
+          ...baseOptions,
+          width: 400,
+          height: 400,
+        }),
+      };
+    } else if (aspectRatio === "3:4") {
       return {
         mobile: this.optimize(url, { ...baseOptions, width: 200, height: 267 }),
         tablet: this.optimize(url, { ...baseOptions, width: 300, height: 400 }),
@@ -170,7 +187,7 @@ export class CloudinaryOptimizer {
 
   static getLazyLoadUrl(
     url: string,
-    aspectRatio: "3:4" | "2:3" | "4:5" = "3:4"
+    aspectRatio: CloudinaryAspectRatio = "3:4"
   ): {
     placeholder: string;
     full: string;
@@ -191,4 +208,21 @@ export const optimizeImageUrl = (
     return url;
   }
   return url.replace("/upload/", `/upload/f_auto,q_auto,c_limit,w_${width}/`);
+};
+
+export const getResponsiveImageSrcSet = (
+  url: string | null | undefined,
+  widths: readonly number[]
+): string | undefined => {
+  if (
+    !url ||
+    !url.includes("res.cloudinary.com/") ||
+    !url.includes("/upload/v")
+  ) {
+    return undefined;
+  }
+
+  return widths
+    .map((width) => `${optimizeImageUrl(url, width)} ${width}w`)
+    .join(", ");
 };

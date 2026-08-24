@@ -128,7 +128,7 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
 
         <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
-            className="floating"
+            variant="floating"
             onClick={handleAddToList}
             onMouseDown={(e) => e.stopPropagation()}
             onMouseUp={(e) => e.stopPropagation()}

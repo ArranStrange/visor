@@ -10,6 +10,10 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { useNavigate } from "react-router-dom";
+import {
+  getResponsiveImageSrcSet,
+  optimizeImageUrl,
+} from "../../utils/cloudinary";
 
 interface Preset {
   id: string;
@@ -118,7 +122,13 @@ const FilmSimRecommendedPresets: React.FC<FilmSimRecommendedPresetsProps> = ({
                     }}
                   >
                     <img
-                      src={preset.afterImage.url}
+                      src={optimizeImageUrl(preset.afterImage.url, 600)}
+                      srcSet={getResponsiveImageSrcSet(
+                        preset.afterImage.url,
+                        [300, 600]
+                      )}
+                      sizes="(max-width: 900px) 100vw, 33vw"
+                      loading="lazy"
                       alt={preset.title}
                       style={{
                         width: "100%",
