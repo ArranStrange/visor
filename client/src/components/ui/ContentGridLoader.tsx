@@ -21,6 +21,7 @@ import {
   GridContentType,
   GridFilter,
 } from "./content-grid-data";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface ContentGridLoaderProps {
   contentType?: GridContentType;
@@ -105,7 +106,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   if (error && !content.length) {
     return (
       <Alert severity="error" sx={{ my: 2 }}>
-        {error.message}
+        {getErrorMessage(error)}
       </Alert>
     );
   }

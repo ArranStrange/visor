@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, Typography, Paper, Alert } from "@mui/material";
-import { useMutation } from "@apollo/client";
+import { ApolloError, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -196,7 +196,7 @@ const UploadFilmSim: React.FC = () => {
       const result = await uploadFilmSim({ variables });
 
       if (result.errors) {
-        throw new Error(result.errors[0].message);
+        throw new ApolloError({ graphQLErrors: result.errors });
       }
       if (!result.data?.uploadFilmSim) {
         throw new Error("Failed to upload film simulation");

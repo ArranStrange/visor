@@ -24,6 +24,7 @@ import ProfileHeader from "../components/profile/ProfileHeader";
 import PublicProfileInfo from "../components/profile/PublicProfileInfo";
 import ProfileListsSection from "../components/profile/ProfileListsSection";
 import ProfileUploadsGrid from "../components/profile/ProfileUploadsGrid";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const PublicProfile: React.FC = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -77,7 +78,7 @@ const PublicProfile: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <MuiAlert severity="error">
-          Error loading profile: {error.message}
+          Error loading profile: {getErrorMessage(error)}
         </MuiAlert>
       </Container>
     );

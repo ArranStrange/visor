@@ -3,6 +3,7 @@ import { setContext } from "@apollo/client/link/context";
 import { onError } from "@apollo/client/link/error";
 import { ENV_CONFIG } from "../config/environment";
 import { paginationTypePolicies } from "./pagination-type-policies";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const httpLink = new HttpLink({
   uri: ENV_CONFIG.GRAPHQL_ENDPOINT,
@@ -11,10 +12,8 @@ const httpLink = new HttpLink({
 
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path }) => {
-      console.error(
-        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
-      );
+    graphQLErrors.forEach(({ message }) => {
+      console.error(`[GraphQL error]: ${message}`);
 
       // Handle authentication errors including JWT expiration
       // Only logout for actual authentication failures, not authorization errors
@@ -40,7 +39,7 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   }
 
   if (networkError) {
-    console.error(`[Network error]: ${networkError}`);
+    console.error(`[Network error]: ${getErrorMessage(networkError)}`);
   }
 });
 

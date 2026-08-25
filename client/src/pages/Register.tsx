@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../graphql/users";
 import { Email } from "@mui/icons-material";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -47,7 +48,9 @@ const Register: React.FC = () => {
       }
     },
     onError: (error) => {
-      setError(error.message || "Registration failed. Please try again.");
+      setError(
+        getErrorMessage(error, "Registration failed. Please try again.")
+      );
     },
   });
 

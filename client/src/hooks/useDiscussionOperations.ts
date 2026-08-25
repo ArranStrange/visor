@@ -31,6 +31,7 @@ import {
   useCreateNotification,
   createDiscussionReplyNotification,
 } from "../utils/notificationUtils";
+import { getErrorMessage } from "../utils/errorHandling";
 
 interface DiscussionQueryRef {
   query: DocumentNode;
@@ -232,12 +233,10 @@ export const useDiscussionOperations = (
     } catch (error) {
       console.error("Error updating post:", error);
 
-      let errorMessage = "Failed to update post. Please try again.";
-      if (error instanceof ApolloError && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error instanceof Error && error.message) {
-        errorMessage = error.message;
-      }
+      const errorMessage = getErrorMessage(
+        error,
+        "Failed to update post. Please try again."
+      );
 
       console.error("Update post error:", errorMessage);
     }
@@ -274,11 +273,11 @@ export const useDiscussionOperations = (
       if (!result.data?.deletePost) {
         if (result.errors && result.errors.length > 0) {
           const firstError = result.errors[0];
-          let errorMessage = "Failed to delete post. Please try again.";
-
-          if (firstError.message) {
-            errorMessage = firstError.message;
-          }
+          const resultError = new ApolloError({ graphQLErrors: result.errors });
+          let errorMessage = getErrorMessage(
+            resultError,
+            "Failed to delete post. Please try again."
+          );
 
           if (firstError.extensions?.code) {
             switch (firstError.extensions.code) {
@@ -297,7 +296,7 @@ export const useDiscussionOperations = (
                   "Server error occurred while deleting the post. Please try again later or contact support if the issue persists.";
                 break;
               default:
-                errorMessage = firstError.message || errorMessage;
+                errorMessage = getErrorMessage(resultError, errorMessage);
             }
           }
 
@@ -309,12 +308,10 @@ export const useDiscussionOperations = (
     } catch (error) {
       console.error("Delete post error:", error);
 
-      let errorMessage = "Failed to delete post. Please try again.";
-      if (error instanceof ApolloError && error.graphQLErrors.length > 0) {
-        errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error instanceof Error && error.message) {
-        errorMessage = error.message;
-      }
+      const errorMessage = getErrorMessage(
+        error,
+        "Failed to delete post. Please try again."
+      );
 
       setDeleteError(errorMessage);
     }

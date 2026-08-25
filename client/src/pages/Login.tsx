@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { LOGIN_USER } from "../graphql/users";
 import { useAuth } from "../context/AuthContext";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const Login: React.FC = () => {
     },
     onError: (error) => {
       console.error("Login error:", error);
-      setError(error.message || "Failed to login. Please try again.");
+      setError(getErrorMessage(error, "Failed to login. Please try again."));
     },
   });
 

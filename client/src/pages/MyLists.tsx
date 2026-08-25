@@ -14,6 +14,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "../context/AuthContext";
 import ListRow from "../components/lists/ListRow";
 import { GET_USER_LISTS } from "../graphql/lists";
+import { getErrorMessage } from "../utils/errorHandling";
 
 interface UserList {
   id: string;
@@ -56,12 +57,7 @@ const MyLists: React.FC = () => {
     },
     skip: !currentUser?.id,
     onError: (error) => {
-      console.error("GraphQL Error:", error);
-      console.error("Error details:", {
-        message: error.message,
-        networkError: error.networkError,
-        graphQLErrors: error.graphQLErrors,
-      });
+      console.error("GraphQL Error:", getErrorMessage(error));
     },
   });
 
@@ -95,7 +91,7 @@ const MyLists: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">
-          Error loading lists: {error.message}
+          Error loading lists: {getErrorMessage(error)}
           <br />
           <Typography variant="caption">User ID: {currentUser?.id}</Typography>
         </Alert>

@@ -14,6 +14,7 @@ import { uploadToCloudinary } from "../utils/cloudinary";
 import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "../graphql/users";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileEditForm from "../components/profile/ProfileEditForm";
+import { getErrorMessage } from "../utils/errorHandling";
 
 // File validation
 const validateProfileImage = (file: File): boolean => {
@@ -71,7 +72,7 @@ const Profile: React.FC = () => {
     },
     onError: (mutationError) => {
       console.error("Profile update error:", mutationError);
-      setError(mutationError.message);
+      setError(getErrorMessage(mutationError));
       setTimeout(() => setError(null), 3000);
     },
   });
@@ -171,7 +172,7 @@ const Profile: React.FC = () => {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">
-          Error loading profile: {queryError.message}
+          Error loading profile: {getErrorMessage(queryError)}
         </Alert>
       </Container>
     );

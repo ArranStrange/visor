@@ -1,3 +1,4 @@
+const { ApolloError } = require("apollo-server-express");
 const { AuthenticationError, UserInputError } = require("../../../utils/errors");
 const User = require("../../../models/User");
 const { createLogger } = require("../../../utils/logger");
@@ -29,7 +30,13 @@ module.exports = {
       };
     } catch (error) {
       logger.error("Error getting current user", error);
-      throw new AuthenticationError("Failed to get current user");
+      if (error instanceof AuthenticationError) {
+        throw error;
+      }
+      throw new ApolloError(
+        "Failed to get current user",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -48,7 +55,7 @@ module.exports = {
       }));
     } catch (error) {
       logger.error("Error searching users", error);
-      throw new Error("Failed to search users");
+      throw new ApolloError("Failed to search users", "INTERNAL_SERVER_ERROR");
     }
   },
 };

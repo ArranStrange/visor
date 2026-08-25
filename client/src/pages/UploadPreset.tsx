@@ -8,7 +8,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import { useMutation } from "@apollo/client";
+import { ApolloError, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
 import PresetUploadForm from "../components/forms/PresetUploadForm";
@@ -23,6 +23,7 @@ import {
   type UploadPresetMutationData,
   type UploadPresetMutationVariables,
 } from "../graphql/presets";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const UploadPreset: React.FC = () => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const UploadPreset: React.FC = () => {
       });
 
       if (result.errors) {
-        throw new Error(result.errors[0].message);
+        throw new ApolloError({ graphQLErrors: result.errors });
       }
 
       if (!result.data?.uploadPreset) {
@@ -120,9 +121,7 @@ const UploadPreset: React.FC = () => {
       navigate(`/preset/${result.data.uploadPreset.slug}`);
     } catch (error) {
       console.error("Error uploading:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to upload preset"
-      );
+      setError(getErrorMessage(error, "Failed to upload preset"));
     } finally {
       setIsSubmitting(false);
     }

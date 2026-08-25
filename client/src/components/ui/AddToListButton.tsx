@@ -27,6 +27,7 @@ import {
   type GetUserListsForAddButtonQueryData,
   type GetUserListsForAddButtonQueryVariables,
 } from "../../graphql/lists";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface AddToListButtonProps {
   presetId?: string;
@@ -74,7 +75,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     },
     onError: (error) => {
       console.error("Error adding to list:", error);
-      setError(error.message);
+      setError(getErrorMessage(error));
       setTimeout(() => setError(null), 3000);
     },
   });
@@ -102,7 +103,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
       });
     } catch (err) {
       console.error("Error adding to list:", err);
-      setError(err instanceof Error ? err.message : "Failed to add to list");
+      setError(getErrorMessage(err, "Failed to add to list"));
     }
   };
 

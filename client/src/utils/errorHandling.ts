@@ -1,3 +1,31 @@
+import { ApolloError } from "@apollo/client";
+
+const DEFAULT_ERROR_MESSAGE = "Something went wrong";
+
+export const getErrorMessage = (
+  error: unknown,
+  fallback = DEFAULT_ERROR_MESSAGE
+): string => {
+  if (error instanceof ApolloError) {
+    return (
+      error.graphQLErrors[0]?.message ||
+      error.networkError?.message ||
+      error.message ||
+      fallback
+    );
+  }
+
+  if (error instanceof Error) {
+    return error.message || fallback;
+  }
+
+  if (typeof error === "string") {
+    return error || fallback;
+  }
+
+  return fallback;
+};
+
 const isExtensionError = (message: string): boolean => {
   return (
     message.includes("message channel closed") ||

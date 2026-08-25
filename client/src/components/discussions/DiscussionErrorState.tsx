@@ -1,5 +1,6 @@
 import React from "react";
 import { Box, Alert, Typography, Button } from "@mui/material";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface DiscussionErrorStateProps {
   error: Error;
@@ -19,7 +20,7 @@ const DiscussionErrorState: React.FC<DiscussionErrorStateProps> = ({
           Error Loading Discussions
         </Typography>
         <Typography variant="body2" gutterBottom>
-          {error.message}
+          {getErrorMessage(error)}
         </Typography>
         <Box sx={{ mt: 2 }}>
           <Button variant="contained" onClick={onRetry} sx={{ mr: 2 }}>

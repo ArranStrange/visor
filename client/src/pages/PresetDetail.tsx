@@ -35,6 +35,7 @@ import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImage
 import { usePresetOperations } from "../hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
 import type { CurvePoint } from "../types/graphql";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
@@ -148,7 +149,9 @@ const PresetDetails: React.FC = () => {
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        <Alert severity="error">Error loading preset: {error.message}</Alert>
+        <Alert severity="error">
+          Error loading preset: {getErrorMessage(error)}
+        </Alert>
       </Container>
     );
   }
