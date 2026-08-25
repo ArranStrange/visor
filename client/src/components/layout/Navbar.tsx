@@ -18,6 +18,7 @@ import SearchIcon from "@mui/icons-material/Search";
 import UploadIcon from "@mui/icons-material/CloudUpload";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ForumIcon from "@mui/icons-material/Forum";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
@@ -62,6 +63,11 @@ const NavBar: React.FC = () => {
       text: "My Lists",
       icon: <ListIcon />,
       onClick: handleMyListsClick,
+    },
+    {
+      text: "Wallet",
+      icon: <CameraAltIcon />,
+      onClick: handleWalletClick,
     },
     {
       text: "Browse Lists",
@@ -248,6 +254,11 @@ const NavBar: React.FC = () => {
   function handleMyListsClick() {
     handleMenuClose();
     navigate("/lists");
+  }
+
+  function handleWalletClick() {
+    handleMenuClose();
+    navigate("/wallet");
   }
 
   function handleBrowseListsClick() {

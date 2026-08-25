@@ -1,40 +1,27 @@
 /**
- * Canonical Fujifilm camera → sensor generation mapping.
+ * Server copy of the canonical Fujifilm camera catalog.
  *
- * This is the single source of truth linking bodies to sensors; the
- * per-sensor camera lists in fujifilmSensors.ts are derived from it, so the
- * two can never drift. Scope: bodies relevant to film sim recipes —
- * X-mount interchangeable, the X100 line, notable fixed-lens compacts, GFX.
+ * The client's camera → sensor mapping lives in
+ * client/src/constants/fujifilmCameras.ts and drives UI concerns (pickers,
+ * compatibility warnings). The server needs its own copy because Loadout
+ * validation — slot capacity, camera identity — must be enforced where the
+ * data is written, and the client bundle is not importable from CommonJS.
  *
- * Verified against Fujifilm specs / Fuji X Weekly (2026). Rumoured
- * 6th-generation bodies (X-T6, X-Pro4) are excluded until announced.
+ * The two catalogs are kept from drifting by
+ * server/schema/typeDefs/tests/camera-catalog-drift.test.js, which parses
+ * the client file and compares names and sensor keys.
+ *
+ * customBanks: how many custom settings banks (C1..Cn) the body exposes.
+ *   - X-Trans III / IV / V bodies expose 7 (verified: X-T2 era onward).
+ *   - X-Trans I / II counts are assumed at 7 pending manual verification —
+ *     surface an "assuming 7" caveat in the UI (banksVerified: false).
+ *   - Entry-level Bayer bodies have no custom settings recall: 0. A body
+ *     with 0 banks refuses loadout binding rather than render phantom
+ *     slots.
+ *   - GFX bodies are assumed at 6 pending manual verification.
  */
 
-export type SensorKey =
-  | "x-trans-i"
-  | "x-trans-ii"
-  | "x-trans-iii"
-  | "x-trans-iv"
-  | "x-trans-v"
-  | "bayer"
-  | "gfx";
-
-export interface FujifilmCamera {
-  name: string;
-  sensorKey: SensorKey;
-  /**
-   * Custom settings banks this body exposes (C1..Cn). 0 = the body has no
-   * custom settings recall and refuses loadout binding. Kept in lockstep
-   * with server/constants/fujifilmCameras.js — the drift test in
-   * server/schema/typeDefs/tests/camera-catalog-drift.test.js fails the
-   * build if the catalogs diverge.
-   */
-  customBanks: number;
-  /** False = assumed count pending verification against the manual. */
-  banksVerified: boolean;
-}
-
-export const FUJIFILM_CAMERAS: FujifilmCamera[] = [
+const FUJIFILM_CAMERAS = [
   // X-Trans I (16MP)
   { name: "X-Pro1", sensorKey: "x-trans-i", customBanks: 7, banksVerified: false },
   { name: "X-E1", sensorKey: "x-trans-i", customBanks: 7, banksVerified: false },
@@ -59,7 +46,7 @@ export const FUJIFILM_CAMERAS: FujifilmCamera[] = [
   { name: "X-E3", sensorKey: "x-trans-iii", customBanks: 7, banksVerified: true },
   { name: "X-H1", sensorKey: "x-trans-iii", customBanks: 7, banksVerified: true },
 
-  // X-Trans IV (26MP) — X-S20 and X-M5 pair this sensor with X-Processor 5
+  // X-Trans IV (26MP)
   { name: "X-T3", sensorKey: "x-trans-iv", customBanks: 7, banksVerified: true },
   { name: "X-T30", sensorKey: "x-trans-iv", customBanks: 7, banksVerified: true },
   { name: "X-T30 II", sensorKey: "x-trans-iv", customBanks: 7, banksVerified: true },
@@ -71,7 +58,7 @@ export const FUJIFILM_CAMERAS: FujifilmCamera[] = [
   { name: "X-S20", sensorKey: "x-trans-iv", customBanks: 7, banksVerified: true },
   { name: "X-M5", sensorKey: "x-trans-iv", customBanks: 7, banksVerified: true },
 
-  // X-Trans V (40MP HR / 26MP HS stacked)
+  // X-Trans V
   { name: "X-H2", sensorKey: "x-trans-v", customBanks: 7, banksVerified: true },
   { name: "X-H2S", sensorKey: "x-trans-v", customBanks: 7, banksVerified: true },
   { name: "X-T5", sensorKey: "x-trans-v", customBanks: 7, banksVerified: true },
@@ -79,7 +66,7 @@ export const FUJIFILM_CAMERAS: FujifilmCamera[] = [
   { name: "X100VI", sensorKey: "x-trans-v", customBanks: 7, banksVerified: true },
   { name: "X-E5", sensorKey: "x-trans-v", customBanks: 7, banksVerified: true },
 
-  // Bayer (entry-level X bodies and compacts)
+  // Bayer (entry-level X bodies and compacts) — no custom settings recall
   { name: "X100", sensorKey: "bayer", customBanks: 0, banksVerified: false },
   { name: "X-A1", sensorKey: "bayer", customBanks: 0, banksVerified: false },
   { name: "X-A2", sensorKey: "bayer", customBanks: 0, banksVerified: false },
@@ -104,30 +91,17 @@ export const FUJIFILM_CAMERAS: FujifilmCamera[] = [
 
 /**
  * Normalize a camera name for matching: lowercase, drop a leading
- * "Fujifilm"/"Fuji", and remove all whitespace and hyphens so
- * "Fujifilm X-T30 II", "fuji xt30ii" and "X-T30II" all match.
+ * "Fujifilm"/"Fuji", and remove all whitespace and hyphens. Must stay
+ * behaviourally identical to the client's normalizeCameraName.
  */
-export const normalizeCameraName = (name: string): string =>
-  name
+const normalizeCameraName = (name) =>
+  String(name || "")
     .toLowerCase()
     .replace(/^\s*fuji(film)?\s*/i, "")
     .replace(/[\s-]+/g, "");
 
-export const camerasForSensor = (sensorKey: SensorKey): string[] =>
-  FUJIFILM_CAMERAS.filter((c) => c.sensorKey === sensorKey).map((c) => c.name);
-
-export const sensorKeyForCamera = (
-  cameraName: string
-): SensorKey | undefined => {
-  const normalized = normalizeCameraName(cameraName);
-  if (!normalized) return undefined;
-  return FUJIFILM_CAMERAS.find(
-    (c) => normalizeCameraName(c.name) === normalized
-  )?.sensorKey;
-};
-
-/** Catalog entry for a camera by any user-written form of its name. */
-export const findCamera = (cameraName: string): FujifilmCamera | undefined => {
+/** Look up a catalog entry by any user-written form of the camera name. */
+const findCamera = (cameraName) => {
   const normalized = normalizeCameraName(cameraName);
   if (!normalized) return undefined;
   return FUJIFILM_CAMERAS.find(
@@ -135,7 +109,4 @@ export const findCamera = (cameraName: string): FujifilmCamera | undefined => {
   );
 };
 
-/** Bodies that can hold a loadout — at least one custom settings bank. */
-export const LOADOUT_CAPABLE_CAMERAS = FUJIFILM_CAMERAS.filter(
-  (c) => c.customBanks > 0
-);
+module.exports = { FUJIFILM_CAMERAS, normalizeCameraName, findCamera };
