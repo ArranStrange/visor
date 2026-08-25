@@ -22,7 +22,11 @@ import {
   getSensorCompatibilityWarnings,
 } from "../../constants/fujifilmSensors";
 import { useMutation } from "@apollo/client";
-import { UPDATE_FILMSIM } from "../../graphql/filmSims";
+import {
+  UPDATE_FILMSIM,
+  type UpdateFilmSimMutationData,
+  type UpdateFilmSimMutationVariables,
+} from "../../graphql/filmSims";
 
 import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
 import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";
@@ -31,7 +35,9 @@ interface EditFilmSimDialogProps {
   open: boolean;
   onClose: () => void;
   filmSim: FilmSimData;
-  onSave?: (updatedData: any) => void;
+  onSave?: (
+    updatedData: NonNullable<UpdateFilmSimMutationData["updateFilmSim"]>
+  ) => void;
   onSuccess?: () => void;
 }
 
@@ -42,8 +48,10 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
   onSave,
   onSuccess,
 }) => {
-  const [updateFilmSim, { loading: updating, error }] =
-    useMutation(UPDATE_FILMSIM);
+  const [updateFilmSim, { loading: updating, error }] = useMutation<
+    UpdateFilmSimMutationData,
+    UpdateFilmSimMutationVariables
+  >(UPDATE_FILMSIM);
 
   const { formData, handleInputChange, createUpdateInput } =
     useFilmSimForm(filmSim);

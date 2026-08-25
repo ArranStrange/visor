@@ -5,11 +5,17 @@ import {
   DELETE_PRESET,
   UPDATE_PRESET,
   GET_PRESET_BY_SLUG,
+  type DeletePresetMutationData,
+  type DeletePresetMutationVariables,
+  type UpdatePresetInput,
+  type UpdatePresetMutationData,
+  type UpdatePresetMutationVariables,
 } from "../graphql/presets";
 import { useFeatured } from "./useFeatured";
 import { ParsedSettings } from "../types/xmpSettings";
 import { stripTypename } from "../utils/presetDetailUtils";
 import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
+import type { PresetDetail } from "../types/graphql";
 
 interface EditFormData {
   title: string;
@@ -18,26 +24,18 @@ interface EditFormData {
   tags: string;
 }
 
-interface Preset {
-  id: string;
-  slug: string;
-  title: string;
-  description?: string;
-  notes?: string;
-  featured?: boolean;
-  tags: Array<{ displayName: string }>;
-  settings?: any;
-  toneCurve?: any;
-}
-
-export const usePresetOperations = (preset: Preset) => {
+export const usePresetOperations = (preset: PresetDetail) => {
   const navigate = useNavigate();
   const { togglePresetFeatured } = useFeatured();
 
-  const [deletePreset, { loading: deletingPreset }] =
-    useMutation(DELETE_PRESET);
-  const [updatePreset, { loading: updatingPreset }] =
-    useMutation(UPDATE_PRESET);
+  const [deletePreset, { loading: deletingPreset }] = useMutation<
+    DeletePresetMutationData,
+    DeletePresetMutationVariables
+  >(DELETE_PRESET);
+  const [updatePreset, { loading: updatingPreset }] = useMutation<
+    UpdatePresetMutationData,
+    UpdatePresetMutationVariables
+  >(UPDATE_PRESET);
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -102,7 +100,7 @@ export const usePresetOperations = (preset: Preset) => {
 
   const handleSavePreset = async () => {
     try {
-      const updateInput: any = {
+      const updateInput: UpdatePresetInput = {
         title: editFormData.title,
         description: editFormData.description,
         notes: editFormData.notes,

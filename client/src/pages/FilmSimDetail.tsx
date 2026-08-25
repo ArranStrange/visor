@@ -8,7 +8,11 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FILMSIM_BY_SLUG } from "../graphql/filmSims";
+import {
+  GET_FILMSIM_BY_SLUG,
+  type GetFilmSimQueryData,
+  type GetFilmSimQueryVariables,
+} from "../graphql/filmSims";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import AddToListButton from "../components/ui/AddToListButton";
@@ -31,8 +35,12 @@ const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
   const { user: currentUser } = useAuth();
   const { isAdmin } = useFeatured();
-  const { loading, error, data, refetch } = useQuery(GET_FILMSIM_BY_SLUG, {
-    variables: { slug },
+  const { loading, error, data, refetch } = useQuery<
+    GetFilmSimQueryData,
+    GetFilmSimQueryVariables
+  >(GET_FILMSIM_BY_SLUG, {
+    variables: { slug: slug ?? "" },
+    skip: !slug,
   });
 
   const filmSim = data?.getFilmSim;
@@ -123,7 +131,7 @@ const FilmSimDetails: React.FC = () => {
       <DetailHeader
         creator={filmSim.creator}
         title={filmSim.name}
-        featured={filmSim.featured}
+        featured={!!filmSim.featured}
         isAdmin={isAdmin}
         isOwner={!!isOwner}
         onFeaturedToggle={handleToggleFeatured}

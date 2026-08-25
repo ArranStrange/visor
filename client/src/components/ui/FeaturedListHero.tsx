@@ -2,7 +2,10 @@ import React from "react";
 import { Box, Typography, Avatar, Button, Container } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_FEATURED_ITEMS } from "../../graphql/featured";
+import {
+  GET_FEATURED_ITEMS,
+  type GetFeaturedItemsQueryData,
+} from "../../graphql/featured";
 import {
   getResponsiveImageSrcSet,
   optimizeImageUrl,
@@ -18,7 +21,8 @@ const squareImageStyles = {
 
 const FeaturedListHero: React.FC = () => {
   const navigate = useNavigate();
-  const { data, loading } = useQuery(GET_FEATURED_ITEMS);
+  const { data, loading } =
+    useQuery<GetFeaturedItemsQueryData>(GET_FEATURED_ITEMS);
 
   if (loading) return null;
 
@@ -26,10 +30,12 @@ const FeaturedListHero: React.FC = () => {
   if (!list) return null;
 
   const images: string[] = [
-    ...(list.presets || []).map((p: any) => p?.afterImage?.url).filter(Boolean),
+    ...(list.presets || [])
+      .map((preset) => preset.afterImage?.url)
+      .filter((url): url is string => Boolean(url)),
     ...(list.filmSims || [])
-      .map((f: any) => f?.sampleImages?.[0]?.url)
-      .filter(Boolean),
+      .map((filmSim) => filmSim.sampleImages?.[0]?.url)
+      .filter((url): url is string => Boolean(url)),
   ].slice(0, 3);
 
   const tiles: Array<{ type: "image"; src: string } | { type: "info" }> = [
@@ -127,7 +133,7 @@ const FeaturedListHero: React.FC = () => {
                       sx={{
                         color: (t) => t.palette.text.secondary,
                         display: "-webkit-box",
-                        WebkitLineClamp: 3 as any,
+                        WebkitLineClamp: 3,
                         WebkitBoxOrient: "vertical",
                         overflow: "hidden",
                       }}

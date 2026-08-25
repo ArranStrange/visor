@@ -29,8 +29,8 @@ interface EditPresetDialogProps {
   saveError: string | null;
   saveSuccess: boolean;
   updating: boolean;
-  currentSettings: any;
-  presetEffects: any;
+  currentSettings: unknown;
+  presetEffects: unknown;
   onClose: () => void;
   onFormDataChange: (data: EditFormData) => void;
   onSettingsParsed: (settings: ParsedSettings) => void;

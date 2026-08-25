@@ -3,7 +3,11 @@ import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { getSensorByLabel } from "../constants/fujifilmSensors";
-import { GET_ALL_FILMSIMS } from "../graphql/filmSims";
+import {
+  GET_ALL_FILMSIMS,
+  type ListFilmSimsQueryData,
+  type ListFilmSimsQueryVariables,
+} from "../graphql/filmSims";
 import SensorProfileCard from "../components/filmsims/SensorProfileCard";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
@@ -33,7 +37,10 @@ const SearchView: React.FC = () => {
   };
 
   // Lightweight count for the sensor profile card header.
-  const { data: sensorCountData } = useQuery(GET_ALL_FILMSIMS, {
+  const { data: sensorCountData } = useQuery<
+    ListFilmSimsQueryData,
+    ListFilmSimsQueryVariables
+  >(GET_ALL_FILMSIMS, {
     variables: {
       page: 1,
       limit: 1,

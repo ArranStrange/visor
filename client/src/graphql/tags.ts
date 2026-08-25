@@ -1,4 +1,9 @@
 import { gql } from "@apollo/client";
+import type { TagSummary } from "../types/graphql";
+
+export interface GetAllTagsQueryData {
+  listTags?: Array<TagSummary | null> | null;
+}
 
 export const GET_ALL_TAGS = gql`
   query GetAllTags {

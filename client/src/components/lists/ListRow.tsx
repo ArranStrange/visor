@@ -16,25 +16,34 @@ import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
 import { FEATURE_LIST, UNFEATURE_LIST } from "../../graphql/lists";
 import { optimizeImageUrl } from "../../utils/cloudinary";
+import type {
+  FilmSimSummary,
+  PresetSummary,
+  UserSummary,
+} from "../../types/graphql";
+
+interface CachedList extends Record<string, unknown> {
+  id: string;
+  isFeatured?: boolean;
+}
+
+interface BrowseListsCache {
+  lists?: CachedList[];
+}
+
+type RootListCache = {
+  browseUserLists: BrowseListsCache;
+  getUserLists: CachedList[];
+};
 
 interface ListRowProps {
   id: string;
   name: string;
   description?: string;
-  owner: { id: string; username: string; avatar?: string };
+  owner: UserSummary;
   isFeatured?: boolean;
-  presets: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    afterImage?: { id?: string; url: string } | null;
-  }>;
-  filmSims: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    sampleImages?: Array<{ id?: string; url: string }>;
-  }>;
+  presets: PresetSummary[];
+  filmSims: FilmSimSummary[];
 }
 
 const ListRow: React.FC<ListRowProps> = ({
@@ -68,20 +77,24 @@ const ListRow: React.FC<ListRowProps> = ({
           update: (cache, { data }) => {
             const updated = data?.unfeatureUserList;
             if (!updated) return;
-            cache.modify({
+            cache.modify<RootListCache>({
               fields: {
-                browseUserLists(existing) {
-                  if (!existing?.lists) return existing;
-                  const lists = existing.lists.map((l: any) =>
-                    l.id === id ? { ...l, isFeatured: false } : l
+                browseUserLists(existing, { isReference }) {
+                  if (isReference(existing) || !existing.lists) return existing;
+                  const lists = existing.lists.map((list) =>
+                    list.id === id ? { ...list, isFeatured: false } : list
                   );
                   return { ...existing, lists };
                 },
-                getUserLists(existing) {
-                  if (!existing) return existing;
-                  return existing.map((l: any) =>
-                    l.id === id ? { ...l, isFeatured: false } : l
-                  );
+                getUserLists(existing, { isReference, readField }) {
+                  return existing.map((list) => {
+                    const listId = isReference(list)
+                      ? readField<string>("id", list)
+                      : list.id;
+                    return listId === id
+                      ? { ...list, isFeatured: false }
+                      : list;
+                  });
                 },
               },
             });
@@ -95,26 +108,28 @@ const ListRow: React.FC<ListRowProps> = ({
           update: (cache, { data }) => {
             const updated = data?.featureUserList;
             if (!updated) return;
-            cache.modify({
+            cache.modify<RootListCache>({
               fields: {
-                browseUserLists(existing) {
-                  if (!existing?.lists) return existing;
+                browseUserLists(existing, { isReference }) {
+                  if (isReference(existing) || !existing.lists) return existing;
                   // Unfeature all other lists, feature this one
-                  const lists = existing.lists.map((l: any) =>
-                    l.id === id
-                      ? { ...l, isFeatured: true }
-                      : { ...l, isFeatured: false }
+                  const lists = existing.lists.map((list) =>
+                    list.id === id
+                      ? { ...list, isFeatured: true }
+                      : { ...list, isFeatured: false }
                   );
                   return { ...existing, lists };
                 },
-                getUserLists(existing) {
-                  if (!existing) return existing;
+                getUserLists(existing, { isReference, readField }) {
                   // Unfeature all other lists, feature this one
-                  return existing.map((l: any) =>
-                    l.id === id
-                      ? { ...l, isFeatured: true }
-                      : { ...l, isFeatured: false }
-                  );
+                  return existing.map((list) => {
+                    const listId = isReference(list)
+                      ? readField<string>("id", list)
+                      : list.id;
+                    return listId === id
+                      ? { ...list, isFeatured: true }
+                      : { ...list, isFeatured: false };
+                  });
                 },
               },
             });

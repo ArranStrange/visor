@@ -1,31 +1,13 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import WhiteBalanceGrid from "../settings/WhiteBalanceGrid";
-
-interface FilmSimSettings {
-  filmSimulation?: string;
-  grainEffect?: string;
-  colorChromeEffect?: string;
-  colorChromeFxBlue?: string;
-  dynamicRange?: number | null;
-  highlight?: number;
-  shadow?: number;
-  color?: number;
-  sharpness?: number;
-  noiseReduction?: number;
-  clarity?: number;
-  whiteBalance?: string;
-  wbShift?: {
-    r: number;
-    b: number;
-  };
-}
+import type { FilmSimSettings } from "../../types/filmSim";
 
 interface FilmSimCameraSettingsProps {
-  settings: FilmSimSettings;
+  settings?: Partial<FilmSimSettings>;
 }
 
-const formatSettingValue = (value: any) => {
+const formatSettingValue = (value: string | number | null | undefined) => {
   if (value === undefined || value === null) return "N/A";
   if (typeof value === "number") return value.toString();
   return value;

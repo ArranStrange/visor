@@ -9,18 +9,10 @@ import {
   Chip,
 } from "@mui/material";
 import { optimizeImageUrl } from "../../utils/cloudinary";
-
-interface Preset {
-  id: string;
-  title: string;
-  description?: string;
-  afterImage?: { url: string };
-  creator?: { id: string; username: string; avatar?: string };
-  tags?: Array<{ displayName: string; id?: string }>;
-}
+import type { PresetSummary } from "../../types/graphql";
 
 interface PresetSearchItemProps {
-  preset: Preset;
+  preset: PresetSummary;
   isSelected: boolean;
   onSelect: (presetId: string) => void;
 }

@@ -20,9 +20,8 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": "warn",
-      // Warn for now; flipped to "error" once the Phase 0/4 sweeps land.
       "no-console": ["warn", { allow: ["error"] }],
-      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/purity": "warn",

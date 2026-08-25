@@ -10,13 +10,21 @@ import UploadFilmSimForm from "./UploadFilmSimForm";
 import { buildFilmSimVariables } from "./buildFilmSimVariables";
 
 import { FilmSimFormState, FilmSimSettings } from "../../types/filmSim";
+import { FilmSimFormField, FilmSimFormValue } from "../../hooks/useFilmSimForm";
 import { DEFAULT_FILM_SIM_SETTINGS } from "../../constants/filmSimConfig";
-import { UPLOAD_FILM_SIM } from "../../graphql/filmSims";
+import {
+  UPLOAD_FILM_SIM,
+  type UploadFilmSimMutationData,
+  type UploadFilmSimMutationVariables,
+} from "../../graphql/filmSims";
 
 const UploadFilmSim: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [uploadFilmSim] = useMutation(UPLOAD_FILM_SIM);
+  const [uploadFilmSim] = useMutation<
+    UploadFilmSimMutationData,
+    UploadFilmSimMutationVariables
+  >(UPLOAD_FILM_SIM);
 
   const [formState, setFormState] = useState<FilmSimFormState>({
     title: "",
@@ -86,7 +94,10 @@ const UploadFilmSim: React.FC = () => {
     setFormState((prev) => ({ ...prev, description: e.target.value }));
   }
 
-  function handleSettingChange(settingKey: string, value: any) {
+  function handleSettingChange(
+    settingKey: FilmSimFormField,
+    value: FilmSimFormValue
+  ) {
     if (settingKey.startsWith("settings.")) {
       const actualKey = settingKey.replace("settings.", "");
       setFormState((prev) => ({

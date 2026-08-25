@@ -1,13 +1,16 @@
 import { NetworkStatus, useQuery } from "@apollo/client";
 import { useEffect, useMemo } from "react";
-import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
-import { GET_ALL_PRESETS } from "../../graphql/presets";
 import {
-  GridFilter,
-  PaginatedFilmSimsData,
-  PaginatedListVariables,
-  PaginatedPresetsData,
-} from "../../components/ui/content-grid-data";
+  GET_ALL_FILMSIMS,
+  type ListFilmSimsQueryData,
+  type ListFilmSimsQueryVariables,
+} from "../../graphql/filmSims";
+import {
+  GET_ALL_PRESETS,
+  type ListPresetsQueryData,
+  type ListPresetsQueryVariables,
+} from "../../graphql/presets";
+import { GridFilter } from "../../components/ui/content-grid-data";
 import { UserListDetail } from "./buildCombinedContent";
 
 const ITEMS_PER_PAGE = 20;
@@ -24,7 +27,7 @@ export function useListContent(list?: UserListDetail | null) {
   const presetFilter = useMemo(() => buildIdFilter(presetIds), [presetIds]);
   const filmSimFilter = useMemo(() => buildIdFilter(filmSimIds), [filmSimIds]);
 
-  const presetQuery = useQuery<PaginatedPresetsData, PaginatedListVariables>(
+  const presetQuery = useQuery<ListPresetsQueryData, ListPresetsQueryVariables>(
     GET_ALL_PRESETS,
     {
       variables: { page: 1, limit: ITEMS_PER_PAGE, filter: presetFilter },
@@ -32,14 +35,14 @@ export function useListContent(list?: UserListDetail | null) {
       notifyOnNetworkStatusChange: true,
     }
   );
-  const filmSimQuery = useQuery<PaginatedFilmSimsData, PaginatedListVariables>(
-    GET_ALL_FILMSIMS,
-    {
-      variables: { page: 1, limit: ITEMS_PER_PAGE, filter: filmSimFilter },
-      skip: !filmSimIds.length,
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const filmSimQuery = useQuery<
+    ListFilmSimsQueryData,
+    ListFilmSimsQueryVariables
+  >(GET_ALL_FILMSIMS, {
+    variables: { page: 1, limit: ITEMS_PER_PAGE, filter: filmSimFilter },
+    skip: !filmSimIds.length,
+    notifyOnNetworkStatusChange: true,
+  });
   const presetPage = presetQuery.data?.listPresets;
   const filmSimPage = filmSimQuery.data?.listFilmSims;
   const fetchMorePresets = presetQuery.fetchMore;

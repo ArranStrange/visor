@@ -11,10 +11,10 @@ import { selectedBorderSx } from "../../utils/selectedBorderSx";
 
 interface ColorMixerSectionProps {
   settings: ParsedSettings;
-  getNestedValue: (obj: any, path: string) => any;
+  getNestedValue: (obj: unknown, path: string) => unknown;
   renderSettingRow: (
     label: string,
-    value: any,
+    value: unknown,
     spectrum?: string,
     key?: string
   ) => React.ReactNode;

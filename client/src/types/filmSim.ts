@@ -33,8 +33,16 @@ export interface FilmSimFormState {
   settings: FilmSimSettings;
 }
 
+type SetFilmSimFormFieldAction = {
+  [Field in keyof FilmSimFormState]: {
+    type: "SET_FIELD";
+    field: Field;
+    value: FilmSimFormState[Field];
+  };
+}[keyof FilmSimFormState];
+
 export type FilmSimFormAction =
-  | { type: "SET_FIELD"; field: keyof FilmSimFormState; value: any }
+  | SetFilmSimFormFieldAction
   | { type: "SET_SETTINGS"; settings: Partial<FilmSimSettings> }
   | { type: "ADD_TAG"; tag: string }
   | { type: "REMOVE_TAG"; tag: string }

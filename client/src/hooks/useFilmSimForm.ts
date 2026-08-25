@@ -1,32 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { WhiteBalanceShift } from "../components/settings/WhiteBalanceGrid";
+import { FilmSimSettings } from "../types/filmSim";
+import type { FilmSimDetailResult } from "../graphql/filmSims";
 
-export interface FilmSimSettings {
-  filmSimulation?: string;
-  dynamicRange?: number | null;
-  highlight?: number;
-  shadow?: number;
-  color?: number;
-  sharpness?: number;
-  noiseReduction?: number;
-  grainEffect?: string;
-  clarity?: number;
-  whiteBalance?: string;
-  wbShift?: WhiteBalanceShift;
-  colorChromeEffect?: string;
-  colorChromeFxBlue?: string;
-}
-
-export interface FilmSimData {
-  id: string;
-  name: string;
-  description?: string;
-  notes?: string;
-  type?: string;
-  tags?: { displayName: string }[];
-  compatibleSensors?: string[];
-  settings?: FilmSimSettings;
-}
+export type FilmSimData = FilmSimDetailResult;
 
 export interface FormData {
   name: string;
@@ -36,6 +13,19 @@ export interface FormData {
   compatibleSensors: string[];
   settings: FilmSimSettings;
 }
+
+export type FilmSimFormField =
+  | Exclude<keyof FormData, "settings">
+  | `settings.${keyof FilmSimSettings}`
+  | `settings.wbShift.${keyof WhiteBalanceShift}`;
+
+export type FilmSimFormValue =
+  string | number | null | string[] | WhiteBalanceShift;
+
+export type FilmSimFormChangeHandler = (
+  field: FilmSimFormField,
+  value: FilmSimFormValue
+) => void;
 
 const getDefaultSettings = (): FilmSimSettings => ({
   filmSimulation: "PROVIA",
@@ -59,8 +49,8 @@ const createFormDataFromFilmSim = (filmSim: FilmSimData): FormData => ({
   notes: filmSim.notes || "",
   tags:
     filmSim.tags
-      ?.filter((tag: any) => tag && tag.displayName)
-      .map((tag) => tag?.displayName || "Unknown")
+      ?.filter((tag) => tag.displayName)
+      .map((tag) => tag.displayName)
       .join(", ") || "",
   compatibleSensors: filmSim.compatibleSensors || [],
   settings: {
@@ -79,36 +69,39 @@ export const useFilmSimForm = (filmSim: FilmSimData) => {
     setFormData(createFormDataFromFilmSim(filmSim));
   }, [filmSim]);
 
-  const handleInputChange = useCallback((field: string, value: any) => {
-    if (field.startsWith("settings.")) {
-      const settingKey = field.replace("settings.", "");
-      setFormData((prev) => ({
-        ...prev,
-        settings: {
-          ...prev.settings,
-          [settingKey]: value,
-        },
-      }));
-    } else if (field.startsWith("settings.wbShift.")) {
-      const wbKey = field.replace("settings.wbShift.", "");
-      setFormData((prev) => ({
-        ...prev,
-        settings: {
-          ...prev.settings,
-          wbShift: {
-            r: prev.settings.wbShift?.r || 0,
-            b: prev.settings.wbShift?.b || 0,
-            [wbKey]: parseInt(value) || 0,
+  const handleInputChange = useCallback<FilmSimFormChangeHandler>(
+    (field, value) => {
+      if (field.startsWith("settings.wbShift.")) {
+        const wbKey = field.replace("settings.wbShift.", "");
+        setFormData((prev) => ({
+          ...prev,
+          settings: {
+            ...prev.settings,
+            wbShift: {
+              r: prev.settings.wbShift?.r || 0,
+              b: prev.settings.wbShift?.b || 0,
+              [wbKey]: parseInt(String(value)) || 0,
+            },
           },
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
-  }, []);
+        }));
+      } else if (field.startsWith("settings.")) {
+        const settingKey = field.replace("settings.", "");
+        setFormData((prev) => ({
+          ...prev,
+          settings: {
+            ...prev.settings,
+            [settingKey]: value,
+          },
+        }));
+      } else {
+        setFormData((prev) => ({
+          ...prev,
+          [field]: value,
+        }));
+      }
+    },
+    []
+  );
 
   const createUpdateInput = useCallback(
     () => ({

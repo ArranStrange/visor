@@ -1,5 +1,10 @@
 import { useMutation } from "@apollo/client";
-import { CREATE_NOTIFICATION } from "../graphql/notifications";
+import type { MutationFunction } from "@apollo/client";
+import {
+  CREATE_NOTIFICATION,
+  type CreateNotificationMutationData,
+  type CreateNotificationMutationVariables,
+} from "../graphql/notifications";
 import {
   NotificationType,
   CreateNotificationInput,
@@ -7,13 +12,19 @@ import {
 import { Discussion, DiscussionPost } from "../types/discussions";
 
 export const useCreateNotification = () => {
-  const [createNotification] = useMutation(CREATE_NOTIFICATION);
+  const [createNotification] = useMutation<
+    CreateNotificationMutationData,
+    CreateNotificationMutationVariables
+  >(CREATE_NOTIFICATION);
 
   return createNotification;
 };
 
 export const createDiscussionReplyNotification = async (
-  createNotification: any,
+  createNotification: MutationFunction<
+    CreateNotificationMutationData,
+    CreateNotificationMutationVariables
+  >,
   post: DiscussionPost,
   discussion: Discussion,
   linkedItem?: { type: string; id: string; title: string; slug?: string }
@@ -64,7 +75,10 @@ export const createDiscussionReplyNotification = async (
 };
 
 export const createMentionNotification = async (
-  createNotification: any,
+  createNotification: MutationFunction<
+    CreateNotificationMutationData,
+    CreateNotificationMutationVariables
+  >,
   post: DiscussionPost,
   discussion: Discussion,
   mentionedUserIds: string[]

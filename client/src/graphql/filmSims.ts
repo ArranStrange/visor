@@ -1,4 +1,98 @@
 import { gql } from "@apollo/client";
+import type {
+  FilmSimSummary,
+  ImageSummary,
+  PresetSummary,
+  TagSummary,
+  UserSummary,
+} from "../types/graphql";
+import type { FilmSimSettings, SampleImageInput } from "../types/filmSim";
+
+export interface ListFilmSimsQueryData {
+  listFilmSims: {
+    filmSims: Array<FilmSimSummary & Record<string, unknown>>;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
+export interface ListFilmSimsQueryVariables {
+  page?: number;
+  limit?: number;
+  filter?: Record<string, unknown>;
+}
+
+export type FilmSimResponseSettings = Partial<FilmSimSettings>;
+
+export interface FilmSimDetailResult extends FilmSimSummary {
+  type?: string;
+  compatibleSensors?: string[];
+  notes?: string;
+  settings?: FilmSimResponseSettings;
+  tags?: Array<TagSummary & { id: string }>;
+  sampleImages?: Array<ImageSummary & { id: string }>;
+  comments?: Array<{
+    id: string;
+    content: string;
+    createdAt: string;
+    author: UserSummary;
+  }>;
+  recommendedPresets?: PresetSummary[];
+}
+
+export interface GetFilmSimQueryData {
+  getFilmSim: FilmSimDetailResult | null;
+}
+
+export interface GetFilmSimQueryVariables {
+  slug: string;
+}
+
+export interface UpdateFilmSimInput {
+  name?: string;
+  description?: string;
+  notes?: string;
+  compatibleSensors?: string[];
+  settings?: Partial<FilmSimSettings>;
+}
+
+export interface UpdateFilmSimResult extends Pick<
+  FilmSimSummary,
+  "id" | "name" | "slug"
+> {
+  description?: string;
+  type?: string;
+  settings?: FilmSimResponseSettings;
+  compatibleSensors?: string[];
+  notes?: string;
+  updatedAt?: string;
+}
+
+export interface UpdateFilmSimMutationData {
+  updateFilmSim: UpdateFilmSimResult | null;
+}
+
+export interface UpdateFilmSimMutationVariables {
+  id: string;
+  input: UpdateFilmSimInput;
+}
+
+export interface UploadFilmSimMutationData {
+  uploadFilmSim: Pick<FilmSimSummary, "id" | "name" | "slug"> | null;
+}
+
+export interface UploadFilmSimMutationVariables {
+  name: string;
+  description?: string;
+  settings: FilmSimSettings;
+  notes?: string;
+  tags: string[];
+  sampleImages?: SampleImageInput[];
+  compatibleSensors?: string[];
+}
 
 export const GET_ALL_FILMSIMS = gql`
   query ListFilmSims($page: Int, $limit: Int, $filter: JSON) {
@@ -50,7 +144,7 @@ export const GET_FILMSIM_BY_SLUG = gql`
         dynamicRange
         highlight
         shadow
-        colour
+        color: colour
         sharpness
         noiseReduction
         grainEffect
@@ -124,7 +218,7 @@ export const UPDATE_FILMSIM = gql`
         dynamicRange
         highlight
         shadow
-        colour
+        color: colour
         sharpness
         noiseReduction
         grainEffect

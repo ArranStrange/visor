@@ -23,12 +23,12 @@ interface Setting {
 
 interface SettingsDisplayProps {
   settings: Setting[];
-  formatValue?: (value: any) => string;
+  formatValue?: (value: unknown) => string;
 }
 
 const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
   settings,
-  formatValue = (value) => value?.toString() || "0",
+  formatValue = (value) => (value == null ? "0" : String(value) || "0"),
 }) => {
   const [selectedColor, setSelectedColor] = React.useState("blue");
 

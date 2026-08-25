@@ -1,33 +1,14 @@
 import { ParsedSettings } from "../types/xmpSettings";
+import {
+  CurvePoint,
+  PresetDetail,
+  PresetDetailSettings,
+} from "../types/graphql";
 import { buildSettingsObject } from "./xmp-parser";
 
-interface PresetSettings {
-  [key: string]: any;
-}
-
-interface Preset {
-  version?: string;
-  processVersion?: string;
-  cameraProfile?: string;
-  cameraProfileDigest?: string;
-  profileName?: string;
-  lookTableName?: string;
-  whiteBalance?: string;
-  settings?: PresetSettings;
-  toneCurve?: any;
-  colorGrading?: any;
-  effects?: any;
-  lensCorrections?: any;
-  optics?: any;
-  transform?: any;
-  calibration?: any;
-  crop?: any;
-  orientation?: any;
-}
-
 export const convertPresetSettingsToParsedSettings = (
-  presetSettings: PresetSettings | null | undefined,
-  preset: Preset
+  presetSettings: PresetDetailSettings | null | undefined,
+  preset: PresetDetail
 ): ParsedSettings => {
   const parsed: ParsedSettings = {
     version: preset.version,
@@ -111,18 +92,24 @@ export const convertPresetSettingsToParsedSettings = (
   return buildSettingsObject(parsed);
 };
 
-export const formatToneCurveData = (curveData: any) => {
+export const formatToneCurveData = (curveData?: CurvePoint[] | null) => {
   if (!curveData) return [0, 64, 128, 192, 255];
 
   const inputPoints = [0, 64, 128, 192, 255];
   const outputPoints = inputPoints.map((input) => {
-    const lowerPoint = curveData.reduce((prev: any, curr: any) => {
-      return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
-    }, null);
+    const lowerPoint = curveData.reduce<CurvePoint | undefined>(
+      (prev, curr) => {
+        return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
+      },
+      undefined
+    );
 
-    const upperPoint = curveData.reduce((prev: any, curr: any) => {
-      return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
-    }, null);
+    const upperPoint = curveData.reduce<CurvePoint | undefined>(
+      (prev, curr) => {
+        return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
+      },
+      undefined
+    );
 
     if (!lowerPoint || !upperPoint) return input;
     if (lowerPoint.x === upperPoint.x) return lowerPoint.y;
@@ -134,17 +121,17 @@ export const formatToneCurveData = (curveData: any) => {
   return outputPoints;
 };
 
-export const stripTypename = (obj: any): any => {
+export const stripTypename = <T>(obj: T): T => {
   if (obj === null || obj === undefined) return obj;
-  if (Array.isArray(obj)) return obj.map(stripTypename);
+  if (Array.isArray(obj)) return obj.map(stripTypename) as T;
   if (typeof obj === "object") {
-    const cleaned: any = {};
+    const cleaned: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(obj)) {
       if (key !== "__typename") {
         cleaned[key] = stripTypename(value);
       }
     }
-    return cleaned;
+    return cleaned as T;
   }
   return obj;
 };

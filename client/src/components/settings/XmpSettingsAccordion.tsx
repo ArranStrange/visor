@@ -11,6 +11,7 @@ import ToneCurve from "./ToneCurve";
 import ColorGradingWheels from "./ColorGradingWheels";
 import ColorMixerSection from "./ColorMixerSection";
 import { ParsedSettings } from "../../types/xmpSettings";
+import { formatToneCurveData } from "../../utils/presetDetailUtils";
 import {
   SectionConfig,
   SettingConfig,
@@ -19,10 +20,10 @@ import {
 interface XmpSettingsAccordionProps {
   section: SectionConfig;
   settings: ParsedSettings;
-  getNestedValue: (obj: any, path: string) => any;
+  getNestedValue: (obj: unknown, path: string) => unknown;
   renderSettingRow: (
     label: string,
-    value: any,
+    value: unknown,
     spectrum?: string,
     key?: string
   ) => React.ReactNode;
@@ -41,7 +42,7 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
         : basePath
           ? `${basePath}.${key}`
           : key;
-      const value = getNestedValue(settings, fullPath) || 0;
+      const value = Number(getNestedValue(settings, fullPath) || 0);
       const processedValue = divider !== 1 ? value / divider : value;
 
       return renderSettingRow(label, processedValue, spectrum, key);
@@ -217,39 +218,6 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
       <AccordionDetails>{renderSpecialContent()}</AccordionDetails>
     </Accordion>
   );
-};
-
-// Helper function for tone curve formatting
-const formatToneCurveData = (curveData: any) => {
-  // Handle null, undefined, or empty arrays
-  if (!curveData || !Array.isArray(curveData) || curveData.length === 0) {
-    return [0, 64, 128, 192, 255];
-  }
-
-  // Sort points by x value to ensure proper interpolation
-  const sortedPoints = [...curveData].sort((a, b) => (a?.x || 0) - (b?.x || 0));
-
-  const inputPoints = [0, 64, 128, 192, 255];
-  const outputPoints = inputPoints.map((input) => {
-    // Find the two points that surround this input value
-    const lowerPoint = sortedPoints.reduce((prev: any, curr: any) => {
-      if (!curr || typeof curr.x === "undefined") return prev;
-      return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
-    }, null);
-
-    const upperPoint = sortedPoints.reduce((prev: any, curr: any) => {
-      if (!curr || typeof curr.x === "undefined") return prev;
-      return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
-    }, null);
-
-    if (!lowerPoint || !upperPoint) return input;
-    if (lowerPoint.x === upperPoint.x) return lowerPoint.y;
-
-    const ratio = (input - lowerPoint.x) / (upperPoint.x - lowerPoint.x);
-    return Math.round(lowerPoint.y + ratio * (upperPoint.y - lowerPoint.y));
-  });
-
-  return outputPoints;
 };
 
 export default XmpSettingsAccordion;

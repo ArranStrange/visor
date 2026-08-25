@@ -2,8 +2,16 @@ import React, { useCallback } from "react";
 import { NetworkStatus, useQuery } from "@apollo/client";
 import { Alert, Box } from "@mui/material";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { GET_ALL_PRESETS } from "../../graphql/presets";
-import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
+import {
+  GET_ALL_PRESETS,
+  type ListPresetsQueryData,
+  type ListPresetsQueryVariables,
+} from "../../graphql/presets";
+import {
+  GET_ALL_FILMSIMS,
+  type ListFilmSimsQueryData,
+  type ListFilmSimsQueryVariables,
+} from "../../graphql/filmSims";
 import StaggeredGrid from "./StaggeredGrid";
 import { ContentGridItem } from "./content-grid-item";
 import { fetchNextContentPages } from "./content-grid-pagination";
@@ -12,9 +20,6 @@ import {
   GridContentData,
   GridContentType,
   GridFilter,
-  PaginatedFilmSimsData,
-  PaginatedListVariables,
-  PaginatedPresetsData,
 } from "./content-grid-data";
 
 interface ContentGridLoaderProps {
@@ -40,7 +45,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const loadFilmSims = !hasCustomData && contentType !== "presets";
   const variables = { page: 1, limit: ITEMS_PER_PAGE, filter };
 
-  const presetQuery = useQuery<PaginatedPresetsData, PaginatedListVariables>(
+  const presetQuery = useQuery<ListPresetsQueryData, ListPresetsQueryVariables>(
     GET_ALL_PRESETS,
     {
       variables,
@@ -48,14 +53,14 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       notifyOnNetworkStatusChange: true,
     }
   );
-  const filmSimQuery = useQuery<PaginatedFilmSimsData, PaginatedListVariables>(
-    GET_ALL_FILMSIMS,
-    {
-      variables,
-      skip: !loadFilmSims,
-      notifyOnNetworkStatusChange: true,
-    }
-  );
+  const filmSimQuery = useQuery<
+    ListFilmSimsQueryData,
+    ListFilmSimsQueryVariables
+  >(GET_ALL_FILMSIMS, {
+    variables,
+    skip: !loadFilmSims,
+    notifyOnNetworkStatusChange: true,
+  });
 
   const content = buildGridContent({
     contentType,

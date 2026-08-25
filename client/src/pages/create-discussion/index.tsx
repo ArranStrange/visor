@@ -16,7 +16,11 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { CREATE_DISCUSSION } from "../../graphql/discussions";
+import {
+  CREATE_DISCUSSION,
+  type CreateDiscussionMutationData,
+  type CreateDiscussionMutationVariables,
+} from "../../graphql/discussions";
 import DiscussionTypeSelect from "./DiscussionTypeSelect";
 import ItemAutocomplete, { LinkableItem } from "./ItemAutocomplete";
 import { DiscussionLinkedType } from "./discussionTypeLabels";
@@ -31,13 +35,15 @@ const CreateDiscussion: React.FC = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<CreateDiscussionForm>({
     title: "",
-    linkedToType: "PRESET",
+    linkedToType: DiscussionLinkedType.PRESET,
     linkedToId: "",
   });
   const [selectedItem, setSelectedItem] = useState<LinkableItem | null>(null);
 
-  const [createDiscussion, { loading: creating }] =
-    useMutation(CREATE_DISCUSSION);
+  const [createDiscussion, { loading: creating }] = useMutation<
+    CreateDiscussionMutationData,
+    CreateDiscussionMutationVariables
+  >(CREATE_DISCUSSION);
 
   const showItemSelection =
     form.linkedToType === "PRESET" || form.linkedToType === "FILMSIM";

@@ -12,44 +12,24 @@ import {
   DiscussionLinkedType,
   getDiscussionTypeLabel,
 } from "./discussionTypeLabels";
-import { SEARCH_PRESETS } from "../../graphql/presets";
-import { GET_ALL_FILMSIMS } from "../../graphql/filmSims";
+import {
+  SEARCH_PRESETS,
+  type SearchPresetsQueryData,
+  type SearchPresetsQueryVariables,
+} from "../../graphql/presets";
+import {
+  GET_ALL_FILMSIMS,
+  type ListFilmSimsQueryData,
+  type ListFilmSimsQueryVariables,
+} from "../../graphql/filmSims";
+import type { FilmSimSummary, PresetSummary } from "../../types/graphql";
 
-export interface LinkableItem {
-  id: string;
-  title?: string;
-  name?: string;
-  description?: string;
-}
+export type LinkableItem = PresetSummary | FilmSimSummary;
 
 interface ItemAutocompleteProps {
   linkedToType: DiscussionLinkedType;
   selectedItem: LinkableItem | null;
   onChange: (item: LinkableItem | null) => void;
-}
-
-interface PaginatedPage {
-  hasNextPage: boolean;
-  currentPage: number;
-}
-
-interface SearchPresetsData {
-  listPresets: PaginatedPage & { presets: LinkableItem[] };
-}
-
-interface SearchPresetsVariables {
-  query: string;
-  page: number;
-  limit: number;
-}
-
-interface ListFilmSimsData {
-  listFilmSims: PaginatedPage & { filmSims: LinkableItem[] };
-}
-
-interface ListFilmSimsVariables {
-  page: number;
-  limit: number;
 }
 
 const PICKER_PAGE_SIZE = 20;
@@ -62,20 +42,20 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
   const [inputValue, setInputValue] = useState("");
   const searchQuery = inputValue.trim();
   const shouldSearch = searchQuery.length >= 2;
-  const presetQuery = useQuery<SearchPresetsData, SearchPresetsVariables>(
-    SEARCH_PRESETS,
-    {
-      variables: { query: searchQuery, page: 1, limit: PICKER_PAGE_SIZE },
-      skip: linkedToType !== "PRESET" || !shouldSearch,
-    }
-  );
-  const filmSimQuery = useQuery<ListFilmSimsData, ListFilmSimsVariables>(
-    GET_ALL_FILMSIMS,
-    {
-      variables: { page: 1, limit: PICKER_PAGE_SIZE },
-      skip: linkedToType !== "FILMSIM",
-    }
-  );
+  const presetQuery = useQuery<
+    SearchPresetsQueryData,
+    SearchPresetsQueryVariables
+  >(SEARCH_PRESETS, {
+    variables: { query: searchQuery, page: 1, limit: PICKER_PAGE_SIZE },
+    skip: linkedToType !== "PRESET" || !shouldSearch,
+  });
+  const filmSimQuery = useQuery<
+    ListFilmSimsQueryData,
+    ListFilmSimsQueryVariables
+  >(GET_ALL_FILMSIMS, {
+    variables: { page: 1, limit: PICKER_PAGE_SIZE },
+    skip: linkedToType !== "FILMSIM",
+  });
   const items = getAvailableItems();
   const isLoading =
     (presetQuery.loading && !presetQuery.data) ||
@@ -122,7 +102,7 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
   }
 
   function getOptionLabel(option: LinkableItem): string {
-    return option.title || option.name || "";
+    return "title" in option ? option.title : option.name;
   }
 
   function keepServerResults(options: LinkableItem[]) {
@@ -178,7 +158,9 @@ const ItemAutocomplete: React.FC<ItemAutocompleteProps> = ({
     return (
       <li {...props}>
         <Box>
-          <Typography variant="body2">{option.title || option.name}</Typography>
+          <Typography variant="body2">
+            {"title" in option ? option.title : option.name}
+          </Typography>
           {option.description && (
             <Typography variant="caption" color="text.secondary">
               {option.description}

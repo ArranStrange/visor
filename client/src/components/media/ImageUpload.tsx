@@ -24,7 +24,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
   index,
   onRemove,
 }) => (
-  <Grid {...(undefined as any)} item xs={12} sm={6} md={4}>
+  <Grid size={{ xs: 12, sm: 6, md: 4 }}>
     <Paper
       sx={{
         p: 1,

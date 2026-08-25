@@ -1,4 +1,44 @@
 import { gql } from "@apollo/client";
+import type {
+  FilmSimSummary,
+  ImageSummary,
+  PresetSummary,
+  UserSummary,
+} from "../types/graphql";
+import type { UserList } from "../types/lists";
+
+export interface FeaturedPreset extends PresetSummary {
+  notes?: string;
+  creator: UserSummary;
+}
+
+export interface FeaturedFilmSim extends FilmSimSummary {
+  notes?: string;
+  creator: UserSummary;
+}
+
+export type FeaturedUserList = Pick<
+  UserList,
+  "id" | "name" | "description" | "presets" | "filmSims"
+> & {
+  isFeatured?: boolean;
+  owner: UserSummary;
+};
+
+export interface GetFeaturedItemsQueryData {
+  featuredPreset?: { presets: FeaturedPreset[] } | null;
+  featuredFilmSim?: { filmSims: FeaturedFilmSim[] } | null;
+  featuredUserLists?: FeaturedUserList[] | null;
+}
+
+export interface FeaturedPhoto extends ImageSummary {
+  id: string;
+  uploader: UserSummary;
+}
+
+export interface GetFeaturedPhotoQueryData {
+  getFeaturedPhoto?: FeaturedPhoto | null;
+}
 
 export const GET_FEATURED_ITEMS = gql`
   query GetFeaturedItems {

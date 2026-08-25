@@ -3,15 +3,13 @@ import { useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { DELETE_FILMSIM } from "../graphql/filmSims";
 import { useFeatured } from "./useFeatured";
+import type { FilmSimSummary } from "../types/graphql";
 
-interface FilmSim {
-  id: string;
-  name: string;
-  featured?: boolean;
-}
+type FilmSimOperationTarget = Pick<FilmSimSummary, "id" | "name"> &
+  Partial<Pick<FilmSimSummary, "featured">>;
 
 export const useFilmSimOperations = (
-  filmSim: FilmSim,
+  filmSim: FilmSimOperationTarget,
   onRefetch: () => void
 ) => {
   const navigate = useNavigate();

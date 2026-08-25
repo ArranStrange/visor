@@ -15,9 +15,10 @@ import {
 import { useNavigate } from "react-router-dom";
 import ListIcon from "@mui/icons-material/List";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import type { UserList } from "../../types/lists";
 
 export interface ProfileListsSectionProps {
-  lists: any[];
+  lists: UserList[];
 }
 
 const ProfileListsSection: React.FC<ProfileListsSectionProps> = ({ lists }) => {
@@ -62,7 +63,7 @@ const ProfileListsSection: React.FC<ProfileListsSectionProps> = ({ lists }) => {
 };
 
 interface ProfileListRowProps {
-  list: any;
+  list: UserList;
   showDivider: boolean;
   onSelect: () => void;
 }
@@ -96,7 +97,11 @@ const ProfileListRow: React.FC<ProfileListRowProps> = ({
                   {list.description}
                 </Typography>
               )}
-              <Typography variant="body2" color="text.secondary" component="span">
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                component="span"
+              >
                 {list.presets?.length || 0} presets •{" "}
                 {list.filmSims?.length || 0} film sims
               </Typography>

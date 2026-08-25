@@ -1,20 +1,8 @@
-export type DiscussionLinkedType =
-  | "PRESET"
-  | "FILMSIM"
-  | "TECHNIQUE"
-  | "EQUIPMENT"
-  | "LOCATION"
-  | "TUTORIAL"
-  | "REVIEW"
-  | "CHALLENGE"
-  | "WORKFLOW"
-  | "INSPIRATION"
-  | "CRITIQUE"
-  | "NEWS"
-  | "EVENT"
-  | "GENERAL";
+import { DiscussionTargetType as DiscussionLinkedType } from "../../types/discussions";
 
-export function getDiscussionTypeLabel(type: string): string {
+export { DiscussionLinkedType };
+
+export function getDiscussionTypeLabel(type: DiscussionLinkedType): string {
   switch (type) {
     case "PRESET":
       return "Preset";

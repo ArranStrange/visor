@@ -10,6 +10,14 @@ import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
   ADMIN_DELETE_DISCUSSION,
+  type AdminDeleteDiscussionMutationData,
+  type AdminDeleteDiscussionMutationVariables,
+  type FollowDiscussionMutationData,
+  type FollowDiscussionMutationVariables,
+  type GetDiscussionsQueryData,
+  type GetDiscussionsQueryVariables,
+  type UnfollowDiscussionMutationData,
+  type UnfollowDiscussionMutationVariables,
 } from "../../graphql/discussions";
 import DiscussionFiltersComponent from "./DiscussionFilters";
 import DiscussionCard from "./DiscussionCard";
@@ -37,7 +45,10 @@ const DiscussionList: React.FC = () => {
     return () => clearTimeout(timer);
   }, [filters.search]);
 
-  const { loading, error, data, refetch } = useQuery(GET_DISCUSSIONS, {
+  const { loading, error, data, refetch } = useQuery<
+    GetDiscussionsQueryData,
+    GetDiscussionsQueryVariables
+  >(GET_DISCUSSIONS, {
     variables: {
       search: searchDebounced || undefined,
       type: filters.type !== "all" ? filters.type : undefined,
@@ -46,7 +57,10 @@ const DiscussionList: React.FC = () => {
     },
   });
 
-  const [followDiscussion] = useMutation(FOLLOW_DISCUSSION, {
+  const [followDiscussion] = useMutation<
+    FollowDiscussionMutationData,
+    FollowDiscussionMutationVariables
+  >(FOLLOW_DISCUSSION, {
     refetchQueries: [
       {
         query: GET_DISCUSSIONS,
@@ -60,7 +74,10 @@ const DiscussionList: React.FC = () => {
     ],
   });
 
-  const [unfollowDiscussion] = useMutation(UNFOLLOW_DISCUSSION, {
+  const [unfollowDiscussion] = useMutation<
+    UnfollowDiscussionMutationData,
+    UnfollowDiscussionMutationVariables
+  >(UNFOLLOW_DISCUSSION, {
     refetchQueries: [
       {
         query: GET_DISCUSSIONS,
@@ -74,7 +91,10 @@ const DiscussionList: React.FC = () => {
     ],
   });
 
-  const [adminDeleteDiscussion] = useMutation(ADMIN_DELETE_DISCUSSION, {
+  const [adminDeleteDiscussion] = useMutation<
+    AdminDeleteDiscussionMutationData,
+    AdminDeleteDiscussionMutationVariables
+  >(ADMIN_DELETE_DISCUSSION, {
     refetchQueries: [
       {
         query: GET_DISCUSSIONS,
@@ -119,11 +139,14 @@ const DiscussionList: React.FC = () => {
   };
 
   const handleTypeChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, type: value as any }));
+    setFilters((prev) => ({
+      ...prev,
+      type: value as DiscussionFiltersType["type"],
+    }));
   };
 
   const handleSortChange = (value: string) => {
-    setFilters((prev) => ({ ...prev, sortBy: value as any }));
+    setFilters((prev) => ({ ...prev, sortBy: value }));
   };
 
   const handleClearSearch = () => {

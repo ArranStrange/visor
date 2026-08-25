@@ -1,13 +1,9 @@
 import React from "react";
 import { List, ListItem, ListItemText, Typography } from "@mui/material";
-
-interface Preset {
-  id: string;
-  title: string;
-}
+import type { PresetSummary } from "../../types/graphql";
 
 interface CurrentPresetsListProps {
-  presets: Preset[];
+  presets: PresetSummary[];
 }
 
 const CurrentPresetsList: React.FC<CurrentPresetsListProps> = ({ presets }) => {

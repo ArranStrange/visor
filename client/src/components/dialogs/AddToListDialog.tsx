@@ -21,6 +21,19 @@ import {
   GET_USER_LISTS_FOR_ADD_DIALOG as GET_USER_LISTS,
   ADD_TO_LIST,
 } from "../../graphql/lists";
+import { UserList } from "../../types/lists";
+
+interface AddToListItem extends UserList {
+  owner?: { id: string };
+}
+
+interface GetUserListsData {
+  getUserLists?: AddToListItem[] | null;
+}
+
+interface GetUserListsVariables {
+  userId?: string;
+}
 
 interface AddToListDialogProps {
   open: boolean;
@@ -43,7 +56,10 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { loading, data, refetch } = useQuery(GET_USER_LISTS, {
+  const { loading, data, refetch } = useQuery<
+    GetUserListsData,
+    GetUserListsVariables
+  >(GET_USER_LISTS, {
     variables: {
       userId: currentUser?.id,
     },
@@ -55,7 +71,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
   });
 
   const [addToList] = useMutation(ADD_TO_LIST, {
-    onCompleted: (data) => {
+    onCompleted: () => {
       setSuccess("Added to list successfully!");
 
       refetch();
@@ -91,7 +107,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
         throw new Error("You must be logged in to add items to a list");
       }
 
-      const result = await addToList({
+      await addToList({
         variables: {
           listId,
           presetIds: presetId ? [presetId] : [],
@@ -110,12 +126,10 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
   };
 
   const lists = data?.getUserLists || [];
-  const userLists = lists.filter(
-    (list: any) => list.owner?.id === currentUser?.id
-  );
+  const userLists = lists.filter((list) => list.owner?.id === currentUser?.id);
   const uniqueLists = userLists.filter(
-    (list: any, index: any, self: any) =>
-      index === self.findIndex((l: any) => l.id === list.id)
+    (list, index, self) =>
+      index === self.findIndex((candidate) => candidate.id === list.id)
   );
 
   return (
@@ -151,7 +165,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
           </Box>
         ) : (
           <List>
-            {uniqueLists.map((list: any) => (
+            {uniqueLists.map((list) => (
               <ListItem key={list.id} disablePadding>
                 <ListItemButton onClick={() => handleAddToList(list.id)}>
                   <ListItemText
