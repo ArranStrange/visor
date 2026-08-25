@@ -20,6 +20,8 @@ declare module "@mui/material/styles" {
     whiteBorder: string;
     /** 90% black — near-solid hover fill for floating controls. */
     scrimSolid: string;
+    /** Eased bottom-up gradient — holds text over photography. */
+    scrimRamp: string;
   }
 
   interface SurfacePalette {

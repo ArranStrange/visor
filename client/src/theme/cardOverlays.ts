@@ -40,8 +40,7 @@ export const overlayTagsContainerStyles: SxProps<Theme> = {
   left: 0,
   right: 0,
   p: 1.5,
-  background: (theme) =>
-    `linear-gradient(to top, ${theme.palette.overlay.scrimHeavy} 0%, transparent 100%)`,
+  background: (theme) => theme.palette.overlay.scrimRamp,
   opacity: 0,
   transition: "opacity 0.3s ease-in-out",
   display: "flex",

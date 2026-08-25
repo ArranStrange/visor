@@ -26,6 +26,11 @@ const overlay = {
   scrimStrong: "rgba(0, 0, 0, 0.5)",
   scrimHeavy: "rgba(0, 0, 0, 0.7)",
   scrimSolid: "rgba(0, 0, 0, 0.9)",
+  // Eased multi-stop ramp for text over photography. A single-stop
+  // linear ramp bands visibly and lets bright image areas eat the type;
+  // the eased curve holds the text without a text-shadow crutch.
+  scrimRamp:
+    "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.62) 14%, rgba(0,0,0,0.30) 32%, rgba(0,0,0,0.10) 52%, rgba(0,0,0,0) 70%)",
   white: "rgba(255, 255, 255, 0.9)",
   whiteSoft: "rgba(255, 255, 255, 0.7)",
   whiteHover: "rgba(255, 255, 255, 0.2)",
