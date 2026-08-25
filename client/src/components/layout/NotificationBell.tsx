@@ -14,15 +14,13 @@ import {
   Fade,
   Backdrop,
 } from "@mui/material";
-import {
-  Notifications as NotificationsIcon,
-  Chat as ChatIcon,
-  Person as PersonIcon,
-  Reply as ReplyIcon,
-  ThumbUp as LikeIcon,
-  AlternateEmail as MentionIcon,
-  Close as CloseIcon,
-} from "@mui/icons-material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
+import ChatIcon from "@mui/icons-material/Chat";
+import PersonIcon from "@mui/icons-material/Person";
+import ReplyIcon from "@mui/icons-material/Reply";
+import LikeIcon from "@mui/icons-material/ThumbUp";
+import MentionIcon from "@mui/icons-material/AlternateEmail";
+import CloseIcon from "@mui/icons-material/Close";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useNotifications } from "../../context/NotificationContext";

@@ -1,11 +1,9 @@
 import React from "react";
-import {
-  Chat as ChatIcon,
-  Person as PersonIcon,
-  Reply as ReplyIcon,
-  ThumbUp as LikeIcon,
-  AlternateEmail as MentionIcon,
-} from "@mui/icons-material";
+import ChatIcon from "@mui/icons-material/Chat";
+import PersonIcon from "@mui/icons-material/Person";
+import ReplyIcon from "@mui/icons-material/Reply";
+import LikeIcon from "@mui/icons-material/ThumbUp";
+import MentionIcon from "@mui/icons-material/AlternateEmail";
 import { NotificationType } from "../../types/notifications";
 
 export function getNotificationIcon(

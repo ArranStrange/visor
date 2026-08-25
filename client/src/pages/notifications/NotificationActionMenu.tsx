@@ -1,9 +1,7 @@
 import React from "react";
 import { Menu, MenuItem } from "@mui/material";
-import {
-  Delete as DeleteIcon,
-  MarkEmailRead as MarkReadIcon,
-} from "@mui/icons-material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import MarkReadIcon from "@mui/icons-material/MarkEmailRead";
 import { Notification } from "../../types/notifications";
 
 interface NotificationActionMenuProps {

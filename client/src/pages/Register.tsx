@@ -14,7 +14,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "../graphql/users";
-import { Email } from "@mui/icons-material";
+import Email from "@mui/icons-material/Email";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const Register: React.FC = () => {

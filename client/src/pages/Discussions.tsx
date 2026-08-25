@@ -1,6 +1,6 @@
 import React from "react";
 import { Container, Box, Typography, Button } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
+import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import DiscussionList from "../components/discussions/DiscussionList";
 

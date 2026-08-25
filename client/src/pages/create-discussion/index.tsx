@@ -10,10 +10,8 @@ import {
   Breadcrumbs,
   Link,
 } from "@mui/material";
-import {
-  NavigateNext as NavigateNextIcon,
-  Add as AddIcon,
-} from "@mui/icons-material";
+import NavigateNextIcon from "@mui/icons-material/NavigateNext";
+import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import {

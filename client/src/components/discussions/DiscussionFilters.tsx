@@ -10,10 +10,8 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import {
-  Search as SearchIcon,
-  FilterList as FilterIcon,
-} from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
+import FilterIcon from "@mui/icons-material/FilterList";
 import { DiscussionFilters as DiscussionFiltersType } from "../../types/discussionFilters";
 import { getSortIcon } from "../../utils/discussionIcons";
 

@@ -16,12 +16,10 @@ import {
   TextField,
   useTheme,
 } from "@mui/material";
-import {
-  MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Reply as ReplyIcon,
-} from "@mui/icons-material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import ReplyIcon from "@mui/icons-material/Reply";
 import { formatDistanceToNow } from "date-fns";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";

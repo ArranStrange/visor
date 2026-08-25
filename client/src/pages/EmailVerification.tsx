@@ -12,7 +12,9 @@ import {
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from "../graphql/users";
-import { CheckCircle, Email, Error } from "@mui/icons-material";
+import CheckCircle from "@mui/icons-material/CheckCircle";
+import Email from "@mui/icons-material/Email";
+import Error from "@mui/icons-material/Error";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const EmailVerification: React.FC = () => {

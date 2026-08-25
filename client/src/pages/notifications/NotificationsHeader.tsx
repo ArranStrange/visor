@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Typography, Button } from "@mui/material";
-import { MarkEmailRead as MarkReadIcon } from "@mui/icons-material";
+import MarkReadIcon from "@mui/icons-material/MarkEmailRead";
 
 interface NotificationsHeaderProps {
   unreadCount: number;

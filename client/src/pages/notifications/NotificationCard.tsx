@@ -8,7 +8,7 @@ import {
   Chip,
   IconButton,
 } from "@mui/material";
-import { MoreVert as MoreVertIcon } from "@mui/icons-material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatDistanceToNow } from "date-fns";
 import { Notification } from "../../types/notifications";
 import {
