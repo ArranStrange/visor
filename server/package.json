@@ -7,6 +7,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "seed": "node seed/seedData.js",
+    "backfill:sensors": "node scripts/backfill-compatible-sensors.js",
     "lint": "eslint .",
     "deploy": "npm run build && firebase deploy",
     "test": "node --test \"**/*.test.js\""
