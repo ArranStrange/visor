@@ -14,6 +14,8 @@ const filmSimSchema = new Schema(
     },
 
     settings: {
+      // null encodes DR-Auto (the client form's "Auto" option); the
+      // default only applies when the field is absent entirely. See #102.
       dynamicRange: { type: Number, default: 100 },
       highlight: { type: Number, default: 0 },
       shadow: { type: Number, default: 0 },

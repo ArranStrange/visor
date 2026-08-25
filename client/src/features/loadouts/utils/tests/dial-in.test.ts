@@ -213,11 +213,23 @@ describe("buildDialInSteps", () => {
     expect(sim?.value).toBe("CLASSIC CHROME");
   });
 
-  it("DR200/DR400 steps carry their ISO floor", () => {
+  it("DR200/DR400 steps carry a body-agnostic ISO-floor note", () => {
     const plan = buildDialInSteps(fullRecipe, "xt5", 1);
     expect(plan.steps.find((s) => s.key === "dynamicRange")?.hint).toMatch(
-      /ISO 640/
+      /4× base/
     );
+  });
+
+  it("dynamicRange null is DR-Auto — a choice, not an absence (#102)", () => {
+    const plan = buildDialInSteps(
+      { ...fullRecipe, dynamicRange: null },
+      "xt5",
+      1
+    );
+    const dr = plan.steps.find((s) => s.key === "dynamicRange");
+    expect(dr?.value).toBe("DR-Auto");
+    // Specified: no "recipe doesn't specify" hint.
+    expect(dr?.hint).toBeUndefined();
   });
 
   it("WB and shift form one combined step", () => {
