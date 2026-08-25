@@ -1,3 +1,4 @@
+const { ApolloError } = require("apollo-server-express");
 const UserList = require("../../../models/UserList");
 const Preset = require("../../../models/Preset");
 const FilmSim = require("../../../models/FilmSim");
@@ -30,9 +31,12 @@ module.exports = {
         });
 
       return lists.map(serializeUserListSummary);
-    } catch (e) {
-      logger.error("Error fetching featured lists", e);
-      throw new Error("Failed to fetch featured lists");
+    } catch (error) {
+      logger.error("Error fetching featured lists", error);
+      throw new ApolloError(
+        "Failed to fetch featured lists",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -123,7 +127,10 @@ module.exports = {
       };
     } catch (error) {
       logger.error("Error browsing user lists", error);
-      throw new Error("Failed to browse user lists: " + error.message);
+      throw new ApolloError(
+        "Failed to browse user lists",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -175,7 +182,10 @@ module.exports = {
       });
     } catch (error) {
       logger.error("Error getting user lists", error);
-      throw new Error("Failed to get user lists: " + error.message);
+      throw new ApolloError(
+        "Failed to get user lists",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -201,13 +211,22 @@ module.exports = {
         .populate("owner", "id username");
 
       if (!list) {
-        throw new Error("List not found");
+        throw new ApolloError("List not found", "NOT_FOUND");
       }
 
       return serializeUserListDetail(list);
     } catch (error) {
       logger.error("Error getting user list", error);
-      throw new Error("Failed to get user list: " + error.message);
+      if (
+        error instanceof ApolloError &&
+        error.extensions.code === "NOT_FOUND"
+      ) {
+        throw error;
+      }
+      throw new ApolloError(
+        "Failed to get user list",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 };

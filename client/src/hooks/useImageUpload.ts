@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { uploadToCloudinary } from "../utils/cloudinary";
+import { getErrorMessage } from "../utils/errorHandling";
 
 interface UploadResult {
   publicId: string;
@@ -88,9 +89,10 @@ export const useImageUpload = (options: UseImageUploadOptions = {}) => {
       onSuccess(validFiles, uploadedImages);
     } catch (error) {
       setFileError(
-        `Failed to upload images to Cloudinary: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
+        `Failed to upload images to Cloudinary: ${getErrorMessage(
+          error,
+          "Unknown error"
+        )}`
       );
     } finally {
       setIsUploading(false);

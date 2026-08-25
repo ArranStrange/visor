@@ -13,6 +13,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from "../graphql/users";
 import { CheckCircle, Email, Error } from "@mui/icons-material";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const EmailVerification: React.FC = () => {
   const navigate = useNavigate();
@@ -45,7 +46,9 @@ const EmailVerification: React.FC = () => {
     },
     onError: (error) => {
       setVerificationStatus("error");
-      setMessage(error.message || "Verification failed. Please try again.");
+      setMessage(
+        getErrorMessage(error, "Verification failed. Please try again.")
+      );
     },
   });
 
@@ -64,7 +67,9 @@ const EmailVerification: React.FC = () => {
         }
       },
       onError: (error) => {
-        setMessage(error.message || "Failed to resend verification email");
+        setMessage(
+          getErrorMessage(error, "Failed to resend verification email")
+        );
       },
     }
   );

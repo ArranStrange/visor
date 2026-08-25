@@ -8,6 +8,7 @@ import DiscussionHeader from "./DiscussionHeader";
 import DiscussionComposer from "./DiscussionComposer";
 import DiscussionPosts from "./DiscussionPosts";
 import DiscussionThreadEmptyState from "./DiscussionThreadEmptyState";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface DiscussionThreadProps {
   itemId: string;
@@ -64,7 +65,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
   if (discussionError) {
     return (
       <Alert severity="error" sx={{ mb: 2 }}>
-        Error loading discussion: {discussionError.message}
+        Error loading discussion: {getErrorMessage(discussionError)}
       </Alert>
     );
   }

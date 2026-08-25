@@ -16,6 +16,7 @@ import ListSummary from "./ListSummary";
 import ListEditFields from "./ListEditFields";
 import ListDetailLoading from "./ListDetailLoading";
 import ListDetailLoadError from "./ListDetailLoadError";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface ListFormData {
   name: string;
@@ -55,12 +56,12 @@ const ListDetail: React.FC = () => {
 
   const [updateList] = useMutation(UPDATE_LIST, {
     onCompleted: handleUpdateCompleted,
-    onError: (mutationError) => setError(mutationError.message),
+    onError: (mutationError) => setError(getErrorMessage(mutationError)),
   });
 
   const [deleteList, { loading: deletingList }] = useMutation(DELETE_LIST, {
     onCompleted: () => navigate("/lists"),
-    onError: (mutationError) => setError(mutationError.message),
+    onError: (mutationError) => setError(getErrorMessage(mutationError)),
   });
 
   const isInitialLoad = (listLoading && !listData) || listContent.loading;
@@ -72,7 +73,7 @@ const ListDetail: React.FC = () => {
   if (queryError || listContent.error) {
     return (
       <ListDetailLoadError
-        message={queryError?.message || listContent.error?.message}
+        message={getErrorMessage(queryError ?? listContent.error)}
       />
     );
   }

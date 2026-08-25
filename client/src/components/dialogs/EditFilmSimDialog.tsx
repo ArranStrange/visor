@@ -30,6 +30,7 @@ import {
 
 import { FilmSimData, useFilmSimForm } from "../../hooks/useFilmSimForm";
 import FilmSimSettingsForm from "../forms/FilmSimSettingsForm";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface EditFilmSimDialogProps {
   open: boolean;
@@ -105,7 +106,7 @@ const EditFilmSimDialog: React.FC<EditFilmSimDialogProps> = ({
       <DialogContent sx={{ overflowY: "auto", pb: 2 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
-            Error updating film simulation: {error.message}
+            Error updating film simulation: {getErrorMessage(error)}
           </Alert>
         )}
         <Box component="form" sx={{ mt: 2 }}>

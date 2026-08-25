@@ -30,6 +30,7 @@ import FilmSimRecommendedPresets from "../components/filmsims/FilmSimRecommended
 import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
 import { useFilmSimOperations } from "../hooks/useFilmSimOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const FilmSimDetails: React.FC = () => {
   const { slug } = useParams();
@@ -107,7 +108,7 @@ const FilmSimDetails: React.FC = () => {
     return (
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Alert severity="error">
-          Error loading film simulation: {error.message}
+          Error loading film simulation: {getErrorMessage(error)}
         </Alert>
       </Container>
     );

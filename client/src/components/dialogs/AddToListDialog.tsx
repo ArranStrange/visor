@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getErrorMessage } from "../../utils/errorHandling";
 import { useQuery, useMutation } from "@apollo/client";
 import {
   Dialog,
@@ -81,14 +82,8 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
       }, 1500);
     },
     onError: (error) => {
-      console.error("Mutation error details:", {
-        message: error.message,
-        networkError: error.networkError,
-        graphQLErrors: error.graphQLErrors,
-        extraInfo: error.extraInfo,
-        currentUser: currentUser,
-      });
-      setError(error.message);
+      console.error("Mutation error:", getErrorMessage(error));
+      setError(getErrorMessage(error));
       setTimeout(() => setError(null), 3000);
     },
   });
@@ -116,7 +111,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
       });
     } catch (err) {
       console.error("Error adding to list:", err);
-      setError(err instanceof Error ? err.message : "Failed to add to list");
+      setError(getErrorMessage(err, "Failed to add to list"));
     }
   };
 

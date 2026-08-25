@@ -20,6 +20,7 @@ import NotificationFilters from "./NotificationFilters";
 import NotificationCard from "./NotificationCard";
 import EmptyNotificationsState from "./EmptyNotificationsState";
 import NotificationActionMenu from "./NotificationActionMenu";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 const Notifications: React.FC = () => {
   const navigate = useNavigate();
@@ -77,7 +78,7 @@ const Notifications: React.FC = () => {
       <Container maxWidth="lg">
         <Box py={4}>
           <Alert severity="error">
-            Error loading notifications: {error.message}
+            Error loading notifications: {getErrorMessage(error)}
           </Alert>
         </Box>
       </Container>

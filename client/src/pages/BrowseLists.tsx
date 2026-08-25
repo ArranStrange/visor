@@ -15,6 +15,7 @@ import ListRow from "../components/lists/ListRow";
 import TagsList from "../components/ui/TagsList";
 import SearchIcon from "@mui/icons-material/Search";
 import { useTags } from "../context/TagContext";
+import { getErrorMessage } from "../utils/errorHandling";
 
 interface UserList {
   id: string;
@@ -169,7 +170,7 @@ const BrowseLists: React.FC = () => {
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
-          Error loading lists: {error.message}
+          Error loading lists: {getErrorMessage(error)}
         </Alert>
       )}
 

@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
 import { CREATE_LIST } from "../graphql/lists";
+import { getErrorMessage } from "../utils/errorHandling";
 
 const CreateList: React.FC = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const CreateList: React.FC = () => {
       navigate(`/list/${data.createUserList.id}`);
     },
     onError: (error) => {
-      setError(error.message);
+      setError(getErrorMessage(error));
       setLoading(false);
     },
   });

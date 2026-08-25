@@ -1,3 +1,4 @@
+const { ApolloError } = require("apollo-server-express");
 const {
   AuthenticationError,
   ValidationError,
@@ -47,7 +48,11 @@ module.exports = {
       if (error instanceof AuthenticationError) {
         throw error;
       }
-      throw new Error("An error occurred during login");
+      logger.error("Login error", error);
+      throw new ApolloError(
+        "An error occurred during login",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -122,7 +127,10 @@ module.exports = {
         throw error;
       }
       logger.error("Registration error", error);
-      throw new Error("An error occurred during registration");
+      throw new ApolloError(
+        "An error occurred during registration",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -235,7 +243,7 @@ module.exports = {
       );
 
       if (!updatedUser) {
-        throw new Error("User not found");
+        throw new AuthenticationError("User not found");
       }
 
       const userObj = updatedUser.toObject();
@@ -245,7 +253,13 @@ module.exports = {
       };
     } catch (error) {
       logger.error("Error updating profile", error);
-      throw new Error("Failed to update profile");
+      if (error instanceof AuthenticationError) {
+        throw error;
+      }
+      throw new ApolloError(
+        "Failed to update profile",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 
@@ -262,13 +276,19 @@ module.exports = {
       );
 
       if (!updatedUser) {
-        throw new Error("User not found");
+        throw new AuthenticationError("User not found");
       }
 
       return avatarPath;
     } catch (error) {
       logger.error("Error uploading avatar", error);
-      throw new Error("Failed to upload avatar");
+      if (error instanceof AuthenticationError) {
+        throw error;
+      }
+      throw new ApolloError(
+        "Failed to upload avatar",
+        "INTERNAL_SERVER_ERROR"
+      );
     }
   },
 };

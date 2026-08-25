@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@apollo/client";
+import { ApolloError, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import {
   DELETE_PRESET,
@@ -16,6 +16,7 @@ import { ParsedSettings } from "../types/xmpSettings";
 import { stripTypename } from "../utils/presetDetailUtils";
 import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
 import type { PresetDetail } from "../types/graphql";
+import { getErrorMessage } from "../utils/errorHandling";
 
 interface EditFormData {
   title: string;
@@ -177,7 +178,7 @@ export const usePresetOperations = (preset: PresetDetail) => {
       // errorPolicy "all" means GraphQL errors resolve instead of throwing —
       // without this check a failed save closed the dialog as a "success".
       if (result.errors?.length) {
-        throw new Error(result.errors[0].message);
+        throw new ApolloError({ graphQLErrors: result.errors });
       }
       if (!result.data?.updatePreset) {
         throw new Error("Update returned no data");
@@ -191,8 +192,8 @@ export const usePresetOperations = (preset: PresetDetail) => {
     } catch (err) {
       console.error("Error updating preset:", err);
       setSaveError(
-        err instanceof Error && err.message
-          ? `Failed to update preset: ${err.message}`
+        err instanceof Error
+          ? `Failed to update preset: ${getErrorMessage(err)}`
           : "An error occurred while updating the preset. Please try again later."
       );
     }

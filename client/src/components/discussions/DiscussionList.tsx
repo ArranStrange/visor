@@ -24,6 +24,7 @@ import DiscussionCard from "./DiscussionCard";
 import DiscussionEmptyState from "./DiscussionEmptyState";
 import DiscussionErrorState from "./DiscussionErrorState";
 import DiscussionSearchSummary from "./DiscussionSearchSummary";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 const DiscussionList: React.FC = () => {
   const navigate = useNavigate();
@@ -170,11 +171,7 @@ const DiscussionList: React.FC = () => {
   }
 
   if (error) {
-    console.error("DiscussionList error details:", {
-      message: error.message,
-      graphQLErrors: error.graphQLErrors,
-      networkError: error.networkError,
-    });
+    console.error("DiscussionList error:", getErrorMessage(error));
 
     return (
       <DiscussionErrorState

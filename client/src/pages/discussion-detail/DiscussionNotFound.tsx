@@ -1,6 +1,7 @@
 import React from "react";
 import { Container, Box, Typography, Alert } from "@mui/material";
 import { ApolloError } from "@apollo/client";
+import { getErrorMessage } from "../../utils/errorHandling";
 
 interface DiscussionNotFoundProps {
   discussionId: string;
@@ -21,7 +22,7 @@ const DiscussionNotFound: React.FC<DiscussionNotFoundProps> = ({
       </Typography>
       {error && (
         <Alert severity="error" sx={{ mt: 2 }}>
-          Error: {error.message || "Unknown error"}
+          Error: {getErrorMessage(error, "Unknown error")}
         </Alert>
       )}
     </Box>
