@@ -7,7 +7,7 @@ import ContentGridLoader from "../../components/ui/ContentGridLoader";
 import DeleteContentDialog from "../../components/content/DeleteContentDialog";
 import { useAuth } from "../../context/AuthContext";
 import { useContentType } from "../../context/ContentTypeFilter";
-import { GET_LIST, UPDATE_LIST, DELETE_LIST } from "../../graphql/lists";
+import { GET_LIST, UPDATE_LIST, DELETE_LIST } from "@/features/lists/graphql/lists";
 import { buildCombinedContent, GetListData } from "./buildCombinedContent";
 import { useListContent } from "./use-list-content";
 import ListHeaderView from "./ListHeaderView";

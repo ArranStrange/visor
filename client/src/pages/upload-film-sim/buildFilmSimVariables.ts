@@ -1,4 +1,4 @@
-import { FilmSimFormState } from "../../types/filmSim";
+import { FilmSimFormState } from "@/features/film-sims/types/filmSim";
 
 export function buildFilmSimVariables(formState: FilmSimFormState) {
   return {

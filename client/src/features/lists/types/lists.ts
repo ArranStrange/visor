@@ -1,0 +1,13 @@
+import type { FilmSimSummary, PresetSummary } from "@/types/graphql";
+
+export interface UserList {
+  id: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  presets: PresetSummary[];
+  filmSims: FilmSimSummary[];
+  collaborators?: string[];
+}
+
+export type ListType = "favourite" | "custom";

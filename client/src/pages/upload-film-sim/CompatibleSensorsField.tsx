@@ -1,6 +1,6 @@
 import React from "react";
 import { Autocomplete, TextField } from "@mui/material";
-import { SENSOR_LABELS } from "../../constants/fujifilmSensors";
+import { SENSOR_LABELS } from "@/features/film-sims/utils/fujifilmSensors";
 
 interface CompatibleSensorsFieldProps {
   value: string[];

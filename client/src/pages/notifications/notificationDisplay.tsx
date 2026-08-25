@@ -4,7 +4,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import ReplyIcon from "@mui/icons-material/Reply";
 import LikeIcon from "@mui/icons-material/ThumbUp";
 import MentionIcon from "@mui/icons-material/AlternateEmail";
-import { NotificationType } from "../../types/notifications";
+import { NotificationType } from "@/features/notifications/types/notifications";
 
 export function getNotificationIcon(
   type: NotificationType

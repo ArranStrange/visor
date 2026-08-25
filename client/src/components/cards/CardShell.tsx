@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@mui/material";
 import { SystemStyleObject, Theme } from "@mui/system";
 import { useNavigate } from "react-router-dom";
-import { useMobileDetection } from "../../hooks/useMobileDetection";
+import { useMobileDetection } from "@/hooks/useMobileDetection";
 import { getCardHoverStyles } from "../../theme/cardOverlays";
 
 export interface CardShellRenderState {

@@ -13,27 +13,27 @@ import {
   GET_PRESET_BY_SLUG,
   type GetPresetQueryData,
   type GetPresetQueryVariables,
-} from "../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
-import { downloadXMP, type PresetData } from "../utils/xmp-compiler";
-import { convertPresetSettingsToParsedSettings } from "../utils/presetDetailUtils";
-import { normalizeToneCurve } from "../utils/xmp-parser";
-import AddToListButton from "../components/ui/AddToListButton";
-import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
-import DiscussionThread from "../components/discussions/DiscussionThread";
+import { downloadXMP, type PresetData } from "@/features/presets/utils/xmp-compiler";
+import { convertPresetSettingsToParsedSettings } from "@/features/presets/utils/presetDetailUtils";
+import { normalizeToneCurve } from "@/features/settings/utils/xmp-parser";
+import AddToListButton from "@/features/lists/components/AddToListButton";
+import XmpSettingsDisplay from "@/features/settings/components/XmpSettingsDisplay";
+import DiscussionThread from "@/features/discussions/components/DiscussionThread";
 import DetailHeader from "../components/content/DetailHeader";
 import OwnerMenu from "../components/content/OwnerMenu";
 import DeleteContentDialog from "../components/content/DeleteContentDialog";
-import PresetDescription from "../components/presets/PresetDescription";
-import PresetBeforeAfter from "../components/presets/PresetBeforeAfter";
-import PresetSampleImages from "../components/presets/PresetSampleImages";
-import PresetActions from "../components/presets/PresetActions";
-import PresetCreatorNotes from "../components/presets/PresetCreatorNotes";
-import EditPresetDialog from "../components/presets/dialogs/EditPresetDialog";
-import AddPhotoDialog from "../components/presets/dialogs/AddPhotoDialog";
-import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
-import { usePresetOperations } from "../hooks/usePresetOperations";
+import PresetDescription from "@/features/presets/components/PresetDescription";
+import PresetBeforeAfter from "@/features/presets/components/PresetBeforeAfter";
+import PresetSampleImages from "@/features/presets/components/PresetSampleImages";
+import PresetActions from "@/features/presets/components/PresetActions";
+import PresetCreatorNotes from "@/features/presets/components/PresetCreatorNotes";
+import EditPresetDialog from "@/features/presets/components/dialogs/EditPresetDialog";
+import AddPhotoDialog from "@/features/presets/components/dialogs/AddPhotoDialog";
+import FullscreenImageDialog from "@/features/presets/components/dialogs/FullscreenImageDialog";
+import { usePresetOperations } from "@/features/presets/hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
 import { getErrorMessage } from "../utils/errorHandling";
 

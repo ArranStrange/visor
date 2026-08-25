@@ -4,19 +4,19 @@ import { ApolloError, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-import { useImageUpload } from "../../hooks/useImageUpload";
+import { useImageUpload } from "@/features/film-sims/hooks/useImageUpload";
 
 import UploadFilmSimForm from "./UploadFilmSimForm";
 import { buildFilmSimVariables } from "./buildFilmSimVariables";
 
-import { FilmSimFormState, FilmSimSettings } from "../../types/filmSim";
-import { FilmSimFormField, FilmSimFormValue } from "../../hooks/useFilmSimForm";
-import { DEFAULT_FILM_SIM_SETTINGS } from "../../constants/filmSimConfig";
+import { FilmSimFormState, FilmSimSettings } from "@/features/film-sims/types/filmSim";
+import { FilmSimFormField, FilmSimFormValue } from "@/features/film-sims/hooks/useFilmSimForm";
+import { DEFAULT_FILM_SIM_SETTINGS } from "@/features/film-sims/utils/filmSimConfig";
 import {
   UPLOAD_FILM_SIM,
   type UploadFilmSimMutationData,
   type UploadFilmSimMutationVariables,
-} from "../../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 
 const UploadFilmSim: React.FC = () => {
   const { user } = useAuth();

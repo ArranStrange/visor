@@ -2,7 +2,7 @@ import React from "react";
 import { Menu, MenuItem } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import MarkReadIcon from "@mui/icons-material/MarkEmailRead";
-import { Notification } from "../../types/notifications";
+import { Notification } from "@/features/notifications/types/notifications";
 
 interface NotificationActionMenuProps {
   anchorEl: HTMLElement | null;

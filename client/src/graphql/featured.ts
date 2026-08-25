@@ -5,7 +5,7 @@ import type {
   PresetSummary,
   UserSummary,
 } from "../types/graphql";
-import type { UserList } from "../types/lists";
+import type { UserList } from "@/features/lists/types/lists";
 
 export interface FeaturedPreset extends PresetSummary {
   notes?: string;

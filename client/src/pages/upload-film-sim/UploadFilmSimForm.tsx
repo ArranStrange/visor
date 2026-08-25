@@ -7,13 +7,13 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material";
-import FilmSimSettingsForm from "../../components/forms/FilmSimSettingsForm";
-import FilmSimTagsInput from "../../components/forms/FilmSimTagsInput";
+import FilmSimSettingsForm from "@/features/film-sims/components/FilmSimSettingsForm";
+import FilmSimTagsInput from "@/features/film-sims/components/FilmSimTagsInput";
 import ImageUpload from "../../components/media/ImageUpload";
 import CompatibleSensorsField from "./CompatibleSensorsField";
 import SensorWarningsList from "./SensorWarningsList";
-import { FilmSimFormState } from "../../types/filmSim";
-import type { FilmSimFormChangeHandler } from "../../hooks/useFilmSimForm";
+import { FilmSimFormState } from "@/features/film-sims/types/filmSim";
+import type { FilmSimFormChangeHandler } from "@/features/film-sims/hooks/useFilmSimForm";
 
 interface UploadFilmSimFormProps {
   formState: FilmSimFormState;

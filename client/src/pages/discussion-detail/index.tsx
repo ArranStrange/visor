@@ -16,8 +16,8 @@ import {
   type GetDiscussionQueryVariables,
   type UpdateReplyMutationData,
   type UpdateReplyMutationVariables,
-} from "../../graphql/discussions";
-import { useDiscussionOperations } from "../../hooks/useDiscussionOperations";
+} from "@/features/discussions/graphql/discussions";
+import { useDiscussionOperations } from "@/features/discussions/hooks/useDiscussionOperations";
 import DiscussionHeader from "./DiscussionHeader";
 import PostsSection from "./PostsSection";
 import DiscussionLoading from "./DiscussionLoading";

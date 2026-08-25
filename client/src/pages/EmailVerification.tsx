@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from "../graphql/users";
+import { VERIFY_EMAIL, RESEND_VERIFICATION_EMAIL } from "@/features/auth/graphql/users";
 import CheckCircle from "@mui/icons-material/CheckCircle";
 import Email from "@mui/icons-material/Email";
 import Error from "@mui/icons-material/Error";

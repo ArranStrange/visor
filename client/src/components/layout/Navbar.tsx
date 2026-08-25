@@ -24,7 +24,7 @@ import LoginIcon from "@mui/icons-material/Login";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
-import NotificationBell from "./NotificationBell";
+import NotificationBell from "@/features/notifications/components/NotificationBell";
 
 const NavBar: React.FC = () => {
   const theme = useTheme();

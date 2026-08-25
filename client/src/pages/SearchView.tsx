@@ -2,13 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Box, Chip, Container, InputBase, Divider } from "@mui/material";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { getSensorByLabel } from "../constants/fujifilmSensors";
+import { getSensorByLabel } from "@/features/film-sims/utils/fujifilmSensors";
 import {
   GET_ALL_FILMSIMS,
   type ListFilmSimsQueryData,
   type ListFilmSimsQueryVariables,
-} from "../graphql/filmSims";
-import SensorProfileCard from "../components/filmsims/SensorProfileCard";
+} from "@/features/film-sims/graphql/filmSims";
+import SensorProfileCard from "@/features/film-sims/components/SensorProfileCard";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";

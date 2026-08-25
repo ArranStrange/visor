@@ -12,23 +12,23 @@ import {
   GET_FILMSIM_BY_SLUG,
   type GetFilmSimQueryData,
   type GetFilmSimQueryVariables,
-} from "../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
-import AddToListButton from "../components/ui/AddToListButton";
-import DiscussionThread from "../components/discussions/DiscussionThread";
-import FilmSimCameraSettings from "../components/forms/FilmSimCameraSettings";
-import EditFilmSimDialog from "../components/dialogs/EditFilmSimDialog";
-import RecommendedPresetsManager from "../components/cards/RecommendedPresetsManager";
+import AddToListButton from "@/features/lists/components/AddToListButton";
+import DiscussionThread from "@/features/discussions/components/DiscussionThread";
+import FilmSimCameraSettings from "@/features/film-sims/components/FilmSimCameraSettings";
+import EditFilmSimDialog from "@/features/film-sims/components/EditFilmSimDialog";
+import RecommendedPresetsManager from "@/features/film-sims/components/RecommendedPresetsManager";
 import DetailHeader from "../components/content/DetailHeader";
 import OwnerMenu from "../components/content/OwnerMenu";
 import DeleteContentDialog from "../components/content/DeleteContentDialog";
-import FilmSimDescription from "../components/filmsims/FilmSimDescription";
-import FilmSimSampleImages from "../components/filmsims/FilmSimSampleImages";
-import FilmSimCreatorNotes from "../components/filmsims/FilmSimCreatorNotes";
-import FilmSimRecommendedPresets from "../components/filmsims/FilmSimRecommendedPresets";
-import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
-import { useFilmSimOperations } from "../hooks/useFilmSimOperations";
+import FilmSimDescription from "@/features/film-sims/components/FilmSimDescription";
+import FilmSimSampleImages from "@/features/film-sims/components/FilmSimSampleImages";
+import FilmSimCreatorNotes from "@/features/film-sims/components/FilmSimCreatorNotes";
+import FilmSimRecommendedPresets from "@/features/film-sims/components/FilmSimRecommendedPresets";
+import FullscreenImageDialog from "@/features/presets/components/dialogs/FullscreenImageDialog";
+import { useFilmSimOperations } from "@/features/film-sims/hooks/useFilmSimOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
 import { getErrorMessage } from "../utils/errorHandling";
 

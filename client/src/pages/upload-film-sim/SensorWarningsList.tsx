@@ -1,6 +1,6 @@
 import React from "react";
-import { getSensorCompatibilityWarnings } from "../../constants/fujifilmSensors";
-import { FilmSimSettings } from "../../types/filmSim";
+import { getSensorCompatibilityWarnings } from "@/features/film-sims/utils/fujifilmSensors";
+import { FilmSimSettings } from "@/features/film-sims/types/filmSim";
 import SensorWarning from "./SensorWarning";
 
 interface SensorWarningsListProps {

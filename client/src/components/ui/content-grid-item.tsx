@@ -1,6 +1,6 @@
 import React from "react";
-import PresetCard from "../cards/PresetCard";
-import FilmSimCard from "../cards/FilmSimCard";
+import PresetCard from "@/features/presets/components/PresetCard";
+import FilmSimCard from "@/features/film-sims/components/FilmSimCard";
 import BuyMeACoffeeCard from "./BuyMeACoffeeCard";
 import { GridContentData, GridContentItem } from "./content-grid-data";
 
