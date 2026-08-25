@@ -12,12 +12,14 @@ const LOADOUT_FIELDS = gql`
     customBanks
     isActive
     isStale
+    staleReason
     keyedInAt
     slotsChangedAt
     slots {
       index
       filmSimName
       note
+      sourceChanged
       filmSim {
         id
         name

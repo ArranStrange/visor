@@ -12,6 +12,8 @@ module.exports = gql`
     "Name snapshot from assignment time — survives recipe deletion"
     filmSimName: String
     note: String
+    "The recipe was edited after this slot was keyed into the camera"
+    sourceChanged: Boolean!
   }
 
   type Loadout {
@@ -26,12 +28,21 @@ module.exports = gql`
     customBanks: Int!
     slots: [LoadoutSlot!]!
     isActive: Boolean!
-    "Derived: slots changed since the last mark-as-keyed-in"
+    "Derived: the camera no longer matches this loadout"
     isStale: Boolean!
+    "Why the camera no longer matches; null when current"
+    staleReason: LoadoutStaleReason
     keyedInAt: String
     slotsChangedAt: String
     createdAt: String
     updatedAt: String
+  }
+
+  enum LoadoutStaleReason {
+    "You edited the loadout after keying it in"
+    SLOTS_CHANGED
+    "A recipe was edited by its author after you keyed it in"
+    SOURCE_CHANGED
   }
 
   """
@@ -41,6 +52,8 @@ module.exports = gql`
     this keeps a dangling filmSimName snapshot alive when the client echoes
     back a slot whose recipe was deleted.
   - index omitted from the array entirely: the bank becomes empty.
+  - note omitted on a preserved bank: the existing note is kept (there is
+    currently no way to clear a note without reassigning the bank).
   """
   input LoadoutSlotInput {
     index: Int!

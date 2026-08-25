@@ -19,6 +19,8 @@ export interface LoadoutSlot {
   /** Name snapshot — survives recipe deletion. */
   filmSimName: string | null;
   note: string | null;
+  /** The recipe was edited after this slot was keyed into the camera. */
+  sourceChanged: boolean;
 }
 
 export interface Loadout {
@@ -30,6 +32,7 @@ export interface Loadout {
   slots: LoadoutSlot[];
   isActive: boolean;
   isStale: boolean;
+  staleReason: "SLOTS_CHANGED" | "SOURCE_CHANGED" | null;
   keyedInAt: string | null;
   slotsChangedAt: string | null;
 }

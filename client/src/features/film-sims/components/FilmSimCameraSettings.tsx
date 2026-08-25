@@ -40,7 +40,8 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
     {
       key: "dynamicRange",
       label: "Dynamic Range",
-      value: settings?.dynamicRange,
+      // null encodes DR-Auto (the form's "Auto" option), not absence (#102).
+      value: settings?.dynamicRange === null ? "Auto" : settings?.dynamicRange,
     },
     {
       key: "highlight",

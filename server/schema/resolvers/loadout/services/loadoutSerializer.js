@@ -1,7 +1,28 @@
 // Single serializer for the Loadout GraphQL type — isStale is computed
 // here and nowhere else, so every resolver returns the same derivation.
 
+const { settingsEqual } = require("./settingsSnapshot");
+
 const toIso = (d) => (d ? new Date(d).toISOString() : null);
+
+// Staleness has two independent causes, reported by precedence:
+// SLOTS_CHANGED (the user edited the loadout after keying it in — they
+// know about it, they did it) wins over SOURCE_CHANGED (a recipe author
+// changed a recipe under them — the surprising one).
+const deriveStaleness = (slots, keyedInAt, slotsChangedAt) => {
+  const slotsChanged = Boolean(
+    slotsChangedAt && (!keyedInAt || slotsChangedAt > keyedInAt)
+  );
+  const sourceChanged = slots.some((slot) => slot.sourceChanged);
+  return {
+    isStale: slotsChanged || sourceChanged,
+    staleReason: slotsChanged
+      ? "SLOTS_CHANGED"
+      : sourceChanged
+        ? "SOURCE_CHANGED"
+        : null,
+  };
+};
 
 const serializeLoadout = (loadout) => {
   const obj = loadout.toObject();
@@ -25,6 +46,23 @@ const serializeLoadout = (loadout) => {
 
   const { _id, __v, ...rest } = obj;
 
+  const slots = (obj.slots || []).map((slot) => ({
+    index: slot.index,
+    filmSim: serializeFilmSim(slot.filmSim),
+    filmSimName: slot.filmSimName || null,
+    note: slot.note || null,
+    // SOURCE_CHANGED (#101): the recipe author edited the recipe after
+    // this slot was keyed in — the camera silently holds old values.
+    // Only meaningful when a keyed-in snapshot exists and the recipe is
+    // still populated to compare against.
+    sourceChanged: Boolean(
+      slot.keyedInSettings &&
+        slot.filmSim &&
+        slot.filmSim.settings &&
+        !settingsEqual(slot.keyedInSettings, slot.filmSim.settings)
+    ),
+  }));
+
   return {
     ...rest,
     id: _id.toString(),
@@ -35,18 +73,11 @@ const serializeLoadout = (loadout) => {
           avatar: obj.owner.avatar,
         }
       : obj.owner,
-    slots: (obj.slots || []).map((slot) => ({
-      index: slot.index,
-      filmSim: serializeFilmSim(slot.filmSim),
-      filmSimName: slot.filmSimName || null,
-      note: slot.note || null,
-    })),
+    slots,
     // Never keyed in but has slots → stale; keyed in → stale only if
-    // slots changed afterwards. A loadout with no slot writes yet is not
-    // stale — there is nothing to key in.
-    isStale: Boolean(
-      slotsChangedAt && (!keyedInAt || slotsChangedAt > keyedInAt)
-    ),
+    // slots changed afterwards or a source recipe changed underneath.
+    // A loadout with no slot writes yet is not stale.
+    ...deriveStaleness(slots, keyedInAt, slotsChangedAt),
     keyedInAt: toIso(keyedInAt),
     slotsChangedAt: toIso(slotsChangedAt),
     createdAt: toIso(obj.createdAt),

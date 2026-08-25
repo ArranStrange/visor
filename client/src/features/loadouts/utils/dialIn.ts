@@ -75,8 +75,12 @@ export const formatStepValue = (
 ): string => {
   switch (key) {
     case "dynamicRange": {
+      // null is NOT "unspecified" here: the upload form stores Auto as
+      // null ({ value: null, label: "Auto" } in DYNAMIC_RANGE_OPTIONS),
+      // and the server defaults absent values to 100 — so null always
+      // means the author chose DR-Auto. See #102.
       const dr = settings.dynamicRange;
-      return dr == null ? "DR100" : `DR${dr}`;
+      return dr === null ? "DR-Auto" : dr === undefined ? "DR100" : `DR${dr}`;
     }
     case "whiteBalance": {
       const wb = capitalize(settings.whiteBalance || "auto");
@@ -117,6 +121,10 @@ const isSpecified = (settings: Partial<FilmSimSettings>, key: DialInStepKey) => 
     // decided separately (wbHint below) — a shift-only recipe still needs
     // "set the mode to Auto" guidance.
     return settings.whiteBalance != null || settings.wbShift != null;
+  }
+  if (key === "dynamicRange") {
+    // null encodes DR-Auto (a deliberate author choice), not absence.
+    return settings.dynamicRange !== undefined;
   }
   return settings[key] !== null && settings[key] !== undefined;
 };
@@ -231,8 +239,13 @@ export const buildDialInSteps = (
       hint = "Set it even though it's zero — the bank remembers its old values.";
     }
     if (key === "dynamicRange" && specified) {
-      if (settings.dynamicRange === 200) hint = "DR200 needs ISO 320 or higher.";
-      if (settings.dynamicRange === 400) hint = "DR400 needs ISO 640 or higher.";
+      // The exact floor depends on the body's base ISO (2x/4x base), so
+      // stay body-agnostic rather than quote a number that's wrong for
+      // half the catalog.
+      if (settings.dynamicRange === 200)
+        hint = "DR200 needs a raised minimum ISO (2× base) — it greys out below that.";
+      if (settings.dynamicRange === 400)
+        hint = "DR400 needs a raised minimum ISO (4× base) — it greys out below that.";
     }
 
     let warning: string | undefined;
