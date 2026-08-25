@@ -4,6 +4,7 @@ import { DiscussionPost } from "@/features/discussions/types/discussions";
 import Post from "@/features/discussions/components/Post";
 
 interface DiscussionPostsProps {
+  discussionId: string;
   posts: DiscussionPost[];
   onEdit: (postIndex: number, content: string) => void;
   onDelete: (postIndex: number) => void;
@@ -13,6 +14,7 @@ interface DiscussionPostsProps {
 }
 
 const DiscussionPosts: React.FC<DiscussionPostsProps> = ({
+  discussionId,
   posts,
   onEdit,
   onDelete,
@@ -42,6 +44,7 @@ const DiscussionPosts: React.FC<DiscussionPostsProps> = ({
         displayPosts.map((post: DiscussionPost, index: number) => (
           <Post
             key={index}
+            discussionId={discussionId}
             post={post}
             postIndex={index}
             onEdit={onEdit}

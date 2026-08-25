@@ -31,7 +31,11 @@ interface ShuffleProviderProps {
 export const ShuffleProvider: React.FC<ShuffleProviderProps> = ({
   children,
 }) => {
-  const [shuffleCounter, setShuffleCounter] = useState(0);
+  // Lazy-init a random starting seed so each visit gets a fresh order;
+  // the shuffle itself stays a pure function of the counter.
+  const [shuffleCounter, setShuffleCounter] = useState(() =>
+    Math.floor(Math.random() * 2 ** 31)
+  );
 
   const triggerShuffle = useCallback(() => {
     setShuffleCounter((prev) => prev + 1);
