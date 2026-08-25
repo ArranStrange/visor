@@ -192,8 +192,12 @@ export const visorTheme = createTheme({
         elevation: 0,
       },
       styleOverrides: {
+        // Fill and hairline together: the fill step alone is ~1.11:1 —
+        // real but marginal — and the 1px border at ~1.50:1 is what makes
+        // the edge unambiguous. Neither is sufficient on its own.
         root: ({ theme }) => ({
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: theme.palette.surface.raised,
+          border: `1px solid ${theme.palette.surface.border}`,
           borderRadius: 16,
         }),
       },
