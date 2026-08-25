@@ -54,9 +54,8 @@ export const getCardHoverStyles = (showOptions: boolean) => ({
   "&:hover .tags-overlay": {
     opacity: 1,
   },
-  "&:hover .title-overlay": {
-    backgroundColor: "overlay.scrimStrong",
-  },
+  // No darkening on hover — the creator avatar and slider animation
+  // already signal the hover state, and dimming fights the photo.
   "&:hover .creator-avatar": {
     opacity: 1,
   },
