@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { ApolloError, useMutation } from "@apollo/client";
 import type { DocumentNode } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
@@ -38,6 +39,18 @@ interface DiscussionQueryRef {
   variables: Record<string, unknown>;
 }
 
+interface UseDiscussionOperationsResult {
+  user: ReturnType<typeof useAuth>["user"];
+  deleteError: string | null;
+  setDeleteError: Dispatch<SetStateAction<string | null>>;
+  creatingPost: boolean;
+  isUserFollowing: (discussion: DiscussionType) => boolean;
+  handleFollow: () => Promise<void>;
+  handleCreatePost: (content: string) => Promise<void>;
+  handleEdit: (postIndex: number, content: string) => Promise<void>;
+  handleDelete: (postIndex: number) => Promise<void>;
+}
+
 export const useDiscussionOperations = (
   itemId: string,
   itemType: "preset" | "filmsim",
@@ -47,7 +60,7 @@ export const useDiscussionOperations = (
   // Defaults to GET_DISCUSSION_BY_ITEM (itemType/itemId), used when a page addresses
   // the discussion by id instead (e.g. DiscussionDetail via GET_DISCUSSION).
   postsQueryRef?: DiscussionQueryRef
-) => {
+): UseDiscussionOperationsResult => {
   const { user } = useAuth();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const createNotification = useCreateNotification();

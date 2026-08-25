@@ -1,6 +1,13 @@
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 
-export const usePresetSearch = () => {
+interface UsePresetSearchResult {
+  searchQuery: string;
+  setSearchQuery: Dispatch<SetStateAction<string>>;
+  shouldShowResults: boolean;
+}
+
+export const usePresetSearch = (): UsePresetSearchResult => {
   const [searchQuery, setSearchQuery] = useState("");
 
   return {

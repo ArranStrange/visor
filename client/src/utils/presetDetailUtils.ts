@@ -1,15 +1,18 @@
 import { ParsedSettings } from "../types/xmpSettings";
-import {
-  CurvePoint,
-  PresetDetail,
-  PresetDetailSettings,
-} from "../types/graphql";
+import { PresetDetail, PresetDetailSettings } from "../types/graphql";
 import { buildSettingsObject } from "./xmp-parser";
 
 export const convertPresetSettingsToParsedSettings = (
   presetSettings: PresetDetailSettings | null | undefined,
   preset: PresetDetail
 ): ParsedSettings => {
+  const hasToneCurve = Boolean(
+    preset.toneCurve &&
+    (preset.toneCurve.rgb?.length > 0 ||
+      preset.toneCurve.red?.length > 0 ||
+      preset.toneCurve.green?.length > 0 ||
+      preset.toneCurve.blue?.length > 0)
+  );
   const parsed: ParsedSettings = {
     version: preset.version,
     processVersion: preset.processVersion,
@@ -35,22 +38,8 @@ export const convertPresetSettingsToParsedSettings = (
     dehaze: presetSettings?.dehaze || 0,
     texture: presetSettings?.texture || 0,
 
-    toneCurveName:
-      preset.toneCurve &&
-      (preset.toneCurve.rgb?.length > 0 ||
-        preset.toneCurve.red?.length > 0 ||
-        preset.toneCurve.green?.length > 0 ||
-        preset.toneCurve.blue?.length > 0)
-        ? "Custom"
-        : "Linear",
-    toneCurve:
-      preset.toneCurve &&
-      (preset.toneCurve.rgb?.length > 0 ||
-        preset.toneCurve.red?.length > 0 ||
-        preset.toneCurve.green?.length > 0 ||
-        preset.toneCurve.blue?.length > 0)
-        ? preset.toneCurve
-        : undefined,
+    toneCurveName: hasToneCurve ? "Custom" : "Linear",
+    toneCurve: hasToneCurve ? preset.toneCurve : undefined,
 
     colorAdjustments: presetSettings?.colorAdjustments || undefined,
     splitToning: presetSettings?.splitToning || undefined,
@@ -90,35 +79,6 @@ export const convertPresetSettingsToParsedSettings = (
   };
 
   return buildSettingsObject(parsed);
-};
-
-export const formatToneCurveData = (curveData?: CurvePoint[] | null) => {
-  if (!curveData) return [0, 64, 128, 192, 255];
-
-  const inputPoints = [0, 64, 128, 192, 255];
-  const outputPoints = inputPoints.map((input) => {
-    const lowerPoint = curveData.reduce<CurvePoint | undefined>(
-      (prev, curr) => {
-        return curr.x <= input && (!prev || curr.x > prev.x) ? curr : prev;
-      },
-      undefined
-    );
-
-    const upperPoint = curveData.reduce<CurvePoint | undefined>(
-      (prev, curr) => {
-        return curr.x >= input && (!prev || curr.x < prev.x) ? curr : prev;
-      },
-      undefined
-    );
-
-    if (!lowerPoint || !upperPoint) return input;
-    if (lowerPoint.x === upperPoint.x) return lowerPoint.y;
-
-    const ratio = (input - lowerPoint.x) / (upperPoint.x - lowerPoint.x);
-    return Math.round(lowerPoint.y + ratio * (upperPoint.y - lowerPoint.y));
-  });
-
-  return outputPoints;
 };
 
 export const stripTypename = <T>(obj: T): T => {
