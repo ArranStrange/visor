@@ -105,6 +105,7 @@ const DiscussionThread: React.FC<DiscussionThreadProps> = ({
       />
 
       <DiscussionPosts
+        discussionId={discussion.id}
         posts={discussion.posts || []}
         onEdit={handleEdit}
         onDelete={handleDelete}
