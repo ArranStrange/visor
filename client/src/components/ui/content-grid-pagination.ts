@@ -1,10 +1,13 @@
 import type { QueryResult } from "@apollo/client";
 import type {
-  GridFilter,
-  PaginatedFilmSimsData,
-  PaginatedListVariables,
-  PaginatedPresetsData,
-} from "./content-grid-data";
+  ListFilmSimsQueryData,
+  ListFilmSimsQueryVariables,
+} from "../../graphql/filmSims";
+import type {
+  ListPresetsQueryData,
+  ListPresetsQueryVariables,
+} from "../../graphql/presets";
+import type { GridFilter } from "./content-grid-data";
 
 interface PageState {
   currentPage: number;
@@ -17,12 +20,12 @@ interface FetchNextContentPagesOptions {
   presets?: PageState;
   filmSims?: PageState;
   fetchMorePresets: QueryResult<
-    PaginatedPresetsData,
-    PaginatedListVariables
+    ListPresetsQueryData,
+    ListPresetsQueryVariables
   >["fetchMore"];
   fetchMoreFilmSims: QueryResult<
-    PaginatedFilmSimsData,
-    PaginatedListVariables
+    ListFilmSimsQueryData,
+    ListFilmSimsQueryVariables
   >["fetchMore"];
 }
 

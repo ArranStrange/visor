@@ -18,11 +18,18 @@ import {
   buildToneCurveForBackend,
 } from "../utils/presetSettingsTransform";
 import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
-import { UPLOAD_PRESET } from "../graphql/presets";
+import {
+  UPLOAD_PRESET,
+  type UploadPresetMutationData,
+  type UploadPresetMutationVariables,
+} from "../graphql/presets";
 
 const UploadPreset: React.FC = () => {
   const navigate = useNavigate();
-  const [uploadPreset] = useMutation(UPLOAD_PRESET);
+  const [uploadPreset] = useMutation<
+    UploadPresetMutationData,
+    UploadPresetMutationVariables
+  >(UPLOAD_PRESET);
 
   const {
     formState,
@@ -111,9 +118,11 @@ const UploadPreset: React.FC = () => {
       }
 
       navigate(`/preset/${result.data.uploadPreset.slug}`);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error uploading:", error);
-      setError(error.message || "Failed to upload preset");
+      setError(
+        error instanceof Error ? error.message : "Failed to upload preset"
+      );
     } finally {
       setIsSubmitting(false);
     }

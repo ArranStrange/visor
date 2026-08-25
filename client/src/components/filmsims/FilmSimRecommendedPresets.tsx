@@ -14,19 +14,10 @@ import {
   getResponsiveImageSrcSet,
   optimizeImageUrl,
 } from "../../utils/cloudinary";
-
-interface Preset {
-  id: string;
-  title: string;
-  slug: string;
-  description?: string;
-  afterImage?: { url: string };
-  creator?: { id: string; username: string; avatar?: string };
-  tags?: { id: string; displayName: string }[];
-}
+import type { PresetSummary } from "../../types/graphql";
 
 interface FilmSimRecommendedPresetsProps {
-  presets?: Preset[];
+  presets?: PresetSummary[];
   isOwner: boolean;
   onManageClick: () => void;
 }

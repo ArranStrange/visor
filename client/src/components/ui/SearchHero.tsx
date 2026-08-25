@@ -2,19 +2,33 @@ import React from "react";
 import { Box, Container, InputBase, Stack, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS } from "../../graphql/tags";
-import { GET_FEATURED_PHOTO } from "../../graphql/featured";
+import {
+  GET_ALL_TAGS,
+  GET_ALL_TAGS_OPTIONS,
+  type GetAllTagsQueryData,
+} from "../../graphql/tags";
+import {
+  GET_FEATURED_PHOTO,
+  type GetFeaturedPhotoQueryData,
+} from "../../graphql/featured";
+import type { TagSummary } from "../../types/graphql";
 
 const SearchHero: React.FC = () => {
   const navigate = useNavigate();
   const [query, setQuery] = React.useState("");
   const logoUrl = new URL("../../assets/VISOR.png", import.meta.url).href;
 
-  const { data: tagData } = useQuery(GET_ALL_TAGS, GET_ALL_TAGS_OPTIONS);
+  const { data: tagData } = useQuery<GetAllTagsQueryData>(
+    GET_ALL_TAGS,
+    GET_ALL_TAGS_OPTIONS
+  );
   const allTags =
-    tagData?.listTags?.filter((tag: any) => tag?.displayName) || [];
+    tagData?.listTags?.filter((tag): tag is TagSummary =>
+      Boolean(tag?.displayName)
+    ) || [];
 
-  const { data: featuredPhotoData } = useQuery(GET_FEATURED_PHOTO);
+  const { data: featuredPhotoData } =
+    useQuery<GetFeaturedPhotoQueryData>(GET_FEATURED_PHOTO);
   const featuredPhoto = featuredPhotoData?.getFeaturedPhoto;
 
   const handleSearch = (e: React.FormEvent) => {
@@ -113,7 +127,7 @@ const SearchHero: React.FC = () => {
               "& > *": { scrollSnapAlign: "start" },
             }}
           >
-            {allTags.map((tag: any) => (
+            {allTags.map((tag) => (
               <Typography
                 key={tag.id}
                 onClick={() =>

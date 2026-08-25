@@ -1,4 +1,35 @@
 import { gql } from "@apollo/client";
+import type { FilmSimSummary, PresetSummary } from "../types/graphql";
+
+export interface UserUploadPreset extends PresetSummary {
+  likes?: Array<{ id: string }>;
+  downloads?: number;
+  createdAt?: string;
+}
+
+export interface UserUploadFilmSim extends FilmSimSummary {
+  likes?: Array<{ id: string }>;
+  createdAt?: string;
+}
+
+export interface UserUploadsProfile {
+  id: string;
+  username: string;
+  avatar?: string;
+  bio?: string;
+  instagram?: string;
+  cameras?: string[];
+  presets?: UserUploadPreset[];
+  filmSims?: UserUploadFilmSim[];
+}
+
+export interface GetUserUploadsQueryData {
+  getUser: UserUploadsProfile | null;
+}
+
+export interface GetUserUploadsQueryVariables {
+  userId: string;
+}
 
 export const LOGIN_USER = gql`
   mutation LoginUser($email: String!, $password: String!) {

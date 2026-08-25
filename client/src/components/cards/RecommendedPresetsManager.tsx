@@ -16,41 +16,25 @@ import {
 } from "@mui/material";
 import { useQuery, useMutation } from "@apollo/client";
 import { ADD_RECOMMENDED_PRESET } from "../../graphql/filmSims";
-import { SEARCH_PRESETS } from "../../graphql/presets";
+import {
+  SEARCH_PRESETS,
+  type SearchPresetsQueryData,
+  type SearchPresetsQueryVariables,
+} from "../../graphql/presets";
 import { usePresetSearch } from "../../hooks/usePresetSearch";
 import PresetSearchItem from "./PresetSearchItem";
 import CurrentPresetsList from "./CurrentPresetsList";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import type { PresetSummary } from "../../types/graphql";
 
 interface RecommendedPresetsManagerProps {
   open: boolean;
   onClose: () => void;
   filmSimId: string;
   filmSimName: string;
-  currentRecommendedPresets: Array<{
-    id: string;
-    title: string;
-    slug: string;
-    description?: string;
-    afterImage?: { url: string };
-    creator?: { id: string; username: string; avatar?: string };
-    tags?: Array<{ id?: string; displayName: string }>;
-  }>;
-}
-
-type RecommendedPreset =
-  RecommendedPresetsManagerProps["currentRecommendedPresets"][number];
-
-interface SearchPresetsData {
-  listPresets: { presets: RecommendedPreset[] };
-}
-
-interface SearchPresetsVariables {
-  query: string;
-  page: number;
-  limit: number;
+  currentRecommendedPresets: PresetSummary[];
 }
 
 const PICKER_PAGE_SIZE = 20;
@@ -64,17 +48,17 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
 }) => {
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const { searchQuery, setSearchQuery, shouldShowResults } = usePresetSearch();
-  const presetQuery = useQuery<SearchPresetsData, SearchPresetsVariables>(
-    SEARCH_PRESETS,
-    {
-      variables: {
-        query: searchQuery.trim(),
-        page: 1,
-        limit: PICKER_PAGE_SIZE,
-      },
-      skip: !open || !shouldShowResults,
-    }
-  );
+  const presetQuery = useQuery<
+    SearchPresetsQueryData,
+    SearchPresetsQueryVariables
+  >(SEARCH_PRESETS, {
+    variables: {
+      query: searchQuery.trim(),
+      page: 1,
+      limit: PICKER_PAGE_SIZE,
+    },
+    skip: !open || !shouldShowResults,
+  });
   const searchResults = excludeCurrentPresets(
     presetQuery.data?.listPresets.presets ?? [],
     currentRecommendedPresets
@@ -207,8 +191,8 @@ const RecommendedPresetsManager: React.FC<RecommendedPresetsManagerProps> = ({
 };
 
 function excludeCurrentPresets(
-  presets: RecommendedPreset[],
-  currentPresets: RecommendedPreset[]
+  presets: PresetSummary[],
+  currentPresets: PresetSummary[]
 ) {
   const currentIds = new Set(currentPresets.map(({ id }) => id));
   return presets.filter(({ id }) => !currentIds.has(id));

@@ -22,6 +22,10 @@ import AddIcon from "@mui/icons-material/Add";
 import {
   GET_USER_LISTS_FOR_ADD_BUTTON as GET_USER_LISTS,
   ADD_TO_LIST,
+  type AddToListMutationData,
+  type AddToListMutationVariables,
+  type GetUserListsForAddButtonQueryData,
+  type GetUserListsForAddButtonQueryVariables,
 } from "../../graphql/lists";
 
 interface AddToListButtonProps {
@@ -41,9 +45,12 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const { loading, data, refetch } = useQuery(GET_USER_LISTS, {
+  const { loading, data, refetch } = useQuery<
+    GetUserListsForAddButtonQueryData,
+    GetUserListsForAddButtonQueryVariables
+  >(GET_USER_LISTS, {
     variables: {
-      userId: currentUser?.id,
+      userId: currentUser?.id ?? "",
     },
     skip: !currentUser?.id,
     onError: (error) => {
@@ -52,8 +59,11 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
     },
   });
 
-  const [addToList] = useMutation(ADD_TO_LIST, {
-    onCompleted: (data) => {
+  const [addToList] = useMutation<
+    AddToListMutationData,
+    AddToListMutationVariables
+  >(ADD_TO_LIST, {
+    onCompleted: () => {
       setSuccess("Added to list successfully!");
 
       refetch();
@@ -157,7 +167,7 @@ const AddToListButton: React.FC<AddToListButtonProps> = ({
             </Box>
           ) : (
             <List>
-              {lists.map((list: any) => (
+              {lists.map((list) => (
                 <ListItem key={list.id} disablePadding>
                   <ListItemButton onClick={() => handleAddToList(list.id)}>
                     <ListItemText

@@ -1,4 +1,133 @@
 import { gql } from "@apollo/client";
+import type {
+  CreateDiscussionInput,
+  CreatePostInput,
+  Discussion,
+  DiscussionConnection,
+  DiscussionPost,
+  DiscussionReply,
+  DiscussionTargetType,
+  UpdatePostInput,
+  User,
+} from "../types/discussions";
+
+export interface GetDiscussionQueryData {
+  getDiscussion: Discussion | null;
+}
+
+export interface GetDiscussionQueryVariables {
+  id: string;
+}
+
+export interface GetDiscussionsQueryData {
+  getDiscussions: DiscussionConnection;
+}
+
+export interface GetDiscussionsQueryVariables {
+  page?: number;
+  limit?: number;
+  type?: DiscussionTargetType;
+  search?: string;
+  createdBy?: string;
+}
+
+export interface CreateDiscussionMutationData {
+  createDiscussion: Discussion | null;
+}
+
+export interface CreateDiscussionMutationVariables {
+  input: CreateDiscussionInput;
+}
+
+interface FollowDiscussionResult {
+  id: string;
+  followers: User[];
+}
+
+export interface FollowDiscussionMutationData {
+  followDiscussion: FollowDiscussionResult | null;
+}
+
+export interface FollowDiscussionMutationVariables {
+  discussionId: string;
+}
+
+export interface UnfollowDiscussionMutationData {
+  unfollowDiscussion: FollowDiscussionResult | null;
+}
+
+export interface UnfollowDiscussionMutationVariables {
+  discussionId: string;
+}
+
+export interface CreatePostMutationData {
+  createPost: DiscussionPost | null;
+}
+
+export interface CreatePostMutationVariables {
+  input: CreatePostInput;
+}
+
+export interface UpdatePostMutationData {
+  updatePost: DiscussionPost | null;
+}
+
+export interface UpdatePostMutationVariables {
+  input: UpdatePostInput;
+}
+
+export interface DeletePostMutationData {
+  deletePost: boolean;
+}
+
+export interface DeletePostMutationVariables {
+  discussionId: string;
+  postIndex: number;
+}
+
+export interface CreateReplyInput {
+  discussionId: string;
+  postIndex: number;
+  content: string;
+}
+
+export interface CreateReplyMutationData {
+  createReply: DiscussionReply | null;
+}
+
+export interface CreateReplyMutationVariables {
+  input: CreateReplyInput;
+}
+
+export interface UpdateReplyInput extends CreateReplyInput {
+  replyIndex: number;
+}
+
+export interface UpdateReplyMutationData {
+  updateReply: DiscussionReply | null;
+}
+
+export interface UpdateReplyMutationVariables {
+  input: UpdateReplyInput;
+}
+
+export interface DeleteReplyMutationData {
+  deleteReply: boolean;
+}
+
+export interface DeleteReplyMutationVariables {
+  discussionId: string;
+  postIndex: number;
+  replyIndex: number;
+}
+
+export interface AdminDeleteDiscussionMutationData {
+  adminDeleteDiscussion: boolean;
+}
+
+export interface AdminDeleteDiscussionMutationVariables {
+  id: string;
+}
 
 export const GET_DISCUSSION = gql`
   query GetDiscussion($id: ID!) {

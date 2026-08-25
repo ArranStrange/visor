@@ -15,7 +15,7 @@ const XmpSettingsDisplay: React.FC<XmpSettingsDisplayProps> = ({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const formatSettingValue = (value: any) => {
+  const formatSettingValue = (value: unknown) => {
     if (value === undefined || value === null) return "0";
     const num = Number(value);
     if (isNaN(num)) return "0";
@@ -26,7 +26,7 @@ const XmpSettingsDisplay: React.FC<XmpSettingsDisplayProps> = ({
   // Render a setting row with consistent layout
   const renderSettingRow = (
     label: string,
-    value: any,
+    value: unknown,
     spectrum?: string,
     key?: string
   ) => (
@@ -85,9 +85,10 @@ const XmpSettingsDisplay: React.FC<XmpSettingsDisplayProps> = ({
   );
 
   // Helper function to safely access nested properties
-  const getNestedValue = (obj: any, path: string): any => {
-    return path.split(".").reduce((current, key) => {
-      return current && typeof current === "object" ? current[key] : undefined;
+  const getNestedValue = (obj: unknown, path: string): unknown => {
+    return path.split(".").reduce<unknown>((current, key) => {
+      if (!current || typeof current !== "object") return undefined;
+      return (current as Record<string, unknown>)[key];
     }, obj);
   };
 

@@ -9,8 +9,16 @@ import {
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { GET_USER_UPLOADS } from "../graphql/users";
-import { GET_USER_LISTS_FOR_PUBLIC_PROFILE as GET_USER_LISTS } from "../graphql/lists";
+import {
+  GET_USER_UPLOADS,
+  type GetUserUploadsQueryData,
+  type GetUserUploadsQueryVariables,
+} from "../graphql/users";
+import {
+  GET_USER_LISTS_FOR_PUBLIC_PROFILE as GET_USER_LISTS,
+  type GetPublicProfileListsQueryData,
+  type GetPublicProfileListsQueryVariables,
+} from "../graphql/lists";
 import { useAuth } from "../context/AuthContext";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import PublicProfileInfo from "../components/profile/PublicProfileInfo";
@@ -28,17 +36,23 @@ const PublicProfile: React.FC = () => {
     loading: userLoading,
     error: userError,
     data: userData,
-  } = useQuery(GET_USER_UPLOADS, {
-    variables: { userId },
-    skip: !userId,
-  });
+  } = useQuery<GetUserUploadsQueryData, GetUserUploadsQueryVariables>(
+    GET_USER_UPLOADS,
+    {
+      variables: { userId: userId! },
+      skip: !userId,
+    }
+  );
 
   const {
     loading: listsLoading,
     error: listsError,
     data: listsData,
-  } = useQuery(GET_USER_LISTS, {
-    variables: { userId },
+  } = useQuery<
+    GetPublicProfileListsQueryData,
+    GetPublicProfileListsQueryVariables
+  >(GET_USER_LISTS, {
+    variables: { userId: userId! },
     skip: !userId,
   });
 
@@ -82,12 +96,9 @@ const PublicProfile: React.FC = () => {
   const filmSims = user.filmSims || [];
   const lists = listsData?.getUserLists || [];
   const likeCount =
-    presets.reduce(
-      (total: number, preset: any) => total + (preset.likes?.length || 0),
-      0
-    ) +
+    presets.reduce((total, preset) => total + (preset.likes?.length || 0), 0) +
     filmSims.reduce(
-      (total: number, filmSim: any) => total + (filmSim.likes?.length || 0),
+      (total, filmSim) => total + (filmSim.likes?.length || 0),
       0
     );
 
@@ -101,8 +112,8 @@ const PublicProfile: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (err: any) {
-        if (err.name !== "AbortError") {
+      } catch (err) {
+        if (!(err instanceof Error) || err.name !== "AbortError") {
           console.error("Error sharing profile:", err);
         }
       }

@@ -13,6 +13,7 @@ import ImageUpload from "../../components/media/ImageUpload";
 import CompatibleSensorsField from "./CompatibleSensorsField";
 import SensorWarningsList from "./SensorWarningsList";
 import { FilmSimFormState } from "../../types/filmSim";
+import type { FilmSimFormChangeHandler } from "../../hooks/useFilmSimForm";
 
 interface UploadFilmSimFormProps {
   formState: FilmSimFormState;
@@ -25,7 +26,7 @@ interface UploadFilmSimFormProps {
   onDescriptionChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => void;
-  onSettingChange: (settingKey: string, value: any) => void;
+  onSettingChange: FilmSimFormChangeHandler;
   onTagInputChange: (value: string) => void;
   onTagKeyDown: (e: React.KeyboardEvent) => void;
   onRemoveTag: (tag: string) => void;

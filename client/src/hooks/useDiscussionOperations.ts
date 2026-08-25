@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { useMutation } from "@apollo/client";
+import { ApolloError, useMutation } from "@apollo/client";
 import type { DocumentNode } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
-import { Discussion as DiscussionType } from "../types/discussions";
+import {
+  Discussion as DiscussionType,
+  DiscussionTargetType,
+} from "../types/discussions";
 import {
   FOLLOW_DISCUSSION,
   UNFOLLOW_DISCUSSION,
@@ -11,6 +14,18 @@ import {
   CREATE_POST,
   CREATE_DISCUSSION,
   GET_DISCUSSION_BY_ITEM,
+  type CreateDiscussionMutationData,
+  type CreateDiscussionMutationVariables,
+  type CreatePostMutationData,
+  type CreatePostMutationVariables,
+  type DeletePostMutationData,
+  type DeletePostMutationVariables,
+  type FollowDiscussionMutationData,
+  type FollowDiscussionMutationVariables,
+  type UnfollowDiscussionMutationData,
+  type UnfollowDiscussionMutationVariables,
+  type UpdatePostMutationData,
+  type UpdatePostMutationVariables,
 } from "../graphql/discussions";
 import {
   useCreateNotification,
@@ -39,35 +54,56 @@ export const useDiscussionOperations = (
   const itemQueryRef: DiscussionQueryRef = {
     query: GET_DISCUSSION_BY_ITEM,
     variables: {
-      type: itemType.toUpperCase() as "PRESET" | "FILMSIM",
+      type:
+        itemType === "preset"
+          ? DiscussionTargetType.PRESET
+          : DiscussionTargetType.FILMSIM,
       refId: itemId,
     },
   };
   const postsRefetchQuery = postsQueryRef ?? itemQueryRef;
 
-  const [followDiscussion] = useMutation(FOLLOW_DISCUSSION, {
+  const [followDiscussion] = useMutation<
+    FollowDiscussionMutationData,
+    FollowDiscussionMutationVariables
+  >(FOLLOW_DISCUSSION, {
     refetchQueries: [itemQueryRef],
   });
 
-  const [unfollowDiscussion] = useMutation(UNFOLLOW_DISCUSSION, {
+  const [unfollowDiscussion] = useMutation<
+    UnfollowDiscussionMutationData,
+    UnfollowDiscussionMutationVariables
+  >(UNFOLLOW_DISCUSSION, {
     refetchQueries: [itemQueryRef],
   });
 
-  const [createPost, { loading: creatingPost }] = useMutation(CREATE_POST, {
+  const [createPost, { loading: creatingPost }] = useMutation<
+    CreatePostMutationData,
+    CreatePostMutationVariables
+  >(CREATE_POST, {
     refetchQueries: [postsRefetchQuery],
     awaitRefetchQueries: true,
   });
 
-  const [createDiscussion] = useMutation(CREATE_DISCUSSION, {
+  const [createDiscussion] = useMutation<
+    CreateDiscussionMutationData,
+    CreateDiscussionMutationVariables
+  >(CREATE_DISCUSSION, {
     refetchQueries: [itemQueryRef],
   });
 
-  const [deletePost] = useMutation(DELETE_POST, {
+  const [deletePost] = useMutation<
+    DeletePostMutationData,
+    DeletePostMutationVariables
+  >(DELETE_POST, {
     refetchQueries: [postsRefetchQuery],
     awaitRefetchQueries: true,
   });
 
-  const [updatePost] = useMutation(UPDATE_POST, {
+  const [updatePost] = useMutation<
+    UpdatePostMutationData,
+    UpdatePostMutationVariables
+  >(UPDATE_POST, {
     refetchQueries: [postsRefetchQuery],
     awaitRefetchQueries: true,
   });
@@ -102,7 +138,10 @@ export const useDiscussionOperations = (
       if (!currentDiscussionId) {
         const discussionInput = {
           title: `Discussion about ${itemTitle}`,
-          linkedToType: itemType.toUpperCase() as "PRESET" | "FILMSIM",
+          linkedToType:
+            itemType === "preset"
+              ? DiscussionTargetType.PRESET
+              : DiscussionTargetType.FILMSIM,
           linkedToId: itemId,
         };
 
@@ -179,22 +218,24 @@ export const useDiscussionOperations = (
     try {
       const result = await updatePost({
         variables: {
-          discussionId: discussion?.id || "",
-          postIndex: postIndex,
-          input: { content: content.trim() },
+          input: {
+            discussionId: discussion?.id || "",
+            postIndex,
+            content: content.trim(),
+          },
         },
       });
 
       if (!result.data?.updatePost) {
         console.error("Failed to update post - no data returned");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating post:", error);
 
       let errorMessage = "Failed to update post. Please try again.";
-      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+      if (error instanceof ApolloError && error.graphQLErrors.length > 0) {
         errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error.message) {
+      } else if (error instanceof Error && error.message) {
         errorMessage = error.message;
       }
 
@@ -265,13 +306,13 @@ export const useDiscussionOperations = (
           setDeleteError("Failed to delete post. Please try again.");
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Delete post error:", error);
 
       let errorMessage = "Failed to delete post. Please try again.";
-      if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+      if (error instanceof ApolloError && error.graphQLErrors.length > 0) {
         errorMessage = error.graphQLErrors[0].message || errorMessage;
-      } else if (error.message) {
+      } else if (error instanceof Error && error.message) {
         errorMessage = error.message;
       }
 

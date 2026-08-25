@@ -207,7 +207,7 @@ const Profile: React.FC = () => {
         }}
       >
         <Grid container spacing={4}>
-          <Grid component={undefined as any} item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <ProfileHeader
               avatarUrl={user?.avatar}
               avatarAlt={user?.username}
@@ -224,7 +224,7 @@ const Profile: React.FC = () => {
             </ProfileHeader>
           </Grid>
 
-          <Grid component={undefined as any} item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <ProfileEditForm
               bio={formData.bio}
               instagram={formData.instagram}

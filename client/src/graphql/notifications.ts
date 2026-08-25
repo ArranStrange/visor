@@ -1,4 +1,16 @@
 import { gql } from "@apollo/client";
+import type {
+  CreateNotificationInput,
+  Notification,
+} from "../types/notifications";
+
+export interface CreateNotificationMutationData {
+  createNotification: Notification | null;
+}
+
+export interface CreateNotificationMutationVariables {
+  input: CreateNotificationInput;
+}
 
 export const GET_NOTIFICATIONS = gql`
   query GetNotifications($userId: ID!, $page: Int, $limit: Int) {

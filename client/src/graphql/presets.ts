@@ -1,4 +1,114 @@
 import { gql } from "@apollo/client";
+import type {
+  ColorGradingSettings,
+  ImageInput,
+  PresetDetail,
+  PresetDetailSettings,
+  PresetSettings,
+  PresetSummary,
+  ToneCurve,
+} from "../types/graphql";
+
+export interface ListPresetsQueryData {
+  listPresets: {
+    presets: Array<PresetSummary & Record<string, unknown>>;
+    totalCount: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
+export interface ListPresetsQueryVariables {
+  page?: number;
+  limit?: number;
+  filter?: Record<string, unknown>;
+}
+
+export interface GetPresetQueryData {
+  getPreset: PresetDetail | null;
+}
+
+export interface GetPresetQueryVariables {
+  slug: string;
+}
+
+export interface SearchPresetsQueryData {
+  listPresets: {
+    presets: PresetSummary[];
+    totalCount: number;
+    hasNextPage: boolean;
+    currentPage: number;
+    totalPages: number;
+  };
+}
+
+export interface SearchPresetsQueryVariables {
+  query: string;
+  page: number;
+  limit: number;
+}
+
+export interface DeletePresetMutationData {
+  deletePreset: boolean;
+}
+
+export interface DeletePresetMutationVariables {
+  id: string;
+}
+
+export interface UpdatePresetInput {
+  title?: string;
+  description?: string;
+  notes?: string;
+  settings?: Partial<PresetDetailSettings>;
+  toneCurve?: ToneCurve;
+  xmpUrl?: string | null;
+}
+
+export type UpdatePresetResult = Pick<
+  PresetDetail,
+  "id" | "title" | "slug" | "creator" | "tags"
+> &
+  Pick<
+    Partial<PresetDetail>,
+    | "description"
+    | "notes"
+    | "settings"
+    | "toneCurve"
+    | "xmpUrl"
+    | "likes"
+    | "downloads"
+    | "createdAt"
+  > & { updatedAt?: string };
+
+export interface UpdatePresetMutationData {
+  updatePreset: UpdatePresetResult | null;
+}
+
+export interface UpdatePresetMutationVariables {
+  id: string;
+  input: UpdatePresetInput;
+}
+
+export interface UploadPresetMutationData {
+  uploadPreset: Pick<PresetSummary, "id" | "title" | "slug"> | null;
+}
+
+export interface UploadPresetMutationVariables {
+  title: string;
+  description?: string;
+  settings: PresetSettings;
+  toneCurve?: ToneCurve;
+  colorGrading?: ColorGradingSettings;
+  notes?: string;
+  tags: string[];
+  beforeImage?: ImageInput;
+  afterImage?: ImageInput;
+  sampleImages?: ImageInput[];
+  xmpUrl?: string | null;
+}
 
 export const GET_ALL_PRESETS = gql`
   query ListPresets($page: Int, $limit: Int, $filter: JSON) {
@@ -320,6 +430,7 @@ export const UPLOAD_PRESET = gql`
     $description: String
     $settings: PresetSettingsInput!
     $toneCurve: ToneCurveInput
+    $colorGrading: ColorGradingInput
     $notes: String
     $tags: [String!]!
     $beforeImage: ImageInput
@@ -332,6 +443,7 @@ export const UPLOAD_PRESET = gql`
       description: $description
       settings: $settings
       toneCurve: $toneCurve
+      colorGrading: $colorGrading
       notes: $notes
       tags: $tags
       beforeImage: $beforeImage

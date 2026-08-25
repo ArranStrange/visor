@@ -1,6 +1,115 @@
+import type { ParsedSettings } from "./xmpSettings";
+
 export interface CurvePoint {
   x: number;
   y: number;
+}
+
+export interface ImageSummary {
+  id?: string;
+  url: string;
+  publicId?: string;
+  caption?: string;
+  isFeaturedPhoto?: boolean;
+}
+
+export interface TagSummary {
+  id?: string;
+  name?: string;
+  displayName: string;
+}
+
+export interface UserSummary {
+  id: string;
+  username: string;
+  avatar?: string;
+  instagram?: string;
+}
+
+export interface PresetSummary {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string;
+  afterImage?: ImageSummary | null;
+  beforeImage?: ImageSummary | null;
+  creator?: UserSummary;
+  tags?: TagSummary[];
+  featured?: boolean;
+}
+
+export interface FilmSimSummary {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  sampleImages?: ImageSummary[];
+  creator?: UserSummary;
+  tags?: TagSummary[];
+  featured?: boolean;
+}
+
+export interface PresetDetailSettings {
+  exposure?: number;
+  contrast?: number;
+  highlights?: number;
+  shadows?: number;
+  whites?: number;
+  blacks?: number;
+  temp?: number;
+  tint?: number;
+  vibrance?: number;
+  saturation?: number;
+  clarity?: number;
+  dehaze?: number;
+  texture?: number;
+  grain?: Partial<GrainSettings>;
+  vignette?: Partial<VignetteSettings>;
+  sharpening?: number;
+  sharpenRadius?: number;
+  sharpenDetail?: number;
+  sharpenEdgeMasking?: number;
+  luminanceSmoothing?: number;
+  luminanceDetail?: number;
+  luminanceContrast?: number;
+  noiseReduction?: Partial<NoiseReductionSettings> & {
+    colorSmoothness?: number;
+  };
+  colorAdjustments?: ParsedSettings["colorAdjustments"];
+  splitToning?: ParsedSettings["splitToning"];
+}
+
+export interface PresetDetail
+  extends
+    PresetSummary,
+    Pick<
+      ParsedSettings,
+      | "version"
+      | "processVersion"
+      | "cameraProfile"
+      | "cameraProfileDigest"
+      | "profileName"
+      | "lookTableName"
+      | "whiteBalance"
+      | "colorGrading"
+      | "effects"
+      | "lensCorrections"
+      | "optics"
+      | "transform"
+      | "calibration"
+      | "crop"
+      | "orientation"
+    > {
+  description?: string;
+  xmpUrl?: string;
+  settings?: PresetDetailSettings;
+  toneCurve?: ToneCurve;
+  notes?: string;
+  tags: Array<TagSummary & { id: string }>;
+  sampleImages?: Array<ImageSummary & { id: string }>;
+  likes?: Array<{ id: string }>;
+  downloads?: number;
+  createdAt?: string;
 }
 
 export interface ToneCurve {
@@ -74,6 +183,7 @@ export interface ColorGradingSettings {
   highlightSat: number;
   highlightLuminance: number;
   blending: number;
+  balance: number;
   globalHue: number;
   globalSat: number;
   perceptual: boolean;

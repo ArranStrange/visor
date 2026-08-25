@@ -3,15 +3,18 @@ import { Box, Typography } from "@mui/material";
 import ContentTypeToggle from "../ui/ContentTypeToggle";
 import ContentGridLoader from "../ui/ContentGridLoader";
 import { useContentType } from "../../context/ContentTypeFilter";
+import type { UserUploadFilmSim, UserUploadPreset } from "../../graphql/users";
 
-interface ContentItem {
-  type: "preset" | "film";
-  data: any;
-}
+type ContentItem =
+  | { type: "preset"; data: UserUploadPreset }
+  | {
+      type: "film";
+      data: UserUploadFilmSim & { title: string; thumbnail: string };
+    };
 
 export interface ProfileUploadsGridProps {
-  presets: any[];
-  filmSims: any[];
+  presets: UserUploadPreset[];
+  filmSims: UserUploadFilmSim[];
   emptyStateMessage: string;
   heading?: string;
 }
@@ -37,7 +40,10 @@ const ProfileUploadsGrid: React.FC<ProfileUploadsGridProps> = ({
         </Typography>
       </Box>
 
-      <ContentGridLoader contentType={contentType} customData={filteredContent} />
+      <ContentGridLoader
+        contentType={contentType}
+        customData={filteredContent}
+      />
 
       {filteredContent.length === 0 && (
         <Box display="flex" flexDirection="column" alignItems="center" py={8}>
@@ -54,8 +60,8 @@ const ProfileUploadsGrid: React.FC<ProfileUploadsGridProps> = ({
 };
 
 function buildFilteredContent(
-  presets: any[],
-  filmSims: any[],
+  presets: UserUploadPreset[],
+  filmSims: UserUploadFilmSim[],
   contentType: "all" | "presets" | "films"
 ): ContentItem[] {
   const allContent: ContentItem[] = [

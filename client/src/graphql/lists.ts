@@ -1,4 +1,43 @@
 import { gql } from "@apollo/client";
+import type { UserList } from "../types/lists";
+
+export interface PublicProfileList extends UserList {
+  createdAt?: string;
+}
+
+export interface GetPublicProfileListsQueryData {
+  getUserLists: PublicProfileList[];
+}
+
+export interface GetPublicProfileListsQueryVariables {
+  userId: string;
+}
+
+export type AddButtonList = Pick<
+  UserList,
+  "id" | "name" | "description" | "isPublic" | "presets" | "filmSims"
+>;
+
+export interface GetUserListsForAddButtonQueryData {
+  getUserLists: AddButtonList[];
+}
+
+export interface GetUserListsForAddButtonQueryVariables {
+  userId: string;
+}
+
+export interface AddToListMutationData {
+  addToUserList: Pick<
+    UserList,
+    "id" | "name" | "description" | "isPublic"
+  > | null;
+}
+
+export interface AddToListMutationVariables {
+  listId: string;
+  presetIds?: string[];
+  filmSimIds?: string[];
+}
 
 export const BROWSE_USER_LISTS = gql`
   query BrowseUserLists($search: String, $page: Int, $limit: Int) {

@@ -8,6 +8,14 @@ import {
   CREATE_REPLY,
   UPDATE_REPLY,
   DELETE_REPLY,
+  type CreateReplyMutationData,
+  type CreateReplyMutationVariables,
+  type DeleteReplyMutationData,
+  type DeleteReplyMutationVariables,
+  type GetDiscussionQueryData,
+  type GetDiscussionQueryVariables,
+  type UpdateReplyMutationData,
+  type UpdateReplyMutationVariables,
 } from "../../graphql/discussions";
 import { useDiscussionOperations } from "../../hooks/useDiscussionOperations";
 import DiscussionHeader from "./DiscussionHeader";
@@ -28,11 +36,14 @@ const DiscussionDetail: React.FC = () => {
     loading: discussionLoading,
     error: discussionError,
     data: discussionData,
-  } = useQuery(GET_DISCUSSION, {
-    variables: { id: discussionId },
-    skip: !discussionId || discussionId === "new",
-    errorPolicy: "all",
-  });
+  } = useQuery<GetDiscussionQueryData, GetDiscussionQueryVariables>(
+    GET_DISCUSSION,
+    {
+      variables: { id: discussionId },
+      skip: !discussionId || discussionId === "new",
+      errorPolicy: "all",
+    }
+  );
 
   const discussion = discussionData?.getDiscussion;
 
@@ -47,16 +58,31 @@ const DiscussionDetail: React.FC = () => {
       variables: { id: discussionId },
     });
 
-  const [createReply] = useMutation(CREATE_REPLY, {
-    refetchQueries: [{ query: GET_DISCUSSION, variables: { id: discussionId } }],
+  const [createReply] = useMutation<
+    CreateReplyMutationData,
+    CreateReplyMutationVariables
+  >(CREATE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId } },
+    ],
   });
 
-  const [updateReply] = useMutation(UPDATE_REPLY, {
-    refetchQueries: [{ query: GET_DISCUSSION, variables: { id: discussionId } }],
+  const [updateReply] = useMutation<
+    UpdateReplyMutationData,
+    UpdateReplyMutationVariables
+  >(UPDATE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId } },
+    ],
   });
 
-  const [deleteReply] = useMutation(DELETE_REPLY, {
-    refetchQueries: [{ query: GET_DISCUSSION, variables: { id: discussionId } }],
+  const [deleteReply] = useMutation<
+    DeleteReplyMutationData,
+    DeleteReplyMutationVariables
+  >(DELETE_REPLY, {
+    refetchQueries: [
+      { query: GET_DISCUSSION, variables: { id: discussionId } },
+    ],
   });
 
   if (discussionLoading && !discussion) {
@@ -69,13 +95,11 @@ const DiscussionDetail: React.FC = () => {
 
   if (!discussion) {
     return (
-      <DiscussionNotFound
-        discussionId={discussionId}
-        error={discussionError}
-      />
+      <DiscussionNotFound discussionId={discussionId} error={discussionError} />
     );
   }
 
+  const loadedDiscussion = discussion;
   const linkedImage = getLinkedImage();
 
   return (
@@ -103,16 +127,16 @@ const DiscussionDetail: React.FC = () => {
 
   function getLinkedImage(): string | null {
     if (
-      discussion.linkedTo.type === "PRESET" &&
-      discussion.linkedTo.preset?.afterImage?.url
+      loadedDiscussion.linkedTo.type === "PRESET" &&
+      loadedDiscussion.linkedTo.preset?.afterImage?.url
     ) {
-      return discussion.linkedTo.preset.afterImage.url;
+      return loadedDiscussion.linkedTo.preset.afterImage.url;
     }
     if (
-      discussion.linkedTo.type === "FILMSIM" &&
-      discussion.linkedTo.filmSim?.sampleImages?.[0]?.url
+      loadedDiscussion.linkedTo.type === "FILMSIM" &&
+      loadedDiscussion.linkedTo.filmSim?.sampleImages?.[0]?.url
     ) {
-      return discussion.linkedTo.filmSim.sampleImages[0].url;
+      return loadedDiscussion.linkedTo.filmSim.sampleImages[0].url;
     }
     return null;
   }
@@ -124,9 +148,9 @@ const DiscussionDetail: React.FC = () => {
 
   function handleNavigateToLinkedItem() {
     const path =
-      discussion.linkedTo.type === "PRESET"
-        ? `/preset/${discussion.linkedTo.preset?.slug}`
-        : `/filmsim/${discussion.linkedTo.filmSim?.slug}`;
+      loadedDiscussion.linkedTo.type === "PRESET"
+        ? `/preset/${loadedDiscussion.linkedTo.preset?.slug}`
+        : `/filmsim/${loadedDiscussion.linkedTo.filmSim?.slug}`;
     navigate(path);
   }
 

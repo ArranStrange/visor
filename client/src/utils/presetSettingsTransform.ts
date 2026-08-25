@@ -1,5 +1,9 @@
 import { ParsedSettings } from "../types/xmpSettings";
-import { PresetSettings, ToneCurve as ToneCurveType } from "../types/graphql";
+import {
+  CurvePoint,
+  PresetSettings,
+  ToneCurve as ToneCurveType,
+} from "../types/graphql";
 
 export const buildSettingsForBackend = (
   parsed: ParsedSettings
@@ -58,6 +62,7 @@ export const buildSettingsForBackend = (
     highlightSaturation: Number(parsed.splitToning?.highlightSaturation) || 0,
     balance: Number(parsed.splitToning?.balance) || 0,
   },
+  colorGrading: parsed.colorGrading,
   sharpening: Number(parsed.texture) || 0,
   noiseReduction: {
     luminance: Number(parsed.detail?.luminanceSmoothing) || 0,
@@ -90,7 +95,7 @@ export const buildToneCurveForBackend = (
     };
   }
 
-  const ensureValidPoints = (points: any[] | undefined) => {
+  const ensureValidPoints = (points: CurvePoint[] | undefined) => {
     if (!points || !Array.isArray(points)) return [];
     return points
       .map((point) => ({

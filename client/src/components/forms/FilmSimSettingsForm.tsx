@@ -23,11 +23,15 @@ import {
   COLOR_CHROME_EFFECT_OPTIONS,
   COLOR_CHROME_FX_BLUE_OPTIONS,
 } from "../../data/filmSimSettings";
-import { FilmSimSettings } from "../../hooks/useFilmSimForm";
+import {
+  FilmSimFormChangeHandler,
+  FilmSimFormField,
+} from "../../hooks/useFilmSimForm";
+import { FilmSimSettings } from "../../types/filmSim";
 
 interface FilmSimSettingsFormProps {
   settings: FilmSimSettings;
-  onSettingChange: (field: string, value: any) => void;
+  onSettingChange: FilmSimFormChangeHandler;
 }
 
 const SettingField: React.FC<{
@@ -35,9 +39,9 @@ const SettingField: React.FC<{
   value: string | number | null | undefined;
   options: { value: string | number | null; label: string }[];
   settingKey: keyof FilmSimSettings;
-  onSettingChange: (field: string, value: any) => void;
+  onSettingChange: FilmSimFormChangeHandler;
 }> = ({ label, value, options, settingKey, onSettingChange }) => (
-  <Grid {...(undefined as any)} item xs={12} md={6}>
+  <Grid size={{ xs: 12, md: 6 }}>
     <FormControl fullWidth>
       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
         <Typography>{label}</Typography>
@@ -50,7 +54,10 @@ const SettingField: React.FC<{
               (opt.value === null ? "null" : opt.value) === e.target.value
           )?.value;
           if (newValue !== undefined) {
-            onSettingChange(`settings.${settingKey}`, newValue);
+            onSettingChange(
+              `settings.${settingKey}` as FilmSimFormField,
+              newValue
+            );
           }
         }}
       >

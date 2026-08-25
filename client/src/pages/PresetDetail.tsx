@@ -8,7 +8,12 @@ import {
 } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@apollo/client";
-import { ADD_PHOTO_TO_PRESET, GET_PRESET_BY_SLUG } from "../graphql/presets";
+import {
+  ADD_PHOTO_TO_PRESET,
+  GET_PRESET_BY_SLUG,
+  type GetPresetQueryData,
+  type GetPresetQueryVariables,
+} from "../graphql/presets";
 import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmp-compiler";
@@ -29,13 +34,18 @@ import AddPhotoDialog from "../components/presets/dialogs/AddPhotoDialog";
 import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
 import { usePresetOperations } from "../hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
+import type { CurvePoint } from "../types/graphql";
 
 const PresetDetails: React.FC = () => {
   const { slug } = useParams();
   const { user: currentUser } = useAuth();
   const { isAdmin } = useFeatured();
-  const { loading, error, data } = useQuery(GET_PRESET_BY_SLUG, {
-    variables: { slug },
+  const { loading, error, data } = useQuery<
+    GetPresetQueryData,
+    GetPresetQueryVariables
+  >(GET_PRESET_BY_SLUG, {
+    variables: { slug: slug ?? "" },
+    skip: !slug,
   });
 
   const preset = data?.getPreset;
@@ -95,9 +105,9 @@ const PresetDetails: React.FC = () => {
   const handleDownloadXMP = () => {
     if (!preset) return;
 
-    const convertToneCurve = (curveData: any) => {
+    const convertToneCurve = (curveData?: CurvePoint[]) => {
       if (!curveData || !Array.isArray(curveData)) return undefined;
-      return curveData.map((point: any) => ({ x: point.x, y: point.y }));
+      return curveData.map((point) => ({ x: point.x, y: point.y }));
     };
 
     const presetData: PresetData = {
@@ -163,7 +173,7 @@ const PresetDetails: React.FC = () => {
       <DetailHeader
         creator={preset.creator}
         title={preset.title}
-        featured={preset.featured}
+        featured={!!preset.featured}
         isAdmin={isAdmin}
         isOwner={!!isOwner}
         onFeaturedToggle={handleToggleFeatured}

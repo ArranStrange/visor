@@ -1,3 +1,5 @@
+import type { FilmSimSummary, PresetSummary } from "./graphql";
+
 export interface DiscussionReply {
   userId: string;
   username: string;
@@ -102,23 +104,9 @@ export interface User {
   avatar?: string;
 }
 
-export interface Preset {
-  id: string;
-  title: string;
-  slug: string;
-  afterImage?: {
-    url: string;
-  };
-}
+export type Preset = PresetSummary;
 
-export interface FilmSim {
-  id: string;
-  name: string;
-  slug: string;
-  sampleImages?: Array<{
-    url: string;
-  }>;
-}
+export type FilmSim = FilmSimSummary;
 
 // New discussion type interfaces
 export interface Technique {

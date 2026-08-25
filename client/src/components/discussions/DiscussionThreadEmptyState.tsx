@@ -1,11 +1,12 @@
 import React from "react";
 import { Card, CardContent, Typography } from "@mui/material";
 import DiscussionComposer from "./DiscussionComposer";
+import type { UserSummary } from "../../types/graphql";
 
 interface DiscussionThreadEmptyStateProps {
   itemType: "preset" | "filmsim";
   showPreviewOnly?: boolean;
-  user: any;
+  user: UserSummary | null;
   onCreatePost: (content: string) => void;
   isCreating?: boolean;
 }

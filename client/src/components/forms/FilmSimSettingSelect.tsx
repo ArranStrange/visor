@@ -28,7 +28,7 @@ const FilmSimSettingSelect: React.FC<FilmSimSettingSelectProps> = ({
   settingKey,
   onChange,
 }) => (
-  <Grid {...(undefined as any)} item xs={12} md={6}>
+  <Grid size={{ xs: 12, md: 6 }}>
     <FormControl fullWidth>
       <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
         <Typography>{label}</Typography>
