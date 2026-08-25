@@ -175,11 +175,33 @@ export const visorTheme = createTheme({
         },
       }),
     },
+    // MUI dark mode tints Paper by elevation via a backgroundImage alpha
+    // wash; we disable it and map elevation to the surface ladder
+    // explicitly instead, so every plane is a deliberate rung.
     MuiPaper: {
       styleOverrides: {
         root: {
           backgroundImage: "none",
         },
+      },
+    },
+    // Floating surfaces take the top rung so they read as stacked above
+    // cards rather than merged with them. Menus render through Popover,
+    // so this covers them too.
+    MuiPopover: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          backgroundColor: theme.palette.surface.overlay,
+          border: `1px solid ${theme.palette.surface.border}`,
+        }),
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          backgroundColor: theme.palette.surface.overlay,
+          border: `1px solid ${theme.palette.surface.border}`,
+        }),
       },
     },
     MuiButton: {
