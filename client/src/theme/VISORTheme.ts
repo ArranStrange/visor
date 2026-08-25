@@ -10,7 +10,7 @@ import { createTheme } from "@mui/material/styles";
 const surface = {
   sunken: "#050505",
   canvas: "#0A0A0A",
-  raised: "#1A1A1A",
+  raised: "#171717",
   raisedHover: "#212121",
   overlay: "#282828",
   input: "#101010",
