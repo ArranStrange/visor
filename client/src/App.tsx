@@ -25,6 +25,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const EmailVerification = lazy(() => import("./pages/EmailVerification"));
 const MyLists = lazy(() => import("./pages/MyLists"));
+const Wallet = lazy(() => import("./pages/Wallet"));
 const BrowseLists = lazy(() => import("./pages/BrowseLists"));
 const ListDetail = lazy(() => import("./pages/list-detail"));
 const CreateList = lazy(() => import("./pages/CreateList"));
@@ -93,6 +94,7 @@ function App() {
                           element={<EmailVerification />}
                         />
                         <Route path="/lists" element={<MyLists />} />
+                        <Route path="/wallet" element={<Wallet />} />
                         <Route path="/browse-lists" element={<BrowseLists />} />
                         <Route path="/list/:id" element={<ListDetail />} />
                         <Route path="/create-list" element={<CreateList />} />
