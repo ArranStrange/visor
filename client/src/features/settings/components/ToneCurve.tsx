@@ -6,6 +6,7 @@ import {
   ToggleButton,
   useTheme,
 } from "@mui/material";
+import { TONE_CURVE_CHANNEL_COLORS } from "@/constants/xmpSettingsConfig";
 
 interface ToneCurveProps {
   curves: {
@@ -84,7 +85,7 @@ const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
               width: 16,
               height: 16,
               borderRadius: "50%",
-              backgroundColor: "red",
+              backgroundColor: TONE_CURVE_CHANNEL_COLORS.red,
             }}
           />
         </ToggleButton>
@@ -94,7 +95,7 @@ const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
               width: 16,
               height: 16,
               borderRadius: "50%",
-              backgroundColor: "green",
+              backgroundColor: TONE_CURVE_CHANNEL_COLORS.green,
             }}
           />
         </ToggleButton>
@@ -104,7 +105,7 @@ const ToneCurve: React.FC<ToneCurveProps> = ({ curves }) => {
               width: 16,
               height: 16,
               borderRadius: "50%",
-              backgroundColor: "blue",
+              backgroundColor: TONE_CURVE_CHANNEL_COLORS.blue,
             }}
           />
         </ToggleButton>

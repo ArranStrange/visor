@@ -3,7 +3,7 @@ import { Box, Typography, useMediaQuery, useTheme } from "@mui/material";
 import SettingSliderDisplay from "@/features/settings/components/SettingSliderDisplay";
 import XmpSettingsAccordion from "@/features/settings/components/XmpSettingsAccordion";
 import { ParsedSettings } from "@/types/xmpSettings";
-import { XMP_SECTIONS } from "@/features/settings/utils/xmpSettingsConfig";
+import { XMP_SECTIONS } from "@/constants/xmpSettingsConfig";
 
 interface XmpSettingsDisplayProps {
   settings: ParsedSettings;
