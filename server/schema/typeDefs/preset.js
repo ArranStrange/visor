@@ -567,7 +567,7 @@ const typeDefs = gql`
     getPresetById(id: ID!): Preset
     """
     \`filter\` is deprecated in favour of \`where\` and is accepted for one
-    release only — see the dated removal issue on #126. Both arguments are
+    release only, per docs/plans/c1-c3-delivery-plan.md. Both arguments are
     validated by the same allow-listing builder; \`where\` wins on conflict.
     """
     listPresets(

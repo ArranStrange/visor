@@ -26,8 +26,8 @@ const {
  *    resolvers/filmSim/types.js so documents that predate the rename (and
  *    have not been through the backfill script) still match.
  *
- * The legacy JSON argument is accepted for exactly one release — see the
- * dated removal issue referenced from the schema.
+ * The legacy JSON argument is accepted for exactly one release, per
+ * docs/plans/c1-c3-delivery-plan.md; a dated removal task tracks deleting it.
  */
 
 const OPERATOR_PREFIX = "$";
