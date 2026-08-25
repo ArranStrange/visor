@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { getErrorMessage } from "../utils/errorHandling";
 
@@ -14,7 +15,20 @@ interface UseImageUploadOptions {
   folder?: string;
 }
 
-export const useImageUpload = (options: UseImageUploadOptions = {}) => {
+interface UseImageUploadResult {
+  isUploading: boolean;
+  fileError: string | null;
+  setFileError: Dispatch<SetStateAction<string | null>>;
+  uploadImages: (
+    files: File[],
+    onSuccess: (files: File[], urls: UploadResult[]) => void
+  ) => Promise<void>;
+  validateFile: (file: File) => { isValid: boolean; error?: string };
+}
+
+export const useImageUpload = (
+  options: UseImageUploadOptions = {}
+): UseImageUploadResult => {
   const {
     maxFileSize = 25 * 1024 * 1024, // 25MB default
     allowedTypes = ["image/jpeg", "image/png", "image/webp"],

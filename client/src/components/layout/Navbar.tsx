@@ -34,30 +34,9 @@ const NavBar: React.FC = () => {
   const [searchOpen, setSearchOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [isVisible, setIsVisible] = React.useState(true);
-  const [lastScrollY, setLastScrollY] = React.useState(0);
+  const lastScrollY = React.useRef(0);
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      // Show navbar when at the top
-      if (currentScrollY < 10) {
-        setIsVisible(true);
-        setLastScrollY(currentScrollY);
-        return;
-      }
-
-      // Hide when scrolling down, show when scrolling up
-      // Using a threshold of 5px for quick response
-      if (Math.abs(currentScrollY - lastScrollY) > 5) {
-        setIsVisible(currentScrollY < lastScrollY);
-        setLastScrollY(currentScrollY);
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [lastScrollY]);
+  React.useEffect(setupScrollTracking, []);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -76,44 +55,29 @@ const NavBar: React.FC = () => {
     {
       text: "Profile",
       icon: <AccountCircleIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate(`/profile/${user?.id}`);
-      },
+      onClick: handleProfileClick,
       divider: true,
     },
     {
       text: "My Lists",
       icon: <ListIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate("/lists");
-      },
+      onClick: handleMyListsClick,
     },
     {
       text: "Browse Lists",
       icon: <ListIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate("/browse-lists");
-      },
+      onClick: handleBrowseListsClick,
       divider: true,
     },
     {
       text: "Discussions",
       icon: <ForumIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate("/discussions");
-      },
+      onClick: handleDiscussionsClick,
     },
     {
       text: "Notifications",
       icon: <NotificationsIcon />,
-      onClick: () => {
-        handleMenuClose();
-        navigate("/notifications");
-      },
+      onClick: handleNotificationsClick,
     },
   ];
 
@@ -213,7 +177,7 @@ const NavBar: React.FC = () => {
                   </Typography>
                 </Box>
                 <Divider />
-                {menuItems.map((item, index) => (
+                {menuItems.map((item) => (
                   <React.Fragment key={item.text}>
                     <MenuItem onClick={item.onClick}>
                       {item.icon}
@@ -255,6 +219,51 @@ const NavBar: React.FC = () => {
       </Toolbar>
     </AppBar>
   );
+
+  function setupScrollTracking() {
+    function handleScroll() {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+        lastScrollY.current = currentScrollY;
+        return;
+      }
+
+      if (Math.abs(currentScrollY - lastScrollY.current) > 5) {
+        setIsVisible(currentScrollY < lastScrollY.current);
+        lastScrollY.current = currentScrollY;
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }
+
+  function handleProfileClick() {
+    handleMenuClose();
+    navigate(`/profile/${user?.id}`);
+  }
+
+  function handleMyListsClick() {
+    handleMenuClose();
+    navigate("/lists");
+  }
+
+  function handleBrowseListsClick() {
+    handleMenuClose();
+    navigate("/browse-lists");
+  }
+
+  function handleDiscussionsClick() {
+    handleMenuClose();
+    navigate("/discussions");
+  }
+
+  function handleNotificationsClick() {
+    handleMenuClose();
+    navigate("/notifications");
+  }
 };
 
 export default NavBar;

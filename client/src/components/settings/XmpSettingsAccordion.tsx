@@ -11,7 +11,7 @@ import ToneCurve from "./ToneCurve";
 import ColorGradingWheels from "./ColorGradingWheels";
 import ColorMixerSection from "./ColorMixerSection";
 import { ParsedSettings } from "../../types/xmpSettings";
-import { formatToneCurveData } from "../../utils/presetDetailUtils";
+import { normalizeToneCurve } from "../../utils/xmp-parser";
 import {
   SectionConfig,
   SettingConfig,
@@ -73,10 +73,10 @@ const XmpSettingsAccordion: React.FC<XmpSettingsAccordionProps> = ({
         return (
           <ToneCurve
             curves={{
-              rgb: formatToneCurveData(settings.toneCurve?.rgb),
-              red: formatToneCurveData(settings.toneCurve?.red),
-              green: formatToneCurveData(settings.toneCurve?.green),
-              blue: formatToneCurveData(settings.toneCurve?.blue),
+              rgb: normalizeToneCurve(settings.toneCurve?.rgb, "sampled"),
+              red: normalizeToneCurve(settings.toneCurve?.red, "sampled"),
+              green: normalizeToneCurve(settings.toneCurve?.green, "sampled"),
+              blue: normalizeToneCurve(settings.toneCurve?.blue, "sampled"),
             }}
           />
         );

@@ -11,3 +11,4 @@ export { parseCalibrationSettings } from "./calibration-settings";
 export { parseCropSettings } from "./crop-settings";
 export { parseMetadataSettings } from "./metadata-settings";
 export { buildSettingsObject } from "./build-settings-object";
+export { normalizeToneCurve } from "./normalize-tone-curve";

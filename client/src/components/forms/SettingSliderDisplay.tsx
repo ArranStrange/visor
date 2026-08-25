@@ -8,6 +8,17 @@ interface SettingSliderDisplayProps {
   showLabel?: boolean;
 }
 
+interface SliderRange {
+  min: number;
+  max: number;
+}
+
+const DEFAULT_SLIDER_RANGE: SliderRange = { min: -100, max: 100 };
+const SLIDER_RANGES: Record<string, SliderRange> = {
+  exposure: { min: -5, max: 5 },
+  grain: { min: 0, max: 100 },
+};
+
 const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
   label,
   value,
@@ -17,11 +28,8 @@ const SettingSliderDisplay: React.FC<SettingSliderDisplayProps> = ({
   const parsed = parseFloat(value.toString());
   if (isNaN(parsed)) return null;
 
-  const isExposure = label.toLowerCase() === "exposure";
-  const isGrain = label.toLowerCase() === "grain";
-
-  const min = isExposure ? -5 : isGrain ? 0 : -100;
-  const max = isExposure ? 5 : isGrain ? 100 : 100;
+  const { min, max } =
+    SLIDER_RANGES[label.toLowerCase()] ?? DEFAULT_SLIDER_RANGE;
 
   const clamped = Math.max(min, Math.min(parsed, max));
   const range = max - min;

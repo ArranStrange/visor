@@ -18,6 +18,7 @@ import { useAuth } from "../context/AuthContext";
 import { useFeatured } from "../hooks/useFeatured";
 import { downloadXMP, type PresetData } from "../utils/xmp-compiler";
 import { convertPresetSettingsToParsedSettings } from "../utils/presetDetailUtils";
+import { normalizeToneCurve } from "../utils/xmp-parser";
 import AddToListButton from "../components/ui/AddToListButton";
 import XmpSettingsDisplay from "../components/settings/XmpSettingsDisplay";
 import DiscussionThread from "../components/discussions/DiscussionThread";
@@ -34,7 +35,6 @@ import AddPhotoDialog from "../components/presets/dialogs/AddPhotoDialog";
 import FullscreenImageDialog from "../components/presets/dialogs/FullscreenImageDialog";
 import { usePresetOperations } from "../hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
-import type { CurvePoint } from "../types/graphql";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const PresetDetails: React.FC = () => {
@@ -106,20 +106,15 @@ const PresetDetails: React.FC = () => {
   const handleDownloadXMP = () => {
     if (!preset) return;
 
-    const convertToneCurve = (curveData?: CurvePoint[]) => {
-      if (!curveData || !Array.isArray(curveData)) return undefined;
-      return curveData.map((point) => ({ x: point.x, y: point.y }));
-    };
-
     const presetData: PresetData = {
       title: preset.title,
       description: preset.description || "",
       settings: preset.settings || {},
       toneCurve: {
-        rgb: convertToneCurve(preset.toneCurve?.rgb),
-        red: convertToneCurve(preset.toneCurve?.red),
-        green: convertToneCurve(preset.toneCurve?.green),
-        blue: convertToneCurve(preset.toneCurve?.blue),
+        rgb: normalizeToneCurve(preset.toneCurve?.rgb, "points"),
+        red: normalizeToneCurve(preset.toneCurve?.red, "points"),
+        green: normalizeToneCurve(preset.toneCurve?.green, "points"),
+        blue: normalizeToneCurve(preset.toneCurve?.blue, "points"),
       },
       whiteBalance: "Custom",
       cameraProfile: "Adobe Standard",

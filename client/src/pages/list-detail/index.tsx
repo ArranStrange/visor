@@ -96,8 +96,7 @@ const ListDetail: React.FC = () => {
 
         <ContentTypeToggle />
 
-        {renderHeader()}
-        {renderMeta()}
+        {renderListDetails()}
 
         <ContentGridLoader
           customData={combinedData}
@@ -116,46 +115,42 @@ const ListDetail: React.FC = () => {
     </Container>
   );
 
-  function renderHeader() {
+  function renderListDetails() {
     if (isEditing) {
       return (
-        <ListHeaderEdit
-          name={formData.name}
-          onNameChange={handleInputChange}
-          onCancel={() => setIsEditing(false)}
-          onSave={handleSubmit}
-        />
+        <>
+          <ListHeaderEdit
+            name={formData.name}
+            onNameChange={handleInputChange}
+            onCancel={() => setIsEditing(false)}
+            onSave={handleSubmit}
+          />
+          <ListEditFields
+            description={formData.description}
+            isPublic={formData.isPublic}
+            onDescriptionChange={handleInputChange}
+            onIsPublicChange={handleInputChange}
+            onDeleteClick={() => setDeleteDialogOpen(true)}
+          />
+        </>
       );
     }
-    return (
-      <ListHeaderView
-        name={list?.name ?? ""}
-        isPublic={!!list?.isPublic}
-        isOwner={isOwner}
-        onStartEdit={() => setIsEditing(true)}
-      />
-    );
-  }
 
-  function renderMeta() {
-    if (isEditing) {
-      return (
-        <ListEditFields
-          description={formData.description}
-          isPublic={formData.isPublic}
-          onDescriptionChange={handleInputChange}
-          onIsPublicChange={handleInputChange}
-          onDeleteClick={() => setDeleteDialogOpen(true)}
-        />
-      );
-    }
     return (
-      <ListSummary
-        description={list?.description}
-        ownerUsername={list?.owner?.username}
-        presetCount={list?.presets?.length || 0}
-        filmSimCount={list?.filmSims?.length || 0}
-      />
+      <>
+        <ListHeaderView
+          name={list?.name ?? ""}
+          isPublic={!!list?.isPublic}
+          isOwner={isOwner}
+          onStartEdit={() => setIsEditing(true)}
+        />
+        <ListSummary
+          description={list?.description}
+          ownerUsername={list?.owner?.username}
+          presetCount={list?.presets?.length || 0}
+          filmSimCount={list?.filmSims?.length || 0}
+        />
+      </>
     );
   }
 

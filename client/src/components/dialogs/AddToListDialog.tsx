@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getErrorMessage } from "../../utils/errorHandling";
@@ -10,9 +10,6 @@ import {
   DialogActions,
   Button,
   List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
   Typography,
   CircularProgress,
   Alert,
@@ -23,6 +20,7 @@ import {
   ADD_TO_LIST,
 } from "../../graphql/lists";
 import { UserList } from "../../types/lists";
+import AddToListRow from "./add-to-list-row";
 
 interface AddToListItem extends UserList {
   owner?: { id: string };
@@ -56,6 +54,12 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const timersRef = useRef<Set<ReturnType<typeof setTimeout>>>(new Set());
+
+  useEffect(
+    () => () => timersRef.current.forEach((timer) => clearTimeout(timer)),
+    []
+  );
 
   const { loading, data, refetch } = useQuery<
     GetUserListsData,
@@ -76,7 +80,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
       setSuccess("Added to list successfully!");
 
       refetch();
-      setTimeout(() => {
+      scheduleTimer(() => {
         onClose();
         setSuccess(null);
       }, 1500);
@@ -84,7 +88,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
     onError: (error) => {
       console.error("Mutation error:", getErrorMessage(error));
       setError(getErrorMessage(error));
-      setTimeout(() => setError(null), 3000);
+      scheduleTimer(() => setError(null), 3000);
     },
   });
 
@@ -141,50 +145,7 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
             {success}
           </Alert>
         )}
-        {loading ? (
-          <Box display="flex" justifyContent="center" p={3}>
-            <CircularProgress />
-          </Box>
-        ) : lists.length === 0 ? (
-          <Box textAlign="center" py={3}>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              You don't have any lists yet.
-            </Typography>
-            <Button
-              variant="contained"
-              onClick={handleCreateList}
-              sx={{ mt: 1 }}
-            >
-              Create Your First List
-            </Button>
-          </Box>
-        ) : (
-          <List>
-            {uniqueLists.map((list) => (
-              <ListItem key={list.id} disablePadding>
-                <ListItemButton onClick={() => handleAddToList(list.id)}>
-                  <ListItemText
-                    primary={list.name}
-                    secondary={
-                      <Box>
-                        {list.description && (
-                          <Typography variant="body2" color="text.secondary">
-                            {list.description}
-                          </Typography>
-                        )}
-                        <Typography variant="caption" color="text.secondary">
-                          {list.presets?.length || 0} presets •{" "}
-                          {list.filmSims?.length || 0} film sims
-                          {list.isPublic && " • Public"}
-                        </Typography>
-                      </Box>
-                    }
-                  />
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        )}
+        {renderListContent()}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
@@ -194,6 +155,45 @@ const AddToListDialog: React.FC<AddToListDialogProps> = ({
       </DialogActions>
     </Dialog>
   );
+
+  function renderListContent() {
+    if (loading) {
+      return (
+        <Box display="flex" justifyContent="center" p={3}>
+          <CircularProgress />
+        </Box>
+      );
+    }
+
+    if (lists.length === 0) {
+      return (
+        <Box textAlign="center" py={3}>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            You don't have any lists yet.
+          </Typography>
+          <Button variant="contained" onClick={handleCreateList} sx={{ mt: 1 }}>
+            Create Your First List
+          </Button>
+        </Box>
+      );
+    }
+
+    return (
+      <List>
+        {uniqueLists.map((list) => (
+          <AddToListRow key={list.id} list={list} onAdd={handleAddToList} />
+        ))}
+      </List>
+    );
+  }
+
+  function scheduleTimer(callback: () => void, delay: number) {
+    const timer = setTimeout(() => {
+      timersRef.current.delete(timer);
+      callback();
+    }, delay);
+    timersRef.current.add(timer);
+  }
 };
 
 export default AddToListDialog;
