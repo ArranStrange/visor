@@ -15,7 +15,8 @@ import {
   DYNAMIC_RANGE_OPTIONS,
   FILM_SIMULATION_OPTIONS,
   WHITE_BALANCE_OPTIONS,
-  TONE_SLIDER_OPTIONS,
+  TONE_CURVE_OPTIONS,
+  SHARPNESS_OPTIONS,
   COLOR_OPTIONS,
   NOISE_REDUCTION_OPTIONS,
   GRAIN_EFFECT_OPTIONS,
@@ -49,9 +50,12 @@ const SettingField: React.FC<{
       <Select
         value={value === null ? "null" : value}
         onChange={(e: SelectChangeEvent<string | number>) => {
+          // Compare as strings: MenuItem values are stringified, so a raw
+          // numeric opt.value would never strictly equal e.target.value.
           const newValue = options.find(
             (opt) =>
-              (opt.value === null ? "null" : opt.value) === e.target.value
+              (opt.value === null ? "null" : opt.value.toString()) ===
+              e.target.value
           )?.value;
           if (newValue !== undefined) {
             onSettingChange(
@@ -106,19 +110,19 @@ const FilmSimSettingsForm: React.FC<FilmSimSettingsFormProps> = ({
     {
       label: "Sharpness",
       value: settings.sharpness,
-      options: TONE_SLIDER_OPTIONS,
+      options: SHARPNESS_OPTIONS,
       key: "sharpness" as keyof FilmSimSettings,
     },
     {
       label: "Highlight Tone",
       value: settings.highlight,
-      options: TONE_SLIDER_OPTIONS,
+      options: TONE_CURVE_OPTIONS,
       key: "highlight" as keyof FilmSimSettings,
     },
     {
       label: "Shadow Tone",
       value: settings.shadow,
-      options: TONE_SLIDER_OPTIONS,
+      options: TONE_CURVE_OPTIONS,
       key: "shadow" as keyof FilmSimSettings,
     },
     {
