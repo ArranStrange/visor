@@ -1,8 +1,6 @@
-export type GridContentType = "all" | "presets" | "films";
+import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
 
-export interface GridFilter {
-  [key: string]: unknown;
-}
+export type GridContentType = "all" | "presets" | "films";
 
 interface GridImage {
   url?: string | null;
@@ -58,7 +56,7 @@ export interface PaginatedFilmSimsData {
 export interface PaginatedListVariables {
   page: number;
   limit: number;
-  filter?: GridFilter;
+  where?: PresetFilterInput | FilmSimFilterInput;
 }
 
 interface BuildGridContentOptions {

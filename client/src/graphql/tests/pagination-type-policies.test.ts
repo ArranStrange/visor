@@ -91,10 +91,31 @@ describe("preset pagination field policy", () => {
   });
 
   it("isolates filter and limit cache entries while sharing pages", () => {
-    expect(presetPolicy.keyArgs).toEqual(["filter", "limit"]);
+    expect(presetPolicy.keyArgs).toEqual(["filter", "where", "limit"]);
     expect(presetPolicy.keyArgs).not.toContain("page");
   });
+
+  it("keys on the typed where argument as well as the legacy JSON filter", () => {
+    // Two queries that differ only in `where` select different documents; if
+    // `where` were missing from keyArgs they would share one cache entry and
+    // a sensor-filtered grid would show unfiltered results.
+    for (const policy of [getPresetPolicy(), getFilmSimPolicy()]) {
+      expect(policy.keyArgs).toContain("where");
+      expect(policy.keyArgs).toContain("filter");
+      expect(policy.keyArgs).toContain("limit");
+    }
+  });
 });
+
+function getFilmSimPolicy() {
+  const policy = paginationTypePolicies.Query?.fields?.listFilmSims;
+
+  if (!policy || typeof policy === "function") {
+    throw new Error("Expected listFilmSims to define a field policy");
+  }
+
+  return { keyArgs: policy.keyArgs };
+}
 
 function getPresetPolicy() {
   const policy = paginationTypePolicies.Query?.fields?.listPresets;

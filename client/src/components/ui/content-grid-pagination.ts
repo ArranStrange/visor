@@ -7,7 +7,7 @@ import type {
   ListPresetsQueryData,
   ListPresetsQueryVariables,
 } from "@/features/presets/graphql/presets";
-import type { GridFilter } from "./content-grid-data";
+import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
 
 interface PageState {
   currentPage: number;
@@ -15,7 +15,8 @@ interface PageState {
 }
 
 interface FetchNextContentPagesOptions {
-  filter?: GridFilter;
+  presetWhere?: PresetFilterInput;
+  filmSimWhere?: FilmSimFilterInput;
   isLoading: boolean;
   presets?: PageState;
   filmSims?: PageState;
@@ -32,7 +33,8 @@ interface FetchNextContentPagesOptions {
 const ITEMS_PER_PAGE = 20;
 
 export async function fetchNextContentPages({
-  filter,
+  presetWhere,
+  filmSimWhere,
   isLoading,
   presets,
   filmSims,
@@ -48,7 +50,7 @@ export async function fetchNextContentPages({
         variables: {
           page: presets.currentPage + 1,
           limit: ITEMS_PER_PAGE,
-          filter,
+          where: presetWhere,
         },
       })
     );
@@ -59,7 +61,7 @@ export async function fetchNextContentPages({
         variables: {
           page: filmSims.currentPage + 1,
           limit: ITEMS_PER_PAGE,
-          filter,
+          where: filmSimWhere,
         },
       })
     );
