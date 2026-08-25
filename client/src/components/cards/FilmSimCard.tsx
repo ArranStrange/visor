@@ -1,7 +1,6 @@
-import React, { useEffect, memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback } from "react";
 import { optimizeImageUrl } from "../../utils/cloudinary";
 import {
-  Card,
   Typography,
   Box,
   Chip,
@@ -12,15 +11,18 @@ import {
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
-import { useMobileDetection } from "../../hooks/useMobileDetection";
 import ImageOptimizer from "../media/ImageOptimizer";
+import CardShell from "./CardShell";
 import {
   overlayButtonStyles,
   overlayAvatarStyles,
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
-  getCardHoverStyles,
 } from "../../theme/cardOverlays";
+
+const filmSimCardStyles = {
+  transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
+};
 
 interface FilmSimCardProps {
   id: string;
@@ -58,23 +60,6 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
   ({ id, name, slug, thumbnail, tags = [], creator }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
-    const [showOptions, setShowOptions] = React.useState(false);
-    const isMobile = useMobileDetection();
-
-    // Memoize event handlers
-    const handleClick = useCallback(() => {
-      if (!addToListOpen) {
-        if (isMobile) {
-          if (!showOptions) {
-            setShowOptions(true);
-          } else {
-            navigate(`/filmsim/${slug}`);
-          }
-        } else {
-          navigate(`/filmsim/${slug}`);
-        }
-      }
-    }, [addToListOpen, isMobile, showOptions, navigate, slug]);
 
     const handleAddToList = useCallback((e: React.MouseEvent) => {
       e.stopPropagation();
@@ -85,46 +70,14 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
       setAddToListOpen(false);
     }, []);
 
-    useEffect(() => {
-      if (!isMobile && showOptions) {
-        const timer = setTimeout(() => {
-          setShowOptions(false);
-        }, 3000);
-        return () => clearTimeout(timer);
-      }
-    }, [showOptions, isMobile]);
-
-    // Memoize card styles
-    const cardStyles = useMemo(
-      () => ({
-        position: "relative" as const,
-        aspectRatio: "2/3",
-        borderRadius: 1,
-        overflow: "hidden",
-        cursor: "pointer",
-        transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
-        ...getCardHoverStyles(showOptions),
-      }),
-      [showOptions]
-    );
-
     return (
-      <Card sx={cardStyles} onClick={handleClick}>
-        <ImageOptimizer
-          src={thumbnail || "/placeholder-image.jpg"}
-          alt={name}
-          aspectRatio="2:3"
-          loading="lazy"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-
+      <CardShell
+        aspectRatio="2/3"
+        navigateTo={`/filmsim/${slug}`}
+        navigationBlocked={addToListOpen}
+        cardSx={filmSimCardStyles}
+        renderMedia={renderMedia}
+      >
         <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
             variant="floating"
@@ -213,8 +166,27 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
           filmSimId={id}
           itemName={name}
         />
-      </Card>
+      </CardShell>
     );
+
+    function renderMedia() {
+      return (
+        <ImageOptimizer
+          src={thumbnail || "/placeholder-image.jpg"}
+          alt={name}
+          aspectRatio="2:3"
+          loading="lazy"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      );
+    }
   }
 );
 

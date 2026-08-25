@@ -11,11 +11,9 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import {
-  MoreVert as MoreVertIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { formatDistanceToNow } from "date-fns";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";

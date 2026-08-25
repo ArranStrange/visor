@@ -8,12 +8,10 @@ import {
   IconButton,
   Tooltip,
 } from "@mui/material";
-import {
-  Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon,
-  CameraAlt as CameraIcon,
-  Palette as PresetIcon,
-} from "@mui/icons-material";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import CameraIcon from "@mui/icons-material/CameraAlt";
+import PresetIcon from "@mui/icons-material/Palette";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { Discussion as DiscussionType } from "../../types/discussions";

@@ -1,12 +1,12 @@
 import React, { memo, useCallback, useMemo } from "react";
-import { Card, Typography, Box, Avatar, Stack, Chip } from "@mui/material";
+import { Typography, Box, Avatar, Stack, Chip } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import ImageOptimizer from "../media/ImageOptimizer";
 import { optimizeImageUrl } from "../../utils/cloudinary";
+import CardShell from "./CardShell";
 import {
   overlayAvatarStyles,
   overlayTitleContainerStyles,
-  getCardHoverStyles,
 } from "../../theme/cardOverlays";
 
 const placeholderImage = "/placeholder-image.jpg";
@@ -43,7 +43,6 @@ interface ListCardProps {
 const ListCard: React.FC<ListCardProps> = memo(
   ({ id, name, description, owner, presets = [], filmSims = [] }) => {
     const navigate = useNavigate();
-    const [showOptions, setShowOptions] = React.useState(false);
 
     // Get thumbnail images from presets and film sims
     const thumbnails = useMemo(() => {
@@ -72,28 +71,12 @@ const ListCard: React.FC<ListCardProps> = memo(
 
     const totalItems = presets.length + filmSims.length;
 
-    const handleCardClick = useCallback(() => {
-      navigate(`/list/${id}`);
-    }, [navigate, id]);
-
     const handleOwnerClick = useCallback(
       (e: React.MouseEvent) => {
         e.stopPropagation();
         navigate(`/profile/${owner.id}`);
       },
       [navigate, owner.id]
-    );
-
-    const cardStyles = useMemo(
-      () => ({
-        position: "relative" as const,
-        aspectRatio: "1/1",
-        borderRadius: 1,
-        cursor: "pointer",
-        overflow: "hidden",
-        ...getCardHoverStyles(showOptions),
-      }),
-      [showOptions]
     );
 
     // Render image grid based on number of thumbnails
@@ -154,14 +137,13 @@ const ListCard: React.FC<ListCardProps> = memo(
     };
 
     return (
-      <Card
-        sx={cardStyles}
-        onClick={handleCardClick}
-        onMouseEnter={() => setShowOptions(true)}
-        onMouseLeave={() => setShowOptions(false)}
+      <CardShell
+        aspectRatio="1/1"
+        navigateTo={`/list/${id}`}
+        revealOnMobileTap={false}
+        revealOptionsOnHover
+        renderMedia={renderImageGrid}
       >
-        {renderImageGrid()}
-
         <Box
           sx={overlayAvatarStyles}
           className="creator-avatar"
@@ -236,7 +218,7 @@ const ListCard: React.FC<ListCardProps> = memo(
             }}
           />
         </Box>
-      </Card>
+      </CardShell>
     );
   }
 );

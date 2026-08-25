@@ -1,20 +1,19 @@
-import React, { memo, useCallback, useMemo, useEffect } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 import {
   getResponsiveImageSrcSet,
   optimizeImageUrl,
 } from "../../utils/cloudinary";
-import { Card, Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
+import { Typography, Chip, Box, Avatar, IconButton } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "../dialogs/AddToListDialog";
-import { useMobileDetection } from "../../hooks/useMobileDetection";
 import AnimatedBeforeAfterSlider from "../media/AnimatedBeforeAfterSlider";
+import CardShell, { CardShellRenderState } from "./CardShell";
 import {
   overlayButtonStyles,
   overlayAvatarStyles,
   overlayTitleContainerStyles,
   overlayTagsContainerStyles,
-  getCardHoverStyles,
 } from "../../theme/cardOverlays";
 
 const placeholderImage = "/placeholder-image.jpg";
@@ -42,9 +41,6 @@ const PresetCard: React.FC<PresetCardProps> = memo(
   ({ slug, title, afterImage, beforeImage, tags, creator, id }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
-    const [showOptions, setShowOptions] = React.useState(false);
-    const [isHovered, setIsHovered] = React.useState(false);
-    const isMobile = useMobileDetection();
 
     const afterImageUrl = useMemo(() => {
       if (!afterImage) return placeholderImage;
@@ -90,63 +86,13 @@ const PresetCard: React.FC<PresetCardProps> = memo(
       setAddToListOpen(false);
     }, []);
 
-    const handleCardClick = useCallback(() => {
-      if (!addToListOpen) {
-        if (isMobile) {
-          if (!showOptions) {
-            setShowOptions(true);
-            setIsHovered(true);
-          } else {
-            navigate(`/preset/${slug}`);
-          }
-        } else {
-          navigate(`/preset/${slug}`);
-        }
-      }
-    }, [addToListOpen, isMobile, showOptions, navigate, slug]);
-
-    useEffect(() => {
-      if (!isMobile && showOptions) {
-        const timer = setTimeout(() => {
-          setShowOptions(false);
-        }, 3000);
-        return () => clearTimeout(timer);
-      }
-      if (isMobile && !showOptions) {
-        setIsHovered(false);
-      }
-    }, [showOptions, isMobile]);
-
-    const cardStyles = useMemo(
-      () => ({
-        position: "relative" as const,
-        aspectRatio: "4/5",
-        borderRadius: 1,
-        cursor: "pointer",
-        overflow: "hidden",
-        ...getCardHoverStyles(showOptions),
-      }),
-      [showOptions]
-    );
-
     return (
-      <Card
-        sx={cardStyles}
-        onClick={handleCardClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+      <CardShell
+        aspectRatio="4/5"
+        navigateTo={`/preset/${slug}`}
+        navigationBlocked={addToListOpen}
+        renderMedia={renderMedia}
       >
-        <AnimatedBeforeAfterSlider
-          beforeImage={optimizedBeforeImageUrl}
-          afterImage={optimizedAfterImageUrl}
-          beforeImageSrcSet={beforeImageSrcSet}
-          afterImageSrcSet={afterImageSrcSet}
-          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 25vw"
-          loading="lazy"
-          isMobile={isMobile}
-          isHovered={isHovered}
-        />
-
         <Box className="add-to-list-button" sx={overlayButtonStyles}>
           <IconButton
             variant="floating"
@@ -222,8 +168,23 @@ const PresetCard: React.FC<PresetCardProps> = memo(
           presetId={id}
           itemName={title}
         />
-      </Card>
+      </CardShell>
     );
+
+    function renderMedia({ isMobile, isHovered }: CardShellRenderState) {
+      return (
+        <AnimatedBeforeAfterSlider
+          beforeImage={optimizedBeforeImageUrl}
+          afterImage={optimizedAfterImageUrl}
+          beforeImageSrcSet={beforeImageSrcSet}
+          afterImageSrcSet={afterImageSrcSet}
+          sizes="(max-width: 600px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          loading="lazy"
+          isMobile={isMobile}
+          isHovered={isHovered}
+        />
+      );
+    }
   }
 );
 

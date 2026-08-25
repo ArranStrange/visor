@@ -14,14 +14,12 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import {
-  Bookmark as BookmarkIcon,
-  BookmarkBorder as BookmarkBorderIcon,
-  Chat as ChatIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  MoreVert as MoreVertIcon,
-} from "@mui/icons-material";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
+import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
+import ChatIcon from "@mui/icons-material/Chat";
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "../../context/AuthContext";

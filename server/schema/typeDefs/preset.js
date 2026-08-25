@@ -536,38 +536,6 @@ const typeDefs = gql`
     snapshot: String
   }
 
-  input UploadPresetInput {
-    title: String!
-    description: String
-    tags: [String!]!
-    settings: PresetSettingsInput!
-    toneCurve: ToneCurveInput
-    notes: String
-    beforeImage: Upload
-    afterImage: Upload
-
-    # New comprehensive settings
-    cameraProfileDigest: String
-    profileName: String
-    lookTableName: String
-    version: String
-    processVersion: String
-    cameraProfile: String
-    whiteBalance: String
-    colorGrading: ColorGradingInput
-    lensCorrections: LensCorrectionsInput
-    optics: OpticsSettingsInput
-    transform: TransformSettingsInput
-    effects: EffectsSettingsInput
-    calibration: CalibrationSettingsInput
-    crop: CropSettingsInput
-    orientation: String
-    metadata: MetadataSettingsInput
-    hasSettings: Boolean
-    rawFileName: String
-    snapshot: String
-  }
-
   type PaginatedPresets {
     presets: [Preset!]!
     totalCount: Int!

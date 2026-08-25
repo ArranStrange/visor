@@ -1,6 +1,6 @@
 import React from "react";
 import { Card, CardContent, Typography } from "@mui/material";
-import { Notifications as NotificationsIcon } from "@mui/icons-material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 
 interface EmptyNotificationsStateProps {
   filter: "all" | "unread" | "read";

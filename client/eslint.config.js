@@ -20,6 +20,17 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": "warn",
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "@mui/icons-material",
+              message: "Use deep imports such as @mui/icons-material/Add.",
+            },
+          ],
+        },
+      ],
       "no-console": ["warn", { allow: ["error"] }],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],

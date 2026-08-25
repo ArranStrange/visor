@@ -1,23 +1,21 @@
-import {
-  CameraAlt as CameraIcon,
-  Palette as PresetIcon,
-  TrendingUp as TrendingIcon,
-  Schedule as ScheduleIcon,
-  Sort as SortIcon,
-  Build as TechniqueIcon,
-  Camera as EquipmentIcon,
-  LocationOn as LocationIcon,
-  School as TutorialIcon,
-  Star as ReviewIcon,
-  EmojiEvents as ChallengeIcon,
-  AccountTree as WorkflowIcon,
-  Lightbulb as InspirationIcon,
-  RateReview as CritiqueIcon,
-  Article as NewsIcon,
-  Event as EventIcon,
-  ChatBubble as GeneralIcon,
-  ThumbUp as LikeIcon,
-} from "@mui/icons-material";
+import CameraIcon from "@mui/icons-material/CameraAlt";
+import PresetIcon from "@mui/icons-material/Palette";
+import TrendingIcon from "@mui/icons-material/TrendingUp";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import SortIcon from "@mui/icons-material/Sort";
+import TechniqueIcon from "@mui/icons-material/Build";
+import EquipmentIcon from "@mui/icons-material/Camera";
+import LocationIcon from "@mui/icons-material/LocationOn";
+import TutorialIcon from "@mui/icons-material/School";
+import ReviewIcon from "@mui/icons-material/Star";
+import ChallengeIcon from "@mui/icons-material/EmojiEvents";
+import WorkflowIcon from "@mui/icons-material/AccountTree";
+import InspirationIcon from "@mui/icons-material/Lightbulb";
+import CritiqueIcon from "@mui/icons-material/RateReview";
+import NewsIcon from "@mui/icons-material/Article";
+import EventIcon from "@mui/icons-material/Event";
+import GeneralIcon from "@mui/icons-material/ChatBubble";
+import LikeIcon from "@mui/icons-material/ThumbUp";
 
 export const getSortIcon = (sortBy: string) => {
   switch (sortBy) {
