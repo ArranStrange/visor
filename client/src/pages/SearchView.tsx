@@ -9,6 +9,8 @@ import {
   type ListFilmSimsQueryVariables,
 } from "@/features/film-sims/graphql/filmSims";
 import SensorProfileCard from "@/features/film-sims/components/SensorProfileCard";
+import { ENV_CONFIG } from "@/config/environment";
+import { useCamera } from "@/context/CameraContext";
 
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
@@ -22,6 +24,12 @@ const SearchView: React.FC = () => {
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
   const { tags, loading: tagsLoading, searchTags } = useTags();
+  const {
+    camera,
+    sensorKey: cameraSensorKey,
+    showAllGenerations,
+    setShowAllGenerations,
+  } = useCamera();
 
   // Sensor filter (film sims only) — set by clicking a sensor chip on a
   // film sim detail page, e.g. /search?sensor=X-Trans III
@@ -42,6 +50,18 @@ const SearchView: React.FC = () => {
     setSearchParams(searchParams);
   };
 
+  // The user's own body narrows film sims to their sensor generation, unless
+  // they've asked to see everything or pinned a generation explicitly via the
+  // URL — an explicit choice always beats the implicit one.
+  const personalSensorKey =
+    ENV_CONFIG.ENABLE_CAMERA_FILTER &&
+    !showAllGenerations &&
+    !activeSensorKey &&
+    cameraSensorKey
+      ? cameraSensorKey
+      : null;
+  const effectiveSensorKey = activeSensorKey ?? personalSensorKey;
+
   // Memoised so the query variables keep their identity across renders and
   // Apollo doesn't treat every render as a new cache entry.
   const presetWhere = useMemo(
@@ -50,13 +70,13 @@ const SearchView: React.FC = () => {
   );
   const filmSimWhere = useMemo(
     () =>
-      activeTagId || activeSensorKey
+      activeTagId || effectiveSensorKey
         ? {
             ...(activeTagId ? { tagId: activeTagId } : {}),
-            ...(activeSensorKey ? { sensorKey: activeSensorKey } : {}),
+            ...(effectiveSensorKey ? { sensorKey: effectiveSensorKey } : {}),
           }
         : undefined,
-    [activeTagId, activeSensorKey]
+    [activeTagId, effectiveSensorKey]
   );
   const sensorCountWhere = useMemo(
     () => (activeSensorKey ? { sensorKey: activeSensorKey } : undefined),
@@ -157,6 +177,22 @@ const SearchView: React.FC = () => {
         )
       ) : (
         <ContentTypeToggle />
+      )}
+
+      {!activeSensor && camera && ENV_CONFIG.ENABLE_CAMERA_FILTER && (
+        // Never narrow the results silently: say which body is filtering and
+        // offer the way out in the same breath.
+        <Box sx={{ mt: 2 }}>
+          <Chip
+            variant="outlined"
+            label={
+              showAllGenerations
+                ? "Showing every generation"
+                : `Film sims that fit your ${camera.name}`
+            }
+            onClick={() => setShowAllGenerations(!showAllGenerations)}
+          />
+        </Box>
       )}
       <Divider sx={{ my: 2 }} />
 
