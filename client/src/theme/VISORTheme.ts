@@ -226,6 +226,21 @@ export const visorTheme = createTheme({
           backgroundColor: theme.palette.surface.raised,
           border: `1px solid ${theme.palette.surface.border}`,
           borderRadius: 16,
+          transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+          // Lift on hover — guarded so it cannot stick after a tap on
+          // touch screens, and stilled for reduced-motion users.
+          "@media (hover: hover)": {
+            "&:hover": {
+              transform: "translateY(-4px)",
+              boxShadow: `0 8px 25px ${theme.palette.overlay.scrimSubtle}`,
+            },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            transition: "none",
+            "&:hover": {
+              transform: "none",
+            },
+          },
         }),
       },
       variants: [
@@ -237,6 +252,13 @@ export const visorTheme = createTheme({
           style: {
             border: "none",
             boxShadow: `0 0 0 1px ${overlay.whiteBorder}`,
+            // The lift shadow must ride with the ring, or hovering would
+            // replace one boxShadow with the other and drop the ring.
+            "@media (hover: hover)": {
+              "&:hover": {
+                boxShadow: `0 0 0 1px ${overlay.whiteBorder}, 0 8px 25px ${overlay.scrimSubtle}`,
+              },
+            },
           },
         },
       ],

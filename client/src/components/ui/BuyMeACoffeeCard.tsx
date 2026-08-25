@@ -33,18 +33,13 @@ const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
 
   return (
     <Card
+      variant="photo"
       sx={{
         position: "relative",
         aspectRatio: "5/4",
         borderRadius: 1,
         overflow: "hidden",
         cursor: "pointer",
-        transition: "transform 0.2s ease-in-out, boxShadow 0.2s ease-in-out",
-        "&:hover": {
-          transform: "translateY(-4px)",
-          boxShadow: (theme) =>
-            `0 8px 25px ${theme.palette.overlay.scrimSubtle}`,
-        },
         "&:hover .tags-container": {
           opacity: 1,
         },
