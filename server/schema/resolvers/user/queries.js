@@ -3,6 +3,7 @@ const { AuthenticationError, UserInputError } = require("../../../utils/errors")
 const User = require("../../../models/User");
 const { createLogger } = require("../../../utils/logger");
 const { requireAuth } = require("../../../utils/authHelpers");
+const { escapeRegExp } = require("../../../utils/escapeRegExp");
 
 const logger = createLogger("resolvers:user");
 
@@ -44,8 +45,8 @@ module.exports = {
     try {
       const users = await User.find({
         $or: [
-          { username: { $regex: query, $options: "i" } },
-          { email: { $regex: query, $options: "i" } },
+          { username: { $regex: escapeRegExp(query), $options: "i" } },
+          { email: { $regex: escapeRegExp(query), $options: "i" } },
         ],
       }).limit(10);
 

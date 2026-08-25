@@ -6,7 +6,7 @@ interface BuyMeACoffeeCardProps {
   id?: string;
 }
 
-const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = ({ id }) => {
+const BuyMeACoffeeCard: React.FC<BuyMeACoffeeCardProps> = () => {
   const [showOptions, setShowOptions] = React.useState(false);
   const isMobile = useMobileDetection();
 

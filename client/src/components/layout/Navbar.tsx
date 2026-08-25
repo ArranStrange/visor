@@ -32,7 +32,6 @@ const NavBar: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
-  const [searchOpen, setSearchOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [isVisible, setIsVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);

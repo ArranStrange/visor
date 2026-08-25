@@ -10,6 +10,10 @@ const userSchema = new Schema(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 
+    // Elevated privileges. Never client-settable: updateProfile allow-lists
+    // bio/instagram/cameras/avatar only, so this is set out of band.
+    isAdmin: { type: Boolean, default: false },
+
     // Email verification fields
     emailVerified: { type: Boolean, default: false },
     verificationToken: String,

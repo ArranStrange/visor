@@ -4,15 +4,10 @@ import {
   Badge,
   Typography,
   Box,
-  Divider,
   Button,
   CircularProgress,
-  Alert,
   Avatar,
   Drawer,
-  Slide,
-  Fade,
-  Backdrop,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import ChatIcon from "@mui/icons-material/Chat";
