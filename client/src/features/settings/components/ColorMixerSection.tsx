@@ -4,9 +4,10 @@ import { ParsedSettings } from "@/types/xmpSettings";
 import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,
-  COLOR_MIXER_HUE_SPECTRUM,
+  hueSpectrumGradient,
   COLOR_MIXER_SETTINGS,
-} from "@/features/settings/utils/xmpSettingsConfig";
+  type ColorMixerColorKey,
+} from "@/constants/xmpSettingsConfig";
 import { selectedBorderSx } from "@/features/settings/utils/selectedBorderSx";
 
 interface ColorMixerSectionProps {
@@ -25,14 +26,15 @@ const ColorMixerSection: React.FC<ColorMixerSectionProps> = ({
   getNestedValue,
   renderSettingRow,
 }) => {
-  const [selectedColor, setSelectedColor] = useState("blue");
+  const [selectedColor, setSelectedColor] =
+    useState<ColorMixerColorKey>("blue");
 
   const getColorMixerSpectrum = (key: string) => {
     if (key === "hue") {
-      return COLOR_MIXER_HUE_SPECTRUM;
+      return hueSpectrumGradient();
     }
     return `linear-gradient(to right, #888, ${
-      COLOR_MIXER_COLORS[selectedColor as keyof typeof COLOR_MIXER_COLORS]
+      COLOR_MIXER_COLORS[selectedColor]
     }, #888)`;
   };
 

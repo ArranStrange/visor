@@ -9,8 +9,9 @@ import SettingSliderDisplay from "@/features/settings/components/SettingSliderDi
 import {
   COLOR_ORDER,
   COLOR_MIXER_COLORS,
-  COLOR_MIXER_HUE_SPECTRUM,
-} from "@/features/settings/utils/xmpSettingsConfig";
+  hueSpectrumGradient,
+  type ColorMixerColorKey,
+} from "@/constants/xmpSettingsConfig";
 import { selectedBorderSx } from "@/features/settings/utils/selectedBorderSx";
 
 interface Setting {
@@ -30,12 +31,12 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
   settings,
   formatValue = (value) => (value == null ? "0" : String(value) || "0"),
 }) => {
-  const [selectedColor, setSelectedColor] = React.useState("blue");
+  const [selectedColor, setSelectedColor] =
+    React.useState<ColorMixerColorKey>("blue");
 
   const colorOrder = COLOR_ORDER;
 
-  const colorMixerColor = (key: string) =>
-    COLOR_MIXER_COLORS[key as keyof typeof COLOR_MIXER_COLORS] ?? "#888";
+  const colorMixerColor = (key: ColorMixerColorKey) => COLOR_MIXER_COLORS[key];
 
   const isColorMixer = settings.some(
     (setting) =>
@@ -93,7 +94,7 @@ const SettingsDisplay: React.FC<SettingsDisplayProps> = ({
 
         const actualSpectrum =
           isColorMixer && setting.key === "hue"
-            ? COLOR_MIXER_HUE_SPECTRUM
+            ? hueSpectrumGradient()
             : isColorMixer && setting.key === "saturation"
               ? `linear-gradient(to right, #888, ${colorMixerColor(
                   selectedColor

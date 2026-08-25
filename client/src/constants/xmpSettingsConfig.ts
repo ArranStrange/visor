@@ -15,6 +15,20 @@ export interface SectionConfig {
   }[];
 }
 
+/** XMP domain colours — not theme UI chrome. */
+export const COLOR_MIXER_COLORS = {
+  red: "#b94a4a",
+  orange: "#b98a4a",
+  yellow: "#b9b84a",
+  green: "#4ab96b",
+  aqua: "#4ab9b9",
+  blue: "#4a6ab9",
+  purple: "#8a4ab9",
+  magenta: "#b94a8a",
+} as const;
+
+export type ColorMixerColorKey = keyof typeof COLOR_MIXER_COLORS;
+
 export const COLOR_ORDER = [
   { key: "red", color: "#ff3b30" },
   { key: "orange", color: "#ff9500" },
@@ -24,7 +38,47 @@ export const COLOR_ORDER = [
   { key: "blue", color: "#007aff" },
   { key: "purple", color: "#af52de" },
   { key: "magenta", color: "#ff2d55" },
-];
+] as const satisfies ReadonlyArray<{
+  key: ColorMixerColorKey;
+  color: string;
+}>;
+
+export const COLOR_MIXER_HUE_STOPS = [
+  "#b94a4a",
+  "#b98a4a",
+  "#b9b84a",
+  "#4ab96b",
+  "#4ab9b9",
+  "#4a6ab9",
+  "#8a4ab9",
+  "#b94a8a",
+  "#b94a4a",
+] as const;
+
+export function hueSpectrumGradient(angle = "to right"): string {
+  return `linear-gradient(${angle}, ${COLOR_MIXER_HUE_STOPS.join(", ")})`;
+}
+
+export const TONE_CURVE_CHANNEL_COLORS = {
+  red: "red",
+  green: "green",
+  blue: "blue",
+} as const;
+
+export const COLOR_WHEEL_GRADIENT_STOPS = [
+  "red",
+  "yellow",
+  "lime",
+  "cyan",
+  "blue",
+  "magenta",
+  "red",
+] as const;
+
+export const COLOR_WHEEL_VIGNETTE_COLORS = {
+  center: "#fff",
+  edge: "#000",
+} as const;
 
 export const XMP_SECTIONS: SectionConfig[] = [
   {
@@ -342,21 +396,6 @@ export const XMP_SECTIONS: SectionConfig[] = [
     ],
   },
 ];
-
-export const COLOR_MIXER_COLORS = {
-  red: "#b94a4a",
-  orange: "#b98a4a",
-  yellow: "#b9b84a",
-  green: "#4ab96b",
-  aqua: "#4ab9b9",
-  blue: "#4a6ab9",
-  purple: "#8a4ab9",
-  magenta: "#b94a8a",
-};
-
-/** Lightroom hue-wheel spectrum (XMP domain data — not theme UI chrome). */
-export const COLOR_MIXER_HUE_SPECTRUM =
-  "linear-gradient(to right, #b94a4a, #b98a4a, #b9b84a, #4ab96b, #4ab9b9, #4a6ab9, #8a4ab9, #b94a8a, #b94a4a)";
 
 export const COLOR_MIXER_SETTINGS = [
   { key: "hue", label: "Hue" },

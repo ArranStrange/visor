@@ -8,6 +8,10 @@ import {
   useMediaQuery,
   styled,
 } from "@mui/material";
+import {
+  COLOR_WHEEL_GRADIENT_STOPS,
+  COLOR_WHEEL_VIGNETTE_COLORS,
+} from "@/constants/xmpSettingsConfig";
 
 function hslColor(hue: number, sat: number, light: number = 0.5) {
   return `hsl(${hue}, ${sat}%, ${light * 100}%)`;
@@ -68,8 +72,16 @@ function ColorWheel({
       >
         <defs>
           <radialGradient id="wheel-vignette" r="50%" cx="50%" cy="50%">
-            <stop offset="0%" stopColor="#fff" stopOpacity={0.15} />
-            <stop offset="100%" stopColor="#000" stopOpacity={0.15} />
+            <stop
+              offset="0%"
+              stopColor={COLOR_WHEEL_VIGNETTE_COLORS.center}
+              stopOpacity={0.15}
+            />
+            <stop
+              offset="100%"
+              stopColor={COLOR_WHEEL_VIGNETTE_COLORS.edge}
+              stopOpacity={0.15}
+            />
           </radialGradient>
         </defs>
 
@@ -79,8 +91,9 @@ function ColorWheel({
               width: wheelSize,
               height: wheelSize,
               borderRadius: "50%",
-              background:
-                "conic-gradient(red, yellow, lime, cyan, blue, magenta, red)",
+              background: `conic-gradient(${COLOR_WHEEL_GRADIENT_STOPS.join(
+                ", "
+              )})`,
             }}
           />
         </foreignObject>

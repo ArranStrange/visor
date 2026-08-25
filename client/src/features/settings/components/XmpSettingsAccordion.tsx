@@ -12,10 +12,7 @@ import ColorGradingWheels from "@/features/settings/components/ColorGradingWheel
 import ColorMixerSection from "@/features/settings/components/ColorMixerSection";
 import { ParsedSettings } from "@/types/xmpSettings";
 import { normalizeToneCurve } from "@/features/settings/utils/xmp-parser";
-import {
-  SectionConfig,
-  SettingConfig,
-} from "@/features/settings/utils/xmpSettingsConfig";
+import { SectionConfig, SettingConfig } from "@/constants/xmpSettingsConfig";
 
 interface XmpSettingsAccordionProps {
   section: SectionConfig;
