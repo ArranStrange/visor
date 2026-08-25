@@ -109,4 +109,33 @@ const findCamera = (cameraName) => {
   );
 };
 
-module.exports = { FUJIFILM_CAMERAS, normalizeCameraName, findCamera };
+/**
+ * Sensor generation for a camera by any user-written form of its name.
+ * Mirror of the client's sensorKeyForCamera; the server needs it to turn a
+ * user's primary camera into the sensor key list queries filter on.
+ */
+const sensorKeyForCamera = (cameraName) => findCamera(cameraName)?.sensorKey;
+
+/**
+ * Sensor key → the display label stored in FilmSim.compatibleSensors (and,
+ * on legacy documents, FilmSim.compatibleCameras). Mirror of the labels in
+ * client/src/features/film-sims/utils/fujifilmSensors.ts; the drift test
+ * fails the build if the two diverge.
+ */
+const SENSOR_LABELS_BY_KEY = {
+  "x-trans-i": "X-Trans I",
+  "x-trans-ii": "X-Trans II",
+  "x-trans-iii": "X-Trans III",
+  "x-trans-iv": "X-Trans IV",
+  "x-trans-v": "X-Trans V",
+  bayer: "Bayer",
+  gfx: "GFX",
+};
+
+module.exports = {
+  FUJIFILM_CAMERAS,
+  normalizeCameraName,
+  findCamera,
+  sensorKeyForCamera,
+  SENSOR_LABELS_BY_KEY,
+};
