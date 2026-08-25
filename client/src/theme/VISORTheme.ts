@@ -47,8 +47,8 @@ export const visorTheme = createTheme({
     // VISOR is intentionally dark-only; there is no light palette to maintain.
     mode: "dark",
     background: {
-      default: "#080808",
-      paper: "#0b0b0b",
+      default: surface.canvas,
+      paper: surface.raised,
     },
     primary: {
       main: "#E0E0E0",
@@ -91,7 +91,7 @@ export const visorTheme = createTheme({
       secondary: "#AAAAAA",
       disabled: "#666666",
     },
-    divider: "#252525",
+    divider: surface.border,
     action: {
       hover: "rgba(255,255,255,0.08)",
       selected: "rgba(255,255,255,0.12)",
