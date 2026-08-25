@@ -12,7 +12,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const slider = (isHovered: boolean) => (
+const slider = (isHovered: boolean, isMobile = false) => (
   // The component reads VISOR's custom overlay palette; the default MUI
   // theme lacks it, so render under the real theme.
   <ThemeProvider theme={visorTheme}>
@@ -20,11 +20,13 @@ const slider = (isHovered: boolean) => (
       beforeImage="https://example.com/before.jpg"
       afterImage="https://example.com/after.jpg"
       isHovered={isHovered}
+      isMobile={isMobile}
     />
   </ThemeProvider>
 );
 
-const renderSlider = (isHovered: boolean) => render(slider(isHovered));
+const renderSlider = (isHovered: boolean, isMobile = false) =>
+  render(slider(isHovered, isMobile));
 
 const loadImages = () => {
   fireEvent.load(screen.getByAltText("After"));
@@ -108,6 +110,21 @@ describe("AnimatedBeforeAfterSlider", () => {
     expect(beforeClip()).toBe("inset(0 100% 0 0)");
     act(() => vi.advanceTimersByTime(5000));
     expect(beforeClip()).toBe("inset(0 100% 0 0)"); // no zombie timers
+  });
+
+  it("mobile: the first-tap reveal peeks once and stops — no endless loop", () => {
+    // On mobile isHovered never falls (tap-to-reveal has no leave event),
+    // so a looping sweep would run forever while the user scrolls.
+    vi.useFakeTimers();
+    renderSlider(true, true);
+    act(() => loadImages());
+    expect(beforeClip()).toBe("inset(0 0% 0 0)"); // peek
+
+    act(() => vi.advanceTimersByTime(800)); // sweep back
+    expect(beforeClip()).toBe("inset(0 100% 0 0)");
+
+    act(() => vi.advanceTimersByTime(10000)); // ...and stays back
+    expect(beforeClip()).toBe("inset(0 100% 0 0)");
   });
 
   it("a broken before image disables the reveal instead of waiting forever", () => {

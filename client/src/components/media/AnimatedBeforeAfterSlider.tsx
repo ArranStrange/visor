@@ -35,7 +35,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
       sizes,
       loading = "lazy",
       height,
-      isMobile: _isMobile = false,
+      isMobile = false,
       isHovered: externalIsHovered,
     }) => {
       const [internalHovered, setInternalHovered] = useState(false);
@@ -101,14 +101,14 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
         }
 
         // Reduced motion: no sweep — hold the comparison while hovered.
-        if (prefersReducedMotion) {
+        // On mobile "hovered" never ends (tap-to-reveal has no leave
+        // event), so show the before briefly and swap back instead of
+        // holding it forever.
+        if (prefersReducedMotion && !isMobile) {
           setSliderPosition(100);
           return () => setSliderPosition(0);
         }
 
-        // Loop the peek while hovered. The old one-shot sequence
-        // dead-ended after a single sweep, so a pointer resting on the
-        // card saw nothing until it fully left and re-entered.
         let cancelled = false;
         const timers: ReturnType<typeof setTimeout>[] = [];
         const at = (fn: () => void, ms: number) => {
@@ -118,16 +118,27 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
             }, ms)
           );
         };
+
+        // Mobile: one-shot peek. The first tap reveals the before image
+        // once (alongside the tag/creator overlays); the second tap
+        // navigates. isHovered stays true until the overlays dismiss, so
+        // a loop here would sweep forever while the user scrolls.
+        //
+        // Desktop: loop while hovered. The old one-shot dead-ended after
+        // a single sweep, so a pointer resting on the card saw nothing
+        // until it fully left and re-entered.
         const cycle = () => {
           setSliderPosition(100);
           at(() => setSliderPosition(0), ANIMATION_DURATION + DISPLAY_DURATION);
-          at(
-            cycle,
-            ANIMATION_DURATION +
-              DISPLAY_DURATION +
+          if (!isMobile) {
+            at(
+              cycle,
               ANIMATION_DURATION +
-              REST_DURATION
-          );
+                DISPLAY_DURATION +
+                ANIMATION_DURATION +
+                REST_DURATION
+            );
+          }
         };
         cycle();
 
@@ -136,7 +147,7 @@ const AnimatedBeforeAfterSlider: React.FC<AnimatedBeforeAfterSliderProps> =
           timers.forEach(clearTimeout);
           setSliderPosition(0);
         };
-      }, [isHovered, hasBeforeImage, imagesReady, prefersReducedMotion]);
+      }, [isHovered, hasBeforeImage, imagesReady, prefersReducedMotion, isMobile]);
 
       const handleMouseEnter = useCallback(
         (e: React.MouseEvent) => {
