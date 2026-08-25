@@ -15,25 +15,16 @@ import {
   camerasForSensor,
   sensorKeyForCamera,
 } from "@/constants/fujifilmCameras";
+import { findAllUnsupported } from "@/features/compatibility/featureSupport";
+import type {
+  RecipeCompatibilitySettings,
+  SensorFeatures,
+} from "@/features/compatibility/types";
 
-export interface SensorFeatures {
-  /** Grain Effect (introduced with X-Trans III, X-Pro2). */
-  grainEffect: boolean;
-  /** Grain size option (small/large) — 4th generation onward. */
-  grainSize: boolean;
-  /** Color Chrome Effect — 4th generation onward (also X-H1). */
-  colorChromeEffect: boolean;
-  /** Color Chrome FX Blue — 4th generation onward. */
-  colorChromeFXBlue: boolean;
-  /** Clarity — 4th generation onward (not X-T3/X-T30). */
-  clarity: boolean;
-  /** Classic Negative film simulation — 4th generation onward. */
-  classicNegative: boolean;
-  /** Nostalgic Negative film simulation — 5th generation / GFX 100S onward. */
-  nostalgicNegative: boolean;
-  /** Reala Ace film simulation — X100VI / GFX100 II era onward. */
-  realaAce: boolean;
-}
+// The feature matrix and the rules for reading it live in
+// features/compatibility; this file owns the per-generation data and the
+// display labels. Re-exported so existing importers keep working.
+export type { RecipeCompatibilitySettings, SensorFeatures };
 
 export interface FujifilmSensor {
   /** Stable slug used in URLs, e.g. /search?sensor=x-trans-iii */
@@ -181,64 +172,27 @@ export const getSensorForCamera = (
   return key ? getSensorByKey(key) : undefined;
 };
 
-/** The subset of recipe settings relevant to sensor compatibility checks. */
-export interface RecipeCompatibilitySettings {
-  clarity?: number | null;
-  grainEffect?: string | null;
-  colorChromeEffect?: string | null;
-  colorChromeFxBlue?: string | null;
-  filmSimulation?: string | null;
-}
-
 /**
  * Warn when a recipe uses settings a selected sensor generation doesn't
  * support (e.g. Clarity on X-Trans III). Returns one message per affected
  * sensor; empty array when everything is compatible.
+ *
+ * Adapter over the compatibility service for the call sites that reason
+ * about sensor generations rather than a specific body (the upload form and
+ * the edit dialog, where the user picks generations directly). Per-body
+ * exceptions deliberately do NOT apply here — the question being asked is
+ * about a generation, not a camera.
  */
 export const getSensorCompatibilityWarnings = (
   sensorLabels: string[],
   settings: RecipeCompatibilitySettings
-): string[] => {
-  const warnings: string[] = [];
-
-  for (const label of sensorLabels) {
+): string[] =>
+  sensorLabels.flatMap((label) => {
     const sensor = getSensorByLabel(label);
-    if (!sensor) continue;
+    if (!sensor) return [];
 
-    const f = sensor.features;
-    const unsupported: string[] = [];
-
-    if (settings.clarity && !f.clarity) unsupported.push("Clarity");
-    if (
-      settings.grainEffect &&
-      settings.grainEffect !== "OFF" &&
-      !f.grainEffect
-    )
-      unsupported.push("Grain Effect");
-    if (
-      settings.colorChromeEffect &&
-      settings.colorChromeEffect !== "OFF" &&
-      !f.colorChromeEffect
-    )
-      unsupported.push("Color Chrome Effect");
-    if (
-      settings.colorChromeFxBlue &&
-      settings.colorChromeFxBlue !== "OFF" &&
-      !f.colorChromeFXBlue
-    )
-      unsupported.push("Color Chrome FX Blue");
-
-    const sim = (settings.filmSimulation || "").toUpperCase();
-    if (/CLASSIC[_\s-]?NEG/.test(sim) && !f.classicNegative)
-      unsupported.push("Classic Negative");
-    if (/NOSTALGIC/.test(sim) && !f.nostalgicNegative)
-      unsupported.push("Nostalgic Negative");
-    if (/REALA/.test(sim) && !f.realaAce) unsupported.push("Reala Ace");
-
-    if (unsupported.length) {
-      warnings.push(`${label} doesn't support: ${unsupported.join(", ")}`);
-    }
-  }
-
-  return warnings;
-};
+    const unsupported = findAllUnsupported(sensor.features, settings);
+    return unsupported.length
+      ? [`${label} doesn't support: ${unsupported.join(", ")}`]
+      : [];
+  });
