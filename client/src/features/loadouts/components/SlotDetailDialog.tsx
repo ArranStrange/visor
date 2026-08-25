@@ -22,6 +22,7 @@ interface SlotDetailDialogProps {
   onClose: () => void;
   onClear: () => void;
   onReplace: () => void;
+  onDialIn: () => void;
 }
 
 // The slot screen: full in-camera settings in menu order, reusing the
@@ -35,6 +36,7 @@ const SlotDetailDialog: React.FC<SlotDetailDialogProps> = ({
   onClose,
   onClear,
   onReplace,
+  onDialIn,
 }) => {
   if (!slot) return null;
 
@@ -114,8 +116,16 @@ const SlotDetailDialog: React.FC<SlotDetailDialogProps> = ({
           Clear slot
         </Button>
         <Button onClick={onReplace}>Replace</Button>
-        <Button onClick={onClose} variant="contained">
-          Done
+        <Box sx={{ flex: 1 }} />
+        <Button onClick={onClose}>Close</Button>
+        {/* Dial-in needs live settings — a dangling (deleted) recipe has
+            none to walk through. */}
+        <Button
+          onClick={onDialIn}
+          variant="contained"
+          disabled={!filmSim?.settings}
+        >
+          Dial this into C{slot.index + 1}
         </Button>
       </DialogActions>
     </Dialog>

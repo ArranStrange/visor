@@ -29,6 +29,7 @@ import SlotRow from "@/features/loadouts/components/SlotRow";
 import SlotDetailDialog from "@/features/loadouts/components/SlotDetailDialog";
 import FillSlotDialog from "@/features/loadouts/components/FillSlotDialog";
 import CreateLoadoutDialog from "@/features/loadouts/components/CreateLoadoutDialog";
+import DialInMode from "@/features/loadouts/components/DialInMode";
 import { getSensorForCamera, getSensorCompatibilityWarnings } from "@/features/film-sims/utils/fujifilmSensors";
 
 // The wallet: what's in the camera right now. One loadout is active per
@@ -77,6 +78,7 @@ const Wallet: React.FC = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [detailIndex, setDetailIndex] = useState<number | null>(null);
   const [fillIndex, setFillIndex] = useState<number | null>(null);
+  const [dialInIndex, setDialInIndex] = useState<number | null>(null);
 
   // Stable C1..Cn positions: map sparse slots onto the body's bank count.
   const banks: (LoadoutSlot | null)[] = useMemo(() => {
@@ -93,6 +95,13 @@ const Wallet: React.FC = () => {
   };
 
   const filledCount = banks.filter((s) => s?.filmSim || s?.filmSimName).length;
+
+  // Dial-in chains through banks with live settings, in bank order.
+  const dialableIndices = banks
+    .map((s, i) => (s?.filmSim?.settings ? i : null))
+    .filter((i): i is number => i !== null);
+  const nextDialableAfter = (index: number): number | null =>
+    dialableIndices.find((i) => i > index) ?? null;
 
   // Full-array replace: rebuild the slot input from current state plus the
   // one change. A slot without filmSimId is PRESERVED server-side — that's
@@ -313,6 +322,23 @@ const Wallet: React.FC = () => {
         onReplace={() => {
           setFillIndex(detailIndex);
           setDetailIndex(null);
+        }}
+        onDialIn={() => {
+          setDialInIndex(detailIndex);
+          setDetailIndex(null);
+        }}
+      />
+
+      <DialInMode
+        open={dialInIndex !== null}
+        slot={dialInIndex !== null ? (banks[dialInIndex] ?? null) : null}
+        cameraKey={selected?.cameraKey ?? ""}
+        cameraName={selected?.camera ?? ""}
+        nextSlotIndex={dialInIndex !== null ? nextDialableAfter(dialInIndex) : null}
+        onClose={() => setDialInIndex(null)}
+        onNextSlot={(index) => setDialInIndex(index)}
+        onMarkKeyedIn={() => {
+          if (selected) markKeyedIn({ variables: { id: selected.id } });
         }}
       />
     </Box>
