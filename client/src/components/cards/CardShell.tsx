@@ -73,12 +73,6 @@ function CardShell({
       borderRadius: 1,
       cursor: "pointer",
       overflow: "hidden",
-      // Photo cards define their edge with a faint ring, not the opaque
-      // card hairline — the boundary reads as part of the image instead
-      // of a competing surface next to it.
-      border: "none",
-      boxShadow: (theme: Theme) =>
-        `0 0 0 1px ${theme.palette.overlay.whiteBorder}`,
       ...getCardHoverStyles(showOptions),
       ...cardSx,
     }),
@@ -89,6 +83,7 @@ function CardShell({
 
   return (
     <Card
+      variant="photo"
       sx={cardStyles}
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}

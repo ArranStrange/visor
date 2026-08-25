@@ -86,6 +86,16 @@ declare module "@mui/material/Chip" {
   }
 }
 
+declare module "@mui/material/Paper" {
+  // Card inherits its variant prop from Paper and has no override
+  // interface of its own, so "photo" is declared here. Only MuiCard
+  // registers styles for it — on other Paper components it typechecks
+  // but applies nothing.
+  interface PaperPropsVariantOverrides {
+    photo: true;
+  }
+}
+
 declare module "@mui/material/IconButton" {
   interface IconButtonOwnProps {
     variant?: "floating";

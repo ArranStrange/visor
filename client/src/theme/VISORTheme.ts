@@ -228,6 +228,18 @@ export const visorTheme = createTheme({
           borderRadius: 16,
         }),
       },
+      variants: [
+        {
+          // Photo cards: the image defines the surface, so the opaque
+          // hairline gives way to a faint ring that reads as part of the
+          // photograph rather than a competing panel edge.
+          props: { variant: "photo" },
+          style: {
+            border: "none",
+            boxShadow: `0 0 0 1px ${overlay.whiteBorder}`,
+          },
+        },
+      ],
     },
     MuiIconButton: {
       styleOverrides: {
