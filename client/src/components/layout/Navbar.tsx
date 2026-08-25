@@ -26,6 +26,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuth } from "../../context/AuthContext";
 import Logo from "../../assets/VISOR.png";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
+import PrimaryCameraPicker from "./PrimaryCameraPicker";
 
 const NavBar: React.FC = () => {
   const theme = useTheme();
@@ -112,6 +113,7 @@ const NavBar: React.FC = () => {
         <Box
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
+          <PrimaryCameraPicker />
           <IconButton onClick={() => navigate("/search")} color="inherit">
             <SearchIcon />
           </IconButton>
