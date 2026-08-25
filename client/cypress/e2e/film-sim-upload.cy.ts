@@ -1,11 +1,4 @@
-import { ThemeContext } from "@emotion/react";
-
 describe("Film Sim Upload and Delete", () => {
-  const testFilmSim = {
-    name: `Test Film Simulation ${Date.now()}`,
-    description: "Test film simulation Upload and Delete",
-  };
-
   const testFilmSimUpload = {
     name: `Test Film Simulation ${new Date().toLocaleString()}`,
     description: `Test film simulation Upload and Delete ${new Date().toLocaleString()}`,
