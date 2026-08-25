@@ -25,9 +25,15 @@ declare module "@mui/material/styles" {
   interface SurfacePalette {
     /** Recessed background for sections below the page plane. */
     sunken: string;
-    /** Raised card/panel background — one tonal step above paper. */
+    /** Page ground — the darkest plane, so photos stay brightest. */
+    canvas: string;
+    /** Raised card/panel background — one rung above canvas. */
     raised: string;
-    /** Background for text-entry controls. */
+    /** Hover fill for interactive raised surfaces — one rung above raised. */
+    raisedHover: string;
+    /** Floating surfaces (menus, modals, popovers) — the top rung. */
+    overlay: string;
+    /** Background for text-entry controls — sits below raised. */
     input: string;
     /** Hairline border for raised surfaces. */
     border: string;

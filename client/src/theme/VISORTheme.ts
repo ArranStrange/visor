@@ -1,14 +1,21 @@
 import { createTheme } from "@mui/material/styles";
 
 // Tonal surface ladder for elevated, non-photo surfaces (cards, panels).
-// Depth comes from lighter greys, never white — photos stay the brightest
-// element on the page. Referenced via palette paths, e.g. "surface.raised".
+// Depth comes from lighter, cooler greys — never white — so photos stay the
+// brightest element on the page. Each rung sits ~1.10:1 above the one below:
+// enough to read as a step, not enough to lift the floor and flatten the
+// images. The faint blue-grey cast strengthens as surfaces lift, so elevation
+// reads by hue as well as brightness, and warm photo tones gain punch against
+// it. Referenced via palette paths, e.g. "surface.raised".
 const surface = {
-  sunken: "#111111",
-  raised: "#1A1A1A",
-  input: "#141414",
-  border: "#2A2A2A",
-  outline: "#3A3A3A",
+  sunken: "#040507",
+  canvas: "#08090B",
+  raised: "#14171C",
+  raisedHover: "#1B1F25",
+  overlay: "#212630",
+  input: "#0F1215",
+  border: "#2A303A",
+  outline: "#3A424E",
 };
 
 // Overlay tokens for content rendered on top of photography.
