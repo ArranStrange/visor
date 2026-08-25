@@ -1,4 +1,5 @@
 import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
+import type { RecipeCompatibilitySettings } from "@/features/compatibility";
 
 export type GridContentType = "all" | "presets" | "films";
 
@@ -30,6 +31,9 @@ export interface GridContentData {
   tags?: GridTag[];
   creator?: GridCreator | null;
   featured?: boolean;
+  /** Film sims only: the inputs to the compatibility verdict on the card. */
+  compatibleSensors?: string[] | null;
+  settings?: RecipeCompatibilitySettings | null;
 }
 
 export interface GridContentItem {

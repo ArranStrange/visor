@@ -18,6 +18,7 @@ import { useFeatured } from "../hooks/useFeatured";
 import AddToListButton from "@/features/lists/components/AddToListButton";
 import DiscussionThread from "@/features/discussions/components/DiscussionThread";
 import FilmSimCameraSettings from "@/features/film-sims/components/FilmSimCameraSettings";
+import CompatibilityChip from "@/features/compatibility/components/CompatibilityChip";
 import EditFilmSimDialog from "@/features/film-sims/components/EditFilmSimDialog";
 import RecommendedPresetsManager from "@/features/film-sims/components/RecommendedPresetsManager";
 import DetailHeader from "../components/content/DetailHeader";
@@ -150,6 +151,15 @@ const FilmSimDetails: React.FC = () => {
           deleteTestId="film-sim-delete-menu-item"
         />
       )}
+
+      <Box sx={{ mt: 1 }}>
+        <CompatibilityChip
+          size="medium"
+          showUnverified
+          settings={filmSim.settings}
+          compatibleSensors={filmSim.compatibleSensors}
+        />
+      </Box>
 
       <FilmSimDescription
         description={filmSim.description}

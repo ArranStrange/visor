@@ -115,6 +115,16 @@ export const GET_ALL_FILMSIMS = gql`
           url
         }
         featured
+        # The compatibility verdict is computed client-side; these are the
+        # only settings whose availability varies by sensor generation.
+        compatibleSensors
+        settings {
+          filmSimulation
+          clarity
+          grainEffect
+          colorChromeEffect
+          colorChromeFxBlue
+        }
       }
       totalCount
       hasNextPage
@@ -156,6 +166,8 @@ export const GET_FILMSIM_BY_SLUG = gql`
           b
         }
         filmSimulation
+        colorChromeEffect
+        colorChromeFxBlue
       }
       tags {
         id
