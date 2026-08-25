@@ -5,6 +5,7 @@ const FilmSim = require("../../../models/FilmSim");
 const Tag = require("../../../models/Tag");
 const { createLogger } = require("../../../utils/logger");
 const { clampPagination } = require("../../../utils/pagination");
+const { escapeRegExp } = require("../../../utils/escapeRegExp");
 const {
   serializeUserListSummary,
   serializeUserListDetail,
@@ -53,7 +54,7 @@ module.exports = {
       // If there's a search term, we need to search across multiple fields
       if (search && search.trim().length > 0) {
         const searchTerm = search.trim();
-        const searchRegex = new RegExp(searchTerm, "i");
+        const searchRegex = new RegExp(escapeRegExp(searchTerm), "i");
 
         // Find matching presets by title or tags
         const matchingPresets = await Preset.find({
