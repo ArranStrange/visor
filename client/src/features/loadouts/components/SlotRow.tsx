@@ -114,6 +114,11 @@ const SlotRow: React.FC<SlotRowProps> = ({ index, slot, warnings, onClick }) => 
             Recipe removed from VISOR — still in your camera
           </Typography>
         )}
+        {slot?.sourceChanged && (
+          <Typography variant="caption" color="warning.main" noWrap display="block">
+            Recipe updated since you keyed it in
+          </Typography>
+        )}
       </Box>
 
       {hasWarnings && (

@@ -105,3 +105,69 @@ test("timestamps serialize as ISO strings", () => {
   assert.equal(out.keyedInAt, "2026-08-04T00:00:00.000Z");
   assert.equal(out.createdAt, "2026-08-01T00:00:00.000Z");
 });
+
+// ---- SOURCE_CHANGED staleness (#101) ----
+
+const liveSettings = {
+  filmSimulation: "CLASSIC CHROME",
+  dynamicRange: 400,
+  highlight: -1,
+  wbShift: { r: 3, b: -2 },
+};
+
+const withSnapshot = (keyedInSettings, settings = liveSettings) =>
+  stub({
+    keyedInAt: new Date("2026-08-04T00:00:00Z"),
+    slotsChangedAt: new Date("2026-08-03T00:00:00Z"),
+    slots: [
+      {
+        index: 0,
+        filmSim: {
+          _id: oid("333333333333333333333333"),
+          name: "Everyday Chrome",
+          slug: "everyday-chrome",
+          settings,
+          sampleImages: [],
+        },
+        filmSimName: "Everyday Chrome",
+        keyedInSettings,
+        note: null,
+      },
+    ],
+  });
+
+test("matching keyed-in snapshot → current, no stale reason", () => {
+  const out = serializeLoadout(withSnapshot({ ...liveSettings }));
+  assert.equal(out.slots[0].sourceChanged, false);
+  assert.equal(out.isStale, false);
+  assert.equal(out.staleReason, null);
+});
+
+test("recipe edited after keying in → SOURCE_CHANGED", () => {
+  const out = serializeLoadout(
+    withSnapshot({ ...liveSettings, highlight: 2 })
+  );
+  assert.equal(out.slots[0].sourceChanged, true);
+  assert.equal(out.isStale, true);
+  assert.equal(out.staleReason, "SOURCE_CHANGED");
+});
+
+test("no snapshot yet → sourceChanged false regardless of settings", () => {
+  const out = serializeLoadout(withSnapshot(null));
+  assert.equal(out.slots[0].sourceChanged, false);
+  assert.equal(out.staleReason, null);
+});
+
+test("SLOTS_CHANGED takes precedence over SOURCE_CHANGED", () => {
+  const doc = withSnapshot({ ...liveSettings, highlight: 2 });
+  const obj = doc.toObject();
+  obj.slotsChangedAt = new Date("2026-08-05T00:00:00Z"); // after keyedInAt
+  const out = serializeLoadout({ toObject: () => obj });
+  assert.equal(out.isStale, true);
+  assert.equal(out.staleReason, "SLOTS_CHANGED");
+});
+
+test("keyedInSettings never leaks into the serialized slot", () => {
+  const out = serializeLoadout(withSnapshot({ ...liveSettings }));
+  assert.equal(out.slots[0].keyedInSettings, undefined);
+});

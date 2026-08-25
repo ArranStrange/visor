@@ -13,6 +13,7 @@ const {
   LOADOUT_POPULATE,
 } = require("./services/loadoutSerializer");
 const { validateSlotInputs, mergeSlots } = require("./services/mergeSlots");
+const { pickSettings } = require("./services/settingsSnapshot");
 
 const logger = createLogger("resolvers:loadout");
 
@@ -168,14 +169,27 @@ module.exports = {
         filmSims.map((f) => [f._id.toString().toLowerCase(), f.name])
       );
 
+      const assignmentsOf = (slotArray) =>
+        JSON.stringify(
+          slotArray
+            .filter((s) => s.filmSim)
+            .map((s) => [s.index, s.filmSim.toString().toLowerCase()])
+            .sort((a, b) => a[0] - b[0])
+        );
+      const before = assignmentsOf(loadout.slots);
+
       loadout.slots = mergeSlots(slots, loadout.slots, nameById);
-      loadout.slotsChangedAt = new Date();
+      // Staleness tracks what the CAMERA holds. A note-only edit changes
+      // nothing on the body, so it must not flag the loadout stale.
+      if (assignmentsOf(loadout.slots) !== before) {
+        loadout.slotsChangedAt = new Date();
+      }
       await loadout.save();
 
       return reload(loadout._id);
     } catch (error) {
       if (error instanceof UserInputError) throw error;
-      if (/not found/.test(error.message)) {
+      if (error.code === "FILM_SIM_NOT_FOUND") {
         // mergeSlots rejecting an id the visibility filter excluded.
         throw new UserInputError(error.message);
       }
@@ -220,6 +234,29 @@ module.exports = {
     const loadout = await findOwned(id, user, "update");
 
     try {
+      // Snapshot each slot's current recipe settings — this is what the
+      // camera now physically holds. Read time compares these against the
+      // live recipe to surface SOURCE_CHANGED staleness (#101).
+      //
+      // Fetched via a separate query rather than populate: populating
+      // slots.filmSim and restoring the refs afterwards erases the stored
+      // ObjectId for dangling (deleted-recipe) slots, and this mutation
+      // must never rewrite references — it's an attestation.
+      const ids = loadout.slots.map((s) => s.filmSim).filter(Boolean);
+      const filmSims = ids.length
+        ? await FilmSim.find({ _id: { $in: ids } }).select("settings")
+        : [];
+      const settingsById = new Map(
+        filmSims.map((f) => [
+          f._id.toString(),
+          pickSettings(f.settings?.toObject ? f.settings.toObject() : f.settings),
+        ])
+      );
+      for (const slot of loadout.slots) {
+        slot.keyedInSettings = slot.filmSim
+          ? (settingsById.get(slot.filmSim.toString()) ?? null)
+          : null;
+      }
       loadout.keyedInAt = new Date();
       await loadout.save();
       return reload(loadout._id);

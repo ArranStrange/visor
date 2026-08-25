@@ -16,6 +16,7 @@ test("assigning a film sim snapshots its name", () => {
       index: 0,
       filmSim: "AAAAAAAAAAAAAAAAAAAAAAAA",
       filmSimName: "Everyday Chrome",
+      keyedInSettings: null,
       note: null,
     },
   ]);
@@ -37,6 +38,7 @@ test("a slot without filmSimId preserves the dangling snapshot", () => {
     index: 3,
     filmSim: null,
     filmSimName: "Blue Hour",
+    keyedInSettings: null,
     note: "pull -1/3",
   });
   assert.equal(next[1].filmSimName, "Everyday Chrome");
@@ -48,7 +50,13 @@ test("preserve keeps a live reference too, and input note wins", () => {
   ];
   const next = mergeSlots([{ index: 1, note: "midday only" }], existing, nameById);
   assert.deepEqual(next, [
-    { index: 1, filmSim: "bbb", filmSimName: "Harsh Noon", note: "midday only" },
+    {
+      index: 1,
+      filmSim: "bbb",
+      filmSimName: "Harsh Noon",
+      keyedInSettings: null,
+      note: "midday only",
+    },
   ]);
 });
 
@@ -82,4 +90,20 @@ test("validateSlotInputs rejects duplicates and out-of-range indices", () => {
   assert.throws(() => validateSlotInputs([{ index: -1 }], 7), /C1–C7/);
   assert.throws(() => validateSlotInputs([{ index: 1.5 }], 7), /C1–C7/);
   validateSlotInputs([{ index: 0 }, { index: 6 }], 7); // does not throw
+});
+
+test("preserve carries the keyed-in snapshot; reassignment clears it", () => {
+  const snapshot = { filmSimulation: "PROVIA" };
+  const existing = [
+    { index: 1, filmSim: "bbb", filmSimName: "Harsh Noon", keyedInSettings: snapshot, note: null },
+  ];
+  const preserved = mergeSlots([{ index: 1 }], existing, nameById);
+  assert.equal(preserved[0].keyedInSettings, snapshot);
+
+  const reassigned = mergeSlots(
+    [{ index: 1, filmSimId: "aaaaaaaaaaaaaaaaaaaaaaaa" }],
+    existing,
+    nameById
+  );
+  assert.equal(reassigned[0].keyedInSettings, null);
 });

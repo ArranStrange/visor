@@ -131,6 +131,7 @@ const Wallet: React.FC = () => {
         filmSim: { id: filmSim.id, name: filmSim.name, slug: "" },
         filmSimName: filmSim.name,
         note: null,
+        sourceChanged: false,
       },
     ]);
     setFillIndex(null);
@@ -267,7 +268,9 @@ const Wallet: React.FC = () => {
                   </Button>
                 }
               >
-                Changed since you last keyed it into the camera.
+                {selected.staleReason === "SOURCE_CHANGED"
+                  ? "A recipe in this loadout was updated by its author since you keyed it in — the camera holds the old values."
+                  : "Changed since you last keyed it into the camera."}
               </Alert>
             )}
 

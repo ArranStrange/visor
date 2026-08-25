@@ -31,6 +31,11 @@ const slotSchema = new Schema(
     filmSim: { type: Schema.Types.ObjectId, ref: "FilmSim", default: null },
     // Snapshot of the recipe name at assignment time.
     filmSimName: { type: String, default: null },
+    // Snapshot of the recipe's in-camera settings, taken at
+    // markLoadoutKeyedIn — what the camera actually holds. Compared to the
+    // live recipe at read time to derive SOURCE_CHANGED staleness (#101).
+    // null = this slot has never been keyed in as currently assigned.
+    keyedInSettings: { type: Schema.Types.Mixed, default: null },
     note: { type: String, maxlength: 200 },
   },
   { _id: false }
