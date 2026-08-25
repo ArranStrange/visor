@@ -3,8 +3,9 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type FilmSimSettings {
     dynamicRange: Int
-    highlight: Int
-    shadow: Int
+    # Float: Fuji bodies from the X-T4 generation take half-step tone values.
+    highlight: Float
+    shadow: Float
     colour: Int
     sharpness: Int
     noiseReduction: Int
@@ -51,8 +52,8 @@ const typeDefs = gql`
     wbShift: WhiteBalanceShiftInput!
     color: Int!
     sharpness: Int!
-    highlight: Int!
-    shadow: Int!
+    highlight: Float!
+    shadow: Float!
     noiseReduction: Int!
     grainEffect: String!
     clarity: Int!
