@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { UserInputError } = require("apollo-server-express");
+const { UserInputError } = require("./errors");
 const {
   findCamera,
   SENSOR_LABELS_BY_KEY,

@@ -8,6 +8,7 @@ const User = require("../../../models/User");
 const EmailService = require("../../../utils/emailService");
 const { createLogger } = require("../../../utils/logger");
 const { requireAuth } = require("../../../utils/authHelpers");
+const { findCamera } = require("../../../constants/fujifilmCameras");
 const {
   generateToken,
   validateEmail,
@@ -17,6 +18,24 @@ const {
 } = require("./services/userAuth");
 
 const logger = createLogger("resolvers:user");
+
+/**
+ * Resolve a user-supplied camera name to its canonical catalogue spelling.
+ * The whole point of a primary camera is that the rest of the app can look
+ * it up, so a free-text value that matches nothing is rejected rather than
+ * stored. Empty string / null clears the setting.
+ */
+const normalizePrimaryCamera = (value) => {
+  if (value === null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new UserInputError("primaryCamera must be a camera name");
+  }
+  const camera = findCamera(value);
+  if (!camera) {
+    throw new UserInputError(`"${value}" is not a known Fujifilm camera`);
+  }
+  return camera.name;
+};
 
 module.exports = {
   login: async (_, { email, password }) => {
@@ -235,6 +254,11 @@ module.exports = {
         updateFields.cameras = updateData.cameras;
       if (updateData.avatar !== undefined)
         updateFields.avatar = updateData.avatar;
+      if (updateData.primaryCamera !== undefined) {
+        updateFields.primaryCamera = normalizePrimaryCamera(
+          updateData.primaryCamera
+        );
+      }
 
       const updatedUser = await User.findByIdAndUpdate(
         user._id,
@@ -253,7 +277,12 @@ module.exports = {
       };
     } catch (error) {
       logger.error("Error updating profile", error);
-      if (error instanceof AuthenticationError) {
+      if (
+        error instanceof AuthenticationError ||
+        error instanceof UserInputError
+      ) {
+        // Keep validation messages (e.g. an unknown camera) intact instead of
+        // flattening them into a generic failure the UI can't explain.
         throw error;
       }
       throw new ApolloError(
