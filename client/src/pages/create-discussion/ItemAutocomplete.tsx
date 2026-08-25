@@ -16,12 +16,12 @@ import {
   SEARCH_PRESETS,
   type SearchPresetsQueryData,
   type SearchPresetsQueryVariables,
-} from "../../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import {
   GET_ALL_FILMSIMS,
   type ListFilmSimsQueryData,
   type ListFilmSimsQueryVariables,
-} from "../../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 import type { FilmSimSummary, PresetSummary } from "../../types/graphql";
 
 export type LinkableItem = PresetSummary | FilmSimSummary;

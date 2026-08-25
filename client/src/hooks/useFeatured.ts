@@ -3,11 +3,11 @@ import { useIsAdmin } from "./useIsAdmin";
 import {
   MAKE_PRESET_FEATURED,
   REMOVE_PRESET_FEATURED,
-} from "../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import {
   MAKE_FILMSIM_FEATURED,
   REMOVE_FILMSIM_FEATURED,
-} from "../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 
 export const useFeatured = () => {
   const isAdmin = useIsAdmin();

@@ -13,17 +13,17 @@ import {
   GET_USER_UPLOADS,
   type GetUserUploadsQueryData,
   type GetUserUploadsQueryVariables,
-} from "../graphql/users";
+} from "@/features/auth/graphql/users";
 import {
   GET_USER_LISTS_FOR_PUBLIC_PROFILE as GET_USER_LISTS,
   type GetPublicProfileListsQueryData,
   type GetPublicProfileListsQueryVariables,
-} from "../graphql/lists";
+} from "@/features/lists/graphql/lists";
 import { useAuth } from "../context/AuthContext";
-import ProfileHeader from "../components/profile/ProfileHeader";
-import PublicProfileInfo from "../components/profile/PublicProfileInfo";
-import ProfileListsSection from "../components/profile/ProfileListsSection";
-import ProfileUploadsGrid from "../components/profile/ProfileUploadsGrid";
+import ProfileHeader from "@/features/profile/components/ProfileHeader";
+import PublicProfileInfo from "@/features/profile/components/PublicProfileInfo";
+import ProfileListsSection from "@/features/profile/components/ProfileListsSection";
+import ProfileUploadsGrid from "@/features/profile/components/ProfileUploadsGrid";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const PublicProfile: React.FC = () => {

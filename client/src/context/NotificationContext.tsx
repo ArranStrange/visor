@@ -13,8 +13,8 @@ import {
   GET_NOTIFICATIONS,
   MARK_NOTIFICATION_READ,
   MARK_ALL_NOTIFICATIONS_READ,
-} from "../graphql/notifications";
-import { Notification } from "../types/notifications";
+} from "@/features/notifications/graphql/notifications";
+import { Notification } from "@/features/notifications/types/notifications";
 import {
   markAllNotificationsReadInCache,
   markNotificationReadInCache,

@@ -2,7 +2,7 @@ import React from "react";
 import { Container, Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate } from "react-router-dom";
-import DiscussionList from "../components/discussions/DiscussionList";
+import DiscussionList from "@/features/discussions/components/DiscussionList";
 
 const Discussions: React.FC = () => {
   const navigate = useNavigate();

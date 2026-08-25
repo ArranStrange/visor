@@ -2,8 +2,8 @@ import { ApolloCache } from "@apollo/client";
 import {
   GET_NOTIFICATIONS,
   GET_UNREAD_NOTIFICATIONS_COUNT,
-} from "../graphql/notifications";
-import { NotificationConnection } from "../types/notifications";
+} from "@/features/notifications/graphql/notifications";
+import { NotificationConnection } from "@/features/notifications/types/notifications";
 
 export const NOTIFICATIONS_PAGE = 1;
 export const NOTIFICATIONS_LIMIT = 50;

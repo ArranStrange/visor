@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { formatDistanceToNow } from "date-fns";
-import { Notification } from "../../types/notifications";
+import { Notification } from "@/features/notifications/types/notifications";
 import {
   getNotificationIcon,
   getNotificationColor,

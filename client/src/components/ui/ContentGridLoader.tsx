@@ -6,12 +6,12 @@ import {
   GET_ALL_PRESETS,
   type ListPresetsQueryData,
   type ListPresetsQueryVariables,
-} from "../../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import {
   GET_ALL_FILMSIMS,
   type ListFilmSimsQueryData,
   type ListFilmSimsQueryVariables,
-} from "../../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 import StaggeredGrid from "./StaggeredGrid";
 import { ContentGridItem } from "./content-grid-item";
 import { fetchNextContentPages } from "./content-grid-pagination";

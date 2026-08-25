@@ -18,7 +18,7 @@ import {
   CREATE_DISCUSSION,
   type CreateDiscussionMutationData,
   type CreateDiscussionMutationVariables,
-} from "../../graphql/discussions";
+} from "@/features/discussions/graphql/discussions";
 import DiscussionTypeSelect from "./DiscussionTypeSelect";
 import ItemAutocomplete, { LinkableItem } from "./ItemAutocomplete";
 import { DiscussionLinkedType } from "./discussionTypeLabels";

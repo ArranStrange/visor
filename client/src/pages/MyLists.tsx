@@ -12,8 +12,8 @@ import { useNavigate } from "react-router-dom";
 import ListIcon from "@mui/icons-material/List";
 import AddIcon from "@mui/icons-material/Add";
 import { useAuth } from "../context/AuthContext";
-import ListRow from "../components/lists/ListRow";
-import { GET_USER_LISTS } from "../graphql/lists";
+import ListRow from "@/features/lists/components/ListRow";
+import { GET_USER_LISTS } from "@/features/lists/graphql/lists";
 import { getErrorMessage } from "../utils/errorHandling";
 
 interface UserList {

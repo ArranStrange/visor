@@ -9,7 +9,7 @@ import {
   MenuItem,
   SelectChangeEvent,
 } from "@mui/material";
-import { NotificationType } from "../../types/notifications";
+import { NotificationType } from "@/features/notifications/types/notifications";
 
 type StatusFilter = "all" | "unread" | "read";
 type TypeFilter = NotificationType | "all";

@@ -1,0 +1,228 @@
+import React, { memo, useCallback, useMemo } from "react";
+import { Typography, Box, Avatar, Stack, Chip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import ImageOptimizer from "@/components/media/ImageOptimizer";
+import { optimizeImageUrl } from "@/utils/cloudinary";
+import CardShell from "@/components/cards/CardShell";
+import {
+  overlayAvatarStyles,
+  overlayTitleContainerStyles,
+} from "@/theme/cardOverlays";
+
+const placeholderImage = "/placeholder-image.jpg";
+
+interface ListCardProps {
+  id: string;
+  name: string;
+  description?: string;
+  owner: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  presets?: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    afterImage?: {
+      id: string;
+      url: string;
+    };
+  }>;
+  filmSims?: Array<{
+    id: string;
+    name: string;
+    slug: string;
+    sampleImages?: Array<{
+      id: string;
+      url: string;
+    }>;
+  }>;
+}
+
+const ListCard: React.FC<ListCardProps> = memo(
+  ({ id, name, description, owner, presets = [], filmSims = [] }) => {
+    const navigate = useNavigate();
+
+    // Get thumbnail images from presets and film sims
+    const thumbnails = useMemo(() => {
+      const images: string[] = [];
+
+      // Add preset images
+      presets.forEach((preset) => {
+        if (preset.afterImage?.url) {
+          images.push(preset.afterImage.url);
+        }
+      });
+
+      // Add film sim images
+      filmSims.forEach((filmSim) => {
+        if (filmSim.sampleImages?.[0]?.url) {
+          images.push(filmSim.sampleImages[0].url);
+        }
+      });
+
+      // Return up to 4 images for the grid, or placeholder if none
+      if (images.length === 0) {
+        return [placeholderImage];
+      }
+      return images.slice(0, 4);
+    }, [presets, filmSims]);
+
+    const totalItems = presets.length + filmSims.length;
+
+    const handleOwnerClick = useCallback(
+      (e: React.MouseEvent) => {
+        e.stopPropagation();
+        navigate(`/profile/${owner.id}`);
+      },
+      [navigate, owner.id]
+    );
+
+    // Render image grid based on number of thumbnails
+    const renderImageGrid = () => {
+      if (thumbnails.length === 1) {
+        return (
+          <ImageOptimizer
+            src={thumbnails[0]}
+            alt={name}
+            aspectRatio="1:1"
+            loading="lazy"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+            }}
+          />
+        );
+      }
+
+      // For 2-4 images, create a grid
+      return (
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns:
+              thumbnails.length === 2 ? "1fr 1fr" : "1fr 1fr",
+            gridTemplateRows: thumbnails.length > 2 ? "1fr 1fr" : "1fr",
+            width: "100%",
+            height: "100%",
+            gap: 0.5,
+          }}
+        >
+          {thumbnails.map((img, index) => (
+            <Box
+              key={index}
+              sx={{
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+              }}
+            >
+              <ImageOptimizer
+                src={img}
+                alt={`${name} item ${index + 1}`}
+                aspectRatio="1:1"
+                loading="lazy"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </Box>
+          ))}
+        </Box>
+      );
+    };
+
+    return (
+      <CardShell
+        aspectRatio="1/1"
+        navigateTo={`/list/${id}`}
+        revealOnMobileTap={false}
+        revealOptionsOnHover
+        renderMedia={renderImageGrid}
+      >
+        <Box
+          sx={overlayAvatarStyles}
+          className="creator-avatar"
+          onClick={handleOwnerClick}
+        >
+          <Avatar
+            variant="creator"
+            src={optimizeImageUrl(owner.avatar, 100)}
+            alt={owner.username}
+            sx={{
+              width: 32,
+              height: 32,
+            }}
+          >
+            {owner.username.charAt(0).toUpperCase()}
+          </Avatar>
+        </Box>
+
+        <Box
+          className="title-overlay"
+          sx={{
+            ...overlayTitleContainerStyles,
+            backgroundColor: "overlay.scrimSubtle",
+          }}
+        >
+          <Typography variant="overlayTitle" fontWeight="bold" noWrap>
+            {name}
+          </Typography>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Typography variant="overlaySubtitle">
+              {totalItems} {totalItems === 1 ? "item" : "items"}
+            </Typography>
+            <Typography variant="overlaySubtitle">•</Typography>
+            <Typography variant="overlaySubtitle">
+              by {owner.username}
+            </Typography>
+          </Stack>
+          {description && (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "overlay.whiteSoft",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                mt: 0.5,
+              }}
+            >
+              {description}
+            </Typography>
+          )}
+        </Box>
+
+        <Box
+          className="list-badge"
+          sx={{
+            position: "absolute",
+            top: (theme) => theme.spacing(1.5),
+            right: (theme) => theme.spacing(1.5),
+            zIndex: 3,
+          }}
+        >
+          <Chip
+            label="List"
+            size="small"
+            sx={{
+              backgroundColor: "overlay.scrimHeavy",
+              color: "white",
+              typography: "caption",
+              fontWeight: 600,
+            }}
+          />
+        </Box>
+      </CardShell>
+    );
+  }
+);
+
+ListCard.displayName = "ListCard";
+
+export default ListCard;

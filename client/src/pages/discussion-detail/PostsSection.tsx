@@ -1,8 +1,8 @@
 import React from "react";
 import { Box, Card, CardContent, Alert } from "@mui/material";
-import { Discussion, DiscussionPost } from "../../types/discussions";
-import Post from "../../components/discussions/Post";
-import PostComposer from "../../components/discussions/PostComposer";
+import { Discussion, DiscussionPost } from "@/features/discussions/types/discussions";
+import Post from "@/features/discussions/components/Post";
+import PostComposer from "@/features/discussions/components/PostComposer";
 
 interface PostsSectionProps {
   discussion: Discussion;

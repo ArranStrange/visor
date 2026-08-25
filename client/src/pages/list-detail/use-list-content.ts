@@ -4,12 +4,12 @@ import {
   GET_ALL_FILMSIMS,
   type ListFilmSimsQueryData,
   type ListFilmSimsQueryVariables,
-} from "../../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 import {
   GET_ALL_PRESETS,
   type ListPresetsQueryData,
   type ListPresetsQueryVariables,
-} from "../../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import { GridFilter } from "../../components/ui/content-grid-data";
 import { UserListDetail } from "./buildCombinedContent";
 

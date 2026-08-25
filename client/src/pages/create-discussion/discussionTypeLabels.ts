@@ -1,4 +1,4 @@
-import { DiscussionTargetType as DiscussionLinkedType } from "../../types/discussions";
+import { DiscussionTargetType as DiscussionLinkedType } from "@/features/discussions/types/discussions";
 
 export { DiscussionLinkedType };
 

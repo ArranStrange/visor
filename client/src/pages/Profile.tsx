@@ -11,9 +11,9 @@ import {
 import { useQuery, useMutation } from "@apollo/client";
 import { useAuth } from "../context/AuthContext";
 import { uploadToCloudinary } from "../utils/cloudinary";
-import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "../graphql/users";
-import ProfileHeader from "../components/profile/ProfileHeader";
-import ProfileEditForm from "../components/profile/ProfileEditForm";
+import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "@/features/auth/graphql/users";
+import ProfileHeader from "@/features/profile/components/ProfileHeader";
+import ProfileEditForm from "@/features/profile/components/ProfileEditForm";
 import { getErrorMessage } from "../utils/errorHandling";
 
 // File validation

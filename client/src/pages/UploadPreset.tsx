@@ -11,18 +11,18 @@ import {
 import { ApolloError, useMutation } from "@apollo/client";
 import { useNavigate } from "react-router-dom";
 
-import PresetUploadForm from "../components/forms/PresetUploadForm";
-import { usePresetUploadForm } from "../hooks/usePresetUploadForm";
+import PresetUploadForm from "@/features/presets/components/PresetUploadForm";
+import { usePresetUploadForm } from "@/features/presets/hooks/usePresetUploadForm";
 import {
   buildSettingsForBackend,
   buildToneCurveForBackend,
-} from "../utils/presetSettingsTransform";
-import { uploadXmpToCloudinary } from "../utils/presetUploadUtils";
+} from "@/features/presets/utils/presetSettingsTransform";
+import { uploadXmpToCloudinary } from "@/features/presets/utils/presetUploadUtils";
 import {
   UPLOAD_PRESET,
   type UploadPresetMutationData,
   type UploadPresetMutationVariables,
-} from "../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const UploadPreset: React.FC = () => {

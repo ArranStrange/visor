@@ -13,8 +13,8 @@ import { useNotifications } from "../../context/NotificationContext";
 import {
   GET_NOTIFICATIONS,
   DELETE_NOTIFICATION,
-} from "../../graphql/notifications";
-import { Notification, NotificationType } from "../../types/notifications";
+} from "@/features/notifications/graphql/notifications";
+import { Notification, NotificationType } from "@/features/notifications/types/notifications";
 import NotificationsHeader from "./NotificationsHeader";
 import NotificationFilters from "./NotificationFilters";
 import NotificationCard from "./NotificationCard";

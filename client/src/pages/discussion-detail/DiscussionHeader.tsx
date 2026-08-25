@@ -13,7 +13,7 @@ import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import CameraIcon from "@mui/icons-material/CameraAlt";
 import PresetIcon from "@mui/icons-material/Palette";
 import { formatDistanceToNow } from "date-fns";
-import { Discussion } from "../../types/discussions";
+import { Discussion } from "@/features/discussions/types/discussions";
 import {
   getResponsiveImageSrcSet,
   optimizeImageUrl,

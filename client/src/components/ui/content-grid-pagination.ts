@@ -2,11 +2,11 @@ import type { QueryResult } from "@apollo/client";
 import type {
   ListFilmSimsQueryData,
   ListFilmSimsQueryVariables,
-} from "../../graphql/filmSims";
+} from "@/features/film-sims/graphql/filmSims";
 import type {
   ListPresetsQueryData,
   ListPresetsQueryVariables,
-} from "../../graphql/presets";
+} from "@/features/presets/graphql/presets";
 import type { GridFilter } from "./content-grid-data";
 
 interface PageState {
