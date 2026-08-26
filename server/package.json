@@ -9,6 +9,7 @@
     "seed": "node seed/seedData.js",
     "backfill:sensors": "node scripts/backfill-compatible-sensors.js",
     "backfill:filmsim-likes": "node scripts/backfill-filmsim-likes.js",
+    "backfill:counters": "node scripts/backfill-content-counters.js",
     "lint": "eslint .",
     "deploy": "npm run build && firebase deploy",
     "test": "node --test \"**/*.test.js\""

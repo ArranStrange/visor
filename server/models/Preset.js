@@ -283,7 +283,29 @@ const presetSchema = new Schema(
 
     likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
+    // Denormalised discovery counters. Maintained by $inc at each mutation
+    // rather than computed per query: a sort has to be able to use an index,
+    // and $size / $lookup on every list read cannot.
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+
+    saveCount: {
+      type: Number,
+      default: 0,
+    },
+
     downloads: {
+      type: Number,
+      default: 0,
+    },
+
+    // download +3, save +2, like +1 — the weights ratified as Q3 in
+    // docs/plans/c1-c3-delivery-plan.md. Deliberately not a decaying or
+    // velocity-based score: the sort is labelled "Popular", not "Trending",
+    // so the UI does not promise an algorithm this does not implement.
+    popularityScore: {
       type: Number,
       default: 0,
     },
@@ -302,5 +324,18 @@ const presetSchema = new Schema(
   },
   { timestamps: true }
 );
+
+// Sort indexes for the discovery grid. Before this the collection had no
+// secondary index at all, so every sorted listPresets page was a collection
+// scan followed by an in-memory sort.
+//
+// No text index here: the `search` argument uses an escaped-regex $or, and the
+// text-index replacement is deferred (see the delivery plan).
+presetSchema.index({ createdAt: -1 });
+presetSchema.index({ downloads: -1 });
+presetSchema.index({ likeCount: -1 });
+presetSchema.index({ saveCount: -1 });
+presetSchema.index({ popularityScore: -1 });
+presetSchema.index({ featured: 1 });
 
 module.exports = mongoose.model("Preset", presetSchema);
