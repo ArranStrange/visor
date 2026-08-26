@@ -9,6 +9,7 @@ const EmailService = require("../../../utils/emailService");
 const { createLogger } = require("../../../utils/logger");
 const { requireAuth } = require("../../../utils/authHelpers");
 const { findCamera } = require("../../../constants/fujifilmCameras");
+const { hashToken } = require("../../../utils/authTokens");
 const {
   generateToken,
   validateEmail,
@@ -155,8 +156,10 @@ module.exports = {
 
   verifyEmail: async (_, { token }) => {
     try {
+      // Look the account up by the token's digest: the raw token from the email
+      // is never stored, so it cannot be queried directly.
       const user = await User.findOne({
-        verificationToken: token,
+        verificationToken: hashToken(token),
         tokenExpiry: { $gt: new Date() },
       });
 

@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const bcrypt = require("bcryptjs");
+const { createToken, tokensMatch } = require("../utils/authTokens");
 
 const userSchema = new Schema(
   {
@@ -14,10 +15,26 @@ const userSchema = new Schema(
     // bio/instagram/cameras/avatar only, so this is set out of band.
     isAdmin: { type: Boolean, default: false },
 
-    // Email verification fields
+    // Email verification. The token is stored as a SHA-256 digest, so reading
+    // this collection does not let you verify somebody else's address.
     emailVerified: { type: Boolean, default: false },
     verificationToken: String,
     tokenExpiry: Date,
+
+    // Password reset. Deliberately separate fields from verification: verifyEmail
+    // clears the verification pair unconditionally, so sharing them would let an
+    // address re-verification silently kill an in-flight reset.
+    resetTokenHash: String,
+    resetTokenExpiry: Date,
+
+    // Set whenever the password or email changes. Tokens issued before this
+    // moment are rejected by the auth middleware, so a credential change signs
+    // out every other session.
+    credentialsChangedAt: Date,
+
+    // Tombstone marker. A deleted account keeps its document so content and
+    // discussion threads stay readable, but the middleware treats it as absent.
+    deletedAt: Date,
 
     // Uploads by the user
     uploadedPresets: [{ type: Schema.Types.ObjectId, ref: "Preset" }],
@@ -54,17 +71,39 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Method to generate verification token
+const VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const RESET_TTL_MS = 60 * 60 * 1000; // 1 hour — shorter: it grants a password change
+
+// Returns the raw token to put in the email. Only its digest is stored.
 userSchema.methods.generateVerificationToken = function () {
-  const crypto = require("crypto");
-  this.verificationToken = crypto.randomBytes(32).toString("hex");
-  this.tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-  return this.verificationToken;
+  const { raw, hash } = createToken();
+  this.verificationToken = hash;
+  this.tokenExpiry = new Date(Date.now() + VERIFICATION_TTL_MS);
+  return raw;
 };
 
-// Method to verify token
 userSchema.methods.verifyToken = function (token) {
-  return this.verificationToken === token && this.tokenExpiry > new Date();
+  if (!this.tokenExpiry || this.tokenExpiry <= new Date()) return false;
+  return tokensMatch(token, this.verificationToken);
+};
+
+userSchema.methods.generateResetToken = function () {
+  const { raw, hash } = createToken();
+  this.resetTokenHash = hash;
+  this.resetTokenExpiry = new Date(Date.now() + RESET_TTL_MS);
+  return raw;
+};
+
+userSchema.methods.verifyResetToken = function (token) {
+  if (!this.resetTokenExpiry || this.resetTokenExpiry <= new Date()) return false;
+  return tokensMatch(token, this.resetTokenHash);
+};
+
+// Single-use: called on a successful reset and on every login, so a reset link
+// stops working the moment it is used or the account is otherwise accessed.
+userSchema.methods.clearResetToken = function () {
+  this.resetTokenHash = undefined;
+  this.resetTokenExpiry = undefined;
 };
 
 module.exports = mongoose.model("User", userSchema);
