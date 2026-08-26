@@ -16,6 +16,10 @@ import { useMutation } from "@apollo/client";
 import { REGISTER_USER } from "@/features/auth/graphql/users";
 import Email from "@mui/icons-material/Email";
 import { getErrorMessage } from "../utils/errorHandling";
+import {
+  PASSWORD_HINT,
+  validatePassword,
+} from "@/features/auth/utils/passwordRules";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +28,8 @@ const Register: React.FC = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    // Hidden from real users; only a bot fills it in. See the register resolver.
+    honeypot: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -36,10 +42,9 @@ const Register: React.FC = () => {
           setRegistrationSuccess(true);
           setError(null);
         } else {
-          // Store the token in localStorage if no verification required
-          localStorage.setItem("token", data.register.token);
-          localStorage.setItem("user", JSON.stringify(data.register.user));
-          navigate("/");
+          // register never returns a session token, so there is nothing to log
+          // the user in with — send them to the login form.
+          navigate("/login");
         }
       } else {
         setError(
@@ -54,17 +59,10 @@ const Register: React.FC = () => {
     },
   });
 
-  const validatePassword = (password: string): boolean => {
-    if (password.length < 6) {
-      setPasswordError("Password must be at least 6 characters long");
-      return false;
-    }
-    if (!/[A-Z]/.test(password)) {
-      setPasswordError("Password must contain at least one uppercase letter");
-      return false;
-    }
-    setPasswordError(null);
-    return true;
+  const checkPassword = (password: string): boolean => {
+    const problem = validatePassword(password);
+    setPasswordError(problem);
+    return problem === null;
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,7 +70,7 @@ const Register: React.FC = () => {
     setForm({ ...form, [name]: value });
 
     if (name === "password") {
-      validatePassword(value);
+      checkPassword(value);
     }
   };
 
@@ -85,7 +83,7 @@ const Register: React.FC = () => {
       return;
     }
 
-    if (!validatePassword(form.password)) {
+    if (!checkPassword(form.password)) {
       return;
     }
 
@@ -95,6 +93,7 @@ const Register: React.FC = () => {
           username: form.username,
           email: form.email,
           password: form.password,
+          honeypot: form.honeypot,
         },
       });
     } catch (err) {
@@ -146,6 +145,7 @@ const Register: React.FC = () => {
                   email: "",
                   password: "",
                   confirmPassword: "",
+                  honeypot: "",
                 });
               }}
             >
@@ -224,10 +224,7 @@ const Register: React.FC = () => {
                 {passwordError}
               </FormHelperText>
             )}
-            <FormHelperText>
-              Password must be at least 6 characters and contain an uppercase
-              letter
-            </FormHelperText>
+            <FormHelperText>{PASSWORD_HINT}</FormHelperText>
           </Box>
 
           <TextField
@@ -251,6 +248,34 @@ const Register: React.FC = () => {
             }
             data-cy="confirm-password-input"
           />
+
+          {/*
+            Bait for form-filling bots. Hidden from sight and from assistive
+            tech, and kept out of tab order, so no real user can reach it.
+          */}
+          <Box
+            aria-hidden="true"
+            sx={{
+              position: "absolute",
+              width: 1,
+              height: 1,
+              p: 0,
+              m: -1,
+              overflow: "hidden",
+              clip: "rect(0 0 0 0)",
+              whiteSpace: "nowrap",
+              border: 0,
+            }}
+          >
+            <input
+              type="text"
+              name="honeypot"
+              tabIndex={-1}
+              autoComplete="off"
+              value={form.honeypot}
+              onChange={handleChange}
+            />
+          </Box>
 
           <Button
             type="submit"

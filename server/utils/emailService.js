@@ -1,6 +1,9 @@
 const sgMail = require("@sendgrid/mail");
 const createVerificationEmailHtml = require("./email-templates/verification-email");
 const createWelcomeEmailHtml = require("./email-templates/welcome-email");
+const {
+  createPasswordResetEmailHtml,
+} = require("./email-templates/password-reset-email");
 const { createLogger } = require("./logger");
 
 const logger = createLogger("email-service");
@@ -106,6 +109,84 @@ class EmailService {
       }
 
       return { success: false, message: "Failed to send verification email" };
+    }
+  }
+
+  /**
+   * Never throws: the caller returns the same generic response either way, so a
+   * mail failure must not distinguish a real account from an unknown address.
+   */
+  static async sendPasswordResetEmail(email, username, token) {
+    if (!SENDGRID_API_KEY) {
+      logger.warn("SendGrid API key not configured.");
+      return { success: false, message: "Email service not configured" };
+    }
+
+    try {
+      const resetUrl = `${APP_URL}/reset-password?token=${token}&email=${encodeURIComponent(
+        email
+      )}`;
+
+      const msg = {
+        to: email,
+        from: { email: FROM_EMAIL, name: "VISOR Team" },
+        replyTo: SUPPORT_EMAIL,
+        subject: "Reset your VISOR password",
+        html: createPasswordResetEmailHtml({
+          username,
+          resetUrl,
+          supportEmail: SUPPORT_EMAIL,
+        }),
+        text: `
+          Reset your VISOR password
+
+          Hi ${username},
+
+          Someone asked to reset the password for your VISOR account. Open the
+          link below to choose a new one:
+
+          ${resetUrl}
+
+          The link works once and expires in one hour.
+
+          Didn't ask for this? Ignore this email — your password stays as it is.
+
+          Need help? Contact us at ${SUPPORT_EMAIL}
+        `,
+        // Click tracking rewrites the URL, which breaks single-use reset links
+        // often enough (scanners pre-fetching the rewritten URL) that it is not
+        // worth the analytics.
+        trackingSettings: {
+          clickTracking: { enable: false, enableText: false },
+          openTracking: { enable: false },
+          subscriptionTracking: { enable: false },
+        },
+        categories: ["password-reset"],
+        headers: { "X-Custom-Header": "password-reset" },
+      };
+
+      const response = await sgMail.send(msg);
+
+      logger.info(
+        `Password reset email sent (messageId: ${response[0]?.headers["x-message-id"]})`
+      );
+
+      return {
+        success: true,
+        message: "Password reset email sent successfully",
+        messageId: response[0]?.headers["x-message-id"],
+      };
+    } catch (error) {
+      logger.error("Error sending password reset email", error);
+
+      if (error.response) {
+        logger.error("SendGrid API Error", {
+          code: error.code,
+          errors: error.response.body?.errors,
+        });
+      }
+
+      return { success: false, message: "Failed to send password reset email" };
     }
   }
 

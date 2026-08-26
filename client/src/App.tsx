@@ -13,6 +13,8 @@ import { CameraProvider } from "./context/CameraContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { TagProvider } from "./context/TagContext";
 import { visorTheme } from "./theme/VISORTheme";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 const SearchView = lazy(() => import("./pages/SearchView"));
 const PresetDetailPage = lazy(() => import("./pages/PresetDetail"));
@@ -25,6 +27,9 @@ const UploadFilmSim = lazy(() => import("./pages/upload-film-sim"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const EmailVerification = lazy(() => import("./pages/EmailVerification"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AccountSettings = lazy(() => import("./pages/AccountSettings"));
 const MyLists = lazy(() => import("./pages/MyLists"));
 const Wallet = lazy(() => import("./pages/Wallet"));
 const BrowseLists = lazy(() => import("./pages/BrowseLists"));
@@ -95,6 +100,25 @@ function App() {
                             path="/verify-email"
                             element={<EmailVerification />}
                           />
+                          <Route
+                            path="/forgot-password"
+                            element={<ForgotPassword />}
+                          />
+                          <Route
+                            path="/reset-password"
+                            element={<ResetPassword />}
+                          />
+                          <Route
+                            path="/settings/account"
+                            element={<AccountSettings />}
+                          />
+                          {/*
+                            Eagerly imported: small pages that crawlers and
+                            anyone checking before signing up should get without
+                            waiting on a chunk.
+                          */}
+                          <Route path="/terms" element={<Terms />} />
+                          <Route path="/privacy" element={<Privacy />} />
                           <Route path="/lists" element={<MyLists />} />
                           <Route path="/wallet" element={<Wallet />} />
                           <Route
