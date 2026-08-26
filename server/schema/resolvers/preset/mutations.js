@@ -6,6 +6,8 @@ const {
   requireAuth,
   requireOwnership,
 } = require("../../../utils/authHelpers");
+const { addLike, removeLike, requireValidId } = require("../../../utils/likes");
+const { POPULARITY_WEIGHTS } = require("../../../utils/popularity");
 const {
   cleanSettings,
   cleanToneCurve,
@@ -78,18 +80,34 @@ module.exports = {
   },
 
   likePreset: async (_, { presetId }, { user }) => {
-    const preset = await Preset.findById(presetId);
-    if (!preset.likes.includes(user.id)) {
-      preset.likes.push(user.id);
-      await preset.save();
-    }
-    return true;
+    requireAuth(user, "You must be logged in to like a preset");
+    return addLike(Preset, presetId, user, "Preset");
   },
 
-  downloadPreset: async (_, { presetId }) => {
-    const preset = await Preset.findById(presetId);
-    preset.downloads += 1;
-    await preset.save();
+  unlikePreset: async (_, { presetId }, { user }) => {
+    requireAuth(user, "You must be logged in to unlike a preset");
+    return removeLike(Preset, presetId, user, "Preset");
+  },
+
+  downloadPreset: async (_, { presetId }, { user }) => {
+    // Was a read-modify-write with no auth check and no null guard, so a bad
+    // id threw a TypeError on `preset.downloads` and two concurrent downloads
+    // could both read the same count and write the same increment.
+    requireAuth(user, "You must be logged in to download a preset");
+    requireValidId(presetId, "Preset");
+
+    const updated = await Preset.findByIdAndUpdate(
+      presetId,
+      {
+        $inc: {
+          downloads: 1,
+          popularityScore: POPULARITY_WEIGHTS.download,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) throw new UserInputError("Preset not found");
     return true;
   },
 

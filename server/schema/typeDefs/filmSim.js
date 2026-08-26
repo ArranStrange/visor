@@ -40,6 +40,14 @@ const typeDefs = gql`
     notes: String
     comments: [Comment]
     likes: [User]
+    """
+    Denormalised count of \`likes\`. Not \`likes.length\`: film sims that
+    predate the likes-model fix carry their historical count here with an empty
+    \`likes\` array, because a count cannot be turned back into a user list.
+    """
+    likeCount: Int
+    """Times the recipe has been opened for download."""
+    downloads: Int
     featured: Boolean
     createdAt: String
     updatedAt: String
@@ -144,6 +152,7 @@ const typeDefs = gql`
     updateFilmSim(id: ID!, input: JSON!): FilmSim
     deleteFilmSim(id: ID!): Boolean
     likeFilmSim(filmSimId: ID!): Boolean
+    unlikeFilmSim(filmSimId: ID!): Boolean
 
     addComment(filmSimId: ID!, text: String!): Comment!
     updateComment(filmSimId: ID!, commentId: ID!, text: String!): Comment!

@@ -95,6 +95,9 @@ export interface PresetSummary {
   creator?: UserSummary;
   tags?: TagSummary[];
   featured?: boolean;
+  /** Denormalised count of `likes`, so a card need not fetch the array. */
+  likeCount?: number;
+  downloads?: number;
 }
 
 export interface FilmSimSummary {
@@ -106,6 +109,13 @@ export interface FilmSimSummary {
   creator?: UserSummary;
   tags?: TagSummary[];
   featured?: boolean;
+  /**
+   * Denormalised count of `likes`. Not `likes.length`: film sims that predate
+   * the likes-model fix carry their historical count here with an empty
+   * `likes` array (#128).
+   */
+  likeCount?: number;
+  downloads?: number;
 }
 
 export interface PresetDetailSettings {

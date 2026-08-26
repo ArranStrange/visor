@@ -163,6 +163,8 @@ const typeDefs = gql`
     creator: User
     filmSim: FilmSim
     likes: [User]
+    """Denormalised count of \`likes\`, so a card need not fetch the array."""
+    likeCount: Int
     downloads: Int
     isPublished: Boolean
     featured: Boolean
@@ -616,6 +618,7 @@ const typeDefs = gql`
     updatePreset(id: ID!, input: UpdatePresetInput!): Preset
     deletePreset(id: ID!): Boolean
     likePreset(presetId: ID!): Boolean
+    unlikePreset(presetId: ID!): Boolean
     downloadPreset(presetId: ID!): Boolean
     makePresetFeatured(presetId: ID!): Preset
     removePresetFeatured(presetId: ID!): Preset
