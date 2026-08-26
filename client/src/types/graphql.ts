@@ -19,6 +19,16 @@ export interface TagSummary {
   displayName: string;
 }
 
+/**
+ * Shape returned by the account-management mutations (password reset, change
+ * password/email, delete account). Hand-maintained: there is no codegen, so
+ * this mirrors SimpleResponse in server/schema/typeDefs/user.js.
+ */
+export interface SimpleResponse {
+  success: boolean;
+  message: string;
+}
+
 export interface UserSummary {
   id: string;
   username: string;
