@@ -36,6 +36,12 @@ const reportTypeDefs = gql`
     targetId: ID!
     reason: ReportReason!
     detail: String
+    """
+    Where to look at the reported content: an in-app path for presets, film
+    sims and discussions, the file's own URL for an image. Null once the
+    content has been deleted.
+    """
+    targetUrl: String
     status: ReportStatus!
     resolvedBy: User
     resolvedAt: String

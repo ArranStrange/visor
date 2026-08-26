@@ -14,6 +14,7 @@ const REPORT_FIELDS = gql`
     targetId
     reason
     detail
+    targetUrl
     status
     createdAt
     resolvedAt

@@ -64,6 +64,11 @@ export interface Report {
   targetId: string;
   reason: ReportReason;
   detail?: string | null;
+  /**
+   * In-app path for presets, film sims and discussions; the file's own URL for
+   * an image. Null once the reported content has been deleted.
+   */
+  targetUrl?: string | null;
   status: ReportStatus;
   resolvedBy?: UserSummary | null;
   resolvedAt?: string | null;

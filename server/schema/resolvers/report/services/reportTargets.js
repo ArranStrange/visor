@@ -27,4 +27,44 @@ const targetExists = async (targetType, targetId) => {
   return Boolean(await lookup(targetId));
 };
 
-module.exports = { targetExists };
+/**
+ * Where a moderator goes to look at the reported thing.
+ *
+ * Resolved here rather than built on the client because the routes are keyed
+ * by slug and a report only stores an id — the client has no way to turn one
+ * into the other. Null means the content is gone, which is itself the answer
+ * to "what am I looking at": nothing, dismiss it.
+ *
+ * Presets, film sims and discussions resolve to in-app paths; an image
+ * resolves to its own hosted URL, since there is no page that shows one image
+ * on its own.
+ */
+const URL_BY_TARGET_TYPE = {
+  PRESET: async (targetId) => {
+    const preset = await Preset.findById(targetId).select("slug");
+    return preset?.slug ? `/preset/${preset.slug}` : null;
+  },
+  FILMSIM: async (targetId) => {
+    const filmSim = await FilmSim.findById(targetId).select("slug");
+    return filmSim?.slug ? `/filmsim/${filmSim.slug}` : null;
+  },
+  IMAGE: async (targetId) => {
+    const image = await Image.findById(targetId).select("url");
+    return image?.url || null;
+  },
+  DISCUSSION_POST: async (targetId) => {
+    const discussion = await Discussion.findOne({
+      "posts._id": targetId,
+    }).select("_id");
+    return discussion ? `/discussions/${discussion._id}` : null;
+  },
+};
+
+const targetUrl = async (targetType, targetId) => {
+  const resolve = URL_BY_TARGET_TYPE[targetType];
+  if (!resolve || !targetId) return null;
+
+  return resolve(targetId);
+};
+
+module.exports = { targetExists, targetUrl };

@@ -56,8 +56,14 @@ test("Report exposes the queue fields a moderator needs", () => {
     assert.ok(isNonNull(fields[name].type), `${name} is non-null`);
   }
   // Nullable on purpose: the reporter's account may since have been deleted,
-  // and an unresolved report has no resolver.
-  for (const name of ["reporter", "resolvedBy", "resolvedAt", "detail"]) {
+  // an unresolved report has no resolver, and deleted content has no URL.
+  for (const name of [
+    "reporter",
+    "resolvedBy",
+    "resolvedAt",
+    "detail",
+    "targetUrl",
+  ]) {
     assert.equal(isNonNull(fields[name].type), false, `${name} is nullable`);
   }
   assert.equal(namedType(fields.reporter.type), "User");
