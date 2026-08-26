@@ -1,5 +1,12 @@
+const FilmSim = require("../../../models/FilmSim");
+const Preset = require("../../../models/Preset");
 const UserList = require("../../../models/UserList");
 const { createLogger } = require("../../../utils/logger");
+const {
+  adjustSaveCounts,
+  isMember,
+  membersToAdd,
+} = require("../../../utils/saveCounts");
 const {
   requireAdmin,
   requireAuth,
@@ -81,6 +88,11 @@ module.exports = {
         message: "You don't have permission to modify this list",
       });
 
+      // Only count a removal that actually removes something, so a repeated
+      // "remove" cannot push saveCount below the real membership count.
+      const removedPreset = presetId && isMember(list.presets, presetId);
+      const removedFilmSim = filmSimId && isMember(list.filmSims, filmSimId);
+
       if (presetId) {
         list.presets = list.presets.filter(
           (id) => id.toString() !== presetId
@@ -93,6 +105,11 @@ module.exports = {
       }
 
       await list.save();
+
+      await Promise.all([
+        removedPreset ? adjustSaveCounts(Preset, [presetId], -1) : null,
+        removedFilmSim ? adjustSaveCounts(FilmSim, [filmSimId], -1) : null,
+      ]);
 
       const updatedList = await UserList.findById(listId)
         .populate({
@@ -138,15 +155,23 @@ module.exports = {
         message: "You don't have permission to modify this list",
       });
 
-      if (presetIds && presetIds.length > 0) {
-        list.presets = [...new Set([...list.presets, ...presetIds])];
-      }
+      // Only the genuinely new members are appended and counted. The old code
+      // de-duplicated with `new Set([...list.presets, ...presetIds])`, which
+      // cannot see that an ObjectId and its id string are the same member —
+      // so re-confirming "Add to list" both duplicated the entry and would
+      // have inflated saveCount.
+      const addedPresets = membersToAdd(list.presets, presetIds);
+      const addedFilmSims = membersToAdd(list.filmSims, filmSimIds);
 
-      if (filmSimIds && filmSimIds.length > 0) {
-        list.filmSims = [...new Set([...list.filmSims, ...filmSimIds])];
-      }
+      if (addedPresets.length) list.presets.push(...addedPresets);
+      if (addedFilmSims.length) list.filmSims.push(...addedFilmSims);
 
       await list.save();
+
+      await Promise.all([
+        adjustSaveCounts(Preset, addedPresets, 1),
+        adjustSaveCounts(FilmSim, addedFilmSims, 1),
+      ]);
 
       const updatedList = await UserList.findById(listId)
         .populate({
