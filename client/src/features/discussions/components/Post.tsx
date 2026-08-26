@@ -20,12 +20,14 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ReplyIcon from "@mui/icons-material/Reply";
+import FlagIcon from "@mui/icons-material/Flag";
 import { formatDistanceToNow } from "date-fns";
 import { useMutation } from "@apollo/client";
 import { useAuth } from "@/context/AuthContext";
 import { DiscussionPost as PostType } from "@/features/discussions/types/discussions";
 import Reply from "@/features/discussions/components/Reply";
 import { ADMIN_DELETE_POST, GET_DISCUSSION } from "@/features/discussions/graphql/discussions";
+import ReportDialog from "@/features/moderation/components/ReportDialog";
 
 interface PostProps {
   post: PostType;
@@ -61,6 +63,7 @@ const Post: React.FC<PostProps> = ({
   const [editContent, setEditContent] = useState(post.content);
   const [replyContent, setReplyContent] = useState("");
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
   const [adminDeletePost] = useMutation(ADMIN_DELETE_POST, {
     refetchQueries: [
       { query: GET_DISCUSSION, variables: { id: discussionId } },
@@ -96,6 +99,11 @@ const Post: React.FC<PostProps> = ({
     } catch (error) {
       console.error("Error deleting post:", error);
     }
+  };
+
+  const handleReport = () => {
+    handleMenuClose();
+    setReportDialogOpen(true);
   };
 
   const handleReply = () => {
@@ -223,8 +231,9 @@ const Post: React.FC<PostProps> = ({
                   </Button>
                 )}
 
-                {/* More options - show for post creator or admin */}
-                {isLoggedIn && (isAuthor || user?.isAdmin) && (
+                {/* More options - the author's own controls, an admin's
+                    delete, and Report for everyone else who is signed in */}
+                {isLoggedIn && (
                   <Tooltip title="More options">
                     <IconButton size="small" onClick={handleMenuOpen}>
                       <MoreVertIcon fontSize="small" />
@@ -331,7 +340,24 @@ const Post: React.FC<PostProps> = ({
             <ListItemText>Delete (Admin)</ListItemText>
           </MenuItem>
         )}
+        {/* Reporting your own post is meaningless, so authors do not see it. */}
+        {isLoggedIn && !isAuthor && (
+          <MenuItem onClick={handleReport} data-cy="report-post-menu-item">
+            <ListItemIcon>
+              <FlagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText>Report</ListItemText>
+          </MenuItem>
+        )}
       </Menu>
+
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        targetType="DISCUSSION_POST"
+        targetId={post.id}
+        targetName={`${post.username}'s post`}
+      />
     </Box>
   );
 };

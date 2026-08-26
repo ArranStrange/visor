@@ -26,7 +26,11 @@ interface DetailHeaderProps {
   title: string;
   featured: boolean;
   isAdmin: boolean;
-  isOwner: boolean;
+  /**
+   * Whether to show the ⋮ menu at all. Not the same as ownership: a signed-in
+   * visitor gets the menu too, because Report lives in it.
+   */
+  showMenu: boolean;
   onFeaturedToggle: () => void;
   onMenuOpen: (event: React.MouseEvent<HTMLElement>) => void;
   menuButtonTestId?: string;
@@ -37,7 +41,7 @@ const DetailHeader: React.FC<DetailHeaderProps> = ({
   title,
   featured,
   isAdmin,
-  isOwner,
+  showMenu,
   onFeaturedToggle,
   onMenuOpen,
   menuButtonTestId,
@@ -104,7 +108,7 @@ const DetailHeader: React.FC<DetailHeaderProps> = ({
             )}
           </IconButton>
         )}
-        {isOwner && (
+        {showMenu && (
           <IconButton
             onClick={onMenuOpen}
             size="small"
