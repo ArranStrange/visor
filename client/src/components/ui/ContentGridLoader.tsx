@@ -20,7 +20,11 @@ import {
   GridContentData,
   GridContentType,
 } from "./content-grid-data";
-import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
+import type {
+  ContentSort,
+  FilmSimFilterInput,
+  PresetFilterInput,
+} from "@/types/graphql";
 import { getErrorMessage } from "../../utils/errorHandling";
 
 interface ContentGridLoaderProps {
@@ -32,7 +36,13 @@ interface ContentGridLoaderProps {
    */
   presetWhere?: PresetFilterInput;
   filmSimWhere?: FilmSimFilterInput;
-  searchQuery?: string;
+  /**
+   * Free-text search, applied server-side. Pass the debounced value: every
+   * distinct term is its own Apollo cache entry and its own round trip.
+   */
+  search?: string;
+  /** Omit until the user picks an order; the server defaults to NEWEST. */
+  sort?: ContentSort;
   customData?: readonly unknown[];
   renderItem?: (item: GridContentData) => React.ReactNode;
 }
@@ -43,7 +53,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
   presetWhere,
   filmSimWhere,
-  searchQuery,
+  search,
+  sort,
   customData,
   renderItem,
 }) => {
@@ -54,7 +65,13 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const presetQuery = useQuery<ListPresetsQueryData, ListPresetsQueryVariables>(
     GET_ALL_PRESETS,
     {
-      variables: { page: 1, limit: ITEMS_PER_PAGE, where: presetWhere },
+      variables: {
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+        where: presetWhere,
+        search,
+        sort,
+      },
       skip: !loadPresets,
       notifyOnNetworkStatusChange: true,
     }
@@ -63,7 +80,13 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     ListFilmSimsQueryData,
     ListFilmSimsQueryVariables
   >(GET_ALL_FILMSIMS, {
-    variables: { page: 1, limit: ITEMS_PER_PAGE, where: filmSimWhere },
+    variables: {
+      page: 1,
+      limit: ITEMS_PER_PAGE,
+      where: filmSimWhere,
+      search,
+      sort,
+    },
     skip: !loadFilmSims,
     notifyOnNetworkStatusChange: true,
   });
@@ -73,7 +96,6 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     customData,
     presetData: presetQuery.data,
     filmSimData: filmSimQuery.data,
-    searchQuery,
   });
   const isLoadingMore =
     presetQuery.networkStatus === NetworkStatus.fetchMore ||
@@ -83,6 +105,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
       fetchNextContentPages({
         presetWhere,
         filmSimWhere,
+        search,
+        sort,
         isLoading: isLoadingMore,
         presets: presetQuery.data?.listPresets,
         filmSims: filmSimQuery.data?.listFilmSims,
@@ -92,6 +116,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     [
       presetWhere,
       filmSimWhere,
+      search,
+      sort,
       presetQuery.data?.listPresets,
       presetQuery.fetchMore,
       filmSimQuery.data?.listFilmSims,
@@ -129,7 +155,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   return (
     <Box sx={{ width: "100%", maxWidth: "100vw", overflow: "hidden" }}>
       <StaggeredGrid
-        key={`grid-${contentType}`}
+        key={`grid-${contentType}-${sort ?? "default"}`}
         loading={initialLoading}
         onLoadMore={loadMore}
         hasMore={hasMore}

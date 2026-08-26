@@ -7,7 +7,11 @@ import type {
   ListPresetsQueryData,
   ListPresetsQueryVariables,
 } from "@/features/presets/graphql/presets";
-import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
+import type {
+  ContentSort,
+  FilmSimFilterInput,
+  PresetFilterInput,
+} from "@/types/graphql";
 
 interface PageState {
   currentPage: number;
@@ -17,6 +21,13 @@ interface PageState {
 interface FetchNextContentPagesOptions {
   presetWhere?: PresetFilterInput;
   filmSimWhere?: FilmSimFilterInput;
+  /**
+   * Search and sort have to be repeated on every fetchMore: they are part of
+   * the Apollo cache key, so omitting them would append page 2 of the
+   * unsearched, default-ordered list onto the searched one.
+   */
+  search?: string;
+  sort?: ContentSort;
   isLoading: boolean;
   presets?: PageState;
   filmSims?: PageState;
@@ -35,6 +46,8 @@ const ITEMS_PER_PAGE = 20;
 export async function fetchNextContentPages({
   presetWhere,
   filmSimWhere,
+  search,
+  sort,
   isLoading,
   presets,
   filmSims,
@@ -51,6 +64,8 @@ export async function fetchNextContentPages({
           page: presets.currentPage + 1,
           limit: ITEMS_PER_PAGE,
           where: presetWhere,
+          search,
+          sort,
         },
       })
     );
@@ -62,6 +77,8 @@ export async function fetchNextContentPages({
           page: filmSims.currentPage + 1,
           limit: ITEMS_PER_PAGE,
           where: filmSimWhere,
+          search,
+          sort,
         },
       })
     );

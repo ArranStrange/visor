@@ -1,5 +1,6 @@
 import { gql } from "@apollo/client";
 import type {
+  ContentSort,
   FilmSimFilterInput,
   FilmSimSummary,
   ImageSummary,
@@ -24,6 +25,10 @@ export interface ListFilmSimsQueryVariables {
   page?: number;
   limit?: number;
   where?: FilmSimFilterInput;
+  /** Free-text search, matched server-side over name, description, notes and tag names. */
+  search?: string;
+  /** Omitted until the user picks an order; the server defaults to NEWEST. */
+  sort?: ContentSort;
 }
 
 export type FilmSimResponseSettings = Partial<FilmSimSettings>;
@@ -96,8 +101,20 @@ export interface UploadFilmSimMutationVariables {
 }
 
 export const GET_ALL_FILMSIMS = gql`
-  query ListFilmSims($page: Int, $limit: Int, $where: FilmSimFilterInput) {
-    listFilmSims(page: $page, limit: $limit, where: $where) {
+  query ListFilmSims(
+    $page: Int
+    $limit: Int
+    $where: FilmSimFilterInput
+    $search: String
+    $sort: ContentSort
+  ) {
+    listFilmSims(
+      page: $page
+      limit: $limit
+      where: $where
+      search: $search
+      sort: $sort
+    ) {
       filmSims {
         id
         name

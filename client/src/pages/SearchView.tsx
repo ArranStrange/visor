@@ -12,6 +12,7 @@ import SensorProfileCard from "@/features/film-sims/components/SensorProfileCard
 import { ENV_CONFIG } from "@/config/environment";
 import { useCamera } from "@/context/CameraContext";
 
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
 import TagsList from "../components/ui/TagsList";
@@ -23,6 +24,10 @@ const SearchView: React.FC = () => {
   const [keyword, setKeyword] = useState("");
   const [activeTagId, setActiveTagId] = useState<string | null>(null);
   const { contentType } = useContentType();
+  // The input stays bound to `keyword` so typing never feels laggy; only the
+  // query trails it. Search is server-side, so an undebounced value would mean
+  // a round trip (and a new cache entry) per keystroke.
+  const search = useDebouncedValue(keyword).trim() || undefined;
   const { tags, loading: tagsLoading, searchTags } = useTags();
   const {
     camera,
@@ -198,7 +203,7 @@ const SearchView: React.FC = () => {
 
       <ContentGridLoader
         contentType={activeSensor ? "films" : contentType}
-        searchQuery={keyword}
+        search={search}
         presetWhere={presetWhere}
         filmSimWhere={filmSimWhere}
       />

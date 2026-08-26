@@ -1,4 +1,8 @@
-import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
+import type {
+  ContentSort,
+  FilmSimFilterInput,
+  PresetFilterInput,
+} from "@/types/graphql";
 import type { RecipeCompatibilitySettings } from "@/features/compatibility";
 
 export type GridContentType = "all" | "presets" | "films";
@@ -61,6 +65,8 @@ export interface PaginatedListVariables {
   page: number;
   limit: number;
   where?: PresetFilterInput | FilmSimFilterInput;
+  search?: string;
+  sort?: ContentSort;
 }
 
 interface BuildGridContentOptions {
@@ -68,17 +74,25 @@ interface BuildGridContentOptions {
   customData?: readonly unknown[];
   presetData?: PaginatedPresetsData;
   filmSimData?: PaginatedFilmSimsData;
-  searchQuery?: string;
 }
 
 const ITEMS_PER_PAGE = 20;
 
+/**
+ * Shapes the fetched pages into grid items.
+ *
+ * There is deliberately no search filtering here any more. This used to end
+ * with a `filterBySearchQuery` pass that substring-matched `title` across only
+ * the ~20 items already in the cache — so searching found nothing that was not
+ * already on screen, matched neither descriptions nor tags, and shrank the grid
+ * while the pagination footer still described the unsearched set. Search is a
+ * `search` argument on the list queries now.
+ */
 export function buildGridContent({
   contentType,
   customData,
   presetData,
   filmSimData,
-  searchQuery,
 }: BuildGridContentOptions): GridContentItem[] {
   if (customData !== undefined) {
     return customData.map(shapeCustomItem);
@@ -99,7 +113,7 @@ export function buildGridContent({
     });
   }
 
-  return filterBySearchQuery(content, searchQuery);
+  return content;
 }
 
 function hasCreator(item: GridContentData) {
@@ -142,14 +156,6 @@ function combineByFetchedPage(
   }
 
   return content;
-}
-
-function filterBySearchQuery(content: GridContentItem[], searchQuery?: string) {
-  if (!searchQuery) return content;
-  const normalizedQuery = searchQuery.toLowerCase();
-  return content.filter((item) =>
-    item.data.title?.toLowerCase().includes(normalizedQuery)
-  );
 }
 
 function shapeCustomItem(item: unknown): GridContentItem {

@@ -32,16 +32,14 @@ describe("Content grid data shaping", () => {
     expect(content[42].data.id).to.equal("film-20");
   });
 
-  it("uses custom data directly and disables query-only search shaping", () => {
+  it("uses custom data directly", () => {
+    // Search no longer happens here at all: it is a `search` argument on the
+    // list queries, so buildGridContent only shapes what came back.
     const customData = [
       { type: "film", data: { id: "custom-film", name: "Custom" } },
     ];
 
-    const content = buildGridContent({
-      contentType: "films",
-      customData,
-      searchQuery: "not-a-match",
-    });
+    const content = buildGridContent({ contentType: "films", customData });
 
     expect(content).to.deep.equal(customData);
   });
