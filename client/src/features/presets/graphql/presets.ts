@@ -1,6 +1,7 @@
 import { gql } from "@apollo/client";
 import type {
   ColorGradingSettings,
+  ContentSort,
   ImageInput,
   PresetDetail,
   PresetDetailSettings,
@@ -25,6 +26,10 @@ export interface ListPresetsQueryVariables {
   page?: number;
   limit?: number;
   where?: PresetFilterInput;
+  /** Free-text search, matched server-side over title, description, notes and tag names. */
+  search?: string;
+  /** Ordering. Optional: the server defaults to NEWEST when absent. */
+  sort?: ContentSort;
 }
 
 export interface GetPresetQueryData {
@@ -112,8 +117,20 @@ export interface UploadPresetMutationVariables {
 }
 
 export const GET_ALL_PRESETS = gql`
-  query ListPresets($page: Int, $limit: Int, $where: PresetFilterInput) {
-    listPresets(page: $page, limit: $limit, where: $where) {
+  query ListPresets(
+    $page: Int
+    $limit: Int
+    $where: PresetFilterInput
+    $search: String
+    $sort: ContentSort
+  ) {
+    listPresets(
+      page: $page
+      limit: $limit
+      where: $where
+      search: $search
+      sort: $sort
+    ) {
       presets {
         id
         title
@@ -283,9 +300,13 @@ export const GET_PRESET_BY_SLUG = gql`
   }
 `;
 
+// Was `where: { title: $query }` — an exact, case-sensitive title match, so
+// "portra" found nothing unless a preset was called exactly that. Every
+// consumer (SearchView, RecommendedPresetsManager, ItemAutocomplete) now gets
+// the same substring search over title, description, notes and tag names.
 export const SEARCH_PRESETS = gql`
   query SearchPresets($query: String!, $page: Int!, $limit: Int!) {
-    listPresets(where: { title: $query }, page: $page, limit: $limit) {
+    listPresets(search: $query, page: $page, limit: $limit) {
       presets {
         id
         title
@@ -309,6 +330,17 @@ export const SEARCH_PRESETS = gql`
       currentPage
       totalPages
     }
+  }
+`;
+
+/**
+ * Records a download. Fire-and-forget: the XMP is compiled and saved entirely
+ * in the browser, so this is telemetry for the MOST_DOWNLOADED and POPULAR
+ * sorts, not part of getting the file. A failure must never block the save.
+ */
+export const DOWNLOAD_PRESET = gql`
+  mutation DownloadPreset($presetId: ID!) {
+    downloadPreset(presetId: $presetId)
   }
 `;
 

@@ -8,8 +8,17 @@ const LIST_FILM_SIMS = gql`
     $where: FilmSimFilterInput
     $limit: Int
     $page: Int
+    $search: String
+    $sort: ContentSort
   ) {
-    listFilmSims(filter: $filter, where: $where, limit: $limit, page: $page) {
+    listFilmSims(
+      filter: $filter
+      where: $where
+      limit: $limit
+      page: $page
+      search: $search
+      sort: $sort
+    ) {
       totalCount
       hasNextPage
       currentPage
@@ -213,18 +222,25 @@ describe("preset pagination field policy", () => {
   });
 
   it("isolates filter and limit cache entries while sharing pages", () => {
-    expect(presetPolicy.keyArgs).toEqual(["filter", "where", "limit"]);
+    expect(presetPolicy.keyArgs).toEqual([
+      "filter",
+      "where",
+      "limit",
+      "search",
+      "sort",
+    ]);
     expect(presetPolicy.keyArgs).not.toContain("page");
   });
 
-  it("keys on the typed where argument as well as the legacy JSON filter", () => {
-    // Two queries that differ only in `where` select different documents; if
-    // `where` were missing from keyArgs they would share one cache entry and
-    // a sensor-filtered grid would show unfiltered results.
+  it("keys on every argument that changes which documents come back", () => {
+    // `where` was added in Phase 1 for the sensor filter and `search`/`sort`
+    // in Phase 3. Each one changes the result set, so each has to participate
+    // in cache identity — otherwise two different queries resolve to the same
+    // entry and the filter, search or ordering silently does nothing.
     for (const policy of [getPresetPolicy(), getFilmSimPolicy()]) {
-      expect(policy.keyArgs).toContain("where");
-      expect(policy.keyArgs).toContain("filter");
-      expect(policy.keyArgs).toContain("limit");
+      for (const argument of ["filter", "where", "limit", "search", "sort"]) {
+        expect(policy.keyArgs).toContain(argument);
+      }
     }
   });
 });
@@ -269,16 +285,135 @@ describe("where isolates cache entries", () => {
   });
 });
 
+describe("search isolates cache entries", () => {
+  it("gives two search terms their own entries", () => {
+    // Search is server-side now. If `search` were missing from keyArgs, typing
+    // a second term would read back the first term's results — the grid would
+    // look like it was ignoring what you typed.
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["portra-1"], { search: "portra" });
+    writeFilmSims(cache, undefined, ["acros-1"], { search: "acros" });
+
+    expect(readFilmSimIds(cache, undefined, { search: "portra" })).toEqual([
+      "portra-1",
+    ]);
+    expect(readFilmSimIds(cache, undefined, { search: "acros" })).toEqual([
+      "acros-1",
+    ]);
+    expect(listFilmSimsFieldKeys(cache)).toHaveLength(2);
+  });
+
+  it("keeps an unsearched grid separate from a searched one", () => {
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["all-1", "all-2"]);
+    writeFilmSims(cache, undefined, ["portra-1"], { search: "portra" });
+
+    expect(readFilmSimIds(cache, undefined)).toEqual(["all-1", "all-2"]);
+    expect(readFilmSimIds(cache, undefined, { search: "portra" })).toEqual([
+      "portra-1",
+    ]);
+  });
+
+  it("shares one entry when the search term is the same", () => {
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["portra-1"], { search: "portra" });
+    writeFilmSims(cache, undefined, ["portra-1-refetched"], {
+      search: "portra",
+    });
+
+    expect(readFilmSimIds(cache, undefined, { search: "portra" })).toEqual([
+      "portra-1-refetched",
+    ]);
+    expect(listFilmSimsFieldKeys(cache)).toHaveLength(1);
+  });
+});
+
+describe("sort isolates cache entries", () => {
+  it("gives two orderings their own entries", () => {
+    // The merge writes incoming items into page-derived slots. Two orderings
+    // sharing an entry would interleave: page 1 of POPULAR would overwrite
+    // slots 0-19 of the NEWEST list and the grid would show a mixture of both.
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["new-1", "new-2"], { sort: "NEWEST" });
+    writeFilmSims(cache, undefined, ["pop-1", "pop-2"], { sort: "POPULAR" });
+
+    expect(readFilmSimIds(cache, undefined, { sort: "NEWEST" })).toEqual([
+      "new-1",
+      "new-2",
+    ]);
+    expect(readFilmSimIds(cache, undefined, { sort: "POPULAR" })).toEqual([
+      "pop-1",
+      "pop-2",
+    ]);
+    expect(listFilmSimsFieldKeys(cache)).toHaveLength(2);
+  });
+
+  it("keeps an explicit default sort separate from an absent one", () => {
+    // Not cosmetic: the client sends no `sort` until the user picks one, so
+    // these two really are distinct requests as far as the cache is concerned.
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["implicit-1"]);
+    writeFilmSims(cache, undefined, ["explicit-1"], { sort: "NEWEST" });
+
+    expect(readFilmSimIds(cache, undefined)).toEqual(["implicit-1"]);
+    expect(readFilmSimIds(cache, undefined, { sort: "NEWEST" })).toEqual([
+      "explicit-1",
+    ]);
+  });
+
+  it("separates a searched-and-sorted grid from a merely searched one", () => {
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    writeFilmSims(cache, undefined, ["s-1"], { search: "portra" });
+    writeFilmSims(cache, undefined, ["s-2"], {
+      search: "portra",
+      sort: "POPULAR",
+    });
+
+    expect(readFilmSimIds(cache, undefined, { search: "portra" })).toEqual([
+      "s-1",
+    ]);
+    expect(
+      readFilmSimIds(cache, undefined, { search: "portra", sort: "POPULAR" })
+    ).toEqual(["s-2"]);
+  });
+});
+
+interface DiscoveryArgs {
+  search?: string;
+  sort?: string;
+}
+
+function discoveryVariables(
+  where: { sensorKey: string } | undefined,
+  { search, sort }: DiscoveryArgs = {}
+) {
+  // Identical filter, limit and page throughout, so any shared cache entry is
+  // keyArgs failing to see the argument under test.
+  return {
+    filter: null,
+    where: where ?? null,
+    limit: 20,
+    page: 1,
+    search: search ?? null,
+    sort: sort ?? null,
+  };
+}
+
 function writeFilmSims(
   cache: InMemoryCache,
   where: { sensorKey: string } | undefined,
-  ids: string[]
+  ids: string[],
+  discovery?: DiscoveryArgs
 ) {
   cache.writeQuery({
     query: LIST_FILM_SIMS,
-    // Identical filter and limit throughout: `where` is the only difference,
-    // so any shared entry would be keyArgs failing to see it.
-    variables: { filter: null, where: where ?? null, limit: 20, page: 1 },
+    variables: discoveryVariables(where, discovery),
     data: {
       listFilmSims: {
         __typename: "PaginatedFilmSims",
@@ -294,13 +429,14 @@ function writeFilmSims(
 
 function readFilmSimIds(
   cache: InMemoryCache,
-  where: { sensorKey: string } | undefined
+  where: { sensorKey: string } | undefined,
+  discovery?: DiscoveryArgs
 ): string[] | undefined {
   const result = cache.readQuery<{
     listFilmSims: { filmSims: { id: string }[] };
   }>({
     query: LIST_FILM_SIMS,
-    variables: { filter: null, where: where ?? null, limit: 20, page: 1 },
+    variables: discoveryVariables(where, discovery),
   });
 
   return result?.listFilmSims.filmSims.map((filmSim) => filmSim.id);

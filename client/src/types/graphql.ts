@@ -95,6 +95,9 @@ export interface PresetSummary {
   creator?: UserSummary;
   tags?: TagSummary[];
   featured?: boolean;
+  /** Denormalised count of `likes`, so a card need not fetch the array. */
+  likeCount?: number;
+  downloads?: number;
 }
 
 export interface FilmSimSummary {
@@ -106,6 +109,13 @@ export interface FilmSimSummary {
   creator?: UserSummary;
   tags?: TagSummary[];
   featured?: boolean;
+  /**
+   * Denormalised count of `likes`. Not `likes.length`: film sims that predate
+   * the likes-model fix carry their historical count here with an empty
+   * `likes` array (#128).
+   */
+  likeCount?: number;
+  downloads?: number;
 }
 
 export interface PresetDetailSettings {
@@ -294,6 +304,20 @@ export interface PresetFilterInput {
   /** Exact title match; removed when Phase 3 adds a `search` argument. */
   title?: string;
 }
+
+/**
+ * Ordering for the discovery lists. Mirrors the ContentSort enum in
+ * server/schema/typeDefs/scalars.js.
+ *
+ * POPULAR reads the denormalised popularityScore (download 3, save 2, like 1).
+ * It is named POPULAR rather than TRENDING on purpose: the score has no time
+ * decay, so neither the enum nor the UI label may promise recency.
+ */
+export type ContentSort =
+  | "NEWEST"
+  | "POPULAR"
+  | "MOST_DOWNLOADED"
+  | "MOST_SAVED";
 
 /** Typed filter for `listFilmSims`. Mirrors FilmSimFilterInput. */
 export interface FilmSimFilterInput {

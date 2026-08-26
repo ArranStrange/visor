@@ -7,9 +7,10 @@ import {
   Alert,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   ADD_PHOTO_TO_PRESET,
+  DOWNLOAD_PRESET,
   GET_PRESET_BY_SLUG,
   type GetPresetQueryData,
   type GetPresetQueryVariables,
@@ -36,6 +37,8 @@ import AddPhotoDialog from "@/features/presets/components/dialogs/AddPhotoDialog
 import FullscreenImageDialog from "@/features/presets/components/dialogs/FullscreenImageDialog";
 import { usePresetOperations } from "@/features/presets/hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { socialImageUrl } from "../utils/socialImage";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const PresetDetails: React.FC = () => {
@@ -51,6 +54,20 @@ const PresetDetails: React.FC = () => {
   });
 
   const preset = data?.getPreset;
+
+  // Download counting. The mutation has existed on the server since the
+  // beginning and had never been called from anywhere, so downloads sat at
+  // zero for every preset — which is also why MOST_DOWNLOADED needs it.
+  const [recordDownload] = useMutation<
+    { downloadPreset: boolean | null },
+    { presetId: string }
+  >(DOWNLOAD_PRESET);
+
+  useDocumentMeta({
+    title: preset?.title,
+    description: preset?.description,
+    image: socialImageUrl(preset?.afterImage?.url),
+  });
 
   const {
     deleteDialogOpen,
@@ -133,6 +150,11 @@ const PresetDetails: React.FC = () => {
     };
 
     downloadXMP(presetData);
+
+    // Fire and forget, and deliberately after the file is on its way: the XMP
+    // is compiled in the browser, so a failed or unauthenticated count must
+    // never stop someone getting their preset.
+    recordDownload({ variables: { presetId: preset.id } }).catch(() => {});
   };
 
   if (loading) {

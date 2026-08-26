@@ -3,6 +3,7 @@ const test = require("node:test");
 
 const presetTypeDefs = require("../preset");
 const filmSimTypeDefs = require("../filmSim");
+const scalarTypeDefs = require("../scalars");
 
 // Contract test for the typed list filters. The point of the typed inputs is
 // that the schema itself enumerates what may be filtered on (#126) — if a
@@ -68,11 +69,64 @@ test("both list queries take the typed input alongside the legacy JSON blob", ()
   assert.equal(argType(listFilmSims, "filter"), "JSON");
 });
 
+test("both list queries take search and sort", () => {
+  for (const [typeDefs, name] of [
+    [presetTypeDefs, "listPresets"],
+    [filmSimTypeDefs, "listFilmSims"],
+  ]) {
+    const field = findQueryField(typeDefs, name);
+    assert.equal(argType(field, "search"), "String", `${name}.search`);
+    assert.equal(argType(field, "sort"), "ContentSort", `${name}.sort`);
+  }
+});
+
+test("neither search nor sort is required, so existing callers still work", () => {
+  for (const [typeDefs, name] of [
+    [presetTypeDefs, "listPresets"],
+    [filmSimTypeDefs, "listFilmSims"],
+  ]) {
+    const field = findQueryField(typeDefs, name);
+    for (const argumentName of ["search", "sort"]) {
+      const argument = field.arguments.find(
+        (candidate) => candidate.name.value === argumentName
+      );
+      assert.notEqual(
+        argument.type.kind,
+        "NonNullType",
+        `${name}.${argumentName} must be optional`
+      );
+    }
+  }
+});
+
+test("ContentSort is POPULAR, not TRENDING", () => {
+  // Ratified as Q3: the score has no time decay, so the enum must not promise
+  // recency the implementation does not provide.
+  const values = findEnum(scalarTypeDefs, "ContentSort").values.map(
+    (value) => value.name.value
+  );
+
+  assert.deepEqual(values, [
+    "NEWEST",
+    "POPULAR",
+    "MOST_DOWNLOADED",
+    "MOST_SAVED",
+  ]);
+  assert.ok(!values.includes("TRENDING"));
+});
+
 function findInput(typeDefs, name) {
   return typeDefs.definitions.find(
     (definition) =>
       definition.kind === "InputObjectTypeDefinition" &&
       definition.name.value === name
+  );
+}
+
+function findEnum(typeDefs, name) {
+  return typeDefs.definitions.find(
+    (definition) =>
+      definition.kind === "EnumTypeDefinition" && definition.name.value === name
   );
 }
 

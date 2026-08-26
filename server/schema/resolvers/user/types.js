@@ -44,6 +44,7 @@ module.exports = {
       populate: [
         { path: "tags" },
         { path: "creator" },
+        { path: "likes" },
         { path: "sampleImages" },
       ],
     });
@@ -57,7 +58,11 @@ module.exports = {
         : null,
       tags:
         f.tags?.map((t) => ({ ...t.toObject(), id: t._id.toString() })) || [],
-      likes: [],
+      // Was hard-coded to []: FilmSim.likes held a Number, so returning the
+      // real value would have thrown "Expected Iterable" against the
+      // `likes: [User]` the schema advertises. It is a user list now (#128).
+      likes:
+        f.likes?.map((l) => ({ ...l.toObject(), id: l._id.toString() })) || [],
       sampleImages:
         f.sampleImages?.map((i) => ({
           ...i.toObject(),

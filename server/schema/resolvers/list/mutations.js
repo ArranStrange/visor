@@ -1,5 +1,12 @@
+const FilmSim = require("../../../models/FilmSim");
+const Preset = require("../../../models/Preset");
 const UserList = require("../../../models/UserList");
 const { createLogger } = require("../../../utils/logger");
+const {
+  adjustSaveCounts,
+  isMember,
+  membersToAdd,
+} = require("../../../utils/saveCounts");
 const {
   requireAdmin,
   requireAuth,
@@ -55,7 +62,35 @@ module.exports = {
         message: "You don't have permission to delete this list",
       });
 
-      await UserList.findByIdAndDelete(id);
+      // Everything the list held stops being saved by it, so the counters have
+      // to come down with it. Without this, deleting a list of twenty recipes
+      // leaves twenty inflated saveCounts ranking content nobody has saved.
+      //
+      // The delete itself decides who adjusts. Two concurrent requests both
+      // pass the ownership check above, but only one actually removes the
+      // document — and only that one may touch the counters, or a single
+      // deletion decrements twice. Take the membership from the returned
+      // document rather than the earlier read for the same reason.
+      const deleted = await UserList.findOneAndDelete({ _id: id });
+
+      if (!deleted) {
+        // Someone else deleted it between the read and here. The list is gone
+        // either way, so this is the caller's desired end state; the request
+        // that won the race owns the counter adjustment.
+        //
+        // Note the asymmetry this creates, deliberately: a concurrent loser
+        // gets `true`, while a request that arrives after the list is already
+        // gone fails the findById guard above and throws "List not found".
+        // Returning true from that guard instead would make a typo'd id look
+        // like a successful delete, which is worse than the inconsistency.
+        return true;
+      }
+
+      await Promise.all([
+        adjustSaveCounts(Preset, deleted.presets ?? [], -1),
+        adjustSaveCounts(FilmSim, deleted.filmSims ?? [], -1),
+      ]);
+
       return true;
     } catch (error) {
       logger.error("Error deleting user list", error);
@@ -81,6 +116,11 @@ module.exports = {
         message: "You don't have permission to modify this list",
       });
 
+      // Only count a removal that actually removes something, so a repeated
+      // "remove" cannot push saveCount below the real membership count.
+      const removedPreset = presetId && isMember(list.presets, presetId);
+      const removedFilmSim = filmSimId && isMember(list.filmSims, filmSimId);
+
       if (presetId) {
         list.presets = list.presets.filter(
           (id) => id.toString() !== presetId
@@ -93,6 +133,11 @@ module.exports = {
       }
 
       await list.save();
+
+      await Promise.all([
+        removedPreset ? adjustSaveCounts(Preset, [presetId], -1) : null,
+        removedFilmSim ? adjustSaveCounts(FilmSim, [filmSimId], -1) : null,
+      ]);
 
       const updatedList = await UserList.findById(listId)
         .populate({
@@ -138,15 +183,23 @@ module.exports = {
         message: "You don't have permission to modify this list",
       });
 
-      if (presetIds && presetIds.length > 0) {
-        list.presets = [...new Set([...list.presets, ...presetIds])];
-      }
+      // Only the genuinely new members are appended and counted. The old code
+      // de-duplicated with `new Set([...list.presets, ...presetIds])`, which
+      // cannot see that an ObjectId and its id string are the same member —
+      // so re-confirming "Add to list" both duplicated the entry and would
+      // have inflated saveCount.
+      const addedPresets = membersToAdd(list.presets, presetIds);
+      const addedFilmSims = membersToAdd(list.filmSims, filmSimIds);
 
-      if (filmSimIds && filmSimIds.length > 0) {
-        list.filmSims = [...new Set([...list.filmSims, ...filmSimIds])];
-      }
+      if (addedPresets.length) list.presets.push(...addedPresets);
+      if (addedFilmSims.length) list.filmSims.push(...addedFilmSims);
 
       await list.save();
+
+      await Promise.all([
+        adjustSaveCounts(Preset, addedPresets, 1),
+        adjustSaveCounts(FilmSim, addedFilmSims, 1),
+      ]);
 
       const updatedList = await UserList.findById(listId)
         .populate({

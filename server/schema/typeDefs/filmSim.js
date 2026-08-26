@@ -40,6 +40,14 @@ const typeDefs = gql`
     notes: String
     comments: [Comment]
     likes: [User]
+    """
+    Denormalised count of \`likes\`. Not \`likes.length\`: film sims that
+    predate the likes-model fix carry their historical count here with an empty
+    \`likes\` array, because a count cannot be turned back into a user list.
+    """
+    likeCount: Int
+    """Times the recipe has been opened for download."""
+    downloads: Int
     featured: Boolean
     createdAt: String
     updatedAt: String
@@ -108,8 +116,8 @@ const typeDefs = gql`
     """A camera body name; resolved to its sensor generation server-side."""
     cameraName: String
     """
-    Exact name match. Temporary, same deprecation window as
-    PresetFilterInput.title.
+    Exact name match. Superseded by the \`search\` argument; same one-release
+    deprecation window as PresetFilterInput.title.
     """
     name: String
   }
@@ -124,6 +132,13 @@ const typeDefs = gql`
     listFilmSims(
       filter: JSON
       where: FilmSimFilterInput
+      """
+      Free-text search over name, description, notes and tag names. Escaped
+      server-side and matched case-insensitively.
+      """
+      search: String
+      """Defaults to NEWEST."""
+      sort: ContentSort
       page: Int
       limit: Int
     ): PaginatedFilmSims!
@@ -144,6 +159,7 @@ const typeDefs = gql`
     updateFilmSim(id: ID!, input: JSON!): FilmSim
     deleteFilmSim(id: ID!): Boolean
     likeFilmSim(filmSimId: ID!): Boolean
+    unlikeFilmSim(filmSimId: ID!): Boolean
 
     addComment(filmSimId: ID!, text: String!): Comment!
     updateComment(filmSimId: ID!, commentId: ID!, text: String!): Comment!

@@ -1,0 +1,31 @@
+# VISOR — https://visor-c51a1.web.app
+#
+# Static by choice. The disallowed paths are the ones that either need a
+# session (so a crawler only ever sees a redirect or an empty shell) or produce
+# unbounded URL variations that waste crawl budget on duplicate content.
+
+User-agent: *
+Allow: /
+
+# Authenticated-only areas: nothing here renders for a crawler.
+Disallow: /settings/
+Disallow: /admin/
+Disallow: /notifications
+Disallow: /upload
+Disallow: /upload/
+Disallow: /create-list
+Disallow: /wallet
+Disallow: /lists
+
+# Auth flows, and password-reset URLs that carry a single-use token.
+Disallow: /login
+Disallow: /register
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Every query, tag and sensor combination is the same content in a different
+# order; the canonical pages are the preset, film sim and list detail routes.
+Disallow: /search
+
+Sitemap: https://visor-c51a1.web.app/sitemap.xml

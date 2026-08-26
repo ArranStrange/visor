@@ -87,12 +87,33 @@ const filmSimSchema = new Schema(
 
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 
-    likes: {
+    // The users who liked this film sim. Declared as a Number until #128:
+    // GraphQL has always advertised `likes: [User]`, so any list query that
+    // selected the field threw "Expected Iterable" at serialisation time. The
+    // numeric value could not be turned back into a user list, so
+    // scripts/backfill-filmsim-likes.js preserves it as likeCount and starts
+    // likes[] empty.
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+
+    // Denormalised count of likes[], maintained by $inc in the like/unlike
+    // mutations so a sort by popularity never has to load the array.
+    likeCount: {
+      type: Number,
+      default: 0,
+    },
+
+    saveCount: {
       type: Number,
       default: 0,
     },
 
     downloads: {
+      type: Number,
+      default: 0,
+    },
+
+    // download +3, save +2, like +1 — see the note on Preset.popularityScore.
+    popularityScore: {
       type: Number,
       default: 0,
     },
@@ -175,5 +196,16 @@ const filmSimSchema = new Schema(
 
 // Add text index for search functionality
 filmSimSchema.index({ name: "text", description: "text", tags: "text" });
+
+// Sort indexes for the discovery grid, mirroring Preset. Mongo allows only one
+// text index per collection, so the one above stays as it is; the `search`
+// argument uses an escaped-regex $or and the text-index replacement is
+// deferred (see the delivery plan).
+filmSimSchema.index({ createdAt: -1 });
+filmSimSchema.index({ downloads: -1 });
+filmSimSchema.index({ likeCount: -1 });
+filmSimSchema.index({ saveCount: -1 });
+filmSimSchema.index({ popularityScore: -1 });
+filmSimSchema.index({ featured: 1 });
 
 module.exports = mongoose.model("FilmSim", filmSimSchema);
