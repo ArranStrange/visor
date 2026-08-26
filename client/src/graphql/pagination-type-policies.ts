@@ -31,6 +31,10 @@ export const paginationTypePolicies: TypePolicies = {
   FilmSim: { keyFields: ["id"] },
   User: { keyFields: ["id"] },
   Tag: { keyFields: ["id"] },
+  // Posts carry an id now (a report needs to name one), but they are still
+  // subdocuments of a discussion: normalising them would change how every
+  // discussion read merges, for no benefit.
+  DiscussionPost: { keyFields: false },
   PaginatedPresets: { keyFields: false },
   PaginatedFilmSims: { keyFields: false },
 };

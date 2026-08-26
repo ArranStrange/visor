@@ -22,7 +22,8 @@ import CompatibilityChip from "@/features/compatibility/components/Compatibility
 import EditFilmSimDialog from "@/features/film-sims/components/EditFilmSimDialog";
 import RecommendedPresetsManager from "@/features/film-sims/components/RecommendedPresetsManager";
 import DetailHeader from "../components/content/DetailHeader";
-import OwnerMenu from "../components/content/OwnerMenu";
+import ContentActionsMenu from "../components/content/ContentActionsMenu";
+import ReportDialog from "@/features/moderation/components/ReportDialog";
 import DeleteContentDialog from "../components/content/DeleteContentDialog";
 import FilmSimDescription from "@/features/film-sims/components/FilmSimDescription";
 import FilmSimSampleImages from "@/features/film-sims/components/FilmSimSampleImages";
@@ -71,6 +72,7 @@ const FilmSimDetails: React.FC = () => {
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [recommendedPresetsDialogOpen, setRecommendedPresetsDialogOpen] =
     useState(false);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const menuOpen = Boolean(menuAnchorEl);
 
@@ -90,6 +92,11 @@ const FilmSimDetails: React.FC = () => {
   const handleDeleteClick = () => {
     handleMenuClose();
     handleDelete();
+  };
+
+  const handleReportClick = () => {
+    handleMenuClose();
+    setReportDialogOpen(true);
   };
 
   if (loading) {
@@ -135,19 +142,22 @@ const FilmSimDetails: React.FC = () => {
         title={filmSim.name}
         featured={!!filmSim.featured}
         isAdmin={isAdmin}
-        isOwner={!!isOwner}
+        showMenu={!!currentUser}
         onFeaturedToggle={handleToggleFeatured}
         onMenuOpen={handleMenuOpen}
         menuButtonTestId="film-sim-menu-button"
       />
 
-      {isOwner && (
-        <OwnerMenu
+      {/* Signed in only: reporting anonymously would be unattributable. */}
+      {currentUser && (
+        <ContentActionsMenu
           anchorEl={menuAnchorEl}
           open={menuOpen}
           onClose={handleMenuClose}
+          isOwner={!!isOwner}
           onEdit={handleEditClick}
           onDelete={handleDeleteClick}
+          onReport={handleReportClick}
           deleteTestId="film-sim-delete-menu-item"
         />
       )}
@@ -224,6 +234,14 @@ const FilmSimDetails: React.FC = () => {
         showFeaturedToggle={isAdmin && !!currentImageId}
         onClose={() => setFullscreenImage(null)}
         onFeaturedToggle={handleToggleFeaturedPhoto}
+      />
+
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        targetType="FILMSIM"
+        targetId={filmSim.id}
+        targetName={filmSim.name}
       />
 
       <RecommendedPresetsManager

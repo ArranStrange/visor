@@ -1,15 +1,10 @@
 const Discussion = require("../../../../models/Discussion");
-const { AuthenticationError } = require("../../../../utils/errors");
-const { requireAuth } = require("../../../../utils/authHelpers");
+const { requireAdmin } = require("../../../../utils/authHelpers");
 
 module.exports = {
   adminDeleteDiscussion: async (_, { id }, context) => {
     try {
-      const user = context.user;
-      requireAuth(user, "Admin access required");
-      if (!user.isAdmin) {
-        throw new AuthenticationError("Admin access required");
-      }
+      requireAdmin(context.user);
 
       const discussion = await Discussion.findById(id);
       if (!discussion) {
@@ -25,11 +20,7 @@ module.exports = {
 
   adminDeletePost: async (_, { discussionId, postIndex }, context) => {
     try {
-      const user = context.user;
-      requireAuth(user, "Admin access required");
-      if (!user.isAdmin) {
-        throw new AuthenticationError("Admin access required");
-      }
+      requireAdmin(context.user);
 
       const discussion = await Discussion.findById(discussionId);
       if (!discussion) {
@@ -56,11 +47,7 @@ module.exports = {
     context
   ) => {
     try {
-      const user = context.user;
-      requireAuth(user, "Admin access required");
-      if (!user.isAdmin) {
-        throw new AuthenticationError("Admin access required");
-      }
+      requireAdmin(context.user);
 
       const discussion = await Discussion.findById(discussionId);
       if (!discussion) {
@@ -92,11 +79,7 @@ module.exports = {
 
   adminUpdateDiscussion: async (_, { id, input }, context) => {
     try {
-      const user = context.user;
-      requireAuth(user, "Admin access required");
-      if (!user.isAdmin) {
-        throw new AuthenticationError("Admin access required");
-      }
+      requireAdmin(context.user);
 
       const discussion = await Discussion.findById(id);
       if (!discussion) {

@@ -13,6 +13,10 @@ const CHANGE_EMAIL_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 // between an attacker and an unbounded guess at the current password.
 const CHANGE_PASSWORD_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
 const DELETE_ACCOUNT_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+// Keyed per reporter: reporting is a good-faith action we want to be easy,
+// but the moderation queue is read by a person, so one account must not be
+// able to bury it. Twenty an hour is far more than honest use needs.
+const REPORT_LIMIT = { limit: 20, windowMs: 60 * 60 * 1000 };
 
 // Express sets req.ip from the socket, or from X-Forwarded-For when trust proxy
 // is enabled. An absent IP falls back to a shared bucket rather than skipping
@@ -40,4 +44,5 @@ module.exports = {
   CHANGE_EMAIL_LIMIT,
   CHANGE_PASSWORD_LIMIT,
   DELETE_ACCOUNT_LIMIT,
+  REPORT_LIMIT,
 };

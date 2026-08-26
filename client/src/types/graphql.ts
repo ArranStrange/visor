@@ -36,6 +36,55 @@ export interface UserSummary {
   instagram?: string;
 }
 
+/**
+ * Moderation types. Hand-maintained: there is no codegen, so these mirror
+ * server/schema/typeDefs/report.js — keep the unions in step with the enums
+ * there, which are in turn the Report model's enums.
+ */
+export type ReportTargetType =
+  | "PRESET"
+  | "FILMSIM"
+  | "IMAGE"
+  | "DISCUSSION_POST";
+
+export type ReportReason =
+  | "SPAM"
+  | "STOLEN_CONTENT"
+  | "INAPPROPRIATE"
+  | "ABUSE"
+  | "OTHER";
+
+export type ReportStatus = "OPEN" | "ACTIONED" | "DISMISSED";
+
+export interface Report {
+  id: string;
+  /** Null once the reporter's account has been deleted. */
+  reporter?: UserSummary | null;
+  targetType: ReportTargetType;
+  targetId: string;
+  reason: ReportReason;
+  detail?: string | null;
+  /**
+   * In-app path for presets, film sims and discussions; the file's own URL for
+   * an image. Null once the reported content has been deleted.
+   */
+  targetUrl?: string | null;
+  status: ReportStatus;
+  resolvedBy?: UserSummary | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginatedReports {
+  reports: Report[];
+  totalCount: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+  currentPage: number;
+  totalPages: number;
+}
+
 export interface PresetSummary {
   id: string;
   title: string;

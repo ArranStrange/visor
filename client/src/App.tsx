@@ -39,6 +39,7 @@ const Discussions = lazy(() => import("./pages/Discussions"));
 const CreateDiscussion = lazy(() => import("./pages/create-discussion"));
 const DiscussionDetail = lazy(() => import("./pages/discussion-detail"));
 const Notifications = lazy(() => import("./pages/notifications"));
+const AdminReports = lazy(() => import("./pages/AdminReports"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function App() {
@@ -142,6 +143,12 @@ function App() {
                           <Route
                             path="/notifications"
                             element={<Notifications />}
+                          />
+                          {/* Gated by useIsAdmin inside the page; the server
+                              rejects a non-admin regardless of the route. */}
+                          <Route
+                            path="/admin/reports"
+                            element={<AdminReports />}
                           />
                           <Route path="*" element={<NotFound />} />
                         </Routes>
