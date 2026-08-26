@@ -22,9 +22,13 @@ const validateEmail = (email) => {
   }
 };
 
+const MIN_PASSWORD_LENGTH = 8;
+
 const validatePassword = (password) => {
-  if (password.length < 6) {
-    throw new ValidationError("Password must be at least 6 characters long");
+  if (typeof password !== "string" || password.length < MIN_PASSWORD_LENGTH) {
+    throw new ValidationError(
+      `Password must be at least ${MIN_PASSWORD_LENGTH} characters long`
+    );
   }
   if (!/[A-Z]/.test(password)) {
     throw new ValidationError(
@@ -73,4 +77,5 @@ module.exports = {
   validatePassword,
   validateUsername,
   handleFileUpload,
+  MIN_PASSWORD_LENGTH,
 };

@@ -35,7 +35,8 @@ const startServer = async () => {
     typeDefs,
     resolvers,
     persistedQueries: { cache: "bounded" },
-    context: ({ req }) => ({ user: req.user }),
+    // req is exposed so mutations can rate-limit by client IP.
+    context: ({ req }) => ({ user: req.user, req }),
   });
 
   try {

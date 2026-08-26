@@ -43,6 +43,12 @@ module.exports = gql`
     message: String!
   }
 
+  "Outcome of an account-management action, with a message safe to show the user."
+  type SimpleResponse {
+    success: Boolean!
+    message: String!
+  }
+
   extend type Query {
     getUser(id: ID!): User
     getCurrentUser: User
@@ -55,10 +61,38 @@ module.exports = gql`
       username: String!
       email: String!
       password: String!
+      "Hidden form field. Real users leave it empty; bots that fill every input are rejected."
+      honeypot: String
     ): RegisterResponse!
     verifyEmail(token: String!): VerifyEmailResponse!
     resendVerificationEmail(email: String!): ResendVerificationResponse!
     updateProfile(input: JSON!): User
     uploadAvatar(file: Upload!): String
+
+    """
+    Sends a reset link if the address has an account. Always reports success so
+    the response cannot be used to discover which addresses are registered.
+    """
+    requestPasswordReset(email: String!): SimpleResponse!
+    resetPassword(
+      token: String!
+      email: String!
+      newPassword: String!
+    ): SimpleResponse!
+
+    "Changes the password and signs out every other session."
+    changePassword(currentPassword: String!, newPassword: String!): SimpleResponse!
+
+    """
+    Starts an email change. The new address must be verified before it takes
+    effect, so the account is never left pointing at an address nobody owns.
+    """
+    changeEmail(currentPassword: String!, newEmail: String!): SimpleResponse!
+
+    """
+    Anonymises the account and signs it out everywhere. Uploaded presets, film
+    sims and discussion posts stay readable, attributed to a deleted user.
+    """
+    deleteAccount(currentPassword: String!): SimpleResponse!
   }
 `;
