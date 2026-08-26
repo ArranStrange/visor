@@ -14,6 +14,8 @@ import {
   type GetFilmSimQueryVariables,
 } from "@/features/film-sims/graphql/filmSims";
 import { useAuth } from "../context/AuthContext";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { socialImageUrl } from "../utils/socialImage";
 import { useFeatured } from "../hooks/useFeatured";
 import AddToListButton from "@/features/lists/components/AddToListButton";
 import DiscussionThread from "@/features/discussions/components/DiscussionThread";
@@ -47,6 +49,12 @@ const FilmSimDetails: React.FC = () => {
   });
 
   const filmSim = data?.getFilmSim;
+
+  useDocumentMeta({
+    title: filmSim?.name,
+    description: filmSim?.description,
+    image: socialImageUrl(filmSim?.sampleImages?.[0]?.url),
+  });
 
   const {
     deleteDialogOpen,

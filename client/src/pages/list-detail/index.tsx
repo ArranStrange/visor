@@ -9,6 +9,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useContentType } from "../../context/ContentTypeFilter";
 import { GET_LIST, UPDATE_LIST, DELETE_LIST } from "@/features/lists/graphql/lists";
 import { buildCombinedContent, GetListData } from "./buildCombinedContent";
+import { useDocumentMeta } from "@/hooks/useDocumentMeta";
 import { useListContent } from "./use-list-content";
 import ListHeaderView from "./ListHeaderView";
 import ListHeaderEdit from "./ListHeaderEdit";
@@ -53,6 +54,17 @@ const ListDetail: React.FC = () => {
     onCompleted: handleListLoaded,
   });
   const listContent = useListContent(listData?.getUserList);
+
+  // Before the early returns below, for the same reason as PublicProfile.
+  const listMeta = listData?.getUserList;
+  useDocumentMeta({
+    title: listMeta?.name,
+    description:
+      listMeta?.description ||
+      (listMeta?.name
+        ? `A collection of presets and film simulation recipes on VISOR.`
+        : undefined),
+  });
 
   const [updateList] = useMutation(UPDATE_LIST, {
     onCompleted: handleUpdateCompleted,

@@ -37,6 +37,8 @@ import AddPhotoDialog from "@/features/presets/components/dialogs/AddPhotoDialog
 import FullscreenImageDialog from "@/features/presets/components/dialogs/FullscreenImageDialog";
 import { usePresetOperations } from "@/features/presets/hooks/usePresetOperations";
 import { useContentPhotos } from "../hooks/useContentPhotos";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { socialImageUrl } from "../utils/socialImage";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const PresetDetails: React.FC = () => {
@@ -60,6 +62,12 @@ const PresetDetails: React.FC = () => {
     { downloadPreset: boolean | null },
     { presetId: string }
   >(DOWNLOAD_PRESET);
+
+  useDocumentMeta({
+    title: preset?.title,
+    description: preset?.description,
+    image: socialImageUrl(preset?.afterImage?.url),
+  });
 
   const {
     deleteDialogOpen,

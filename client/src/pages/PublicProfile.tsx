@@ -24,6 +24,8 @@ import ProfileHeader from "@/features/profile/components/ProfileHeader";
 import PublicProfileInfo from "@/features/profile/components/PublicProfileInfo";
 import ProfileListsSection from "@/features/profile/components/ProfileListsSection";
 import ProfileUploadsGrid from "@/features/profile/components/ProfileUploadsGrid";
+import { useDocumentMeta } from "../hooks/useDocumentMeta";
+import { socialImageUrl } from "../utils/socialImage";
 import { getErrorMessage } from "../utils/errorHandling";
 
 const PublicProfile: React.FC = () => {
@@ -60,6 +62,19 @@ const PublicProfile: React.FC = () => {
   const isOwnProfile = currentUser?.id === userId;
   const loading = userLoading || listsLoading;
   const error = userError || listsError;
+
+  // Before the early returns below: hooks cannot live after a conditional
+  // return, so this reads the query data rather than the narrowed `user`.
+  const profile = userData?.getUser;
+  useDocumentMeta({
+    title: profile?.username && `${profile.username}'s presets and film sims`,
+    description:
+      profile?.bio ||
+      (profile?.username
+        ? `Presets and film simulation recipes shared by ${profile.username}.`
+        : undefined),
+    image: socialImageUrl(profile?.avatar),
+  });
 
   if (loading && !userData) {
     return (
