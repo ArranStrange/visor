@@ -6,6 +6,7 @@ const {
   buildPresetFilterQuery,
   buildFilmSimFilterQuery,
 } = require("../contentFilters");
+const { UserInputError } = require("../errors");
 
 const OID = "507f1f77bcf86cd799439011";
 const OTHER_OID = "507f1f77bcf86cd799439012";
@@ -49,6 +50,34 @@ test("unknown fields are rejected instead of copied into the query", () => {
   assert.throws(
     () => buildFilmSimFilterQuery(undefined, { creator: OID }),
     /Unknown filter field "creator"/
+  );
+});
+
+test("prototype-chain keys are rejected like any other unknown field", () => {
+  // The field map is a plain object, so a lookup by truthiness finds
+  // Object.prototype members: `constructor` resolved to the Object
+  // constructor and was called as a silent no-op, and `__proto__` resolved to
+  // a non-function and blew up as a raw TypeError (a 500) instead of a
+  // rejected query. Both must come back as ordinary unknown fields.
+  assert.throws(
+    () => buildPresetFilterQuery({ constructor: "x" }, undefined),
+    /Unknown filter field "constructor"/
+  );
+  assert.throws(
+    () => buildFilmSimFilterQuery(undefined, { toString: "x" }),
+    /Unknown filter field "toString"/
+  );
+
+  // JSON.parse makes "__proto__" an own property, which is exactly how the
+  // legacy `filter: JSON` argument arrives off the wire.
+  const fromWire = JSON.parse('{"__proto__": {"featured": true}}');
+  assert.throws(
+    () => buildPresetFilterQuery(fromWire, undefined),
+    /Unknown filter field "__proto__"/
+  );
+  assert.throws(
+    () => buildPresetFilterQuery(fromWire, undefined),
+    UserInputError
   );
 });
 

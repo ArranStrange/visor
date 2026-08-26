@@ -176,11 +176,14 @@ const buildQuery = (fields, sources) => {
 
     for (const [key, value] of Object.entries(source)) {
       if (value === undefined || value === null) continue;
-      const apply = fields[key];
-      if (!apply) {
+      // `Object.hasOwn`, not truthiness of `fields[key]`: a key inherited from
+      // Object.prototype ("constructor", "toString", "__proto__") would
+      // otherwise read as a match and be invoked as if it were a field
+      // handler. Only keys this map declares itself are filter fields.
+      if (!Object.hasOwn(fields, key)) {
         throw new UserInputError(`Unknown filter field "${key}"`);
       }
-      apply(value, query, key);
+      fields[key](value, query, key);
     }
   }
 
