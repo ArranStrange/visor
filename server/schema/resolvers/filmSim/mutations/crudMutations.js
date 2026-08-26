@@ -9,6 +9,7 @@ const {
   slugifyFilmSimName,
   attachFilmSimSampleImages,
 } = require("../services/filmSimUpload");
+const { buildFilmSimUpdate } = require("../services/updateInput");
 
 const logger = createLogger("resolvers:filmSim");
 
@@ -100,7 +101,7 @@ module.exports = {
 
       const updatedFilmSim = await FilmSim.findByIdAndUpdate(
         id,
-        { $set: input },
+        { $set: buildFilmSimUpdate(input) },
         { new: true }
       );
 
