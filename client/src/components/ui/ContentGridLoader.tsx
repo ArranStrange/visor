@@ -20,11 +20,7 @@ import {
   GridContentData,
   GridContentType,
 } from "./content-grid-data";
-import type {
-  ContentSort,
-  FilmSimFilterInput,
-  PresetFilterInput,
-} from "@/types/graphql";
+import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
 import { getErrorMessage } from "../../utils/errorHandling";
 
 interface ContentGridLoaderProps {
@@ -41,8 +37,6 @@ interface ContentGridLoaderProps {
    * distinct term is its own Apollo cache entry and its own round trip.
    */
   search?: string;
-  /** Omit until the user picks an order; the server defaults to NEWEST. */
-  sort?: ContentSort;
   customData?: readonly unknown[];
   renderItem?: (item: GridContentData) => React.ReactNode;
 }
@@ -54,11 +48,13 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   presetWhere,
   filmSimWhere,
   search,
-  sort,
   customData,
   renderItem,
 }) => {
-  const { randomizeOrder } = useContentType();
+  // `sort` comes from the shared filter context, the same place randomizeOrder
+  // does, so every querying grid honours the control without each caller
+  // having to thread it through.
+  const { randomizeOrder, sort } = useContentType();
   const hasCustomData = customData !== undefined;
   const loadPresets = !hasCustomData && contentType !== "films";
   const loadFilmSims = !hasCustomData && contentType !== "presets";
@@ -155,7 +151,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   return (
     <Box sx={{ width: "100%", maxWidth: "100vw", overflow: "hidden" }}>
       <StaggeredGrid
-        key={`grid-${contentType}-${sort ?? "default"}`}
+        // Remount on a sort change as well as a content-type change, so the
+        // grid's stagger and shuffle state does not carry over from the
+        // previous ordering.
+        key={`grid-${contentType}-${sort}`}
         loading={initialLoading}
         onLoadMore={loadMore}
         hasMore={hasMore}

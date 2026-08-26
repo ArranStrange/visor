@@ -14,6 +14,7 @@ import { useCamera } from "@/context/CameraContext";
 
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import ContentTypeToggle from "../components/ui/ContentTypeToggle";
+import SortControl from "../components/ui/SortControl";
 import ContentGridLoader from "../components/ui/ContentGridLoader";
 import TagsList from "../components/ui/TagsList";
 import { useContentType } from "../context/ContentTypeFilter";
@@ -183,6 +184,14 @@ const SearchView: React.FC = () => {
       ) : (
         <ContentTypeToggle />
       )}
+
+      {/*
+        Outside the sensor conditional above: in sensor mode the content-type
+        toggle is replaced by the profile card, but the grid still lists film
+        sims that need ordering, so a sort control nested in that branch would
+        simply vanish.
+      */}
+      <SortControl />
 
       {!activeSensor && camera && ENV_CONFIG.ENABLE_CAMERA_FILTER && (
         // Never narrow the results silently: say which body is filtering and

@@ -28,7 +28,7 @@ export interface ListPresetsQueryVariables {
   where?: PresetFilterInput;
   /** Free-text search, matched server-side over title, description, notes and tag names. */
   search?: string;
-  /** Omitted until the user picks an order; the server defaults to NEWEST. */
+  /** Ordering. Optional: the server defaults to NEWEST when absent. */
   sort?: ContentSort;
 }
 
