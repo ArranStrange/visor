@@ -2,6 +2,8 @@
 
 import React, { act } from "react";
 import { createRoot, Root } from "react-dom/client";
+import { ThemeProvider } from "@mui/material/styles";
+import { visorTheme } from "../../../theme/VISORTheme";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import CardShell from "../CardShell";
 
@@ -107,20 +109,26 @@ describe("CardShell", () => {
   ) {
     act(() => {
       root.render(
+        // CardShell reads VISOR-only palette slots (surface, overlay),
+        // so it must render under the app theme.
         React.createElement(
-          CardShell,
-          {
-            aspectRatio: "4/5",
-            navigateTo: "/preset/example",
-            renderMedia: ({ isHovered, showOptions }) =>
-              React.createElement("span", {
-                "data-testid": "media-state",
-                "data-hovered": isHovered,
-                "data-options": showOptions,
-              }),
-            ...props,
-          },
-          React.createElement("span", null, "Overlay")
+          ThemeProvider,
+          { theme: visorTheme },
+          React.createElement(
+            CardShell,
+            {
+              aspectRatio: "4/5",
+              navigateTo: "/preset/example",
+              renderMedia: ({ isHovered, showOptions }) =>
+                React.createElement("span", {
+                  "data-testid": "media-state",
+                  "data-hovered": isHovered,
+                  "data-options": showOptions,
+                }),
+              ...props,
+            },
+            React.createElement("span", null, "Overlay")
+          )
         )
       );
     });

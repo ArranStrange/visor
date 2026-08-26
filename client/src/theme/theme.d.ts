@@ -20,14 +20,22 @@ declare module "@mui/material/styles" {
     whiteBorder: string;
     /** 90% black — near-solid hover fill for floating controls. */
     scrimSolid: string;
+    /** Eased bottom-up gradient — holds text over photography. */
+    scrimRamp: string;
   }
 
   interface SurfacePalette {
     /** Recessed background for sections below the page plane. */
     sunken: string;
-    /** Raised card/panel background — one tonal step above paper. */
+    /** Page ground — the darkest plane, so photos stay brightest. */
+    canvas: string;
+    /** Raised card/panel background — one rung above canvas. */
     raised: string;
-    /** Background for text-entry controls. */
+    /** Hover fill for interactive raised surfaces — one rung above raised. */
+    raisedHover: string;
+    /** Floating surfaces (menus, modals, popovers) — the top rung. */
+    overlay: string;
+    /** Background for text-entry controls — sits below raised. */
     input: string;
     /** Hairline border for raised surfaces. */
     border: string;
@@ -75,6 +83,16 @@ declare module "@mui/material/Avatar" {
 declare module "@mui/material/Chip" {
   interface ChipPropsVariantOverrides {
     overlay: true;
+  }
+}
+
+declare module "@mui/material/Paper" {
+  // Card inherits its variant prop from Paper and has no override
+  // interface of its own, so "photo" is declared here. Only MuiCard
+  // registers styles for it — on other Paper components it typechecks
+  // but applies nothing.
+  interface PaperPropsVariantOverrides {
+    photo: true;
   }
 }
 

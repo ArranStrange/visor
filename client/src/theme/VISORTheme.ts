@@ -1,14 +1,21 @@
 import { createTheme } from "@mui/material/styles";
 
 // Tonal surface ladder for elevated, non-photo surfaces (cards, panels).
-// Depth comes from lighter greys, never white — photos stay the brightest
-// element on the page. Referenced via palette paths, e.g. "surface.raised".
+// Depth comes from lighter neutral greys — never white — so photos stay the
+// brightest element on the page. Each rung sits ~1.10:1 above the one below:
+// enough to read as a step, not enough to lift the floor and flatten the
+// images. The canvas stays near-black (darker than Notion-style darks) so
+// photography keeps maximum pop. Referenced via palette paths, e.g.
+// "surface.raised".
 const surface = {
-  sunken: "#111111",
-  raised: "#1A1A1A",
-  input: "#141414",
-  border: "#2A2A2A",
-  outline: "#3A3A3A",
+  sunken: "#050505",
+  canvas: "#0A0A0A",
+  raised: "#171717",
+  raisedHover: "#212121",
+  overlay: "#282828",
+  input: "#101010",
+  border: "#323232",
+  outline: "#424242",
 };
 
 // Overlay tokens for content rendered on top of photography.
@@ -19,6 +26,11 @@ const overlay = {
   scrimStrong: "rgba(0, 0, 0, 0.5)",
   scrimHeavy: "rgba(0, 0, 0, 0.7)",
   scrimSolid: "rgba(0, 0, 0, 0.9)",
+  // Eased multi-stop ramp for text over photography. A single-stop
+  // linear ramp bands visibly and lets bright image areas eat the type;
+  // the eased curve holds the text without a text-shadow crutch.
+  scrimRamp:
+    "linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.62) 14%, rgba(0,0,0,0.30) 32%, rgba(0,0,0,0.10) 52%, rgba(0,0,0,0) 70%)",
   white: "rgba(255, 255, 255, 0.9)",
   whiteSoft: "rgba(255, 255, 255, 0.7)",
   whiteHover: "rgba(255, 255, 255, 0.2)",
@@ -40,8 +52,8 @@ export const visorTheme = createTheme({
     // VISOR is intentionally dark-only; there is no light palette to maintain.
     mode: "dark",
     background: {
-      default: "#080808",
-      paper: "#0b0b0b",
+      default: surface.canvas,
+      paper: surface.raised,
     },
     primary: {
       main: "#E0E0E0",
@@ -84,7 +96,7 @@ export const visorTheme = createTheme({
       secondary: "#AAAAAA",
       disabled: "#666666",
     },
-    divider: "#252525",
+    divider: surface.border,
     action: {
       hover: "rgba(255,255,255,0.08)",
       selected: "rgba(255,255,255,0.12)",
@@ -168,11 +180,33 @@ export const visorTheme = createTheme({
         },
       }),
     },
+    // MUI dark mode tints Paper by elevation via a backgroundImage alpha
+    // wash; we disable it and map elevation to the surface ladder
+    // explicitly instead, so every plane is a deliberate rung.
     MuiPaper: {
       styleOverrides: {
         root: {
           backgroundImage: "none",
         },
+      },
+    },
+    // Floating surfaces take the top rung so they read as stacked above
+    // cards rather than merged with them. Menus render through Popover,
+    // so this covers them too.
+    MuiPopover: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          backgroundColor: theme.palette.surface.overlay,
+          border: `1px solid ${theme.palette.surface.border}`,
+        }),
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          backgroundColor: theme.palette.surface.overlay,
+          border: `1px solid ${theme.palette.surface.border}`,
+        }),
       },
     },
     MuiButton: {
@@ -185,11 +219,49 @@ export const visorTheme = createTheme({
         elevation: 0,
       },
       styleOverrides: {
+        // Fill and hairline together: the fill step alone is ~1.11:1 —
+        // real but marginal — and the 1px border at ~1.50:1 is what makes
+        // the edge unambiguous. Neither is sufficient on its own.
         root: ({ theme }) => ({
-          backgroundColor: theme.palette.background.paper,
+          backgroundColor: theme.palette.surface.raised,
+          border: `1px solid ${theme.palette.surface.border}`,
           borderRadius: 16,
+          transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+          // Lift on hover — guarded so it cannot stick after a tap on
+          // touch screens, and stilled for reduced-motion users.
+          "@media (hover: hover)": {
+            "&:hover": {
+              transform: "translateY(-4px)",
+              boxShadow: `0 8px 25px ${theme.palette.overlay.scrimSubtle}`,
+            },
+          },
+          "@media (prefers-reduced-motion: reduce)": {
+            transition: "none",
+            "&:hover": {
+              transform: "none",
+            },
+          },
         }),
       },
+      variants: [
+        {
+          // Photo cards: the image defines the surface, so the opaque
+          // hairline gives way to a faint ring that reads as part of the
+          // photograph rather than a competing panel edge.
+          props: { variant: "photo" },
+          style: {
+            border: "none",
+            boxShadow: `0 0 0 1px ${overlay.whiteBorder}`,
+            // The lift shadow must ride with the ring, or hovering would
+            // replace one boxShadow with the other and drop the ring.
+            "@media (hover: hover)": {
+              "&:hover": {
+                boxShadow: `0 0 0 1px ${overlay.whiteBorder}, 0 8px 25px ${overlay.scrimSubtle}`,
+              },
+            },
+          },
+        },
+      ],
     },
     MuiIconButton: {
       styleOverrides: {

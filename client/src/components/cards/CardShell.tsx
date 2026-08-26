@@ -83,6 +83,7 @@ function CardShell({
 
   return (
     <Card
+      variant="photo"
       sx={cardStyles}
       onClick={handleCardClick}
       onMouseEnter={handleMouseEnter}
