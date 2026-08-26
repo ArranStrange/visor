@@ -41,11 +41,21 @@ export const paginationTypePolicies: TypePolicies = {
 
 function createPaginatedFieldPolicy<TKey extends string>(itemsKey: TKey) {
   return {
-    // A count query (limit 1) must not overwrite a browse query (limit 20).
-    // `where` is the typed filter and `filter` its deprecated JSON
-    // predecessor; both change which documents come back, so both have to be
-    // part of the cache key.
-    keyArgs: ["filter", "where", "limit"],
+    // Every argument that changes which documents come back, or in what
+    // order, has to be part of the cache key — otherwise two different
+    // queries resolve to one entry and the filter, search or ordering
+    // silently does nothing.
+    //
+    //   limit   a count query (limit 1) must not overwrite a browse query
+    //   filter  the deprecated JSON blob
+    //   where   the typed filter that replaced it (sensor, tag, ids)
+    //   search  server-side now, so the term selects the documents
+    //   sort    the merge writes into page-derived slots, so two orderings
+    //           sharing an entry would interleave rather than replace
+    //
+    // `page` is deliberately absent: that is what lets pages of the same
+    // query accumulate into one list.
+    keyArgs: ["filter", "where", "limit", "search", "sort"],
     merge: createPageMerge(itemsKey),
     read: createPageRead(itemsKey),
   };

@@ -17,8 +17,13 @@ const LIST_PRESETS = gql`
 `;
 
 const LIST_FILM_SIMS = gql`
-  query TestListFilmSims($page: Int, $limit: Int) {
-    listFilmSims(page: $page, limit: $limit) {
+  query TestListFilmSims(
+    $page: Int
+    $limit: Int
+    $search: String
+    $sort: ContentSort
+  ) {
+    listFilmSims(page: $page, limit: $limit, search: $search, sort: $sort) {
       filmSims {
         id
         name
@@ -75,7 +80,44 @@ describe("Apollo paginated list cache", () => {
       "film-4",
     ]);
   });
+
+  it("does not let a search term read back another term's results", () => {
+    const cache = createCache();
+
+    writeFilmSimPage(cache, 1, ["portra-1"], { search: "portra" });
+    writeFilmSimPage(cache, 1, ["acros-1"], { search: "acros" });
+
+    expect(readFilmSimIds(cache, { search: "portra" })).to.deep.equal([
+      "portra-1",
+    ]);
+    expect(readFilmSimIds(cache, { search: "acros" })).to.deep.equal([
+      "acros-1",
+    ]);
+  });
+
+  it("does not interleave two sort orders into one list", () => {
+    // The merge writes into page-derived slots, so a shared entry would let
+    // page 1 of POPULAR overwrite slots 0-1 of the NEWEST list.
+    const cache = createCache();
+
+    writeFilmSimPage(cache, 1, ["new-1", "new-2"], { sort: "NEWEST" });
+    writeFilmSimPage(cache, 1, ["pop-1", "pop-2"], { sort: "POPULAR" });
+
+    expect(readFilmSimIds(cache, { sort: "NEWEST" })).to.deep.equal([
+      "new-1",
+      "new-2",
+    ]);
+    expect(readFilmSimIds(cache, { sort: "POPULAR" })).to.deep.equal([
+      "pop-1",
+      "pop-2",
+    ]);
+  });
 });
+
+interface DiscoveryArgs {
+  search?: string;
+  sort?: string;
+}
 
 function createCache() {
   return new InMemoryCache({ typePolicies: paginationTypePolicies });
@@ -115,10 +157,19 @@ function readPresetIds(cache: InMemoryCache, filterName: string): string[] {
   return data?.listPresets.presets.map(({ id }) => id) ?? [];
 }
 
-function writeFilmSimPage(cache: InMemoryCache, page: number, ids: string[]) {
+function filmSimVariables(page: number, { search, sort }: DiscoveryArgs = {}) {
+  return { page, limit: 2, search: search ?? null, sort: sort ?? null };
+}
+
+function writeFilmSimPage(
+  cache: InMemoryCache,
+  page: number,
+  ids: string[],
+  discovery?: DiscoveryArgs
+) {
   cache.writeQuery({
     query: LIST_FILM_SIMS,
-    variables: { page, limit: 2 },
+    variables: filmSimVariables(page, discovery),
     data: {
       listFilmSims: {
         __typename: "PaginatedFilmSims",
@@ -132,10 +183,13 @@ function writeFilmSimPage(cache: InMemoryCache, page: number, ids: string[]) {
   });
 }
 
-function readFilmSimIds(cache: InMemoryCache): string[] {
+function readFilmSimIds(
+  cache: InMemoryCache,
+  discovery?: DiscoveryArgs
+): string[] {
   const data = cache.readQuery<{
     listFilmSims: { filmSims: Array<{ id: string }> };
-  }>({ query: LIST_FILM_SIMS, variables: { page: 1, limit: 2 } });
+  }>({ query: LIST_FILM_SIMS, variables: filmSimVariables(1, discovery) });
 
   return data?.listFilmSims.filmSims.map(({ id }) => id) ?? [];
 }
