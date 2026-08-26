@@ -21,6 +21,108 @@ const LIST_FILM_SIMS = gql`
   }
 `;
 
+const GET_DISCUSSION = gql`
+  query GetDiscussion($id: ID!) {
+    getDiscussion(id: $id) {
+      id
+      title
+      posts {
+        id
+        content
+      }
+    }
+  }
+`;
+
+// Posts gained an `id` so a report can name one. Apollo normalises anything
+// carrying `id` + `__typename` into its own top-level entity, which would have
+// pulled embedded posts out of their parent discussion and let the same post id
+// seen through two query shapes overwrite itself. `keyFields: false` keeps them
+// inline, exactly as before the id existed.
+//
+// This is pinned because losing that one line breaks nothing loudly: no test
+// fails, no type errors, discussions just start merging differently.
+describe("DiscussionPost normalisation", () => {
+  const discussion = (id: string, posts: Array<{ id: string; content: string }>) => ({
+    __typename: "Discussion",
+    id,
+    title: `Discussion ${id}`,
+    posts: posts.map((post) => ({ __typename: "DiscussionPost", ...post })),
+  });
+
+  it("keeps posts embedded rather than normalising them into entities", () => {
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    cache.writeQuery({
+      query: GET_DISCUSSION,
+      variables: { id: "d1" },
+      data: {
+        getDiscussion: discussion("d1", [
+          { id: "p1", content: "first" },
+          { id: "p2", content: "second" },
+        ]),
+      },
+    });
+
+    const entityKeys = Object.keys(cache.extract());
+
+    expect(entityKeys.filter((key) => key.startsWith("DiscussionPost"))).toEqual([]);
+    expect(entityKeys).toContain("Discussion:d1");
+  });
+
+  it("reads posts back losslessly", () => {
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+    const posts = [
+      { id: "p1", content: "first" },
+      { id: "p2", content: "second" },
+    ];
+
+    cache.writeQuery({
+      query: GET_DISCUSSION,
+      variables: { id: "d1" },
+      data: { getDiscussion: discussion("d1", posts) },
+    });
+
+    const result = cache.readQuery<{
+      getDiscussion: { posts: Array<{ id: string; content: string }> };
+    }>({ query: GET_DISCUSSION, variables: { id: "d1" } });
+
+    expect(result?.getDiscussion.posts).toHaveLength(2);
+    expect(result?.getDiscussion.posts.map((post) => post.content)).toEqual([
+      "first",
+      "second",
+    ]);
+  });
+
+  it("does not let the same post id leak between two discussions", () => {
+    // The failure this guards: if posts were normalised, writing d2's copy of
+    // post p1 would overwrite d1's, and d1 would silently start showing d2's
+    // content for that post.
+    const cache = new InMemoryCache({ typePolicies: paginationTypePolicies });
+
+    cache.writeQuery({
+      query: GET_DISCUSSION,
+      variables: { id: "d1" },
+      data: {
+        getDiscussion: discussion("d1", [{ id: "p1", content: "original" }]),
+      },
+    });
+    cache.writeQuery({
+      query: GET_DISCUSSION,
+      variables: { id: "d2" },
+      data: {
+        getDiscussion: discussion("d2", [{ id: "p1", content: "different" }]),
+      },
+    });
+
+    const first = cache.readQuery<{
+      getDiscussion: { posts: Array<{ content: string }> };
+    }>({ query: GET_DISCUSSION, variables: { id: "d1" } });
+
+    expect(first?.getDiscussion.posts[0].content).toBe("original");
+  });
+});
+
 interface PresetItem {
   __typename: "Preset";
   id: string;

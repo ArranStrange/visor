@@ -7,6 +7,9 @@ import type {
   ReportTargetType,
 } from "@/types/graphql";
 
+// Everything any caller may read. Deliberately excludes targetUrl: that field
+// is admin-only on the server, and reportContent returns a Report to the
+// person who filed it — selecting it there would fail the whole mutation.
 const REPORT_FIELDS = gql`
   fragment ReportFields on Report {
     id
@@ -14,7 +17,6 @@ const REPORT_FIELDS = gql`
     targetId
     reason
     detail
-    targetUrl
     status
     createdAt
     resolvedAt
@@ -27,6 +29,15 @@ const REPORT_FIELDS = gql`
       id
       username
     }
+  }
+`;
+
+// The moderation queue's view, for admin-only operations.
+const MODERATION_REPORT_FIELDS = gql`
+  ${REPORT_FIELDS}
+  fragment ModerationReportFields on Report {
+    ...ReportFields
+    targetUrl
   }
 `;
 
@@ -50,11 +61,11 @@ export const REPORT_CONTENT = gql`
 `;
 
 export const LIST_REPORTS = gql`
-  ${REPORT_FIELDS}
+  ${MODERATION_REPORT_FIELDS}
   query ListReports($status: ReportStatus, $page: Int, $limit: Int) {
     listReports(status: $status, page: $page, limit: $limit) {
       reports {
-        ...ReportFields
+        ...ModerationReportFields
       }
       totalCount
       hasNextPage
@@ -66,10 +77,10 @@ export const LIST_REPORTS = gql`
 `;
 
 export const RESOLVE_REPORT = gql`
-  ${REPORT_FIELDS}
+  ${MODERATION_REPORT_FIELDS}
   mutation ResolveReport($reportId: ID!, $status: ReportStatus!) {
     resolveReport(reportId: $reportId, status: $status) {
-      ...ReportFields
+      ...ModerationReportFields
     }
   }
 `;

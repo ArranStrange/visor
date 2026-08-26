@@ -4,6 +4,7 @@ import { onError } from "@apollo/client/link/error";
 import { ENV_CONFIG } from "../config/environment";
 import { paginationTypePolicies } from "./pagination-type-policies";
 import { getErrorMessage } from "../utils/errorHandling";
+import { shouldForceLogout } from "./force-logout";
 
 const httpLink = new HttpLink({
   uri: ENV_CONFIG.GRAPHQL_ENDPOINT,
@@ -15,17 +16,9 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     graphQLErrors.forEach(({ message }) => {
       console.error(`[GraphQL error]: ${message}`);
 
-      // Handle authentication errors including JWT expiration
-      // Only logout for actual authentication failures, not authorization errors
-      if (
-        message.includes("jwt expired") ||
-        message.includes("JWT expired") ||
-        message.includes("UNAUTHENTICATED") ||
-        message.includes("Authentication") ||
-        // Only logout for "Not authenticated" but not "Not authorized"
-        (message.includes("Not authenticated") &&
-          !message.includes("Not authorized"))
-      ) {
+      // Sign out on a dead session, but not on a permission denial —
+      // see force-logout.ts for why the two have to be told apart by message.
+      if (shouldForceLogout(message)) {
         // Clear local storage
         localStorage.removeItem("visor_token");
         localStorage.removeItem("user");
