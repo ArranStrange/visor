@@ -1,6 +1,7 @@
 const Tag = require("../../models/Tag");
 const Preset = require("../../models/Preset");
 const FilmSim = require("../../models/FilmSim");
+const { escapeRegExp } = require("../../utils/escapeRegExp");
 
 module.exports = {
   Query: {
@@ -48,7 +49,9 @@ module.exports = {
       }
 
       if (search && search.trim().length > 0) {
-        const searchRegex = new RegExp(search.trim(), "i");
+        // The fifth unescaped regex site (#137). Without escaping, a search for
+        // "(" throws and ".*" turns the lookup into a full scan.
+        const searchRegex = new RegExp(escapeRegExp(search.trim()), "i");
         queryConditions.push({
           $or: [{ name: searchRegex }, { displayName: searchRegex }],
         });
