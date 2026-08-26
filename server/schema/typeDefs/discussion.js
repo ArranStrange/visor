@@ -21,6 +21,8 @@ module.exports = gql`
   }
 
   type DiscussionPost {
+    "Subdocument id — what a report against this post points at."
+    id: ID!
     userId: ID!
     username: String!
     avatar: String

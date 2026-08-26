@@ -11,6 +11,8 @@ export interface DiscussionReply {
 }
 
 export interface DiscussionPost {
+  /** Subdocument id — the handle a report against this post points at. */
+  id: string;
   userId: string;
   username: string;
   avatar?: string;

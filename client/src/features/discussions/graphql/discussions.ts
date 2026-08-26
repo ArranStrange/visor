@@ -167,6 +167,7 @@ export const GET_DISCUSSION = gql`
         avatar
       }
       posts {
+        id
         userId
         username
         avatar
@@ -240,6 +241,7 @@ export const GET_DISCUSSIONS = gql`
           avatar
         }
         posts {
+          id
           userId
           username
           avatar
@@ -306,6 +308,7 @@ export const GET_DISCUSSION_BY_ITEM = gql`
         avatar
       }
       posts {
+        id
         userId
         username
         avatar
@@ -362,6 +365,7 @@ export const CREATE_DISCUSSION = gql`
         avatar
       }
       posts {
+        id
         userId
         username
         avatar
@@ -407,6 +411,7 @@ export const UPDATE_DISCUSSION = gql`
         avatar
       }
       posts {
+        id
         userId
         username
         avatar
@@ -542,6 +547,7 @@ export const ADMIN_DELETE_POST = gql`
       id
       title
       posts {
+        id
         userId
         username
         avatar
@@ -613,6 +619,7 @@ export const ADMIN_UPDATE_DISCUSSION = gql`
       createdAt
       updatedAt
       posts {
+        id
         userId
         username
         avatar

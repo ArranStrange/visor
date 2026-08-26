@@ -12,6 +12,7 @@ const discussionTypeDefs = require("./typeDefs/discussion");
 const notificationTypeDefs = require("./typeDefs/notification");
 const commentTypeDefs = require("./typeDefs/comment");
 const imageTypeDefs = require("./typeDefs/image");
+const reportTypeDefs = require("./typeDefs/report");
 
 // Resolvers
 const scalarsResolvers = require("./resolvers/scalars");
@@ -25,6 +26,7 @@ const tagResolvers = require("./resolvers/tag");
 const userResolvers = require("./resolvers/user");
 const discussionResolvers = require("./resolvers/discussion");
 const notificationResolvers = require("./resolvers/notification");
+const reportResolvers = require("./resolvers/report");
 
 const typeDefs = mergeTypeDefs([
   scalarsTypeDefs,
@@ -38,6 +40,7 @@ const typeDefs = mergeTypeDefs([
   notificationTypeDefs,
   commentTypeDefs,
   imageTypeDefs,
+  reportTypeDefs,
 ]);
 
 const resolvers = mergeResolvers([
@@ -52,6 +55,7 @@ const resolvers = mergeResolvers([
   userResolvers,
   discussionResolvers,
   notificationResolvers,
+  reportResolvers,
 ]);
 
 module.exports = { typeDefs, resolvers };
