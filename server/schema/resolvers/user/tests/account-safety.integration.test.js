@@ -389,6 +389,23 @@ test("deleteAccount anonymises the user and clears private data", async () => {
   assert.equal(await Notification.countDocuments({ recipientId: user._id }), 0);
 });
 
+test("deletion discards a staged email change", async () => {
+  // pendingEmail holds a real address, so it is PII of its own.
+  const user = await createUser();
+  user.generatePendingEmailToken("new@visor.test");
+  await user.save();
+
+  await mutations.deleteAccount(
+    null,
+    { currentPassword: PASSWORD },
+    ctx({ id: user._id.toString() })
+  );
+
+  const reloaded = await User.findById(user._id);
+  assert.equal(reloaded.pendingEmail, undefined);
+  assert.equal(reloaded.pendingEmailTokenHash, undefined);
+});
+
 test("deleteAccount requires the correct password", async () => {
   const user = await createUser();
 

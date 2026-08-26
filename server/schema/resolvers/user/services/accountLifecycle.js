@@ -50,6 +50,10 @@ const tombstoneAccount = async (user) => {
   user.tokenExpiry = undefined;
   user.resetTokenHash = undefined;
   user.resetTokenExpiry = undefined;
+  // A staged email change holds a real address, so it is PII in its own right.
+  user.pendingEmail = undefined;
+  user.pendingEmailTokenHash = undefined;
+  user.pendingEmailTokenExpiry = undefined;
   user.emailVerified = false;
   user.credentialsChangedAt = new Date();
   user.deletedAt = new Date();
