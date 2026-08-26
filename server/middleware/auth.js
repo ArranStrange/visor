@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/jwt");
 const User = require("../models/User");
 const { createLogger } = require("../utils/logger");
+const { sessionRejectionReason } = require("./sessionValidity");
 
 const logger = createLogger("auth");
 
@@ -24,8 +25,10 @@ const authMiddleware = async (req, res, next) => {
     }
 
     const user = await User.findById(userId);
+    const rejection = sessionRejectionReason(user, decoded);
 
-    if (!user) {
+    if (rejection) {
+      logger.info(`Rejecting token for ${userId}: ${rejection}`);
       req.user = null;
       return next();
     }
