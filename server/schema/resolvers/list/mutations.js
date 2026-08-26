@@ -65,15 +65,24 @@ module.exports = {
       // Everything the list held stops being saved by it, so the counters have
       // to come down with it. Without this, deleting a list of twenty recipes
       // leaves twenty inflated saveCounts ranking content nobody has saved.
-      // Read the members before the delete — afterwards they are gone.
-      const heldPresets = [...(list.presets ?? [])];
-      const heldFilmSims = [...(list.filmSims ?? [])];
+      //
+      // The delete itself decides who adjusts. Two concurrent requests both
+      // pass the ownership check above, but only one actually removes the
+      // document — and only that one may touch the counters, or a single
+      // deletion decrements twice. Take the membership from the returned
+      // document rather than the earlier read for the same reason.
+      const deleted = await UserList.findOneAndDelete({ _id: id });
 
-      await UserList.findByIdAndDelete(id);
+      if (!deleted) {
+        // Someone else deleted it between the read and here. The list is gone
+        // either way, so this is the caller's desired end state; the request
+        // that won the race owns the counter adjustment.
+        return true;
+      }
 
       await Promise.all([
-        adjustSaveCounts(Preset, heldPresets, -1),
-        adjustSaveCounts(FilmSim, heldFilmSims, -1),
+        adjustSaveCounts(Preset, deleted.presets ?? [], -1),
+        adjustSaveCounts(FilmSim, deleted.filmSims ?? [], -1),
       ]);
 
       return true;

@@ -247,3 +247,73 @@ test("deleting one list leaves another list's saves alone", async () => {
     "the surviving list still counts"
   );
 });
+
+test("two concurrent deletions of the same list decrement only once", async () => {
+  // Both requests pass the ownership check, but only one actually removes the
+  // document. If the loser also adjusts counters, a single deletion takes the
+  // save down twice and the item sinks below content nobody saved.
+  const user = await createUser();
+  const preset = await createPreset(user);
+  const filmSim = await createFilmSim(user);
+  const list = await createList(user);
+
+  await mutations.addToUserList(
+    null,
+    {
+      listId: list._id.toString(),
+      presetIds: [preset._id.toString()],
+      filmSimIds: [filmSim._id.toString()],
+    },
+    ctx(user)
+  );
+  assert.equal((await Preset.findById(preset._id)).saveCount, 1);
+
+  const results = await Promise.all([
+    mutations.deleteUserList(null, { id: list._id.toString() }, ctx(user)),
+    mutations.deleteUserList(null, { id: list._id.toString() }, ctx(user)),
+  ]);
+
+  assert.deepEqual(results, [true, true], "both callers see it gone");
+  assert.equal(await UserList.countDocuments({ _id: list._id }), 0);
+
+  assert.equal(
+    (await Preset.findById(preset._id)).saveCount,
+    0,
+    "decremented once, not twice"
+  );
+  assert.equal((await FilmSim.findById(filmSim._id)).saveCount, 0);
+  assert.equal((await Preset.findById(preset._id)).popularityScore, 0);
+});
+
+test("deleting an already-deleted list does not touch counters again", async () => {
+  // The sequential form of the same race: a retried request must be a no-op.
+  const user = await createUser();
+  const preset = await createPreset(user);
+  const listA = await createList(user);
+  const listB = await createList(user);
+
+  for (const list of [listA, listB]) {
+    await mutations.addToUserList(
+      null,
+      { listId: list._id.toString(), presetIds: [preset._id.toString()] },
+      ctx(user)
+    );
+  }
+  assert.equal((await Preset.findById(preset._id)).saveCount, 2);
+
+  await mutations.deleteUserList(null, { id: listA._id.toString() }, ctx(user));
+  assert.equal((await Preset.findById(preset._id)).saveCount, 1);
+
+  // Deleting it again must not steal listB's save.
+  await assert.rejects(
+    () => mutations.deleteUserList(null, { id: listA._id.toString() }, ctx(user)),
+    /not found/i,
+    "a gone list reports not found on a fresh request"
+  );
+
+  assert.equal(
+    (await Preset.findById(preset._id)).saveCount,
+    1,
+    "listB's save survives"
+  );
+});
