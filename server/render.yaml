@@ -17,7 +17,17 @@ services:
         sync: false
       - key: PORT
         value: 10000
-      - key: CLIENT_URL
-        value: https://visor-app.onrender.com
+      # Base URL for links in transactional email. Without this, emailService
+      # falls back to http://localhost:3000 and every verification and password
+      # reset link sent from production is dead.
+      - key: APP_URL
+        value: https://visor-c51a1.web.app
       - key: RENDER_URL
         value: https://visor-backend.onrender.com
+      # --- Email (SendGrid) ---
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: FROM_EMAIL
+        sync: false
+      - key: SUPPORT_EMAIL
+        sync: false
