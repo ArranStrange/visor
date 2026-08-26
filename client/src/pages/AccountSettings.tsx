@@ -69,17 +69,21 @@ const AccountSettings: React.FC = () => {
     CHANGE_PASSWORD,
     {
       onCompleted: (data) => {
+        if (data.changePassword.success) {
+          // The server revokes every token issued before the change — this
+          // one included — so staying on the page would leave a session that
+          // silently fails on the next request.
+          logout();
+          navigate("/login", {
+            replace: true,
+            state: { notice: "Password updated. Please log in again." },
+          });
+          return;
+        }
         setPasswordFeedback({
-          severity: data.changePassword.success ? "success" : "error",
+          severity: "error",
           message: data.changePassword.message,
         });
-        if (data.changePassword.success) {
-          setPasswordForm({
-            currentPassword: "",
-            newPassword: "",
-            confirmPassword: "",
-          });
-        }
       },
       onError: (err) =>
         setPasswordFeedback({
@@ -189,7 +193,8 @@ const AccountSettings: React.FC = () => {
                   Change password
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Changing your password signs you out on every other device.
+                  You'll be signed out everywhere, including here, and will need
+                  to log in again with the new password.
                 </Typography>
 
                 {passwordFeedback && (
@@ -279,8 +284,8 @@ const AccountSettings: React.FC = () => {
                   Change email
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We'll send a verification link to the new address. You'll need
-                  to click it before you can log in again.
+                  We'll send a verification link to the new address. Your
+                  current address keeps working until you click it.
                 </Typography>
 
                 {emailFeedback && (

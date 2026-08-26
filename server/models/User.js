@@ -27,6 +27,14 @@ const userSchema = new Schema(
     resetTokenHash: String,
     resetTokenExpiry: Date,
 
+    // An email change in flight. The address does NOT move until the new inbox
+    // is confirmed — otherwise one typo locks the account out permanently,
+    // since login requires a verified address and every recovery route would
+    // then mail the address nobody owns.
+    pendingEmail: String,
+    pendingEmailTokenHash: String,
+    pendingEmailTokenExpiry: Date,
+
     // Set whenever the password or email changes. Tokens issued before this
     // moment are rejected by the auth middleware, so a credential change signs
     // out every other session.
@@ -104,6 +112,21 @@ userSchema.methods.verifyResetToken = function (token) {
 userSchema.methods.clearResetToken = function () {
   this.resetTokenHash = undefined;
   this.resetTokenExpiry = undefined;
+};
+
+// Stages an email change without touching the live address.
+userSchema.methods.generatePendingEmailToken = function (newEmail) {
+  const { raw, hash } = createToken();
+  this.pendingEmail = newEmail;
+  this.pendingEmailTokenHash = hash;
+  this.pendingEmailTokenExpiry = new Date(Date.now() + VERIFICATION_TTL_MS);
+  return raw;
+};
+
+userSchema.methods.clearPendingEmail = function () {
+  this.pendingEmail = undefined;
+  this.pendingEmailTokenHash = undefined;
+  this.pendingEmailTokenExpiry = undefined;
 };
 
 module.exports = mongoose.model("User", userSchema);

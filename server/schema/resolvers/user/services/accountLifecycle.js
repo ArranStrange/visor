@@ -2,6 +2,7 @@ const crypto = require("crypto");
 
 const Loadout = require("../../../../models/Loadout");
 const Notification = require("../../../../models/Notification");
+const Discussion = require("../../../../models/Discussion");
 
 /**
  * Anonymise an account in place rather than deleting it.
@@ -11,7 +12,7 @@ const Notification = require("../../../../models/Notification");
  * those ten collections would need a transaction, and this codebase has none —
  * a failure halfway through would leave dangling required refs and unreadable
  * threads. Tombstoning is atomic per document, keeps threads legible, and
- * removes every piece of personal data.
+ * removes the personal data it can reach.
  *
  * Deliberately NOT handled here:
  * - Cloudinary assets. Images are uploaded straight from the browser with an
@@ -55,15 +56,53 @@ const tombstoneAccount = async (user) => {
 
   await user.save();
 
-  const [loadouts, notifications] = await Promise.all([
+  const [loadouts, notifications, discussions] = await Promise.all([
     Loadout.deleteMany({ owner: user._id }),
     Notification.deleteMany({ recipientId: user._id }),
+    scrubDiscussionIdentity(user._id, user.username),
   ]);
 
   return {
     loadoutsDeleted: loadouts?.deletedCount ?? 0,
     notificationsDeleted: notifications?.deletedCount ?? 0,
+    discussionsScrubbed: discussions,
   };
+};
+
+/**
+ * Discussion posts and replies store a COPY of the author's username and avatar
+ * alongside the userId, so anonymising the User document alone leaves the real
+ * name and avatar URL sitting in every thread. Unlike a plain reference (which
+ * resolves to the tombstone), these have to be rewritten in place.
+ *
+ * @returns {Promise<number>} discussions touched
+ */
+const scrubDiscussionIdentity = async (userId, tombstoneUsername) => {
+  // arrayFilters targets only this user's entries, leaving co-authors alone.
+  const result = await Discussion.updateMany(
+    {
+      $or: [
+        { "posts.userId": userId },
+        { "posts.replies.userId": userId },
+      ],
+    },
+    {
+      $set: {
+        "posts.$[post].username": tombstoneUsername,
+        "posts.$[post].avatar": null,
+        "posts.$[].replies.$[reply].username": tombstoneUsername,
+        "posts.$[].replies.$[reply].avatar": null,
+      },
+    },
+    {
+      arrayFilters: [
+        { "post.userId": userId },
+        { "reply.userId": userId },
+      ],
+    }
+  );
+
+  return result?.modifiedCount ?? 0;
 };
 
 module.exports = { tombstoneAccount };

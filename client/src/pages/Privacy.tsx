@@ -7,10 +7,10 @@ const LAST_UPDATED = "26 August 2026";
 /**
  * Plain-language privacy policy. Not lazy-loaded — see Terms.tsx.
  *
- * NOTE: first draft, pending review by the maintainer. In particular the
- * retention wording should be checked against what actually happens on
- * account deletion (see the deleteAccount resolver: content is kept but
- * anonymised, and Cloudinary images are currently not deleted).
+ * NOTE: first draft, pending review by the maintainer. The deletion section is
+ * written to match what tombstoneAccount actually does — content is kept but
+ * anonymised (including the name and avatar copied onto discussion posts),
+ * while the Cloudinary image files themselves are not deleted.
  */
 const Privacy: React.FC = () => (
   <Container maxWidth="md" sx={{ py: 8 }}>
@@ -73,27 +73,32 @@ const Privacy: React.FC = () => (
       <Typography color="text.secondary">
         You can delete your account from your profile settings. Doing so removes
         your email address, profile details and private loadouts, and detaches
-        your name from everything you posted. Recipes, presets and discussion
-        posts stay on the site, attributed to a deleted user — otherwise
-        conversations other people took part in would fall apart. Images already
-        uploaded may remain on Cloudinary; email us if you need one taken down.
+        your name from everything you posted, including the name and avatar
+        shown on your discussion posts. Recipes, presets and discussion posts
+        themselves stay on the site, attributed to a deleted user — otherwise
+        conversations other people took part in would fall apart. Image files
+        already uploaded may remain on Cloudinary; get in touch if you need one
+        taken down.
       </Typography>
 
       <Typography variant="h5" component="h2" fontWeight="bold">
         Cookies and tracking
       </Typography>
       <Typography color="text.secondary">
-        No advertising or analytics cookies. Your login token and a couple of
-        preferences (your primary camera, for instance) are kept in your own
-        browser's local storage, not sent anywhere else.
+        No advertising or analytics cookies. Your login token is kept in your
+        own browser's local storage and sent to VISOR with each request to keep
+        you signed in — it goes nowhere else. Display preferences are stored in
+        your browser; your primary camera is also saved to your profile so it
+        follows you between devices.
       </Typography>
 
       <Typography variant="h5" component="h2" fontWeight="bold">
         Getting in touch
       </Typography>
       <Typography color="text.secondary">
-        If you want a copy of your data, a correction, or something removed, get
-        in touch and it will be handled by hand.
+        If you want a copy of your data, a correction, or something removed,
+        email the address on the VISOR GitHub repository and it will be handled
+        by hand.
       </Typography>
 
       <Divider />

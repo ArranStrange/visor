@@ -10,6 +10,7 @@ const { MongoMemoryServer } = require("mongodb-memory-server");
 const User = require("../../../../models/User");
 const Loadout = require("../../../../models/Loadout");
 const Notification = require("../../../../models/Notification");
+const Discussion = require("../../../../models/Discussion");
 const mutations = require("../mutations");
 const { clearAll } = require("../../../../utils/rateLimiter");
 
@@ -51,6 +52,7 @@ beforeEach(async () => {
     User.deleteMany({}),
     Loadout.deleteMany({}),
     Notification.deleteMany({}),
+    Discussion.deleteMany({}),
   ]);
   // Counters are process-global, so tests would otherwise poison each other.
   clearAll();
@@ -264,7 +266,10 @@ test("changePassword updates the hash and stamps the revocation time", async () 
   assert.ok(reloaded.credentialsChangedAt);
 });
 
-test("changeEmail leaves the new address unverified", async () => {
+test("changeEmail stages the address without switching it", async () => {
+  // Switching immediately would mean one typo locks the account out for good:
+  // login needs a verified address, and every recovery route would then mail
+  // the address nobody owns.
   const user = await createUser();
 
   const result = await mutations.changeEmail(
@@ -273,11 +278,63 @@ test("changeEmail leaves the new address unverified", async () => {
     ctx({ id: user._id.toString() })
   );
 
-  assert.equal(result.success, true);
+  assert.equal(result.success, false, "no SendGrid key in tests, so the send fails");
+
   const reloaded = await User.findById(user._id);
+  assert.equal(reloaded.email, "arran@visor.test", "the live address is untouched");
+  assert.equal(reloaded.emailVerified, true, "the user can still log in");
+  assert.equal(
+    reloaded.pendingEmail,
+    undefined,
+    "a failed send clears the staged change rather than leaving it dangling"
+  );
+});
+
+test("a staged email change only applies once the new address is confirmed", async () => {
+  const user = await createUser();
+  const pendingToken = user.generatePendingEmailToken("new@visor.test");
+  await user.save();
+
+  // Still the old address before the link is clicked.
+  let reloaded = await User.findById(user._id);
+  assert.equal(reloaded.email, "arran@visor.test");
+
+  const result = await mutations.verifyEmail(null, { token: pendingToken });
+
+  assert.equal(result.success, true);
+  reloaded = await User.findById(user._id);
   assert.equal(reloaded.email, "new@visor.test");
-  assert.equal(reloaded.emailVerified, false, "login stays blocked until verified");
-  assert.ok(reloaded.verificationToken, "a verification token is issued");
+  assert.equal(reloaded.emailVerified, true);
+  assert.equal(reloaded.pendingEmail, undefined, "single-use");
+  assert.ok(reloaded.credentialsChangedAt, "sessions under the old address end");
+});
+
+test("a staged change is refused if the address is claimed in the meantime", async () => {
+  const user = await createUser();
+  const pendingToken = user.generatePendingEmailToken("contested@visor.test");
+  await user.save();
+
+  await createUser({ username: "faster", email: "contested@visor.test" });
+
+  const result = await mutations.verifyEmail(null, { token: pendingToken });
+
+  assert.equal(result.success, false);
+  const reloaded = await User.findById(user._id);
+  assert.equal(reloaded.email, "arran@visor.test", "the live address survives");
+  assert.equal(reloaded.pendingEmail, undefined);
+});
+
+test("an expired staged change cannot be completed", async () => {
+  const user = await createUser();
+  const pendingToken = user.generatePendingEmailToken("new@visor.test");
+  user.pendingEmailTokenExpiry = new Date(Date.now() - 1000);
+  await user.save();
+
+  const result = await mutations.verifyEmail(null, { token: pendingToken });
+
+  assert.equal(result.success, false);
+  const reloaded = await User.findById(user._id);
+  assert.equal(reloaded.email, "arran@visor.test");
 });
 
 test("changeEmail refuses an address already in use", async () => {
@@ -385,4 +442,75 @@ test("register rejects a filled honeypot without creating an account", async () 
   );
 
   assert.equal(await User.countDocuments({ email: "bot@visor.test" }), 0);
+});
+
+test("deletion scrubs the name and avatar copied into discussion posts", async () => {
+  // Discussion posts store a copy of the author's username and avatar next to
+  // the userId, so anonymising the User document is not enough on its own.
+  const user = await createUser({ avatar: "https://cdn.test/arran.jpg" });
+  const other = await createUser({
+    username: "someoneelse",
+    email: "else@visor.test",
+    avatar: "https://cdn.test/else.jpg",
+  });
+
+  const discussion = await Discussion.create({
+    title: "Classic Chrome on X-T5",
+    linkedTo: { type: "filmsim", refId: new mongoose.Types.ObjectId() },
+    createdBy: user._id,
+    posts: [
+      {
+        userId: user._id,
+        username: "arran",
+        avatar: "https://cdn.test/arran.jpg",
+        content: "my post",
+        replies: [
+          {
+            userId: user._id,
+            username: "arran",
+            avatar: "https://cdn.test/arran.jpg",
+            content: "my reply",
+          },
+          {
+            userId: other._id,
+            username: "someoneelse",
+            avatar: "https://cdn.test/else.jpg",
+            content: "their reply",
+          },
+        ],
+      },
+      {
+        userId: other._id,
+        username: "someoneelse",
+        avatar: "https://cdn.test/else.jpg",
+        content: "their post",
+        replies: [],
+      },
+    ],
+  });
+
+  await mutations.deleteAccount(
+    null,
+    { currentPassword: PASSWORD },
+    ctx({ id: user._id.toString() })
+  );
+
+  const reloadedUser = await User.findById(user._id);
+  const reloaded = await Discussion.findById(discussion._id);
+
+  const myPost = reloaded.posts[0];
+  assert.equal(myPost.username, reloadedUser.username);
+  assert.match(myPost.username, /^deleted_user_/);
+  assert.equal(myPost.avatar, null, "the avatar URL is gone");
+
+  const myReply = myPost.replies[0];
+  assert.match(myReply.username, /^deleted_user_/);
+  assert.equal(myReply.avatar, null);
+
+  // Everyone else's identity is untouched.
+  const theirReply = myPost.replies[1];
+  assert.equal(theirReply.username, "someoneelse");
+  assert.equal(theirReply.avatar, "https://cdn.test/else.jpg");
+  assert.equal(reloaded.posts[1].username, "someoneelse");
+  assert.equal(reloaded.posts[1].avatar, "https://cdn.test/else.jpg");
 });

@@ -15,6 +15,7 @@ const {
   REGISTER_LIMIT,
   PASSWORD_RESET_LIMIT,
   CHANGE_EMAIL_LIMIT,
+  CHANGE_PASSWORD_LIMIT,
   DELETE_ACCOUNT_LIMIT,
 } = require("../../../utils/mutationRateLimits");
 const { tombstoneAccount } = require("./services/accountLifecycle");
@@ -93,15 +94,17 @@ module.exports = {
 
   register: async (_, { username, email, password, honeypot }, { req }) => {
     try {
+      // Rate limit first: a bot must not get unlimited free rejections just by
+      // tripping the honeypot, and the email below is still unvalidated input.
+      enforceRateLimit("register", req, REGISTER_LIMIT);
+
       // A hidden form field no human fills in. Bots that submit every input
       // give themselves away; real users never see it. Fail as a plain
       // validation error so a scripted client learns nothing about why.
       if (honeypot) {
-        logger.warn(`Rejected registration with a filled honeypot: ${email}`);
+        logger.warn("Rejected a registration with a filled honeypot");
         throw new ValidationError("Registration could not be completed");
       }
-
-      enforceRateLimit("register", req, REGISTER_LIMIT);
 
       // Validate input
       validateEmail(email);
@@ -168,10 +171,59 @@ module.exports = {
 
   verifyEmail: async (_, { token }) => {
     try {
+      const digest = hashToken(token);
+
+      // The same link shape serves two jobs: verifying a new account's address,
+      // and completing an email change staged by changeEmail. Try the pending
+      // change first — it is the narrower match.
+      const pendingChange = await User.findOne({
+        pendingEmailTokenHash: digest,
+        pendingEmailTokenExpiry: { $gt: new Date() },
+      });
+
+      if (pendingChange && !pendingChange.deletedAt) {
+        // Guard against the address being claimed between staging and clicking.
+        const taken = await User.findOne({
+          email: pendingChange.pendingEmail,
+          _id: { $ne: pendingChange._id },
+        });
+
+        if (taken) {
+          pendingChange.clearPendingEmail();
+          await pendingChange.save();
+
+          return {
+            success: false,
+            message:
+              "That email address has since been registered to another " +
+              "account. Your address is unchanged.",
+          };
+        }
+
+        pendingChange.email = pendingChange.pendingEmail;
+        pendingChange.emailVerified = true;
+        pendingChange.clearPendingEmail();
+        // The email is a credential, so completing the change signs out
+        // sessions that were established under the old address.
+        pendingChange.credentialsChangedAt = new Date();
+        await pendingChange.save();
+
+        return {
+          success: true,
+          message:
+            `Your email address is now ${pendingChange.email}. ` +
+            "Please log in again.",
+          user: {
+            ...pendingChange.toObject(),
+            id: pendingChange._id.toString(),
+          },
+        };
+      }
+
       // Look the account up by the token's digest: the raw token from the email
       // is never stored, so it cannot be queried directly.
       const user = await User.findOne({
-        verificationToken: hashToken(token),
+        verificationToken: digest,
         tokenExpiry: { $gt: new Date() },
       });
 
@@ -427,6 +479,12 @@ module.exports = {
   changePassword: async (_, { currentPassword, newPassword }, context) => {
     try {
       requireAuth(context.user, "You must be logged in to change your password");
+      enforceRateLimit(
+        "change-password",
+        context.req,
+        CHANGE_PASSWORD_LIMIT,
+        context.user.id
+      );
 
       const user = await User.findById(context.user.id);
       if (!user || user.deletedAt) {
@@ -470,7 +528,12 @@ module.exports = {
   changeEmail: async (_, { currentPassword, newEmail }, context) => {
     try {
       requireAuth(context.user, "You must be logged in to change your email");
-      enforceRateLimit("change-email", context.req, CHANGE_EMAIL_LIMIT);
+      enforceRateLimit(
+        "change-email",
+        context.req,
+        CHANGE_EMAIL_LIMIT,
+        context.user.id
+      );
 
       const user = await User.findById(context.user.id);
       if (!user || user.deletedAt) {
@@ -495,32 +558,39 @@ module.exports = {
         throw new ValidationError("That email address is already in use");
       }
 
-      // The address changes immediately but unverified, and login requires a
-      // verified address — so the change is only usable once the new inbox is
-      // confirmed. This is why it is gated behind the current password.
-      user.email = newEmail;
-      user.emailVerified = false;
-      user.credentialsChangedAt = new Date();
-      const verificationToken = user.generateVerificationToken();
+      // Stage the change rather than applying it. The live address stays put
+      // until the new inbox is confirmed, so a typo costs a wasted email
+      // instead of locking the account out of every recovery route.
+      const pendingToken = user.generatePendingEmailToken(newEmail);
       await user.save();
 
       const emailResult = await EmailService.sendVerificationEmail(
         newEmail,
         user.username,
-        verificationToken
+        pendingToken
       );
 
       if (!emailResult.success) {
-        logger.warn(
-          `Email changed but verification send failed: ${emailResult.message}`
-        );
+        // Nothing has changed yet, so this is a plain failure the user can
+        // retry — reporting success here would leave them waiting for an email
+        // that is never coming.
+        logger.warn(`Pending email verification send failed: ${emailResult.message}`);
+        user.clearPendingEmail();
+        await user.save();
+
+        return {
+          success: false,
+          message:
+            "We couldn't send the verification email just now. " +
+            "Your address is unchanged — please try again shortly.",
+        };
       }
 
       return {
         success: true,
         message:
-          `Check ${newEmail} for a verification link. ` +
-          "You will need to verify it before logging in again.",
+          `Check ${newEmail} for a verification link. Your address stays as ` +
+          `${user.email} until you click it.`,
       };
     } catch (error) {
       if (
@@ -541,7 +611,12 @@ module.exports = {
   deleteAccount: async (_, { currentPassword }, context) => {
     try {
       requireAuth(context.user, "You must be logged in to delete your account");
-      enforceRateLimit("delete-account", context.req, DELETE_ACCOUNT_LIMIT);
+      enforceRateLimit(
+        "delete-account",
+        context.req,
+        DELETE_ACCOUNT_LIMIT,
+        context.user.id
+      );
 
       const user = await User.findById(context.user.id);
       if (!user || user.deletedAt) {

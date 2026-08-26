@@ -6,8 +6,10 @@
 // these are the only things standing between an old token and a live session.
 
 // JWT `iat` is whole seconds, while credentialsChangedAt is millisecond-precise.
-// Comparing at second granularity keeps a token minted in the same second as
-// the change (the fresh one handed back by changePassword) valid.
+// Comparing at second granularity means a token minted in the same second as
+// the change survives. Nothing currently mints one — changePassword returns no
+// token and the client signs out — so this is headroom for a future
+// change-and-stay-signed-in flow, and it costs at most one second of overlap.
 const tokenPredatesCredentialChange = (issuedAtSeconds, credentialsChangedAt) => {
   if (!credentialsChangedAt) return false;
   if (typeof issuedAtSeconds !== "number" || !Number.isFinite(issuedAtSeconds)) {

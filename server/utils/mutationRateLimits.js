@@ -9,6 +9,9 @@ const { UserInputError } = require("./errors");
 const REGISTER_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 const PASSWORD_RESET_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 const CHANGE_EMAIL_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
+// Tighter, and keyed per user: with a stolen session this is the only thing
+// between an attacker and an unbounded guess at the current password.
+const CHANGE_PASSWORD_LIMIT = { limit: 10, windowMs: 60 * 60 * 1000 };
 const DELETE_ACCOUNT_LIMIT = { limit: 5, windowMs: 60 * 60 * 1000 };
 
 // Express sets req.ip from the socket, or from X-Forwarded-For when trust proxy
@@ -35,5 +38,6 @@ module.exports = {
   REGISTER_LIMIT,
   PASSWORD_RESET_LIMIT,
   CHANGE_EMAIL_LIMIT,
+  CHANGE_PASSWORD_LIMIT,
   DELETE_ACCOUNT_LIMIT,
 };
