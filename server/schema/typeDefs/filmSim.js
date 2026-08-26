@@ -116,8 +116,8 @@ const typeDefs = gql`
     """A camera body name; resolved to its sensor generation server-side."""
     cameraName: String
     """
-    Exact name match. Temporary, same deprecation window as
-    PresetFilterInput.title.
+    Exact name match. Superseded by the \`search\` argument; same one-release
+    deprecation window as PresetFilterInput.title.
     """
     name: String
   }
@@ -132,6 +132,13 @@ const typeDefs = gql`
     listFilmSims(
       filter: JSON
       where: FilmSimFilterInput
+      """
+      Free-text search over name, description, notes and tag names. Escaped
+      server-side and matched case-insensitively.
+      """
+      search: String
+      """Defaults to NEWEST."""
+      sort: ContentSort
       page: Int
       limit: Int
     ): PaginatedFilmSims!

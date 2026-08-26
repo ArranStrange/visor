@@ -558,8 +558,10 @@ const typeDefs = gql`
     """Restrict to these presets, e.g. the members of a user list."""
     ids: [ID!]
     """
-    Exact title match. Temporary: retained only for the existing
-    SEARCH_PRESETS query, and removed when Phase 3 adds a \`search\` argument.
+    Exact title match. Superseded by the \`search\` argument, which every
+    client consumer now uses. Kept for the same one-release deprecation
+    window as \`filter: JSON\` so a client deployed before the server does
+    not break mid-rollout; delete both together.
     """
     title: String
   }
@@ -575,6 +577,13 @@ const typeDefs = gql`
     listPresets(
       filter: JSON
       where: PresetFilterInput
+      """
+      Free-text search over title, description, notes and tag names. Escaped
+      server-side and matched case-insensitively.
+      """
+      search: String
+      """Defaults to NEWEST."""
+      sort: ContentSort
       page: Int
       limit: Int
     ): PaginatedPresets!

@@ -2,7 +2,10 @@ const FilmSim = require("../../../models/FilmSim");
 const { createLogger } = require("../../../utils/logger");
 const { clampPagination } = require("../../../utils/pagination");
 const { populateFilmSim } = require("./services/populateFilmSim");
-const { buildFilmSimFilterQuery } = require("../../../utils/contentFilters");
+const {
+  buildContentSort,
+  buildFilmSimListQuery,
+} = require("../../../utils/contentFilters");
 
 const logger = createLogger("resolvers:filmSim");
 
@@ -22,23 +25,24 @@ module.exports = {
     }
   },
 
-  listFilmSims: async (_, { filter, where, page, limit }) => {
+  listFilmSims: async (_, { filter, where, search, sort, page, limit }) => {
     try {
       const { page: safePage, limit: safeLimit, skip } = clampPagination(
         page,
         limit
       );
 
-      const query = buildFilmSimFilterQuery(filter, where);
+      const query = await buildFilmSimListQuery({ filter, where, search });
 
-      const totalCount = await FilmSim.countDocuments(query);
-
-      const filmSims = await populateFilmSim(
-        FilmSim.find(query)
-          .sort({ createdAt: -1 }) // Sort by newest first
-          .skip(skip)
-          .limit(safeLimit)
-      );
+      const [filmSims, totalCount] = await Promise.all([
+        populateFilmSim(
+          FilmSim.find(query)
+            .sort(buildContentSort(sort))
+            .skip(skip)
+            .limit(safeLimit)
+        ),
+        FilmSim.countDocuments(query),
+      ]);
 
       // Serialize film sims to include id field properly
       const serializedFilmSims = filmSims.map((filmSim) => {

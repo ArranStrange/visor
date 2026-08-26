@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const { UserInputError } = require("./errors");
+const { escapeRegExp } = require("./escapeRegExp");
 const {
   findCamera,
   SENSOR_LABELS_BY_KEY,
@@ -197,7 +198,137 @@ const buildPresetFilterQuery = (filter, where) =>
 const buildFilmSimFilterQuery = (filter, where) =>
   buildQuery(FILM_SIM_FIELDS, [filter, where]);
 
+/* -------------------------------------------------------------------------- */
+/* Sorting                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The ContentSort enum, mapped to Mongo sort specs. Every one of these fields
+ * is indexed on both Preset and FilmSim.
+ *
+ * `createdAt: -1` is the tiebreak on every counter-based order: without it,
+ * the hundreds of documents sharing a score of 0 come back in whatever order
+ * the index scan happens to produce, which is not stable across pages — so
+ * page 2 could repeat or skip items from page 1.
+ */
+const CONTENT_SORTS = Object.freeze({
+  NEWEST: { createdAt: -1 },
+  POPULAR: { popularityScore: -1, createdAt: -1 },
+  MOST_DOWNLOADED: { downloads: -1, createdAt: -1 },
+  MOST_SAVED: { saveCount: -1, createdAt: -1 },
+});
+
+const DEFAULT_CONTENT_SORT = "NEWEST";
+
+const buildContentSort = (sort) => {
+  if (sort === undefined || sort === null) {
+    return CONTENT_SORTS[DEFAULT_CONTENT_SORT];
+  }
+  // GraphQL validates the enum before we get here; this guards the internal
+  // callers (and a JSON `filter` blob) that bypass that validation.
+  if (!Object.hasOwn(CONTENT_SORTS, sort)) {
+    throw new UserInputError(`Unknown sort "${sort}"`);
+  }
+  return CONTENT_SORTS[sort];
+};
+
+/* -------------------------------------------------------------------------- */
+/* Search                                                                     */
+/* -------------------------------------------------------------------------- */
+
+const PRESET_SEARCH_FIELDS = ["title", "description", "notes"];
+const FILM_SIM_SEARCH_FIELDS = ["name", "description", "notes"];
+
+/**
+ * The one predicate every preset listing carries: a preset with no after image
+ * has nothing to show in the grid.
+ *
+ * It lives here rather than in the resolver so the count and the page are built
+ * from the same query by construction. The old resolver counted the unfiltered
+ * set and then dropped image-less presets in JS *after* paging, so the total
+ * disagreed with the grid and a page could come back short (#119).
+ */
+const PRESET_LIST_BASE = Object.freeze({
+  afterImage: { $exists: true, $ne: null },
+});
+
+/**
+ * Tags whose name or display name matches the search. Presets and film sims
+ * store tags as references, so a search for "portra" has to resolve the tag
+ * first — the join the grid's users expect when they type a tag name into the
+ * search box rather than clicking the chip.
+ */
+const tagIdsMatching = async (regex) => {
+  // Required lazily: contentFilters is imported by the typeDefs contract tests,
+  // which must not pull the whole model graph in.
+  const Tag = require("../models/Tag");
+  const tags = await Tag.find({
+    $or: [{ name: regex }, { displayName: regex }],
+  })
+    .select("_id")
+    .lean();
+
+  return tags.map((tag) => tag._id);
+};
+
+/**
+ * Merge a search `$or` into a query that may already have one of its own (the
+ * sensor filter builds an `$or`). Spreading would silently drop the first,
+ * turning a sensor-filtered search into an unfiltered one.
+ */
+const withSearchClause = (query, clause) => {
+  if (!clause) return query;
+  if (!query.$or) return { ...query, ...clause };
+
+  const { $or, ...rest } = query;
+  return { ...rest, $and: [{ $or }, clause] };
+};
+
+const buildListQuery = async (fields, searchFields, base, args) => {
+  const { filter, where, search } = args ?? {};
+  const query = { ...base, ...buildQuery(fields, [filter, where]) };
+
+  const term = typeof search === "string" ? search.trim() : "";
+  if (!term) return query;
+
+  const regex = new RegExp(escapeRegExp(term), "i");
+  const clauses = searchFields.map((field) => ({ [field]: regex }));
+
+  const tagIds = await tagIdsMatching(regex);
+  if (tagIds.length) clauses.push({ tags: { $in: tagIds } });
+
+  return withSearchClause(query, { $or: clauses });
+};
+
+/**
+ * The full Mongo query for one listPresets call: the validated filters, the
+ * always-on after-image predicate, and the search `$or`.
+ */
+const buildPresetListQuery = (args) =>
+  buildListQuery(
+    PRESET_FIELDS,
+    PRESET_SEARCH_FIELDS,
+    PRESET_LIST_BASE,
+    args
+  );
+
+/**
+ * The same for listFilmSims. Note the absence of an image predicate: a recipe
+ * is a set of in-camera settings and is useful without a sample photo, so film
+ * sims stay listable without images. That asymmetry with presets is deliberate
+ * (see the delivery plan) rather than an oversight.
+ */
+const buildFilmSimListQuery = (args) =>
+  buildListQuery(FILM_SIM_FIELDS, FILM_SIM_SEARCH_FIELDS, {}, args);
+
 module.exports = {
   buildPresetFilterQuery,
   buildFilmSimFilterQuery,
+  buildPresetListQuery,
+  buildFilmSimListQuery,
+  buildContentSort,
+  CONTENT_SORTS,
+  DEFAULT_CONTENT_SORT,
+  PRESET_LIST_BASE,
+  withSearchClause,
 };

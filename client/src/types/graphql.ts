@@ -305,6 +305,20 @@ export interface PresetFilterInput {
   title?: string;
 }
 
+/**
+ * Ordering for the discovery lists. Mirrors the ContentSort enum in
+ * server/schema/typeDefs/scalars.js.
+ *
+ * POPULAR reads the denormalised popularityScore (download 3, save 2, like 1).
+ * It is named POPULAR rather than TRENDING on purpose: the score has no time
+ * decay, so neither the enum nor the UI label may promise recency.
+ */
+export type ContentSort =
+  | "NEWEST"
+  | "POPULAR"
+  | "MOST_DOWNLOADED"
+  | "MOST_SAVED";
+
 /** Typed filter for `listFilmSims`. Mirrors FilmSimFilterInput. */
 export interface FilmSimFilterInput {
   tagId?: string;
