@@ -34,6 +34,7 @@ Client:
 6. Navbar body picker + unset-state nudge.
 7. Wiring: typed filter gets flat `sensorKey` when camera set && !showAllGenerations; five-state verdict chips on film-sim cards/detail; flag `VITE_ENABLE_CAMERA_FILTER` via ENV_CONFIG.
 8. Tests: AST contract test for the new inputs; compatibility-service unit tests (all five states); CameraContext tests.
+9. **Ratified in-phase (supersedes the earlier reading of item 7 below that Phase 1 leaves `keyArgs` untouched):** typed filters ship as a NEW `where` argument (`PresetFilterInput` / `FilmSimFilterInput`) alongside the legacy `filter: JSON`, and Apollo `keyArgs` becomes `["filter","where","limit"]` **in Phase 1, not Phase 3**. This is not optional scope creep: a `where` that changes which documents come back must participate in cache identity, otherwise a sensor-filtered grid and an unfiltered grid resolve to the same cache entry and the filter silently does nothing. The pagination-policy tests are extended in the same commit, per the cross-cutting rule.
 
 ## Phase 2a — `as/account-safety-auth` (#118 part 1; fixes #129 env)
 1. Password reset: `resetTokenHash` (SHA-256) + `resetTokenExpiry` (1h), distinct from verification fields; hash the existing plaintext `verificationToken` too; `requestPasswordReset(email)` always-true (no enumeration, uniform responses); `resetPassword(token, email, newPassword)` nulls `resetTokenHash` on success AND on any login (replay prevention). New SendGrid template + 10-line template test + shared layout extraction. Client `/forgot-password`, `/reset-password` routes + Login link. Set `APP_URL`/SendGrid vars in render.yaml (closes #129).
@@ -56,7 +57,7 @@ Client:
 4. `search: String` + `sort: ContentSort` (NEWEST | POPULAR | MOST_DOWNLOADED | MOST_SAVED) on both list queries; escaped-regex `$or` over title/name, description, notes + tag-name join (searchDiscussions shape).
 5. afterImage predicate into Mongo so counts match pages; film sims stay listable without images.
 6. Client search: delete `filterBySearchQuery`; 300ms debounce; repoint `SEARCH_PRESETS` **including `RecommendedPresetsManager.tsx` and `ItemAutocomplete.tsx`** (glm finding); `DOWNLOAD_PRESET` fire-and-forget at the `downloadXMP` call site.
-7. `keyArgs` → `["filter","limit","search","sort"]` with pagination-policy test matrix extended BEFORE the change; cypress cache spec updated.
+7. `keyArgs` → `["filter","where","limit","search","sort"]` — `where` is already in the key from Phase 1 (see Phase 1 item 9) and must stay, or this phase silently regresses the sensor-filter cache isolation. Pagination-policy test matrix extended BEFORE the change; cypress cache spec updated.
 8. Sort control in `ContentTypeFilter` (no new provider); mutually exclusive with shuffle; must survive sensor mode.
 9. Bounded SEO: `useDocumentMeta` hook per route; static robots.txt; fail-soft build-time sitemap script (API down → previous/empty sitemap + warning, never a hard build fail); OG tags with Cloudinary-transformed sample image + honest caveat in PR; follow-up issue for static OG shells.
 
