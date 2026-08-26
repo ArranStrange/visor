@@ -9,6 +9,8 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import { useApolloClient } from "@apollo/client";
 
+import { clearStoredCamera } from "./camera-storage";
+
 const TOKEN_KEY = "visor_token";
 const USER_KEY = "user";
 
@@ -33,6 +35,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const clearStoredAuth = () => {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  // The primary camera is personal to the account, not the browser — leaving
+  // it behind would hand the next user someone else's body.
+  clearStoredCamera();
 };
 
 const readStoredUser = (): User | null => {

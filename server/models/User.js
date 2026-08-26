@@ -32,6 +32,12 @@ const userSchema = new Schema(
     // Cameras they use, represented as strings or could be ObjectId if you want camera documents
     cameras: [String],
 
+    // The body the app personalises for: compatibility verdicts, dial-in
+    // guidance, the sensor list filter. Stored as the canonical catalogue
+    // name (e.g. "X-T30 II"), never a display string the user typed —
+    // updateProfile resolves it through findCamera and rejects unknowns.
+    primaryCamera: String,
+
     instagram: String,
   },
   { timestamps: true }

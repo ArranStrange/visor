@@ -38,7 +38,10 @@ export const paginationTypePolicies: TypePolicies = {
 function createPaginatedFieldPolicy<TKey extends string>(itemsKey: TKey) {
   return {
     // A count query (limit 1) must not overwrite a browse query (limit 20).
-    keyArgs: ["filter", "limit"],
+    // `where` is the typed filter and `filter` its deprecated JSON
+    // predecessor; both change which documents come back, so both have to be
+    // part of the cache key.
+    keyArgs: ["filter", "where", "limit"],
     merge: createPageMerge(itemsKey),
     read: createPageRead(itemsKey),
   };

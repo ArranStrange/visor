@@ -13,6 +13,8 @@ import AddIcon from "@mui/icons-material/Add";
 import AddToListDialog from "@/features/lists/components/AddToListDialog";
 import ImageOptimizer from "@/components/media/ImageOptimizer";
 import CardShell from "@/components/cards/CardShell";
+import CompatibilityChip from "@/features/compatibility/components/CompatibilityChip";
+import type { RecipeCompatibilitySettings } from "@/features/compatibility";
 import {
   overlayButtonStyles,
   overlayAvatarStyles,
@@ -39,25 +41,23 @@ interface FilmSimCardProps {
     avatar?: string;
     id?: string;
   };
-  settings?: {
-    dynamicRange?: string;
-    highlight?: string;
-    shadow?: string;
-    colour?: string;
-    sharpness?: string;
-    noiseReduction?: string;
-    grainEffect?: string;
-    clarity?: string;
-    whiteBalance?: string;
-    wbShift?: {
-      r: number;
-      b: number;
-    };
-  };
+  /** Sensor generations the recipe declares, for the compatibility verdict. */
+  compatibleSensors?: string[] | null;
+  /** Recipe settings the compatibility verdict reads. */
+  settings?: RecipeCompatibilitySettings | null;
 }
 
 const FilmSimCard: React.FC<FilmSimCardProps> = memo(
-  ({ id, name, slug, thumbnail, tags = [], creator }) => {
+  ({
+    id,
+    name,
+    slug,
+    thumbnail,
+    tags = [],
+    creator,
+    compatibleSensors,
+    settings,
+  }) => {
     const navigate = useNavigate();
     const [addToListOpen, setAddToListOpen] = React.useState(false);
 
@@ -125,6 +125,17 @@ const FilmSimCard: React.FC<FilmSimCardProps> = memo(
             {name}
           </Typography>
           <Typography variant="overlaySubtitle">Film Sim</Typography>
+        </Box>
+
+        <Box
+          className="compatibility-chip"
+          sx={{ position: "absolute", top: 8, left: 8, zIndex: 1 }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <CompatibilityChip
+            settings={settings}
+            compatibleSensors={compatibleSensors}
+          />
         </Box>
 
         <Box

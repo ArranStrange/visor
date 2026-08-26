@@ -1,29 +1,9 @@
-const mongoose = require("mongoose");
 const Preset = require("../../../models/Preset");
 const { createLogger } = require("../../../utils/logger");
 const { clampPagination } = require("../../../utils/pagination");
+const { buildPresetFilterQuery } = require("../../../utils/contentFilters");
 
 const logger = createLogger("resolvers:preset");
-
-const buildPresetFilterQuery = (filter) => {
-  const query = {};
-  if (!filter) return query;
-
-  if (filter.tagId) {
-    const tagObjectId = mongoose.Types.ObjectId.isValid(filter.tagId)
-      ? new mongoose.Types.ObjectId(filter.tagId)
-      : filter.tagId;
-    query.tags = { $in: [tagObjectId] };
-  }
-
-  Object.keys(filter).forEach((key) => {
-    if (key !== "tagId") {
-      query[key] = filter[key];
-    }
-  });
-
-  return query;
-};
 
 module.exports = {
   getPreset: async (_, { slug }) => {
@@ -72,14 +52,14 @@ module.exports = {
 
   getPresetById: async (_, { id }) => await Preset.findById(id),
 
-  listPresets: async (_, { filter, page, limit }) => {
+  listPresets: async (_, { filter, where, page, limit }) => {
     try {
       const { page: safePage, limit: safeLimit, skip } = clampPagination(
         page,
         limit
       );
 
-      const query = buildPresetFilterQuery(filter);
+      const query = buildPresetFilterQuery(filter, where);
 
       const totalCount = await Preset.countDocuments(query);
 

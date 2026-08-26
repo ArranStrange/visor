@@ -6,6 +6,8 @@ const path = require("node:path");
 const {
   FUJIFILM_CAMERAS,
   normalizeCameraName,
+  sensorKeyForCamera,
+  SENSOR_LABELS_BY_KEY,
 } = require("../../../constants/fujifilmCameras");
 
 // The client's catalog is the UI source of truth; the server copy exists so
@@ -79,6 +81,12 @@ test("bank counts agree between the two catalogs", () => {
     ),
   ].map((m) => ({ name: m[1], customBanks: Number(m[2]), banksVerified: m[3] === "true" }));
 
+  // A regex that stops matching would silently turn this whole test into a
+  // no-op, so assert the parse produced something before comparing.
+  assert.ok(
+    clientBankEntries.length > 0,
+    "bank-count regex parsed nothing — the client catalog entry shape changed; update the regex in this test"
+  );
   assert.equal(
     clientBankEntries.length,
     FUJIFILM_CAMERAS.length,
@@ -90,6 +98,56 @@ test("bank counts agree between the two catalogs", () => {
     const server = serverByName.get(entry.name);
     assert.equal(server?.customBanks, entry.customBanks, `customBanks mismatch for ${entry.name}`);
     assert.equal(server?.banksVerified, entry.banksVerified, `banksVerified mismatch for ${entry.name}`);
+  }
+});
+
+test("sensorKeyForCamera mirrors the client's tolerant lookup", () => {
+  assert.equal(sensorKeyForCamera("Fujifilm X-T30 II"), "x-trans-iv");
+  assert.equal(sensorKeyForCamera("fuji x100v"), "x-trans-iv");
+  assert.equal(sensorKeyForCamera("X-H2S"), "x-trans-v");
+  assert.equal(sensorKeyForCamera("Nikon Z6"), undefined);
+  assert.equal(sensorKeyForCamera(""), undefined);
+  assert.equal(sensorKeyForCamera(null), undefined);
+});
+
+test("sensor labels match the client's sensor catalog", () => {
+  const sensorSource = fs.readFileSync(
+    path.join(
+      __dirname,
+      "../../../../client/src/features/film-sims/utils/fujifilmSensors.ts"
+    ),
+    "utf8"
+  );
+
+  const clientSensors = [
+    ...sensorSource.matchAll(/key:\s*"([^"]+)",[\s\S]{0,120}?label:\s*"([^"]+)"/g),
+  ].map((m) => ({ key: m[1], label: m[2] }));
+
+  assert.ok(
+    clientSensors.length > 0,
+    "sensor regex parsed nothing — the client sensor entry shape changed; update the regex in this test"
+  );
+  assert.equal(
+    clientSensors.length,
+    Object.keys(SENSOR_LABELS_BY_KEY).length,
+    "server sensor label map and client sensor catalog differ in size"
+  );
+
+  for (const { key, label } of clientSensors) {
+    assert.equal(
+      SENSOR_LABELS_BY_KEY[key],
+      label,
+      `sensor label mismatch for ${key}`
+    );
+  }
+});
+
+test("every catalog sensor key has a label", () => {
+  for (const camera of FUJIFILM_CAMERAS) {
+    assert.ok(
+      SENSOR_LABELS_BY_KEY[camera.sensorKey],
+      `${camera.name} uses sensor key ${camera.sensorKey}, which has no label`
+    );
   }
 });
 

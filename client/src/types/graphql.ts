@@ -223,6 +223,32 @@ export interface ImageInput {
   publicId: string;
 }
 
+/**
+ * Typed filter for `listPresets`. Mirrors PresetFilterInput in
+ * server/schema/typeDefs/preset.js — the server allow-lists these fields, so
+ * anything not listed here is rejected rather than passed to Mongo (#126).
+ */
+export interface PresetFilterInput {
+  tagId?: string;
+  featured?: boolean;
+  ids?: string[];
+  /** Exact title match; removed when Phase 3 adds a `search` argument. */
+  title?: string;
+}
+
+/** Typed filter for `listFilmSims`. Mirrors FilmSimFilterInput. */
+export interface FilmSimFilterInput {
+  tagId?: string;
+  featured?: boolean;
+  ids?: string[];
+  /** Sensor generation slug, e.g. "x-trans-iv". */
+  sensorKey?: string;
+  /** Camera body name; resolved to its sensor generation server-side. */
+  cameraName?: string;
+  /** Exact name match; same deprecation window as PresetFilterInput.title. */
+  name?: string;
+}
+
 export interface FilmSimSettingsInput {
   dynamicRange: string;
   filmSimulation: string;

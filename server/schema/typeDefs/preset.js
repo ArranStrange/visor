@@ -545,10 +545,37 @@ const typeDefs = gql`
     totalPages: Int!
   }
 
+  """
+  Typed replacement for the untyped listPresets \`filter\` blob. Every field
+  here is allow-listed by server/utils/contentFilters.js before it reaches
+  Mongo.
+  """
+  input PresetFilterInput {
+    tagId: ID
+    featured: Boolean
+    """Restrict to these presets, e.g. the members of a user list."""
+    ids: [ID!]
+    """
+    Exact title match. Temporary: retained only for the existing
+    SEARCH_PRESETS query, and removed when Phase 3 adds a \`search\` argument.
+    """
+    title: String
+  }
+
   extend type Query {
     getPreset(slug: String!): Preset
     getPresetById(id: ID!): Preset
-    listPresets(filter: JSON, page: Int, limit: Int): PaginatedPresets!
+    """
+    \`filter\` is deprecated in favour of \`where\` and is accepted for one
+    release only, per docs/plans/c1-c3-delivery-plan.md. Both arguments are
+    validated by the same allow-listing builder; \`where\` wins on conflict.
+    """
+    listPresets(
+      filter: JSON
+      where: PresetFilterInput
+      page: Int
+      limit: Int
+    ): PaginatedPresets!
   }
 
   extend type Mutation {

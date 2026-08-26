@@ -4,6 +4,7 @@ import type {
   ImageInput,
   PresetDetail,
   PresetDetailSettings,
+  PresetFilterInput,
   PresetSettings,
   PresetSummary,
   ToneCurve,
@@ -23,7 +24,7 @@ export interface ListPresetsQueryData {
 export interface ListPresetsQueryVariables {
   page?: number;
   limit?: number;
-  filter?: Record<string, unknown>;
+  where?: PresetFilterInput;
 }
 
 export interface GetPresetQueryData {
@@ -111,8 +112,8 @@ export interface UploadPresetMutationVariables {
 }
 
 export const GET_ALL_PRESETS = gql`
-  query ListPresets($page: Int, $limit: Int, $filter: JSON) {
-    listPresets(page: $page, limit: $limit, filter: $filter) {
+  query ListPresets($page: Int, $limit: Int, $where: PresetFilterInput) {
+    listPresets(page: $page, limit: $limit, where: $where) {
       presets {
         id
         title
@@ -284,7 +285,7 @@ export const GET_PRESET_BY_SLUG = gql`
 
 export const SEARCH_PRESETS = gql`
   query SearchPresets($query: String!, $page: Int!, $limit: Int!) {
-    listPresets(filter: { title: $query }, page: $page, limit: $limit) {
+    listPresets(where: { title: $query }, page: $page, limit: $limit) {
       presets {
         id
         title

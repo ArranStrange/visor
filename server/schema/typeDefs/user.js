@@ -10,6 +10,11 @@ module.exports = gql`
     emailVerified: Boolean!
     instagram: String
     cameras: [String]
+    """
+    Canonical catalogue name of the body the app personalises for, e.g.
+    "X-T30 II". Null when the user has not picked one.
+    """
+    primaryCamera: String
     isAdmin: Boolean!
     presets: [Preset!]!
     filmSims: [FilmSim!]!

@@ -19,6 +19,8 @@ export interface UserUploadsProfile {
   bio?: string;
   instagram?: string;
   cameras?: string[];
+  /** Canonical catalogue name of the body the app personalises for. */
+  primaryCamera?: string | null;
   presets?: UserUploadPreset[];
   filmSims?: UserUploadFilmSim[];
 }
@@ -103,6 +105,7 @@ export const GET_USER_PROFILE = gql`
       bio
       instagram
       cameras
+      primaryCamera
     }
   }
 `;
@@ -118,6 +121,7 @@ export const UPDATE_USER_PROFILE = gql`
       bio
       instagram
       cameras
+      primaryCamera
     }
   }
 `;

@@ -42,7 +42,7 @@ export interface GetFeaturedPhotoQueryData {
 
 export const GET_FEATURED_ITEMS = gql`
   query GetFeaturedItems {
-    featuredPreset: listPresets(filter: { featured: true }, limit: 100) {
+    featuredPreset: listPresets(where: { featured: true }, limit: 100) {
       presets {
         id
         title
@@ -66,7 +66,7 @@ export const GET_FEATURED_ITEMS = gql`
         }
       }
     }
-    featuredFilmSim: listFilmSims(filter: { featured: true }, limit: 100) {
+    featuredFilmSim: listFilmSims(where: { featured: true }, limit: 100) {
       filmSims {
         id
         name

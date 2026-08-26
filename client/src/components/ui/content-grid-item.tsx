@@ -38,6 +38,8 @@ export function ContentGridItem({ item, renderItem }: ContentGridItemProps) {
       tags={data.tags}
       creator={data.creator ?? undefined}
       featured={data.featured}
+      compatibleSensors={data.compatibleSensors}
+      settings={data.settings}
     />
   );
 }

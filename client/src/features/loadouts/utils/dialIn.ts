@@ -1,5 +1,7 @@
-import { findCamera, normalizeCameraName } from "@/constants/fujifilmCameras";
-import { getSensorByKey } from "@/features/film-sims/utils/fujifilmSensors";
+import {
+  getCompatibilityVerdict,
+  resolveCameraCapabilities,
+} from "@/features/compatibility";
 import type { FilmSimSettings } from "@/features/film-sims/types/filmSim";
 import {
   DIAL_IN_STEP_ORDER,
@@ -7,8 +9,6 @@ import {
   ENTER_BANK_PATH,
   ENTER_BANK_VERIFIED,
   SETTING_DEFAULTS,
-  CAMERA_FEATURE_OVERRIDES,
-  CAMERA_SIM_OVERRIDES,
   type DialInStepKey,
 } from "@/features/loadouts/constants/menuPaths";
 
@@ -102,18 +102,6 @@ export const formatStepValue = (
   }
 };
 
-// Film simulations gated by generation, matching the regexes
-// getSensorCompatibilityWarnings uses.
-const SIM_GATES: {
-  pattern: RegExp;
-  feature: "classicNegative" | "nostalgicNegative" | "realaAce";
-  label: string;
-}[] = [
-  { pattern: /CLASSIC[_\s-]?NEG/i, feature: "classicNegative", label: "Classic Negative" },
-  { pattern: /NOSTALGIC/i, feature: "nostalgicNegative", label: "Nostalgic Negative" },
-  { pattern: /REALA/i, feature: "realaAce", label: "Reala Ace" },
-];
-
 const isSpecified = (settings: Partial<FilmSimSettings>, key: DialInStepKey) => {
   if (key === "whiteBalance") {
     // WB and its shift form one step; either being present makes the step
@@ -164,14 +152,11 @@ export const buildDialInSteps = (
   cameraKey: string,
   bankNumber: number
 ): DialInPlan => {
-  const camera = findCamera(cameraKey);
-  const sensor = camera ? getSensorByKey(camera.sensorKey) : undefined;
-  // Normalize before the override lookups: findCamera tolerates any
-  // user-written form, and these tables must tolerate the same — a missed
-  // lookup here silently tells an X-T3 owner to set Clarity.
-  const normalizedKey = normalizeCameraName(cameraKey);
-  const overrides = CAMERA_FEATURE_OVERRIDES[normalizedKey] ?? {};
-  const simOverrides = CAMERA_SIM_OVERRIDES[normalizedKey] ?? {};
+  // The compatibility service owns "what can this body do" — including the
+  // per-camera exceptions — so dial-in and the verdict chips can never
+  // disagree about whether an X-T3 has Clarity.
+  const { camera, sensor, features } = resolveCameraCapabilities(cameraKey);
+  const verdict = getCompatibilityVerdict(cameraKey, { settings });
 
   // Unknown body: show every step, caveat the whole flow, skip nothing —
   // wrong guidance is worse than generic guidance.
@@ -180,17 +165,16 @@ export const buildDialInSteps = (
     : null;
 
   const supports = (key: DialInStepKey): boolean => {
-    if (!sensor) return true;
-    const f = sensor.features;
+    if (!features) return true;
     switch (key) {
       case "grainEffect":
-        return f.grainEffect;
+        return features.grainEffect;
       case "colorChromeEffect":
-        return overrides.colorChromeEffect ?? f.colorChromeEffect;
+        return features.colorChromeEffect;
       case "colorChromeFxBlue":
-        return f.colorChromeFXBlue;
+        return features.colorChromeFXBlue;
       case "clarity":
-        return overrides.clarity ?? f.clarity;
+        return features.clarity;
       default:
         return true;
     }
@@ -249,13 +233,8 @@ export const buildDialInSteps = (
     }
 
     let warning: string | undefined;
-    if (key === "filmSimulation" && sensor && settings.filmSimulation) {
-      const gate = SIM_GATES.find((g) => g.pattern.test(settings.filmSimulation!));
-      const supported =
-        gate && (simOverrides[gate.feature] ?? sensor.features[gate.feature]);
-      if (gate && !supported) {
-        warning = `${camera?.name ?? "This body"} doesn't have ${gate.label} — pick the closest simulation it offers. The rest of the recipe still applies.`;
-      }
+    if (key === "filmSimulation" && verdict.missingFilmSimulation) {
+      warning = `${camera?.name ?? "This body"} doesn't have ${verdict.missingFilmSimulation} — pick the closest simulation it offers. The rest of the recipe still applies.`;
     }
 
     steps.push({

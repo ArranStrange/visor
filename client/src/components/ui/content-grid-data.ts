@@ -1,8 +1,7 @@
-export type GridContentType = "all" | "presets" | "films";
+import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
+import type { RecipeCompatibilitySettings } from "@/features/compatibility";
 
-export interface GridFilter {
-  [key: string]: unknown;
-}
+export type GridContentType = "all" | "presets" | "films";
 
 interface GridImage {
   url?: string | null;
@@ -32,6 +31,9 @@ export interface GridContentData {
   tags?: GridTag[];
   creator?: GridCreator | null;
   featured?: boolean;
+  /** Film sims only: the inputs to the compatibility verdict on the card. */
+  compatibleSensors?: string[] | null;
+  settings?: RecipeCompatibilitySettings | null;
 }
 
 export interface GridContentItem {
@@ -58,7 +60,7 @@ export interface PaginatedFilmSimsData {
 export interface PaginatedListVariables {
   page: number;
   limit: number;
-  filter?: GridFilter;
+  where?: PresetFilterInput | FilmSimFilterInput;
 }
 
 interface BuildGridContentOptions {

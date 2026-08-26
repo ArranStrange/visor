@@ -9,6 +9,7 @@ import CssBaseline from "@mui/material/CssBaseline";
 import { ContentTypeProvider } from "./context/ContentTypeFilter";
 import { ShuffleProvider } from "./context/ShuffleContext";
 import { AuthProvider } from "./context/AuthContext";
+import { CameraProvider } from "./context/CameraContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import { TagProvider } from "./context/TagContext";
 import { visorTheme } from "./theme/VISORTheme";
@@ -41,84 +42,92 @@ function App() {
       <CssBaseline />
       <Router>
         <AuthProvider>
-          <NotificationProvider>
-            <ContentTypeProvider>
-              <ShuffleProvider>
-                <TagProvider>
-                  <NavBar />
-                  <RouteErrorBoundary>
-                    <Suspense
-                      fallback={
-                        <Box
-                          sx={{
-                            minHeight: "calc(100vh - 64px)",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            backgroundColor: "background.default",
-                          }}
-                        >
-                          <CircularProgress aria-label="Loading page" />
-                        </Box>
-                      }
-                    >
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/search" element={<SearchView />} />
-                        <Route
-                          path="/preset/:slug"
-                          element={<PresetDetailPage />}
-                        />
-                        <Route
-                          path="/filmsim/:slug"
-                          element={<FilmSimPage />}
-                        />
-                        <Route path="/profile" element={<ProfilePage />} />
-                        <Route
-                          path="/profile/:userId"
-                          element={<PublicProfile />}
-                        />
-                        <Route path="/upload" element={<UploadPage />} />
-                        <Route
-                          path="/upload/preset"
-                          element={<UploadPreset />}
-                        />
-                        <Route
-                          path="/upload/filmsim"
-                          element={<UploadFilmSim />}
-                        />
-                        <Route path="/login" element={<Login />} />
-                        <Route path="/register" element={<Register />} />
-                        <Route
-                          path="/verify-email"
-                          element={<EmailVerification />}
-                        />
-                        <Route path="/lists" element={<MyLists />} />
-                        <Route path="/wallet" element={<Wallet />} />
-                        <Route path="/browse-lists" element={<BrowseLists />} />
-                        <Route path="/list/:id" element={<ListDetail />} />
-                        <Route path="/create-list" element={<CreateList />} />
-                        <Route path="/discussions" element={<Discussions />} />
-                        <Route
-                          path="/discussions/new"
-                          element={<CreateDiscussion />}
-                        />
-                        <Route
-                          path="/discussions/:discussionId"
-                          element={<DiscussionDetail />}
-                        />
-                        <Route
-                          path="/notifications"
-                          element={<Notifications />}
-                        />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                    </Suspense>
-                  </RouteErrorBoundary>
-                </TagProvider>
-              </ShuffleProvider>
-            </ContentTypeProvider>
-          </NotificationProvider>
+          <CameraProvider>
+            <NotificationProvider>
+              <ContentTypeProvider>
+                <ShuffleProvider>
+                  <TagProvider>
+                    <NavBar />
+                    <RouteErrorBoundary>
+                      <Suspense
+                        fallback={
+                          <Box
+                            sx={{
+                              minHeight: "calc(100vh - 64px)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              backgroundColor: "background.default",
+                            }}
+                          >
+                            <CircularProgress aria-label="Loading page" />
+                          </Box>
+                        }
+                      >
+                        <Routes>
+                          <Route path="/" element={<Home />} />
+                          <Route path="/search" element={<SearchView />} />
+                          <Route
+                            path="/preset/:slug"
+                            element={<PresetDetailPage />}
+                          />
+                          <Route
+                            path="/filmsim/:slug"
+                            element={<FilmSimPage />}
+                          />
+                          <Route path="/profile" element={<ProfilePage />} />
+                          <Route
+                            path="/profile/:userId"
+                            element={<PublicProfile />}
+                          />
+                          <Route path="/upload" element={<UploadPage />} />
+                          <Route
+                            path="/upload/preset"
+                            element={<UploadPreset />}
+                          />
+                          <Route
+                            path="/upload/filmsim"
+                            element={<UploadFilmSim />}
+                          />
+                          <Route path="/login" element={<Login />} />
+                          <Route path="/register" element={<Register />} />
+                          <Route
+                            path="/verify-email"
+                            element={<EmailVerification />}
+                          />
+                          <Route path="/lists" element={<MyLists />} />
+                          <Route path="/wallet" element={<Wallet />} />
+                          <Route
+                            path="/browse-lists"
+                            element={<BrowseLists />}
+                          />
+                          <Route path="/list/:id" element={<ListDetail />} />
+                          <Route path="/create-list" element={<CreateList />} />
+                          <Route
+                            path="/discussions"
+                            element={<Discussions />}
+                          />
+                          <Route
+                            path="/discussions/new"
+                            element={<CreateDiscussion />}
+                          />
+                          <Route
+                            path="/discussions/:discussionId"
+                            element={<DiscussionDetail />}
+                          />
+                          <Route
+                            path="/notifications"
+                            element={<Notifications />}
+                          />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                      </Suspense>
+                    </RouteErrorBoundary>
+                  </TagProvider>
+                </ShuffleProvider>
+              </ContentTypeProvider>
+            </NotificationProvider>
+          </CameraProvider>
         </AuthProvider>
       </Router>
     </ThemeProvider>

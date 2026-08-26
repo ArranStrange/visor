@@ -44,6 +44,11 @@ export const ENV_CONFIG = {
   ENABLE_EMAIL_VERIFICATION:
     import.meta.env.VITE_ENABLE_EMAIL_VERIFICATION !== "false",
 
+  // Narrow film sim listings to the sensor generation of the user's primary
+  // camera. On by default; set VITE_ENABLE_CAMERA_FILTER=false to serve
+  // unfiltered listings again without a code change.
+  ENABLE_CAMERA_FILTER: import.meta.env.VITE_ENABLE_CAMERA_FILTER !== "false",
+
   // Cloudinary Configuration
   CLOUDINARY_CLOUD_NAME: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
 

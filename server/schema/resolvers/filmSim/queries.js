@@ -1,30 +1,10 @@
-const mongoose = require("mongoose");
 const FilmSim = require("../../../models/FilmSim");
 const { createLogger } = require("../../../utils/logger");
 const { clampPagination } = require("../../../utils/pagination");
 const { populateFilmSim } = require("./services/populateFilmSim");
+const { buildFilmSimFilterQuery } = require("../../../utils/contentFilters");
 
 const logger = createLogger("resolvers:filmSim");
-
-const buildFilmSimFilterQuery = (filter) => {
-  const query = {};
-  if (!filter) return query;
-
-  if (filter.tagId) {
-    const tagObjectId = mongoose.Types.ObjectId.isValid(filter.tagId)
-      ? new mongoose.Types.ObjectId(filter.tagId)
-      : filter.tagId;
-    query.tags = { $in: [tagObjectId] };
-  }
-
-  Object.keys(filter).forEach((key) => {
-    if (key !== "tagId") {
-      query[key] = filter[key];
-    }
-  });
-
-  return query;
-};
 
 module.exports = {
   getFilmSim: async (_, { slug }) => {
@@ -42,14 +22,14 @@ module.exports = {
     }
   },
 
-  listFilmSims: async (_, { filter, page, limit }) => {
+  listFilmSims: async (_, { filter, where, page, limit }) => {
     try {
       const { page: safePage, limit: safeLimit, skip } = clampPagination(
         page,
         limit
       );
 
-      const query = buildFilmSimFilterQuery(filter);
+      const query = buildFilmSimFilterQuery(filter, where);
 
       const totalCount = await FilmSim.countDocuments(query);
 
