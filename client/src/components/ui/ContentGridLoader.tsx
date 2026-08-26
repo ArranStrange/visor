@@ -19,13 +19,19 @@ import {
   buildGridContent,
   GridContentData,
   GridContentType,
-  GridFilter,
 } from "./content-grid-data";
+import type { FilmSimFilterInput, PresetFilterInput } from "@/types/graphql";
 import { getErrorMessage } from "../../utils/errorHandling";
 
 interface ContentGridLoaderProps {
   contentType?: GridContentType;
-  filter?: GridFilter;
+  /**
+   * Typed list filters. Presets and film sims take different inputs (only
+   * film sims have a sensor), so they are passed separately rather than as
+   * one blob that would have to be split here.
+   */
+  presetWhere?: PresetFilterInput;
+  filmSimWhere?: FilmSimFilterInput;
   searchQuery?: string;
   customData?: readonly unknown[];
   renderItem?: (item: GridContentData) => React.ReactNode;
@@ -35,7 +41,8 @@ const ITEMS_PER_PAGE = 20;
 
 const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   contentType = "all",
-  filter,
+  presetWhere,
+  filmSimWhere,
   searchQuery,
   customData,
   renderItem,
@@ -44,12 +51,10 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const hasCustomData = customData !== undefined;
   const loadPresets = !hasCustomData && contentType !== "films";
   const loadFilmSims = !hasCustomData && contentType !== "presets";
-  const variables = { page: 1, limit: ITEMS_PER_PAGE, filter };
-
   const presetQuery = useQuery<ListPresetsQueryData, ListPresetsQueryVariables>(
     GET_ALL_PRESETS,
     {
-      variables,
+      variables: { page: 1, limit: ITEMS_PER_PAGE, where: presetWhere },
       skip: !loadPresets,
       notifyOnNetworkStatusChange: true,
     }
@@ -58,7 +63,7 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
     ListFilmSimsQueryData,
     ListFilmSimsQueryVariables
   >(GET_ALL_FILMSIMS, {
-    variables,
+    variables: { page: 1, limit: ITEMS_PER_PAGE, where: filmSimWhere },
     skip: !loadFilmSims,
     notifyOnNetworkStatusChange: true,
   });
@@ -76,7 +81,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
   const loadMore = useCallback(
     () =>
       fetchNextContentPages({
-        filter,
+        presetWhere,
+        filmSimWhere,
         isLoading: isLoadingMore,
         presets: presetQuery.data?.listPresets,
         filmSims: filmSimQuery.data?.listFilmSims,
@@ -84,7 +90,8 @@ const ContentGridLoader: React.FC<ContentGridLoaderProps> = ({
         fetchMoreFilmSims: filmSimQuery.fetchMore,
       }),
     [
-      filter,
+      presetWhere,
+      filmSimWhere,
       presetQuery.data?.listPresets,
       presetQuery.fetchMore,
       filmSimQuery.data?.listFilmSims,

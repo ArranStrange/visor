@@ -104,7 +104,7 @@ describe("Registration Security Features", () => {
     cy.get('[data-cy="password-input"]').type("weak");
     cy.get('[data-cy="password-error"]').should(
       "contain",
-      "at least 6 characters"
+      "at least 8 characters"
     );
 
     cy.get('[data-cy="password-input"]').clear().type("weakpassword");

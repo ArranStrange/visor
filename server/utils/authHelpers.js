@@ -12,6 +12,23 @@ const requireAuth = (user, message = "Not authenticated") => {
   return user;
 };
 
+/**
+ * Gate a resolver on the admin flag. Replaces the requireAuth + `!user.isAdmin`
+ * pair that was hand-rolled at a dozen call sites: the danger with a repeated
+ * check is the one copy that drifts, and an admin gate that silently stops
+ * gating looks exactly like one that works.
+ *
+ * `isAdmin` is only ever set in the database — it is not in updateProfile's
+ * allow-list, so it cannot be granted over the API.
+ */
+const requireAdmin = (user, message = "Admin access required") => {
+  requireAuth(user, message);
+  if (!user.isAdmin) {
+    throw new AuthenticationError(message);
+  }
+  return user;
+};
+
 const requireOwnership = (user, doc, field = "creator", options = {}) => {
   const { allowAdmin = true, message = "Not authorized" } = options;
 
@@ -24,4 +41,4 @@ const requireOwnership = (user, doc, field = "creator", options = {}) => {
   }
 };
 
-module.exports = { requireAuth, requireOwnership };
+module.exports = { requireAuth, requireAdmin, requireOwnership };

@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Container, Typography, Button } from "@mui/material";
+import { Container, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
 const NotFound: React.FC = () => {

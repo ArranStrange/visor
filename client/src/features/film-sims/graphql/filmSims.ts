@@ -1,5 +1,6 @@
 import { gql } from "@apollo/client";
 import type {
+  FilmSimFilterInput,
   FilmSimSummary,
   ImageSummary,
   PresetSummary,
@@ -22,7 +23,7 @@ export interface ListFilmSimsQueryData {
 export interface ListFilmSimsQueryVariables {
   page?: number;
   limit?: number;
-  filter?: Record<string, unknown>;
+  where?: FilmSimFilterInput;
 }
 
 export type FilmSimResponseSettings = Partial<FilmSimSettings>;
@@ -95,8 +96,8 @@ export interface UploadFilmSimMutationVariables {
 }
 
 export const GET_ALL_FILMSIMS = gql`
-  query ListFilmSims($page: Int, $limit: Int, $filter: JSON) {
-    listFilmSims(page: $page, limit: $limit, filter: $filter) {
+  query ListFilmSims($page: Int, $limit: Int, $where: FilmSimFilterInput) {
+    listFilmSims(page: $page, limit: $limit, where: $where) {
       filmSims {
         id
         name
@@ -114,6 +115,16 @@ export const GET_ALL_FILMSIMS = gql`
           url
         }
         featured
+        # The compatibility verdict is computed client-side; these are the
+        # only settings whose availability varies by sensor generation.
+        compatibleSensors
+        settings {
+          filmSimulation
+          clarity
+          grainEffect
+          colorChromeEffect
+          colorChromeFxBlue
+        }
       }
       totalCount
       hasNextPage
@@ -155,6 +166,8 @@ export const GET_FILMSIM_BY_SLUG = gql`
           b
         }
         filmSimulation
+        colorChromeEffect
+        colorChromeFxBlue
       }
       tags {
         id

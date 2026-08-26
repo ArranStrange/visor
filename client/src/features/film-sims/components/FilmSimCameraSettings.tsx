@@ -2,14 +2,29 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import WhiteBalanceGrid from "@/features/film-sims/components/WhiteBalanceGrid";
 import type { FilmSimSettings } from "@/features/film-sims/types/filmSim";
+import {
+  FILM_SIMULATION_OPTIONS,
+  WHITE_BALANCE_OPTIONS,
+  GRAIN_EFFECT_OPTIONS,
+  COLOR_CHROME_EFFECT_OPTIONS,
+  COLOR_CHROME_FX_BLUE_OPTIONS,
+} from "@/features/film-sims/utils/filmSimSettings";
 
 interface FilmSimCameraSettingsProps {
   settings?: Partial<FilmSimSettings>;
 }
 
+const labelFor = (
+  options: { value: string | number | null; label: string }[],
+  value: string | number | null | undefined
+) => options.find((opt) => opt.value === value)?.label;
+
+const formatSigned = (value: number) => (value > 0 ? `+${value}` : `${value}`);
+
 const formatSettingValue = (value: string | number | null | undefined) => {
   if (value === undefined || value === null) return "N/A";
-  if (typeof value === "number") return value.toString();
+  // Numeric settings read as offsets from standard, as on-camera.
+  if (typeof value === "number") return formatSigned(value);
   return value;
 };
 
@@ -20,27 +35,41 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
     {
       key: "filmSimulation",
       label: "Film Simulation",
-      value: settings?.filmSimulation,
+      value:
+        labelFor(FILM_SIMULATION_OPTIONS, settings?.filmSimulation) ??
+        settings?.filmSimulation,
     },
     {
       key: "grainEffect",
       label: "Grain Effect",
-      value: settings?.grainEffect,
+      value:
+        labelFor(GRAIN_EFFECT_OPTIONS, settings?.grainEffect) ??
+        settings?.grainEffect,
     },
     {
       key: "colorChromeEffect",
       label: "Color Chrome Effect",
-      value: settings?.colorChromeEffect,
+      value:
+        labelFor(COLOR_CHROME_EFFECT_OPTIONS, settings?.colorChromeEffect) ??
+        settings?.colorChromeEffect,
     },
     {
       key: "colorChromeFxBlue",
       label: "Color Chrome FX Blue",
-      value: settings?.colorChromeFxBlue,
+      value:
+        labelFor(COLOR_CHROME_FX_BLUE_OPTIONS, settings?.colorChromeFxBlue) ??
+        settings?.colorChromeFxBlue,
     },
     {
       key: "dynamicRange",
       label: "Dynamic Range",
-      value: settings?.dynamicRange,
+      // null encodes DR-Auto (the form's "Auto" option), not absence (#102).
+      value:
+        settings?.dynamicRange === null
+          ? "Auto"
+          : settings?.dynamicRange !== undefined
+            ? `DR${settings.dynamicRange}`
+            : undefined,
     },
     {
       key: "highlight",
@@ -214,7 +243,10 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
                   zIndex: 1,
                 }}
               >
-                {formatSettingValue(settings.whiteBalance)}
+                {formatSettingValue(
+                  labelFor(WHITE_BALANCE_OPTIONS, settings.whiteBalance) ??
+                    settings.whiteBalance
+                )}
               </span>
             </Box>
           )}
@@ -271,7 +303,9 @@ const FilmSimCameraSettings: React.FC<FilmSimCameraSettingsProps> = ({
                   zIndex: 1,
                 }}
               >
-                {`R${settings.wbShift.r} / B${settings.wbShift.b}`}
+                {`R: ${formatSigned(settings.wbShift.r)} B: ${formatSigned(
+                  settings.wbShift.b
+                )}`}
               </span>
             </Box>
           )}

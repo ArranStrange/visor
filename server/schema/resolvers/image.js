@@ -1,4 +1,5 @@
 const Image = require("../../models/Image");
+const { requireAdmin } = require("../../utils/authHelpers");
 
 const imageResolvers = {
   Query: {
@@ -13,10 +14,7 @@ const imageResolvers = {
   },
   Mutation: {
     makeFeaturedPhoto: async (_, { imageId }, context) => {
-      // Check if user is admin
-      if (!context.user || !context.user.isAdmin) {
-        throw new Error("Only administrators can set featured photos");
-      }
+      requireAdmin(context.user, "Only administrators can set featured photos");
 
       // Remove featured status from any existing featured photo
       await Image.updateMany(
@@ -38,10 +36,10 @@ const imageResolvers = {
       return image;
     },
     removeFeaturedPhoto: async (_, { imageId }, context) => {
-      // Check if user is admin
-      if (!context.user || !context.user.isAdmin) {
-        throw new Error("Only administrators can remove featured photos");
-      }
+      requireAdmin(
+        context.user,
+        "Only administrators can remove featured photos"
+      );
 
       const image = await Image.findByIdAndUpdate(
         imageId,

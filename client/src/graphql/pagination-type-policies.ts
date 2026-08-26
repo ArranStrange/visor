@@ -31,6 +31,10 @@ export const paginationTypePolicies: TypePolicies = {
   FilmSim: { keyFields: ["id"] },
   User: { keyFields: ["id"] },
   Tag: { keyFields: ["id"] },
+  // Posts carry an id now (a report needs to name one), but they are still
+  // subdocuments of a discussion: normalising them would change how every
+  // discussion read merges, for no benefit.
+  DiscussionPost: { keyFields: false },
   PaginatedPresets: { keyFields: false },
   PaginatedFilmSims: { keyFields: false },
 };
@@ -38,7 +42,10 @@ export const paginationTypePolicies: TypePolicies = {
 function createPaginatedFieldPolicy<TKey extends string>(itemsKey: TKey) {
   return {
     // A count query (limit 1) must not overwrite a browse query (limit 20).
-    keyArgs: ["filter", "limit"],
+    // `where` is the typed filter and `filter` its deprecated JSON
+    // predecessor; both change which documents come back, so both have to be
+    // part of the cache key.
+    keyArgs: ["filter", "where", "limit"],
     merge: createPageMerge(itemsKey),
     read: createPageRead(itemsKey),
   };

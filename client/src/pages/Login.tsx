@@ -70,9 +70,9 @@ const Login: React.FC = () => {
     }
   };
 
+  // Browsing needs no account, so "continue as guest" is simply leaving the
+  // login form. It used to write a "guest" token that nothing ever read.
   const handleGuestLogin = () => {
-    // For guest login, we'll just store a guest token
-    localStorage.setItem("token", "guest");
     navigate("/");
   };
 
@@ -123,6 +123,14 @@ const Login: React.FC = () => {
             data-cy="login-submit-button"
           >
             {loading ? <CircularProgress size={24} /> : "Login"}
+          </Button>
+
+          <Button
+            variant="text"
+            onClick={() => navigate("/forgot-password")}
+            disabled={loading}
+          >
+            Forgot your password?
           </Button>
 
           <Button

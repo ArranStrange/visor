@@ -22,7 +22,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
-import { useAuth } from "@/context/AuthContext";
 import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { Discussion as DiscussionType } from "@/features/discussions/types/discussions";
 import { User } from "@/features/discussions/types/discussions";
@@ -53,7 +52,6 @@ interface DiscussionCardProps {
 const DiscussionCard: React.FC<DiscussionCardProps> = ({
   discussion,
   user,
-  searchTerm,
   onFollow,
   onDelete,
   onEdit,

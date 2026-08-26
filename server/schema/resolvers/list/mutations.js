@@ -1,7 +1,10 @@
-const { AuthenticationError } = require("../../../utils/errors");
 const UserList = require("../../../models/UserList");
 const { createLogger } = require("../../../utils/logger");
-const { requireAuth, requireOwnership } = require("../../../utils/authHelpers");
+const {
+  requireAdmin,
+  requireAuth,
+  requireOwnership,
+} = require("../../../utils/authHelpers");
 const { serializeUserListDetail } = require("./services/listSerializers");
 
 const logger = createLogger("resolvers:list");
@@ -219,10 +222,7 @@ module.exports = {
   },
 
   featureUserList: async (_, { id }, { user }) => {
-    requireAuth(user, "Only administrators can feature lists");
-    if (!user.isAdmin) {
-      throw new AuthenticationError("Only administrators can feature lists");
-    }
+    requireAdmin(user, "Only administrators can feature lists");
     // First, unfeature all other lists
     await UserList.updateMany(
       { _id: { $ne: id } },
@@ -250,12 +250,7 @@ module.exports = {
   },
 
   unfeatureUserList: async (_, { id }, { user }) => {
-    requireAuth(user, "Only administrators can remove featured status");
-    if (!user.isAdmin) {
-      throw new AuthenticationError(
-        "Only administrators can remove featured status"
-      );
-    }
+    requireAdmin(user, "Only administrators can remove featured status");
     const updated = await UserList.findByIdAndUpdate(
       id,
       { $set: { isFeatured: false } },

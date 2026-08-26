@@ -1,10 +1,11 @@
 const Preset = require("../../../models/Preset");
-const {
-  AuthenticationError,
-  UserInputError,
-} = require("../../../utils/errors");
+const { UserInputError } = require("../../../utils/errors");
 const { createLogger } = require("../../../utils/logger");
-const { requireAuth, requireOwnership } = require("../../../utils/authHelpers");
+const {
+  requireAdmin,
+  requireAuth,
+  requireOwnership,
+} = require("../../../utils/authHelpers");
 const {
   cleanSettings,
   cleanToneCurve,
@@ -213,11 +214,7 @@ module.exports = {
   },
 
   makePresetFeatured: async (_, { presetId }, { user }) => {
-    requireAuth(user, "You must be logged in");
-
-    if (!user.isAdmin) {
-      throw new AuthenticationError("Only administrators can feature presets");
-    }
+    requireAdmin(user, "Only administrators can feature presets");
 
     try {
       // First, unfeature all other presets
@@ -242,13 +239,7 @@ module.exports = {
   },
 
   removePresetFeatured: async (_, { presetId }, { user }) => {
-    requireAuth(user, "You must be logged in");
-
-    if (!user.isAdmin) {
-      throw new AuthenticationError(
-        "Only administrators can remove featured status"
-      );
-    }
+    requireAdmin(user, "Only administrators can remove featured status");
 
     try {
       const preset = await Preset.findById(presetId);

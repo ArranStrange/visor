@@ -1,6 +1,7 @@
 const Discussion = require("../../../models/Discussion");
 const { createLogger } = require("../../../utils/logger");
 const { clampPagination } = require("../../../utils/pagination");
+const { escapeRegExp } = require("../../../utils/escapeRegExp");
 
 const logger = createLogger("resolvers:discussion");
 
@@ -18,7 +19,7 @@ module.exports = {
       }
 
       if (search) {
-        const searchRegex = new RegExp(search, "i");
+        const searchRegex = new RegExp(escapeRegExp(search), "i");
 
         const discussionsWithMatches = await Discussion.find({
           ...query,
@@ -98,7 +99,7 @@ module.exports = {
         page,
         limit
       );
-      const searchRegex = new RegExp(query, "i");
+      const searchRegex = new RegExp(escapeRegExp(query), "i");
 
       // Search in discussion titles and embedded posts
       const searchQuery = {

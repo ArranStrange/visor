@@ -10,7 +10,6 @@ import {
   type ListPresetsQueryData,
   type ListPresetsQueryVariables,
 } from "@/features/presets/graphql/presets";
-import { GridFilter } from "../../components/ui/content-grid-data";
 import { UserListDetail } from "./buildCombinedContent";
 
 const ITEMS_PER_PAGE = 20;
@@ -24,13 +23,13 @@ export function useListContent(list?: UserListDetail | null) {
     () => list?.filmSims.map(({ id }) => id) ?? [],
     [list?.filmSims]
   );
-  const presetFilter = useMemo(() => buildIdFilter(presetIds), [presetIds]);
-  const filmSimFilter = useMemo(() => buildIdFilter(filmSimIds), [filmSimIds]);
+  const presetWhere = useMemo(() => ({ ids: presetIds }), [presetIds]);
+  const filmSimWhere = useMemo(() => ({ ids: filmSimIds }), [filmSimIds]);
 
   const presetQuery = useQuery<ListPresetsQueryData, ListPresetsQueryVariables>(
     GET_ALL_PRESETS,
     {
-      variables: { page: 1, limit: ITEMS_PER_PAGE, filter: presetFilter },
+      variables: { page: 1, limit: ITEMS_PER_PAGE, where: presetWhere },
       skip: !presetIds.length,
       notifyOnNetworkStatusChange: true,
     }
@@ -39,7 +38,7 @@ export function useListContent(list?: UserListDetail | null) {
     ListFilmSimsQueryData,
     ListFilmSimsQueryVariables
   >(GET_ALL_FILMSIMS, {
-    variables: { page: 1, limit: ITEMS_PER_PAGE, filter: filmSimFilter },
+    variables: { page: 1, limit: ITEMS_PER_PAGE, where: filmSimWhere },
     skip: !filmSimIds.length,
     notifyOnNetworkStatusChange: true,
   });
@@ -61,12 +60,12 @@ export function useListContent(list?: UserListDetail | null) {
       variables: {
         page: presetPage.currentPage + 1,
         limit: ITEMS_PER_PAGE,
-        filter: presetFilter,
+        where: presetWhere,
       },
     }).catch((error: unknown) =>
       console.error("Error loading list presets:", error)
     );
-  }, [fetchMorePresets, presetFilter, presetPage, presetNetworkStatus]);
+  }, [fetchMorePresets, presetWhere, presetPage, presetNetworkStatus]);
 
   useEffect(() => {
     if (
@@ -79,12 +78,12 @@ export function useListContent(list?: UserListDetail | null) {
       variables: {
         page: filmSimPage.currentPage + 1,
         limit: ITEMS_PER_PAGE,
-        filter: filmSimFilter,
+        where: filmSimWhere,
       },
     }).catch((error: unknown) =>
       console.error("Error loading list film sims:", error)
     );
-  }, [fetchMoreFilmSims, filmSimFilter, filmSimPage, filmSimNetworkStatus]);
+  }, [fetchMoreFilmSims, filmSimWhere, filmSimPage, filmSimNetworkStatus]);
 
   return {
     presets: presetQuery.data?.listPresets.presets ?? [],
@@ -96,8 +95,4 @@ export function useListContent(list?: UserListDetail | null) {
         !filmSimQuery.data),
     error: presetQuery.error ?? filmSimQuery.error,
   };
-}
-
-function buildIdFilter(ids: string[]): GridFilter {
-  return { _id: { $in: ids } };
 }

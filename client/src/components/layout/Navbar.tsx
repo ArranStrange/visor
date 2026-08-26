@@ -18,19 +18,24 @@ import SearchIcon from "@mui/icons-material/Search";
 import UploadIcon from "@mui/icons-material/CloudUpload";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import ListIcon from "@mui/icons-material/List";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import ForumIcon from "@mui/icons-material/Forum";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import FlagIcon from "@mui/icons-material/Flag";
 import { useAuth } from "../../context/AuthContext";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import Logo from "../../assets/VISOR.png";
 import NotificationBell from "@/features/notifications/components/NotificationBell";
+import PrimaryCameraPicker from "./PrimaryCameraPicker";
 
 const NavBar: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
+  const isAdmin = useIsAdmin();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [isVisible, setIsVisible] = React.useState(true);
   const lastScrollY = React.useRef(0);
@@ -63,6 +68,11 @@ const NavBar: React.FC = () => {
       onClick: handleMyListsClick,
     },
     {
+      text: "Wallet",
+      icon: <CameraAltIcon />,
+      onClick: handleWalletClick,
+    },
+    {
       text: "Browse Lists",
       icon: <ListIcon />,
       onClick: handleBrowseListsClick,
@@ -78,6 +88,17 @@ const NavBar: React.FC = () => {
       icon: <NotificationsIcon />,
       onClick: handleNotificationsClick,
     },
+    // The moderation queue is only worth a menu row to the people who can
+    // act on it.
+    ...(isAdmin
+      ? [
+          {
+            text: "Reports",
+            icon: <FlagIcon />,
+            onClick: handleReportsClick,
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -106,6 +127,7 @@ const NavBar: React.FC = () => {
         <Box
           sx={{ display: "flex", alignItems: "center", gap: isMobile ? 1 : 2 }}
         >
+          <PrimaryCameraPicker />
           <IconButton onClick={() => navigate("/search")} color="inherit">
             <SearchIcon />
           </IconButton>
@@ -249,6 +271,11 @@ const NavBar: React.FC = () => {
     navigate("/lists");
   }
 
+  function handleWalletClick() {
+    handleMenuClose();
+    navigate("/wallet");
+  }
+
   function handleBrowseListsClick() {
     handleMenuClose();
     navigate("/browse-lists");
@@ -262,6 +289,11 @@ const NavBar: React.FC = () => {
   function handleNotificationsClick() {
     handleMenuClose();
     navigate("/notifications");
+  }
+
+  function handleReportsClick() {
+    handleMenuClose();
+    navigate("/admin/reports");
   }
 };
 

@@ -36,6 +36,9 @@ module.exports = {
   },
 
   DiscussionPost: {
+    // Posts are subdocuments of Discussion; the id is the handle a report
+    // against one post needs.
+    id: (post) => post._id,
     timestamp: (post) => {
       return post.timestamp
         ? post.timestamp.toISOString()

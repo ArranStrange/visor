@@ -23,7 +23,8 @@ import AddToListButton from "@/features/lists/components/AddToListButton";
 import XmpSettingsDisplay from "@/features/settings/components/XmpSettingsDisplay";
 import DiscussionThread from "@/features/discussions/components/DiscussionThread";
 import DetailHeader from "../components/content/DetailHeader";
-import OwnerMenu from "../components/content/OwnerMenu";
+import ContentActionsMenu from "../components/content/ContentActionsMenu";
+import ReportDialog from "@/features/moderation/components/ReportDialog";
 import DeleteContentDialog from "../components/content/DeleteContentDialog";
 import PresetDescription from "@/features/presets/components/PresetDescription";
 import PresetBeforeAfter from "@/features/presets/components/PresetBeforeAfter";
@@ -94,6 +95,7 @@ const PresetDetails: React.FC = () => {
 
   const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(menuAnchorEl);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setMenuAnchorEl(event.currentTarget);
@@ -101,6 +103,11 @@ const PresetDetails: React.FC = () => {
 
   const handleMenuClose = () => {
     setMenuAnchorEl(null);
+  };
+
+  const handleReport = () => {
+    handleMenuClose();
+    setReportDialogOpen(true);
   };
 
   const handleDownloadXMP = () => {
@@ -173,18 +180,21 @@ const PresetDetails: React.FC = () => {
         title={preset.title}
         featured={!!preset.featured}
         isAdmin={isAdmin}
-        isOwner={!!isOwner}
+        showMenu={!!currentUser}
         onFeaturedToggle={handleToggleFeatured}
         onMenuOpen={handleMenuOpen}
       />
 
-      {isOwner && (
-        <OwnerMenu
+      {/* Signed in only: reporting anonymously would be unattributable. */}
+      {currentUser && (
+        <ContentActionsMenu
           anchorEl={menuAnchorEl}
           open={menuOpen}
           onClose={handleMenuClose}
+          isOwner={!!isOwner}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onReport={handleReport}
         />
       )}
 
@@ -276,6 +286,14 @@ const PresetDetails: React.FC = () => {
         onFileChange={handlePhotoFileChange}
         onCaptionChange={setPhotoCaption}
         onUpload={handlePhotoUpload}
+      />
+
+      <ReportDialog
+        open={reportDialogOpen}
+        onClose={() => setReportDialogOpen(false)}
+        targetType="PRESET"
+        targetId={preset.id}
+        targetName={preset.title}
       />
 
       <FullscreenImageDialog

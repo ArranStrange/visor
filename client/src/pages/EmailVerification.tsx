@@ -16,9 +16,11 @@ import CheckCircle from "@mui/icons-material/CheckCircle";
 import Email from "@mui/icons-material/Email";
 import Error from "@mui/icons-material/Error";
 import { getErrorMessage } from "../utils/errorHandling";
+import { useAuth } from "@/context/AuthContext";
 
 const EmailVerification: React.FC = () => {
   const navigate = useNavigate();
+  const { updateUser } = useAuth();
   const [searchParams] = useSearchParams();
   const [verificationStatus, setVerificationStatus] = useState<
     "pending" | "success" | "error" | "expired"
@@ -32,9 +34,10 @@ const EmailVerification: React.FC = () => {
         setVerificationStatus("success");
         setMessage(data.verifyEmail.message || "Email verified successfully!");
 
-        // Store user data and token if provided
+        // Go through the auth context rather than writing storage directly,
+        // so anything subscribed to the user sees the change.
         if (data.verifyEmail.user) {
-          localStorage.setItem("user", JSON.stringify(data.verifyEmail.user));
+          updateUser(data.verifyEmail.user);
         }
 
         // Redirect to home after 3 seconds

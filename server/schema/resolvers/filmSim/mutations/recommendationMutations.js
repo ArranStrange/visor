@@ -1,8 +1,9 @@
 const FilmSim = require("../../../../models/FilmSim");
 const Preset = require("../../../../models/Preset");
-const { AuthenticationError, UserInputError } = require("../../../../utils/errors");
+const { UserInputError } = require("../../../../utils/errors");
 const { createLogger } = require("../../../../utils/logger");
 const {
+  requireAdmin,
   requireAuth,
   requireOwnership,
 } = require("../../../../utils/authHelpers");
@@ -74,13 +75,7 @@ module.exports = {
   },
 
   makeFilmSimFeatured: async (_, { filmSimId }, { user }) => {
-    requireAuth(user, "You must be logged in");
-
-    if (!user.isAdmin) {
-      throw new AuthenticationError(
-        "Only administrators can feature film sims"
-      );
-    }
+    requireAdmin(user, "Only administrators can feature film sims");
 
     try {
       // First, unfeature all other film sims
@@ -105,13 +100,7 @@ module.exports = {
   },
 
   removeFilmSimFeatured: async (_, { filmSimId }, { user }) => {
-    requireAuth(user, "You must be logged in");
-
-    if (!user.isAdmin) {
-      throw new AuthenticationError(
-        "Only administrators can remove featured status"
-      );
-    }
+    requireAdmin(user, "Only administrators can remove featured status");
 
     try {
       const filmSim = await FilmSim.findById(filmSimId);

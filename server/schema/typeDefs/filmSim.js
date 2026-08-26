@@ -3,8 +3,9 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   type FilmSimSettings {
     dynamicRange: Int
-    highlight: Int
-    shadow: Int
+    # Float: Fuji bodies from the X-T4 generation take half-step tone values.
+    highlight: Float
+    shadow: Float
     colour: Int
     sharpness: Int
     noiseReduction: Int
@@ -51,8 +52,8 @@ const typeDefs = gql`
     wbShift: WhiteBalanceShiftInput!
     color: Int!
     sharpness: Int!
-    highlight: Int!
-    shadow: Int!
+    highlight: Float!
+    shadow: Float!
     noiseReduction: Int!
     grainEffect: String!
     clarity: Int!
@@ -88,9 +89,44 @@ const typeDefs = gql`
     totalPages: Int!
   }
 
+  """
+  Typed replacement for the untyped listFilmSims \`filter\` blob. Every field
+  here is allow-listed by server/utils/contentFilters.js before it reaches
+  Mongo.
+  """
+  input FilmSimFilterInput {
+    tagId: ID
+    featured: Boolean
+    """Restrict to these film sims, e.g. the members of a user list."""
+    ids: [ID!]
+    """
+    Sensor generation slug, e.g. "x-trans-iv". Matches compatibleSensors and
+    falls back to the deprecated compatibleCameras field so film sims that
+    predate the rename still match.
+    """
+    sensorKey: String
+    """A camera body name; resolved to its sensor generation server-side."""
+    cameraName: String
+    """
+    Exact name match. Temporary, same deprecation window as
+    PresetFilterInput.title.
+    """
+    name: String
+  }
+
   extend type Query {
     getFilmSim(slug: String!): FilmSim
-    listFilmSims(filter: JSON, page: Int, limit: Int): PaginatedFilmSims!
+    """
+    \`filter\` is deprecated in favour of \`where\` and is accepted for one
+    release only, per docs/plans/c1-c3-delivery-plan.md. Both arguments are
+    validated by the same allow-listing builder; \`where\` wins on conflict.
+    """
+    listFilmSims(
+      filter: JSON
+      where: FilmSimFilterInput
+      page: Int
+      limit: Int
+    ): PaginatedFilmSims!
   }
 
   extend type Mutation {

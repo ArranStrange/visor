@@ -7,8 +7,10 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Link,
 } from "@mui/material";
 import { useQuery, useMutation } from "@apollo/client";
+import { Link as RouterLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { uploadToCloudinary } from "../utils/cloudinary";
 import { GET_USER_PROFILE, UPDATE_USER_PROFILE } from "@/features/auth/graphql/users";
@@ -240,6 +242,12 @@ const Profile: React.FC = () => {
               onStartEdit={() => setIsEditing(true)}
               onCancelEdit={() => setIsEditing(false)}
             />
+
+            <Box sx={{ mt: 3 }}>
+              <Link component={RouterLink} to="/settings/account">
+                Password, email and account deletion
+              </Link>
+            </Box>
           </Grid>
         </Grid>
       </Paper>

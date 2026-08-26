@@ -19,6 +19,8 @@ export interface UserUploadsProfile {
   bio?: string;
   instagram?: string;
   cameras?: string[];
+  /** Canonical catalogue name of the body the app personalises for. */
+  primaryCamera?: string | null;
   presets?: UserUploadPreset[];
   filmSims?: UserUploadFilmSim[];
 }
@@ -51,8 +53,14 @@ export const REGISTER_USER = gql`
     $username: String!
     $email: String!
     $password: String!
+    $honeypot: String
   ) {
-    register(username: $username, email: $email, password: $password) {
+    register(
+      username: $username
+      email: $email
+      password: $password
+      honeypot: $honeypot
+    ) {
       success
       message
       requiresVerification
@@ -103,6 +111,7 @@ export const GET_USER_PROFILE = gql`
       bio
       instagram
       cameras
+      primaryCamera
     }
   }
 `;
@@ -118,6 +127,7 @@ export const UPDATE_USER_PROFILE = gql`
       bio
       instagram
       cameras
+      primaryCamera
     }
   }
 `;
@@ -179,6 +189,58 @@ export const GET_USER_UPLOADS = gql`
         }
         createdAt
       }
+    }
+  }
+`;
+
+export const REQUEST_PASSWORD_RESET = gql`
+  mutation RequestPasswordReset($email: String!) {
+    requestPasswordReset(email: $email) {
+      success
+      message
+    }
+  }
+`;
+
+export const RESET_PASSWORD = gql`
+  mutation ResetPassword(
+    $token: String!
+    $email: String!
+    $newPassword: String!
+  ) {
+    resetPassword(token: $token, email: $email, newPassword: $newPassword) {
+      success
+      message
+    }
+  }
+`;
+
+export const CHANGE_PASSWORD = gql`
+  mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
+    changePassword(
+      currentPassword: $currentPassword
+      newPassword: $newPassword
+    ) {
+      success
+      message
+    }
+  }
+`;
+
+export const CHANGE_EMAIL = gql`
+  mutation ChangeEmail($currentPassword: String!, $newEmail: String!) {
+    changeEmail(currentPassword: $currentPassword, newEmail: $newEmail) {
+      success
+      message
+    }
+  }
+`;
+
+export const DELETE_ACCOUNT = gql`
+  mutation DeleteAccount($currentPassword: String!) {
+    deleteAccount(currentPassword: $currentPassword) {
+      success
+      message
     }
   }
 `;

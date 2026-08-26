@@ -6,10 +6,9 @@ interface UseColumnCountProps {
   gap?: number;
 }
 
-export const useColumnCount = ({
-  minWidth = 200,
-  gap = 10,
-}: UseColumnCountProps = {}) => {
+// Options are accepted for call-site compatibility; the column count is
+// derived from the container/viewport width alone.
+export const useColumnCount = (_options: UseColumnCountProps = {}) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [columnCount, setColumnCount] = useState(() => {
     if (typeof window !== "undefined") {
@@ -36,7 +35,9 @@ export const useColumnCount = ({
   useEffect(() => {
     updateColumns();
 
-    let timeoutId: number;
+    // ReturnType, not number: Node typings (hoisted by test deps) type
+    // setTimeout's return as Timeout in this compilation.
+    let timeoutId: ReturnType<typeof setTimeout>;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(updateColumns, 100);

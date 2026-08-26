@@ -18,6 +18,13 @@ validateMongoURI(config.MONGO_URI);
 const startServer = async () => {
   const app = express();
 
+  // Render terminates TLS at its proxy, so without this req.ip is the proxy's
+  // address for every request and per-IP rate limiting degrades into one
+  // site-wide bucket — five password-reset requests would lock the flow for
+  // everybody. Exactly one hop is trusted, so a client cannot spoof its way
+  // to a private bucket by sending its own X-Forwarded-For.
+  app.set("trust proxy", 1);
+
   app.use(cors(corsOptions));
   app.use(express.json());
   app.use(graphqlUploadExpress());
@@ -35,7 +42,8 @@ const startServer = async () => {
     typeDefs,
     resolvers,
     persistedQueries: { cache: "bounded" },
-    context: ({ req }) => ({ user: req.user }),
+    // req is exposed so mutations can rate-limit by client IP.
+    context: ({ req }) => ({ user: req.user, req }),
   });
 
   try {
