@@ -2,7 +2,9 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   ReactNode,
 } from "react";
@@ -14,6 +16,7 @@ import {
 } from "@/features/auth/graphql/users";
 import { useAuth } from "./AuthContext";
 import {
+  clearStoredCamera,
   readStoredCameraKey,
   readStoredShowAllGenerations,
   toCameraKey,
@@ -64,15 +67,20 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children }) => {
 
   const [saveProfile] = useMutation(UPDATE_USER_PROFILE);
 
-  // Hydrate from the profile only when this device has no choice of its own,
-  // so a body picked here is never overwritten by a stale server value. The
-  // query is skipped once a local choice exists, and adopting the remote one
-  // happens on completion rather than in an effect.
+  // A pick made in this session wins over the profile, unconditionally. The
+  // `skip` below stops the query from *starting* once a key exists, but a
+  // request already in flight still completes, and its handler closes over
+  // the cameraKey from the render that created it — so a pick made while the
+  // profile loads would be silently reverted to the server's value. This ref
+  // is read at completion time, when the pick is already visible in it.
+  const hasLocalSelection = useRef(false);
+  const wasAuthenticated = useRef(isAuthenticated);
+
   useQuery<CurrentUserCameraData>(GET_USER_PROFILE, {
     skip: !isAuthenticated || cameraKey !== null,
     fetchPolicy: "cache-first",
     onCompleted: (result) => {
-      if (cameraKey !== null) return;
+      if (hasLocalSelection.current || cameraKey !== null) return;
       const key = toCameraKey(result?.getCurrentUser?.primaryCamera);
       if (!key) return;
       writeStoredCameraKey(key);
@@ -80,10 +88,26 @@ export const CameraProvider: React.FC<CameraProviderProps> = ({ children }) => {
     },
   });
 
+  // Logging out has to empty the in-memory state as well as storage: the
+  // provider is not remounted, so a surviving cameraKey or showAllGenerations
+  // would personalise the next account's session on a shared browser. Only a
+  // true → false transition clears, so an anonymous visitor keeps the body
+  // they picked without an account.
+  useEffect(() => {
+    if (wasAuthenticated.current && !isAuthenticated) {
+      hasLocalSelection.current = false;
+      setCameraKey(null);
+      setShowAllGenerationsState(false);
+      clearStoredCamera();
+    }
+    wasAuthenticated.current = isAuthenticated;
+  }, [isAuthenticated]);
+
   const setPrimaryCamera = useCallback(
     function setPrimaryCamera(cameraName: string | null) {
       const camera = cameraName ? findCamera(cameraName) : undefined;
       const key = camera ? toCameraKey(camera.name) : null;
+      hasLocalSelection.current = true;
       setCameraKey(key);
       writeStoredCameraKey(key);
 

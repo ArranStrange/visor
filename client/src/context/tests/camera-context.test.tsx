@@ -64,17 +64,21 @@ const profileMock = (primaryCamera: string | null) => ({
   },
 });
 
+const tree = (
+  mocks: ReturnType<typeof profileMock>[] = [],
+  pick?: string | null
+) => (
+  <MockedProvider mocks={mocks}>
+    <CameraProvider>
+      <Probe pick={pick} />
+    </CameraProvider>
+  </MockedProvider>
+);
+
 const renderProvider = (
   mocks: ReturnType<typeof profileMock>[] = [],
   pick?: string | null
-) =>
-  render(
-    <MockedProvider mocks={mocks}>
-      <CameraProvider>
-        <Probe pick={pick} />
-      </CameraProvider>
-    </MockedProvider>
-  );
+) => render(tree(mocks, pick));
 
 const text = (id: string) => screen.getByTestId(id).textContent;
 const click = (id: string) => fireEvent.click(screen.getByTestId(id));
@@ -195,6 +199,86 @@ describe("CameraProvider", () => {
     await flush();
 
     expect(text("key")).toBe("xt5");
+  });
+
+  it("keeps a pick made while the profile query is still in flight", async () => {
+    mockAuth.isAuthenticated = true;
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    // Nothing stored, so the profile query starts. Picking before it resolves
+    // is the race: the completion handler closes over the render-time
+    // cameraKey (null) and would happily install the server's body over the
+    // one the user just chose.
+    renderProvider([profileMock("X-Pro1")], "Fujifilm X-T30 II");
+    click("pick");
+    await flush();
+
+    expect(text("key")).toBe("xt30ii");
+    expect(localStorage.getItem(PRIMARY_CAMERA_KEY)).toBe("xt30ii");
+
+    consoleError.mockRestore();
+  });
+
+  it("keeps an explicit 'no camera' made while the profile query is in flight", async () => {
+    mockAuth.isAuthenticated = true;
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    // The nastiest shape of the race: choosing "no camera" leaves cameraKey
+    // null, so a null check alone cannot tell an untouched session from a
+    // deliberate clear, and the profile value lands on top of the user's
+    // choice. Only a record that a local selection happened separates them.
+    renderProvider([profileMock("X-Pro1")], null);
+    click("pick");
+    await flush();
+
+    expect(text("key")).toBe("none");
+    expect(localStorage.getItem(PRIMARY_CAMERA_KEY)).toBeNull();
+
+    consoleError.mockRestore();
+  });
+
+  it("clears the camera and the generation preference on logout", async () => {
+    mockAuth.isAuthenticated = true;
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
+
+    const view = renderProvider([profileMock(null)], "Fujifilm X-T30 II");
+    click("pick");
+    click("show-all");
+    await flush();
+    expect(text("key")).toBe("xt30ii");
+    expect(text("all")).toBe("true");
+
+    mockAuth.isAuthenticated = false;
+    await act(async () => {
+      view.rerender(tree([profileMock(null)], "Fujifilm X-T30 II"));
+    });
+
+    // Both halves of the state, in memory and in storage: the provider is not
+    // remounted on logout, so anything left behind belongs to the next user.
+    expect(text("key")).toBe("none");
+    expect(text("all")).toBe("false");
+    expect(localStorage.getItem(PRIMARY_CAMERA_KEY)).toBeNull();
+    expect(localStorage.getItem(SHOW_ALL_GENERATIONS_KEY)).toBeNull();
+
+    consoleError.mockRestore();
+  });
+
+  it("leaves an anonymous visitor's pick alone", async () => {
+    renderProvider([], "Fujifilm X-T30 II");
+    click("pick");
+    await flush();
+
+    // Rendering again while still signed out must not read as a logout.
+    cleanup();
+    renderProvider();
+
+    expect(text("key")).toBe("xt30ii");
   });
 });
 
