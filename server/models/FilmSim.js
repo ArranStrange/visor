@@ -87,7 +87,17 @@ const filmSimSchema = new Schema(
 
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
 
-    likes: {
+    // The users who liked this film sim. Declared as a Number until #128:
+    // GraphQL has always advertised `likes: [User]`, so any list query that
+    // selected the field threw "Expected Iterable" at serialisation time. The
+    // numeric value could not be turned back into a user list, so
+    // scripts/backfill-filmsim-likes.js preserves it as likeCount and starts
+    // likes[] empty.
+    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+
+    // Denormalised count of likes[], maintained by $inc in the like/unlike
+    // mutations so a sort by popularity never has to load the array.
+    likeCount: {
       type: Number,
       default: 0,
     },
