@@ -283,6 +283,7 @@ test("two concurrent deletions of the same list decrement only once", async () =
   );
   assert.equal((await FilmSim.findById(filmSim._id)).saveCount, 0);
   assert.equal((await Preset.findById(preset._id)).popularityScore, 0);
+  assert.equal((await FilmSim.findById(filmSim._id)).popularityScore, 0);
 });
 
 test("deleting an already-deleted list does not touch counters again", async () => {

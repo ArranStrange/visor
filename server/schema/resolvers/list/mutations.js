@@ -77,6 +77,12 @@ module.exports = {
         // Someone else deleted it between the read and here. The list is gone
         // either way, so this is the caller's desired end state; the request
         // that won the race owns the counter adjustment.
+        //
+        // Note the asymmetry this creates, deliberately: a concurrent loser
+        // gets `true`, while a request that arrives after the list is already
+        // gone fails the findById guard above and throws "List not found".
+        // Returning true from that guard instead would make a typo'd id look
+        // like a successful delete, which is worse than the inconsistency.
         return true;
       }
 
