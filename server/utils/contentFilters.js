@@ -206,16 +206,19 @@ const buildFilmSimFilterQuery = (filter, where) =>
  * The ContentSort enum, mapped to Mongo sort specs. Every one of these fields
  * is indexed on both Preset and FilmSim.
  *
- * `createdAt: -1` is the tiebreak on every counter-based order: without it,
- * the hundreds of documents sharing a score of 0 come back in whatever order
- * the index scan happens to produce, which is not stable across pages — so
- * page 2 could repeat or skip items from page 1.
+ * Every order ends in `_id: -1`, which makes each one a total order. Without a
+ * unique final key the sort is only a partial order: the hundreds of documents
+ * sharing a score of 0 come back in whatever sequence the index scan happens
+ * to produce, and skip/limit paging can then repeat or drop items between
+ * pages. `createdAt` alone is not enough — two documents written in the same
+ * millisecond tie on it too, which is exactly what a seed script or a bulk
+ * import produces.
  */
 const CONTENT_SORTS = Object.freeze({
-  NEWEST: { createdAt: -1 },
-  POPULAR: { popularityScore: -1, createdAt: -1 },
-  MOST_DOWNLOADED: { downloads: -1, createdAt: -1 },
-  MOST_SAVED: { saveCount: -1, createdAt: -1 },
+  NEWEST: { createdAt: -1, _id: -1 },
+  POPULAR: { popularityScore: -1, createdAt: -1, _id: -1 },
+  MOST_DOWNLOADED: { downloads: -1, createdAt: -1, _id: -1 },
+  MOST_SAVED: { saveCount: -1, createdAt: -1, _id: -1 },
 });
 
 const DEFAULT_CONTENT_SORT = "NEWEST";

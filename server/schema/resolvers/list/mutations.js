@@ -62,7 +62,20 @@ module.exports = {
         message: "You don't have permission to delete this list",
       });
 
+      // Everything the list held stops being saved by it, so the counters have
+      // to come down with it. Without this, deleting a list of twenty recipes
+      // leaves twenty inflated saveCounts ranking content nobody has saved.
+      // Read the members before the delete — afterwards they are gone.
+      const heldPresets = [...(list.presets ?? [])];
+      const heldFilmSims = [...(list.filmSims ?? [])];
+
       await UserList.findByIdAndDelete(id);
+
+      await Promise.all([
+        adjustSaveCounts(Preset, heldPresets, -1),
+        adjustSaveCounts(FilmSim, heldFilmSims, -1),
+      ]);
+
       return true;
     } catch (error) {
       logger.error("Error deleting user list", error);

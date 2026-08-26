@@ -30,17 +30,24 @@ test("POPULAR sorts on the denormalised score, not a computed one", () => {
   assert.deepEqual(CONTENT_SORTS.POPULAR, {
     popularityScore: -1,
     createdAt: -1,
+    _id: -1,
   });
 });
 
-test("every counter-based order breaks ties on createdAt", () => {
-  // Hundreds of documents share a score of 0. Without a tiebreak their order
-  // is whatever the index scan produces, which is not stable across pages —
-  // so page 2 could repeat or skip items from page 1.
+test("every order is a total order, ending in a unique key", () => {
+  // A partial order is not enough for skip/limit paging. Hundreds of documents
+  // share a score of 0, and createdAt does not separate them either when they
+  // were written in the same millisecond — a seed script or bulk import does
+  // exactly that. Only _id is guaranteed unique, so it has to be last.
   for (const [name, spec] of Object.entries(CONTENT_SORTS)) {
-    if (name === "NEWEST") continue;
-    assert.equal(spec.createdAt, -1, `${name} has no stable tiebreak`);
-    assert.equal(Object.keys(spec).length, 2);
+    const keys = Object.keys(spec);
+    assert.equal(keys.at(-1), "_id", `${name} does not end in a unique key`);
+    assert.equal(spec._id, -1, `${name} must break the final tie consistently`);
+
+    if (name !== "NEWEST") {
+      assert.equal(spec.createdAt, -1, `${name} has no recency tiebreak`);
+      assert.equal(keys.length, 3);
+    }
   }
 });
 

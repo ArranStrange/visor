@@ -173,3 +173,77 @@ test("two different lists each count as a save", async () => {
   assert.equal(storedPreset.saveCount, 2);
   assert.equal(storedPreset.popularityScore, 4);
 });
+
+test("deleting a whole list gives back every save it held", async () => {
+  // Without this the counters keep ranking content nobody has saved any more:
+  // delete a list of twenty and twenty saveCounts stay inflated.
+  const user = await createUser();
+  const [presetA, presetB, filmSim, list] = [
+    await createPreset(user),
+    await createPreset(user),
+    await createFilmSim(user),
+    await createList(user),
+  ];
+
+  await mutations.addToUserList(
+    null,
+    {
+      listId: list._id.toString(),
+      presetIds: [presetA._id.toString(), presetB._id.toString()],
+      filmSimIds: [filmSim._id.toString()],
+    },
+    ctx(user)
+  );
+
+  assert.equal((await Preset.findById(presetA._id)).saveCount, 1);
+  assert.equal((await Preset.findById(presetB._id)).saveCount, 1);
+  assert.equal((await FilmSim.findById(filmSim._id)).saveCount, 1);
+
+  await mutations.deleteUserList(null, { id: list._id.toString() }, ctx(user));
+
+  const [reloadedA, reloadedB, reloadedSim] = await Promise.all([
+    Preset.findById(presetA._id),
+    Preset.findById(presetB._id),
+    FilmSim.findById(filmSim._id),
+  ]);
+
+  assert.equal(reloadedA.saveCount, 0, "every held preset is given back");
+  assert.equal(reloadedB.saveCount, 0);
+  assert.equal(reloadedSim.saveCount, 0, "and every held film sim");
+  assert.equal(reloadedA.popularityScore, 0, "the ranking score comes down too");
+  assert.equal(reloadedSim.popularityScore, 0);
+});
+
+test("deleting an empty list touches no counters", async () => {
+  const user = await createUser();
+  const preset = await createPreset(user);
+  const list = await createList(user);
+
+  await mutations.deleteUserList(null, { id: list._id.toString() }, ctx(user));
+
+  assert.equal((await Preset.findById(preset._id)).saveCount, 0);
+});
+
+test("deleting one list leaves another list's saves alone", async () => {
+  const user = await createUser();
+  const preset = await createPreset(user);
+  const kept = await createList(user);
+  const removed = await createList(user);
+
+  for (const list of [kept, removed]) {
+    await mutations.addToUserList(
+      null,
+      { listId: list._id.toString(), presetIds: [preset._id.toString()] },
+      ctx(user)
+    );
+  }
+  assert.equal((await Preset.findById(preset._id)).saveCount, 2);
+
+  await mutations.deleteUserList(null, { id: removed._id.toString() }, ctx(user));
+
+  assert.equal(
+    (await Preset.findById(preset._id)).saveCount,
+    1,
+    "the surviving list still counts"
+  );
+});

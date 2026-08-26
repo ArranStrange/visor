@@ -361,3 +361,44 @@ test("search and sort compose with paging", async () => {
   assert.equal(result.totalCount, 2);
   assert.equal(result.hasNextPage, true);
 });
+
+test("paging is stable when counters and timestamps all tie", async () => {
+  // The case a createdAt tiebreak does not cover: a bulk import writes several
+  // documents in the same millisecond with the same score. Without a unique
+  // final sort key the order is whatever the index scan produces, and paging
+  // through one at a time can then repeat or drop items.
+  const sameInstant = new Date("2026-01-01T00:00:00.000Z");
+  const identical = [];
+  for (let i = 0; i < 6; i += 1) {
+    identical.push(
+      await createPreset({
+        popularityScore: 0,
+        saveCount: 0,
+        downloads: 0,
+        createdAt: sameInstant,
+      })
+    );
+  }
+  const expectedIds = new Set(identical.map((preset) => preset._id.toString()));
+
+  for (const sort of ["POPULAR", "MOST_SAVED", "MOST_DOWNLOADED", "NEWEST"]) {
+    const seen = [];
+    for (let page = 1; page <= 6; page += 1) {
+      const result = await presetQueries.listPresets(null, {
+        page,
+        limit: 1,
+        sort,
+      });
+      seen.push(...result.presets.map((preset) => preset.id.toString()));
+    }
+
+    const unique = new Set(seen);
+    assert.equal(
+      unique.size,
+      seen.length,
+      `${sort} returned a duplicate across pages: ${seen.join(", ")}`
+    );
+    assert.equal(seen.length, 6, `${sort} dropped an item while paging`);
+    assert.deepEqual(unique, expectedIds, `${sort} paged over the wrong set`);
+  }
+});
